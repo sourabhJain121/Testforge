@@ -6,7 +6,8 @@ Course: CSE3101 - Agentic AI
 
 Agent State Graph:
   Coverage Profiler -> Test Generator -> Sandbox Baseline -> Parallel AST Mutator 
-  -> Parallel Sandbox Mutants -> Adversarial Critic -> Reflection Decision
+  -> Parallel Sandbox Mutants -> Apple Silicon GPU Triage -> Adversarial Critic (LLM Reasoning)
+  -> Hardened Test Generator -> Reflection Decision
 """
 
 from __future__ import annotations
@@ -36,7 +37,7 @@ class TestForgeOrchestrator:
         initial_test_code: Optional[str] = None,
         max_iterations: int = 3,
         target_mutation_score: float = 85.0,
-        model_name: str = "gemini-2.5-pro",
+        model_name: str = "gemini-2.5-flash",
         trace_log_path: str = "testforge_trace.jsonl"
     ):
         self.state = TestForgeState(
@@ -49,7 +50,7 @@ class TestForgeOrchestrator:
         self.logger = TraceLogger(log_path=trace_log_path)
         self.sandbox = ParallelSandboxRunner(timeout_seconds=5)
         self.llm = LLMClient(model_name=model_name, logger=self.logger)
-        self.critic = AdversarialCriticAgent(logger=self.logger)
+        self.critic = AdversarialCriticAgent(self.llm, logger=self.logger)
         self.generator = TestGeneratorAgent(self.llm, self.critic, logger=self.logger)
         self.triage_model = MutantTriageModel()
 
@@ -57,12 +58,18 @@ class TestForgeOrchestrator:
         console.print("[bold cyan]==========================================================[/bold cyan]")
         console.print("[bold cyan]       TESTFORGE: AUTONOMOUS TEST HARDENING ENGINE        [/bold cyan]")
         console.print(f"[dim]Hardware: Apple Silicon M-Series | Cores: {hw_profile.cpu_count} | Workers: {hw_profile.recommended_workers}[/dim]")
+        if self.llm.is_live:
+            console.print(f"[bold green]Foundation Model Backend: Google GenAI Live ({self.llm.model_name})[/bold green]")
+        else:
+            console.print("[bold yellow]Foundation Model Backend: Deterministic Simulation (Set GEMINI_API_KEY for live GenAI)[/bold yellow]")
         console.print("[bold cyan]==========================================================[/bold cyan]\n")
 
         self.logger.log_event("PIPELINE_START", {
             "max_iterations": self.state.max_iterations,
             "target_score": self.state.target_mutation_score,
-            "hardware": self.state.hardware_info
+            "hardware": self.state.hardware_info,
+            "is_live_llm": self.llm.is_live,
+            "model_name": self.llm.model_name
         })
 
         # Step 1: Initial Test Generation (if no initial test suite supplied)
@@ -169,17 +176,27 @@ class TestForgeOrchestrator:
             console.print(f"  [cyan]• Apple Silicon GPU (MLX) triaged {len(difficulty_tags)} surviving mutants on Metal shaders.[/cyan]")
             self.logger.log_event("MLX_GPU_TRIAGE", {"tags": difficulty_tags})
 
-            # F. Adversarial Critic & Test Hardening Reflection
+            # F. Adversarial Critic Agent: Real LLM Reasoning over AST Diffs
             console.print(f"  [magenta]• Adversarial Critic analyzing {survived} surviving mutant(s)...[/magenta]")
-            self.logger.log_event("CRITIC_REFLECTION", {"survived_count": survived})
+            critic_directive = self.critic.analyze_surviving_mutants(
+                self.state.target_source_code,
+                surviving_diffs
+            )
+            self.logger.log_event("CRITIC_REFLECTION", {
+                "survived_count": survived,
+                "directive": critic_directive[:200] + "..."
+            })
 
+            # G. Test Generator Agent: Synthesizes Hardened Pytest Assertions
+            console.print("  [magenta]• Test Generator Agent synthesizing hardened assertions...[/magenta]")
             hardened_test_suite = self.generator.harden_suite(
                 self.state.target_source_code,
                 self.state.current_test_code,
-                surviving_diffs
+                surviving_diffs,
+                critic_directive
             )
 
-            # Re-verify that hardened tests don't break clean code
+            # H. Sandbox Guardrail: Verify hardened tests pass cleanly against baseline
             clean_check = self.sandbox.run_single(hardened_test_suite, self.state.target_source_code)
             if clean_check["status"] == "PASS":
                 self.state.current_test_code = hardened_test_suite

@@ -1,5 +1,5 @@
 """
-run_demo.py - TestForge End-to-End Benchmark & Demonstration.
+run_demo.py - TestForge End-to-End Multi-Target Benchmark Suite.
 
 Course: CSE3101 - Agentic AI
 Authors: Sourabh & Shreshth
@@ -7,30 +7,47 @@ Authors: Sourabh & Shreshth
 
 import os
 import sys
+import argparse
 from testforge.orchestrator import TestForgeOrchestrator
 from testforge.logger import TraceLogger
 
-def run():
-    target_file = os.path.join("samples", "banking.py")
-    with open(target_file, "r") as f:
+AVAILABLE_TARGETS = {
+    "banking": ("samples/banking.py", "Banking Transaction Boundary Rules"),
+    "inventory": ("samples/inventory_pricing.py", "Tiered Inventory & Bulk Pricing Engine"),
+    "ratelimit": ("samples/rate_limiter.py", "Token Bucket Rate Limiter with Decay"),
+    "statemachine": ("samples/state_machine.py", "Order Finite State Machine with RBAC")
+}
+
+def main():
+    parser = argparse.ArgumentParser(description="TestForge Multi-Target Benchmark Runner")
+    parser.add_argument(
+        "--target", "-t",
+        choices=list(AVAILABLE_TARGETS.keys()),
+        default="banking",
+        help="Select target benchmark program"
+    )
+    parser.add_argument("--max-iter", "-i", type=int, default=3, help="Max reflection iterations")
+    parser.add_argument("--target-score", "-score", type=float, default=85.0, help="Target mutation score")
+    parser.add_argument("--model", "-m", default="gemini-2.5-flash", help="Foundation model name")
+    args = parser.parse_args()
+
+    rel_path, desc = AVAILABLE_TARGETS[args.target]
+    full_path = os.path.join(os.path.dirname(__file__), rel_path)
+
+    print("==========================================================")
+    print(f"  BENCHMARK TARGET: {args.target.upper()} - {desc}")
+    print(f"  Source Path: {rel_path}")
+    print("==========================================================\n")
+
+    with open(full_path, "r", encoding="utf-8") as f:
         code = f.read()
-
-    # Initial weak test suite (leaves boundary mutants alive)
-    weak_tests = """
-from target import banking_transaction
-
-def test_nominal_pass():
-    assert banking_transaction(100.0, 50.0, 5.0) is True
-
-def test_negative_balance():
-    assert banking_transaction(-10.0, 50.0, 5.0) is False
-"""
 
     orchestrator = TestForgeOrchestrator(
         target_source_code=code,
-        initial_test_code=weak_tests,
-        max_iterations=3,
-        target_mutation_score=85.0
+        initial_test_code=None,  # Generates initial tests autonomously
+        max_iterations=args.max_iter,
+        target_mutation_score=args.target_score,
+        model_name=args.model
     )
 
     final_state = orchestrator.run()
@@ -40,15 +57,15 @@ def test_negative_balance():
     print("==========================================================")
     for m in final_state.history:
         print(f"Iteration {m.iteration}: Total: {m.total_mutants} | Killed: {m.killed_mutants} | Survived: {m.survived_mutants} | Score: {m.mutation_score}% | Duration: {m.duration_seconds}s")
-    
+
     print(f"\nFinal Test Hardening Status: {'ACHIEVED' if final_state.terminated else 'IN_PROGRESS'}")
     print(f"Reason: {final_state.termination_reason}")
-    print(f"Trace log saved to: testforge_trace.jsonl")
+    print("Trace log saved to: testforge_trace.jsonl")
 
-    # Output trace file inspection
     logger = TraceLogger()
     traces = logger.read_traces()
-    print(f"Recorded {len(traces)} structured telemetry events for academic viva review.")
+    inference_events = [t for t in traces if t.get("event_type") == "LLM_INFERENCE_TELEMETRY"]
+    print(f"Telemetry Audit: Recorded {len(traces)} total events ({len(inference_events)} LLM calls with real token/latency logs).")
 
 if __name__ == "__main__":
-    run()
+    main()
