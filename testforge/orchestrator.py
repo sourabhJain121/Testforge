@@ -16,6 +16,8 @@ Agent State Graph:
 """
 
 from __future__ import annotations
+import os
+import re
 import time
 from typing import Optional, List
 from rich.console import Console
@@ -31,6 +33,41 @@ from testforge.agents import TestGeneratorAgent, AdversarialCriticAgent
 console = Console()
 
 
+def format_standalone_test_suite(test_code: str, target_file_path: Optional[str] = None) -> str:
+    """
+    Transforms internal sandbox test code (`from target import *`, `import target`)
+    into a production-ready, standalone executable Pytest file.
+    Inserts a dynamic path hook and resolves the target module's import.
+    """
+    code = test_code.strip()
+
+    # Determine module name if target path provided
+    module_import_name = "target"
+    if target_file_path:
+        norm = os.path.normpath(target_file_path)
+        if norm.endswith(".py"):
+            norm = norm[:-3]
+        module_import_name = norm.replace(os.sep, ".").replace("/", ".").lstrip(".")
+
+    # Replace `from target import ...` with module import
+    if module_import_name != "target":
+        code = re.sub(r"from\s+target\s+import\s+", f"from {module_import_name} import ", code)
+        code = re.sub(r"import\s+target\s+", f"import {module_import_name} as target ", code)
+
+    # Dynamic sys.path hook to ensure pytest runs from root or any directory
+    path_hook = (
+        "import os\n"
+        "import sys\n"
+        "sys.path.insert(0, os.path.abspath('.'))\n"
+        "sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))\n"
+    )
+
+    if "sys.path.insert" not in code:
+        code = path_hook + "\n" + code
+
+    return code
+
+
 class TestForgeOrchestrator:
     """
     Coordinates the live multi-agent reflection loop across iterations until termination.
@@ -41,10 +78,12 @@ class TestForgeOrchestrator:
         initial_test_code: Optional[str] = None,
         max_iterations: int = 3,
         target_mutation_score: float = 85.0,
-        model_name: str = "gemini-2.5-flash",
+        model_name: str = "gemini-3.6-flash",
         trace_log_path: str = "testforge_trace.jsonl",
-        api_key: Optional[str] = None
+        api_key: Optional[str] = None,
+        target_file_path: Optional[str] = None
     ):
+        self.target_file_path = target_file_path
         self.state = TestForgeState(
             target_source_code=target_source_code.strip(),
             current_test_code=(initial_test_code or "").strip(),
@@ -65,6 +104,18 @@ class TestForgeOrchestrator:
             api_key=api_key
         )
 
+    def export_hardened_suite(self, output_path: str = "test_hardened.py") -> str:
+        """
+        Exports the final test suite formatted for standalone pytest execution.
+        """
+        formatted = format_standalone_test_suite(
+            self.state.current_test_code,
+            self.target_file_path
+        )
+        with open(output_path, "w", encoding="utf-8") as f:
+            f.write(formatted)
+        return formatted
+
     def run(self) -> TestForgeState:
         console.print("[bold cyan]==========================================================[/bold cyan]")
         console.print("[bold cyan]       TESTFORGE: AUTONOMOUS TEST HARDENING ENGINE        [/bold cyan]")
@@ -76,7 +127,8 @@ class TestForgeOrchestrator:
             "max_iterations": self.state.max_iterations,
             "target_score": self.state.target_mutation_score,
             "hardware": self.state.hardware_info,
-            "model_name": self.generator.model_name
+            "model_name": self.generator.model_name,
+            "target_file": self.target_file_path
         })
 
         # Step 1: Synthesize initial candidate tests if none provided
