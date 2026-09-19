@@ -8,6 +8,7 @@ Course: CSE3101 - Agentic AI
 import os
 import sys
 import argparse
+from typing import Optional, Tuple
 from rich.console import Console
 from rich.prompt import Prompt
 
@@ -17,7 +18,7 @@ from testforge.ingestion import TargetManagerAgent
 console = Console()
 
 
-def interactive_menu() -> tuple[str, Optional[str]]:
+def interactive_menu() -> Tuple[Optional[str], Optional[str]]:
     """Interactive CLI menu when no arguments are passed."""
     console.print("\n[bold cyan]==========================================================[/bold cyan]")
     console.print("[bold cyan]       TESTFORGE SUPERVISOR: TARGET SELECTION MENU        [/bold cyan]")
@@ -70,7 +71,16 @@ def main():
     else:
         # Mode A: Arbitrary File Ingestion
         console.print(f"\n[bold yellow]▶ [Mode A: Ingestion] Ingesting & analyzing target:[/bold yellow] {target_path}...")
-        analysis = supervisor.ingest_file(target_path)
+        try:
+            analysis = supervisor.ingest_file(target_path)
+        except FileNotFoundError:
+            console.print(f"\n[bold red][!] FileNotFoundError: Target file not found at:[/bold red] '{target_path}'")
+            console.print("[yellow]Hint: Provide a path to a real Python file that exists on your system, for example:[/yellow]")
+            console.print("  • Built-in sample: [cyan]python -m testforge.cli --target samples/discount.py[/cyan]")
+            console.print("  • Built-in sample: [cyan]python -m testforge.cli --target samples/banking.py[/cyan]")
+            console.print("  • Or generate one: [cyan]python -m testforge.cli --create \"Currency converter with exchange fees\"[/cyan]\n")
+            sys.exit(1)
+
         if analysis.has_syntax_error:
             console.print(f"[bold red][!] Ingested file has syntax errors: {analysis.error_msg}[/bold red]")
             sys.exit(1)
@@ -81,8 +91,11 @@ def main():
 
     initial_tests = None
     if args.tests:
-        with open(args.tests, "r", encoding="utf-8") as f:
-            initial_tests = f.read()
+        if os.path.exists(args.tests):
+            with open(args.tests, "r", encoding="utf-8") as f:
+                initial_tests = f.read()
+        else:
+            console.print(f"[yellow][!] Tests file '{args.tests}' not found. TestForge will synthesize tests autonomously.[/yellow]")
 
     # Launch multi-agent hardening pipeline
     orchestrator = TestForgeOrchestrator(
