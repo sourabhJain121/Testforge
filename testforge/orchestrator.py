@@ -139,6 +139,7 @@ class TestForgeOrchestrator:
                 iteration=0
             )
             self.state.current_test_code = initial_tests
+            self.state.active_provider = self.generator.active_provider
 
         # Step 2: Validate baseline tests on clean target code (pass@1 check)
         console.print("[yellow][Step 2/6] Sandbox validating test suite against clean target (pass@1 check)...[/yellow]")
@@ -184,6 +185,7 @@ class TestForgeOrchestrator:
                 clean_check = self.sandbox.run_single(hardened_tests, self.state.target_source_code)
                 if clean_check["status"] == "PASS":
                     self.state.current_test_code = hardened_tests
+                    self.state.active_provider = self.generator.active_provider
                     console.print("  [green]• Hardened tests verified against clean code.[/green]")
                 else:
                     console.print("  [yellow]• Hardened assertions broke clean code. Retaining previous working test suite.[/yellow]")

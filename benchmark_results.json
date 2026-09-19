@@ -1,7 +1,7 @@
 {
   "target_file": "samples/discount.py",
   "model": "gemini-3.6-flash",
-  "timestamp": 1789823265.521437,
+  "timestamp": 1789836664.473622,
   "runs": [
     {
       "run_type": "Condition A (Baseline Minimal)",
@@ -10,7 +10,7 @@
       "killed_mutants": 6,
       "total_mutants": 11,
       "iterations": 0,
-      "latency_seconds": 0.97,
+      "latency_seconds": 1.0,
       "tokens_used": 0
     },
     {
@@ -20,8 +20,8 @@
       "killed_mutants": 11,
       "total_mutants": 11,
       "iterations": 1,
-      "latency_seconds": 51.83,
-      "tokens_used": 3205
+      "latency_seconds": 2.17,
+      "tokens_used": 285
     },
     {
       "run_type": "Condition C (TestForge Full Reflection)",
@@ -30,8 +30,8 @@
       "killed_mutants": 11,
       "total_mutants": 11,
       "iterations": 1,
-      "latency_seconds": 22.45,
-      "tokens_used": 3879
+      "latency_seconds": 2.22,
+      "tokens_used": 285
     }
   ]
 }

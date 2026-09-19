@@ -38,9 +38,9 @@ st.caption("CSE3101: Agentic AI — Authors: Sourabh & Shreshth | Apple Silicon 
 with st.sidebar:
     st.header("⚙ System Configuration")
     
-    # User-provided API Key input in UI to guard against missing shell env vars
+    # User-provided API Key inputs in UI to guard against missing shell env vars
     ui_api_key = st.text_input(
-        "Gemini API Key (Optional Override)",
+        "Gemini API Key (Primary)",
         value=os.environ.get("GEMINI_API_KEY", ""),
         type="password",
         help="Paste your Gemini API key here if not exported in shell."
@@ -48,26 +48,40 @@ with st.sidebar:
     if ui_api_key.strip():
         os.environ["GEMINI_API_KEY"] = ui_api_key.strip()
 
+    ui_groq_key = st.text_input(
+        "Groq API Key (Secondary Fallback)",
+        value=os.environ.get("GROQ_API_KEY", ""),
+        type="password",
+        help="Optional: Paste your Groq API key for automatic fallback on 429 quota exhaustion."
+    )
+    if ui_groq_key.strip():
+        os.environ["GROQ_API_KEY"] = ui_groq_key.strip()
+
     model_name = st.selectbox(
         "Foundation Model",
-        ["gemini-3.6-flash", "gemini-3.1-pro-preview"],
+        ["gemini-3.6-flash"],
         index=0
     )
     max_iterations = st.slider("Max Reflection Iterations", min_value=1, max_value=5, value=3)
     target_score = st.slider("Target Mutation Score (%)", min_value=50.0, max_value=100.0, value=85.0, step=5.0)
 
     st.divider()
-    st.subheader("💻 Hardware Profile")
+    st.subheader("💻 Hardware & Provider Status")
     st.write(f"**Architecture:** {hw_profile.machine} ({hw_profile.os_system})")
     st.write(f"**CPU Cores:** {hw_profile.cpu_count}")
     st.write(f"**Sandbox Workers:** {hw_profile.recommended_workers}")
     st.write(f"**Unified RAM:** {hw_profile.total_memory_gb} GB")
 
-    has_key = bool(os.environ.get("GEMINI_API_KEY"))
-    if has_key:
-        st.success("🟢 GEMINI_API_KEY Active (Live Gemini Engine)")
+    has_gemini = bool(os.environ.get("GEMINI_API_KEY"))
+    has_groq = bool(os.environ.get("GROQ_API_KEY"))
+    if has_gemini and has_groq:
+        st.success("🟢 Primary: Google GenAI Live (gemini-3.6-flash)\n\n🔵 Secondary: Groq Cloud Armed")
+    elif has_gemini:
+        st.success("🟢 Primary: Google GenAI Live (gemini-3.6-flash)")
+    elif has_groq:
+        st.info("🔵 Groq Cloud Active (llama-3.3-70b-versatile)")
     else:
-        st.warning("🟡 GEMINI_API_KEY Not Set (Deterministic Fallback)")
+        st.warning("🟡 Deterministic AST Rule Synthesizer Active")
 
 # Tabs for Mode A vs Mode B
 tab_ingest, tab_synth, tab_telemetry = st.tabs([
@@ -140,15 +154,17 @@ if st.button("⚡ Run TestForge Autonomous Hardening", type="primary", use_conta
         active_key = os.environ.get("GEMINI_API_KEY", "").strip()
 
         progress_bar = st.progress(0.0)
-        col_metrics1, col_metrics2, col_metrics3 = st.columns(3)
+        col_metrics1, col_metrics2, col_metrics3, col_metrics4 = st.columns(4)
 
         metric_cov = col_metrics1.empty()
         metric_score = col_metrics2.empty()
         metric_status = col_metrics3.empty()
+        metric_provider = col_metrics4.empty()
 
         metric_cov.metric("Line Coverage", "Calculating...")
         metric_score.metric("Mutation Score", "0.0%")
         metric_status.metric("Pipeline Status", "Initializing...")
+        metric_provider.metric("Active LLM Provider", "Detecting...")
 
         trace_log = "testforge_trace.jsonl"
         orchestrator = TestForgeOrchestrator(
@@ -168,10 +184,22 @@ if st.button("⚡ Run TestForge Autonomous Hardening", type="primary", use_conta
         progress_bar.progress(1.0)
         final_metric = final_state.history[-1] if final_state.history else None
         final_score = final_metric.mutation_score if final_metric else 0.0
+        active_provider = getattr(final_state, "active_provider", "") or orchestrator.generator.active_provider
 
         metric_cov.metric("Line Coverage", f"{final_state.baseline_line_coverage:.1f}%")
         metric_score.metric("Mutation Score", f"{final_score:.1f}%", delta=f"{final_score - 50.0:.1f}%")
         metric_status.metric("Status", "SUCCESS" if final_score >= target_score else "TERMINATED")
+        metric_provider.metric("Active LLM Provider", active_provider)
+
+        # Prominent provider notification banner
+        if "Gemini" in active_provider:
+            st.success(f"**Provider: Google GenAI Live** (`gemini-3.6-flash`) — Tests hardened via live Google AI Studio engine.")
+        elif "Groq" in active_provider:
+            st.info(f"**Provider: Groq Cloud** — Gemini quota bypassed; tests generated via Groq Cloud API.")
+        elif "Ollama" in active_provider:
+            st.info(f"**Provider: Local Ollama** (`qwen2.5-coder:7b`) — Tests generated via local endpoint.")
+        else:
+            st.warning(f"**Provider: AST Rule Synthesizer** — Offline deterministic AST rule generator engaged.")
 
         # ----------------------------------------------------------------------
         # ENHANCEMENT 1: SOURCE CODE INSPECTION DRAWER
@@ -241,6 +269,7 @@ if st.button("⚡ Run TestForge Autonomous Hardening", type="primary", use_conta
 
         # Standalone Test Suite Export Viewer
         st.subheader("📦 Final Hardened Test Suite (`test_hardened.py`)")
+        st.caption(f"Generated via **Provider: {active_provider}** | Standalone Pytest executable")
         with open("test_hardened.py", "r", encoding="utf-8") as tf:
             hardened_content = tf.read()
         st.code(hardened_content, language="python")

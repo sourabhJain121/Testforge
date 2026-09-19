@@ -53,3 +53,4 @@ class TestForgeState(BaseModel):
     terminated: bool = False
     termination_reason: str = ""
     hardware_info: Dict[str, Any] = Field(default_factory=dict)
+    active_provider: str = "Google GenAI Live"

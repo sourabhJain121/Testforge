@@ -1,17 +1,20 @@
 """
-agents.py - Resilient Foundation Model Agents with AST Guardrails & Clean Model Hierarchy.
+agents.py - Multi-Provider Resilient Foundation Model Agents.
 
 Author: Sourabh (Module 1 & 3)
 Course: CSE3101 - Agentic AI
 
 Features:
-  - Official `google-genai` SDK integration (`from google import genai`)
-  - Strict Modern Model Hierarchy: Default & Primary to 'gemini-3.6-flash' (with 'gemini-3.1-pro-preview' secondary)
-  - Pure Transient Retry Logic: Exponential backoff for 503 UNAVAILABLE & 429 RESOURCE_EXHAUSTED (waits 2s, 4s, 6s)
-  - Zero deprecated model calls: All references to gemini-2.5-pro, gemini-2.5-flash, gemini-1.5-flash removed
-  - Automatic Function Calling (AFC) disabled to prevent console noise
-  - AST-targeted Test Generation: prompt strictly forces tests matching actual function signatures in source code
-  - Validates Python syntax via ast.parse() before test execution
+  - Multi-Provider LLM Fallback Architecture:
+      1. Primary: Google GenAI (gemini-3.6-flash) via official google-genai SDK
+      2. Secondary: Groq Cloud API (llama-3.3-70b-versatile or qwen-2.5-32b) via GROQ_API_KEY
+      3. Tertiary: Local Ollama endpoint (http://localhost:11434/api/generate) with qwen2.5-coder:7b
+      4. Final Safety: AST-guided deterministic rule synthesizer (guarantees zero unhandled crashes)
+  - Automatic 429 Quota & 503 Unavailable Handlers:
+      * Catches Google AI Studio 429 RESOURCE_EXHAUSTED / ClientError
+      * Transparently shifts execution to Groq / Ollama / Local without pipeline failure
+  - Automatic Function Calling (AFC) disabled for silent, fast execution
+  - Pure Python AST syntax sanitization via ast.parse()
 """
 
 from __future__ import annotations
@@ -19,6 +22,9 @@ import os
 import re
 import ast
 import time
+import json
+import urllib.request
+import urllib.error
 from typing import List, Dict, Any, Optional, Tuple
 from testforge.logger import TraceLogger
 
@@ -67,49 +73,124 @@ def extract_function_signatures(source_code: str) -> List[Dict[str, Any]]:
     return signatures
 
 
-def execute_genai_with_retry_and_fallback(
-    client: Any,
-    primary_model: str,
+def call_groq_api(
+    prompt: str,
+    system_instruction: str,
+    api_key: str,
+    model: str = "llama-3.3-70b-versatile",
+    temperature: float = 0.2
+) -> Tuple[str, Dict[str, int], float]:
+    """
+    Calls Groq Cloud API via standard HTTP request (no external SDK dependency required).
+    """
+    url = "https://api.groq.com/openai/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {api_key.strip()}",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "model": model,
+        "messages": [
+            {"role": "system", "content": system_instruction},
+            {"role": "user", "content": prompt}
+        ],
+        "temperature": temperature,
+        "max_tokens": 4096
+    }
+    req = urllib.request.Request(url, data=json.dumps(payload).encode("utf-8"), headers=headers)
+    start_time = time.perf_counter()
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        data = json.loads(resp.read().decode("utf-8"))
+    latency = time.perf_counter() - start_time
+    
+    text = data["choices"][0]["message"]["content"] or ""
+    usage = data.get("usage", {})
+    tokens = {
+        "prompt_tokens": usage.get("prompt_tokens", 0),
+        "completion_tokens": usage.get("completion_tokens", 0),
+        "total_tokens": usage.get("total_tokens", 0)
+    }
+    return text, tokens, latency
+
+
+def call_ollama_local(
+    prompt: str,
+    system_instruction: str,
+    model: str = "qwen2.5-coder:7b",
+    temperature: float = 0.2
+) -> Tuple[str, Dict[str, int], float]:
+    """
+    Calls local Ollama instance (http://localhost:11434/api/generate).
+    """
+    url = "http://localhost:11434/api/generate"
+    payload = {
+        "model": model,
+        "system": system_instruction,
+        "prompt": prompt,
+        "stream": False,
+        "options": {"temperature": temperature}
+    }
+    req = urllib.request.Request(url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"})
+    start_time = time.perf_counter()
+    with urllib.request.urlopen(req, timeout=25) as resp:
+        data = json.loads(resp.read().decode("utf-8"))
+    latency = time.perf_counter() - start_time
+    text = data.get("response", "")
+    tokens = {
+        "prompt_tokens": data.get("prompt_eval_count", 0),
+        "completion_tokens": data.get("eval_count", 0),
+        "total_tokens": data.get("prompt_eval_count", 0) + data.get("eval_count", 0)
+    }
+    return text, tokens, latency
+
+
+# Module-level quota state cache to skip depleted providers in the same run
+_gemini_quota_exhausted: bool = False
+
+
+def execute_multi_provider_generation(
+    gemini_client: Any,
+    gemini_model: str,
     contents: str,
     system_instruction: str,
     temperature: float = 0.2,
-    logger: Optional[TraceLogger] = None,
-    max_retries: int = 3
-) -> Tuple[str, Dict[str, int], float, str]:
+    logger: Optional[TraceLogger] = None
+) -> Tuple[str, Dict[str, int], float, str, str]:
     """
-    Executes Gemini generation with exponential backoff strictly for 503 / 429 transient server errors.
-    Primary: 'gemini-3.6-flash', with optional fallback to 'gemini-3.1-pro-preview'.
-    Retries on transient errors waiting 2s, 4s, 6s. Never calls deprecated models.
+    Multi-Provider generation controller with automatic cascade:
+      1. Primary: Google GenAI (gemini-3.6-flash) using GEMINI_API_KEY
+      2. Secondary: Groq Cloud API (llama-3.3-70b-versatile or qwen-2.5-32b) using GROQ_API_KEY
+      3. Tertiary: Local Ollama endpoint (http://localhost:11434/api/generate) with qwen2.5-coder:7b
+      4. Final Fallback: AST-guided deterministic rule synthesizer
+    Returns:
+      (raw_text, tokens, latency_sec, provider_name, model_name)
     """
-    from google.genai import types
-    from google.genai import errors
+    global _gemini_quota_exhausted
 
-    # Clean active model hierarchy: strictly gemini-3.6-flash, fallback only to gemini-3.1-pro-preview
-    model_hierarchy: List[str] = [primary_model]
-    if "gemini-3.1-pro-preview" not in model_hierarchy:
-        model_hierarchy.append("gemini-3.1-pro-preview")
+    # --------------------------------------------------------------------------
+    # 1. Primary: Google GenAI (Gemini)
+    # --------------------------------------------------------------------------
+    if gemini_client and not _gemini_quota_exhausted:
+        from google.genai import types
+        from google.genai import errors
 
-    last_exception = None
-    retry_delays = [2.0, 4.0, 6.0]
-
-    for model_name in model_hierarchy:
-        for attempt in range(1, max_retries + 1):
+        retry_delays = [2.0, 4.0]
+        for attempt in range(1, 3):
             try:
                 config = types.GenerateContentConfig(
                     system_instruction=system_instruction,
                     temperature=temperature,
                     automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True)
                 )
-
-                call_start = time.perf_counter()
-                response = client.models.generate_content(
-                    model=model_name,
+                start_t = time.perf_counter()
+                response = gemini_client.models.generate_content(
+                    model=gemini_model,
                     contents=contents,
                     config=config
                 )
-                latency = time.perf_counter() - call_start
-
+                latency = time.perf_counter() - start_t
                 raw_text = response.text or ""
+
                 tokens = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
                 if hasattr(response, "usage_metadata") and response.usage_metadata:
                     meta = response.usage_metadata
@@ -117,35 +198,113 @@ def execute_genai_with_retry_and_fallback(
                     tokens["completion_tokens"] = getattr(meta, "candidates_token_count", 0) or 0
                     tokens["total_tokens"] = getattr(meta, "total_token_count", 0) or 0
 
-                return raw_text, tokens, latency, model_name
+                return raw_text, tokens, latency, "Google GenAI Live", gemini_model
 
             except (errors.APIError, errors.ServerError, errors.ClientError, Exception) as exc:
-                last_exception = exc
                 err_msg = str(exc)
-
-                # Specifically catch ONLY transient server errors (HTTP 503, 429)
-                is_transient = any(
-                    token in err_msg
-                    for token in ("503", "429", "UNAVAILABLE", "RESOURCE_EXHAUSTED", "overloaded", "bandwidth")
+                is_quota_exhausted = (
+                    any(token in err_msg for token in ("429", "RESOURCE_EXHAUSTED", "quota")) or
+                    getattr(exc, "code", None) == 429 or
+                    getattr(exc, "status_code", None) == 429
                 )
+                is_transient_503 = any(token in err_msg for token in ("503", "UNAVAILABLE", "overloaded"))
 
-                if is_transient and attempt < max_retries:
-                    delay = retry_delays[min(attempt - 1, len(retry_delays) - 1)]
-                    print(f"[*] Transient GenAI error on {model_name} (attempt {attempt}/{max_retries}): {exc}. Retrying in {delay:.1f}s...")
+                if is_quota_exhausted:
+                    _gemini_quota_exhausted = True
+                    log_msg = "[!] Gemini quota exhausted. Switching to secondary provider..."
+                    print(f"\n{log_msg}")
+                    if logger:
+                        logger.log_event("PROVIDER_FAILOVER", {
+                            "message": log_msg,
+                            "from_provider": "Google GenAI",
+                            "to_provider": "Groq Cloud / Local Ollama",
+                            "reason": "429 RESOURCE_EXHAUSTED",
+                            "error": err_msg
+                        })
+                    break  # Break to switch to secondary provider immediately
+                elif is_transient_503 and attempt < 2:
+                    delay = retry_delays[attempt - 1]
+                    print(f"[*] Transient GenAI 503 error (attempt {attempt}/2). Retrying in {delay:.1f}s...")
                     time.sleep(delay)
                     continue
                 else:
-                    # Non-retryable error (e.g. 404 ClientError) or attempts exhausted
-                    print(f"[!] Model {model_name} failed: {exc}.")
+                    print(f"[!] Google GenAI failed ({exc}). Failing over to next provider...")
                     break
+    elif gemini_client and _gemini_quota_exhausted:
+        log_msg = "[!] Gemini quota exhausted. Switching to secondary provider..."
+        print(f"\n{log_msg}")
+        if logger:
+            logger.log_event("PROVIDER_FAILOVER", {
+                "message": log_msg,
+                "from_provider": "Google GenAI",
+                "to_provider": "Groq Cloud / Local Ollama",
+                "reason": "429 RESOURCE_EXHAUSTED (cached state)"
+            })
 
-    raise last_exception if last_exception else RuntimeError("Failed to generate content from model hierarchy.")
+    # --------------------------------------------------------------------------
+    # 2. Secondary: Groq Cloud API
+    # --------------------------------------------------------------------------
+    groq_key = os.environ.get("GROQ_API_KEY", "").strip()
+    if groq_key:
+        candidate_groq_models = ["llama-3.3-70b-versatile", "qwen-2.5-32b"]
+        for g_model in candidate_groq_models:
+            print(f"[*] Engaging Secondary Provider: Groq Cloud API ({g_model})...")
+            try:
+                raw_text, tokens, latency = call_groq_api(
+                    prompt=contents,
+                    system_instruction=system_instruction,
+                    api_key=groq_key,
+                    model=g_model,
+                    temperature=temperature
+                )
+                return raw_text, tokens, latency, "Groq Cloud", g_model
+            except Exception as groq_exc:
+                print(f"[!] Groq provider call with {g_model} failed: {groq_exc}. Testing fallback...")
+
+    # --------------------------------------------------------------------------
+    # 3. Tertiary: Local Ollama (qwen2.5-coder:7b)
+    # --------------------------------------------------------------------------
+    try:
+        raw_text, tokens, latency = call_ollama_local(
+            prompt=contents,
+            system_instruction=system_instruction,
+            model="qwen2.5-coder:7b",
+            temperature=temperature
+        )
+        print("[*] Successfully executed via Local Ollama (qwen2.5-coder:7b).")
+        return raw_text, tokens, latency, "Local Ollama", "qwen2.5-coder:7b"
+    except Exception:
+        pass
+
+    raise RuntimeError("All configured live LLM providers (Gemini, Groq, Ollama) failed or unavailable.")
+
+
+def execute_genai_with_retry_and_fallback(
+    client: Any,
+    primary_model: str,
+    contents: str,
+    system_instruction: str,
+    temperature: float = 0.2,
+    logger: Optional[TraceLogger] = None
+) -> Tuple[str, Dict[str, int], float, str]:
+    """
+    Backwards-compatible interface calling the Multi-Provider execution pipeline.
+    """
+    raw_text, tokens, latency, provider_name, used_model = execute_multi_provider_generation(
+        gemini_client=client,
+        gemini_model=primary_model,
+        contents=contents,
+        system_instruction=system_instruction,
+        temperature=temperature,
+        logger=logger
+    )
+    return raw_text, tokens, latency, used_model
 
 
 class TestGeneratorAgent:
     """
-    Autonomous Test Generator Agent with targeted signature extraction,
-    live Gemini 3.6 Flash inference, and strict assertion synthesis.
+    Autonomous Test Generator Agent with Multi-Provider failover.
+    Synthesizes initial Pytest suites and iteratively hardens assertions.
     """
     def __init__(
         self,
@@ -153,24 +312,29 @@ class TestGeneratorAgent:
         logger: Optional[TraceLogger] = None,
         api_key: Optional[str] = None
     ):
-        # Enforce clean model name
         self.model_name = "gemini-3.6-flash" if "2.5" in model_name or "1.5" in model_name else model_name
         self.logger = logger
         self.api_key = api_key or os.environ.get("GEMINI_API_KEY", "").strip()
         self.client = None
         self.is_live = False
+        self.active_provider = "Deterministic Agent"
 
         if self.api_key:
             try:
                 from google import genai
                 self.client = genai.Client(api_key=self.api_key)
                 self.is_live = True
+                self.active_provider = "Google GenAI Live"
             except Exception as e:
                 if self.logger:
                     self.logger.log_event("LLM_INIT_ERROR", {"error": str(e)})
                 self.client = None
-        else:
-            print("[INFO] GEMINI_API_KEY not detected. TestGeneratorAgent operating in deterministic agent mode.")
+        if not self.client and os.environ.get("GROQ_API_KEY", "").strip():
+            self.is_live = True
+            self.active_provider = "Groq Cloud"
+        elif not self.client:
+            self.active_provider = "AST Rule Synthesizer"
+            print("[INFO] Operating in deterministic AST synthesizer mode.")
 
     def generate_tests(
         self,
@@ -181,8 +345,8 @@ class TestGeneratorAgent:
         iteration: int = 1
     ) -> str:
         """
-        Calls Gemini 3.6 Flash to write strict Pytest tests matching the exact function signatures in source_code.
-        If live API is active, raises exceptions on failure rather than silently reverting to mismatched templates.
+        Synthesizes Pytest assertions matching the exact function signatures in source_code.
+        Seamlessly fails over between Gemini, Groq, and AST-guided synthesis.
         """
         func_signatures = extract_function_signatures(source_code)
         func_names = [f["name"] for f in func_signatures]
@@ -225,41 +389,47 @@ class TestGeneratorAgent:
 
         start_time = time.perf_counter()
 
-        # LIVE MODE
-        if self.is_live and self.client:
-            raw_text, tokens, latency_sec, used_model = execute_genai_with_retry_and_fallback(
-                client=self.client,
-                primary_model=self.model_name,
-                contents=full_prompt,
-                system_instruction=system_instruction,
-                temperature=0.2,
-                logger=self.logger
-            )
-
-            is_valid, sanitized_code, err = CodeSanitizer.extract_and_validate(raw_text)
-
-            if self.logger:
-                self.logger.log_llm_event(
-                    agent_name="TestGeneratorAgent",
-                    model_name=used_model,
-                    prompt=full_prompt,
-                    response_text=raw_text,
-                    prompt_tokens=tokens["prompt_tokens"],
-                    completion_tokens=tokens["completion_tokens"],
-                    total_tokens=tokens["total_tokens"],
-                    latency_sec=latency_sec,
-                    iteration=iteration,
-                    is_valid_ast=is_valid,
-                    validation_error=err
+        # LIVE MULTI-PROVIDER GENERATION
+        if self.is_live or self.client or os.environ.get("GROQ_API_KEY"):
+            try:
+                raw_text, tokens, latency_sec, provider_name, used_model = execute_multi_provider_generation(
+                    gemini_client=self.client,
+                    gemini_model=self.model_name,
+                    contents=full_prompt,
+                    system_instruction=system_instruction,
+                    temperature=0.2,
+                    logger=self.logger
                 )
+                self.active_provider = provider_name
 
-            if not is_valid:
-                raise ValueError(f"Model {used_model} generated invalid Python syntax: {err}\nSnippet: {raw_text[:300]}")
+                is_valid, sanitized_code, err = CodeSanitizer.extract_and_validate(raw_text)
 
-            return sanitized_code
+                if self.logger:
+                    self.logger.log_llm_event(
+                        agent_name="TestGeneratorAgent",
+                        model_name=f"{provider_name}:{used_model}",
+                        prompt=full_prompt,
+                        response_text=raw_text,
+                        prompt_tokens=tokens["prompt_tokens"],
+                        completion_tokens=tokens["completion_tokens"],
+                        total_tokens=tokens["total_tokens"],
+                        latency_sec=latency_sec,
+                        iteration=iteration,
+                        is_valid_ast=is_valid,
+                        validation_error=err
+                    )
 
-        # OFFLINE / DETERMINISTIC AGENT MODE (Only when GEMINI_API_KEY is not configured)
+                if is_valid:
+                    return sanitized_code
+                else:
+                    print(f"[!] Output from {provider_name} had invalid syntax: {err}. Falling back to AST synthesis...")
+
+            except Exception as exc:
+                print(f"[!] All live providers failed: {exc}. Engaging AST-guided rule synthesis...")
+
+        # FINAL SAFETY FALLBACK: AST-guided deterministic synthesis
         latency_sec = time.perf_counter() - start_time
+        self.active_provider = "AST Rule Synthesizer"
         raw_text = self._synthesize_ast_aware_tests(source_code, func_signatures, surviving_diffs)
         is_valid, sanitized_code, err = CodeSanitizer.extract_and_validate(raw_text)
 
@@ -268,7 +438,7 @@ class TestGeneratorAgent:
             est_c_tokens = len(raw_text) // 4
             self.logger.log_llm_event(
                 agent_name="TestGeneratorAgent",
-                model_name=f"{self.model_name}-fallback",
+                model_name=f"{self.model_name}-ast-fallback",
                 prompt=full_prompt,
                 response_text=raw_text,
                 prompt_tokens=est_p_tokens,
@@ -288,10 +458,7 @@ class TestGeneratorAgent:
         signatures: List[Dict[str, Any]],
         surviving_diffs: Optional[List[str]]
     ) -> str:
-        """
-        Dynamically synthesizes tests for the exact function names present in the module.
-        Never relies on mismatched static mock functions.
-        """
+        """Dynamically synthesizes tests for the exact function names present in the module."""
         func_names = [f["name"] for f in signatures]
         test_functions = []
 
@@ -402,7 +569,7 @@ from target import *
 
 class AdversarialCriticAgent:
     """
-    Adversarial Critic Agent using Google Gemini 3.6 Flash live API with retry backoff.
+    Adversarial Critic Agent with multi-provider failover.
     Analyzes surviving AST unified diffs and formulates targeted directives.
     """
     def __init__(
@@ -411,7 +578,6 @@ class AdversarialCriticAgent:
         logger: Optional[TraceLogger] = None,
         api_key: Optional[str] = None
     ):
-        # Enforce clean model name
         self.model_name = "gemini-3.6-flash" if "2.5" in model_name or "1.5" in model_name else model_name
         self.logger = logger
         self.api_key = api_key or os.environ.get("GEMINI_API_KEY", "").strip()
@@ -425,6 +591,8 @@ class AdversarialCriticAgent:
                 self.is_live = True
             except Exception:
                 self.client = None
+        elif os.environ.get("GROQ_API_KEY", "").strip():
+            self.is_live = True
 
     def analyze_surviving_mutants(
         self,
@@ -433,8 +601,7 @@ class AdversarialCriticAgent:
         iteration: int = 1
     ) -> str:
         """
-        Sends the surviving unified diffs and target code to Gemini 3.6 Flash.
-        Returns concise, actionable directives explaining the bypassed logic.
+        Sends surviving diffs to live providers (Gemini / Groq) or generates directive fallback.
         """
         if not surviving_mutant_diffs:
             return "All mutants killed. Suite is hardened."
@@ -452,7 +619,7 @@ class AdversarialCriticAgent:
 
         start_time = time.perf_counter()
 
-        if self.is_live and self.client:
+        if self.is_live or self.client or os.environ.get("GROQ_API_KEY"):
             system_instruction = (
                 "You are an Adversarial QA Critic in an automated mutation-testing loop. "
                 "For each surviving mutant:\n"
@@ -460,30 +627,33 @@ class AdversarialCriticAgent:
                 "2. Prescribe exact numerical or boolean boundary inputs that will force the mutant to fail while passing the clean code.\n"
                 "Output numbered, prescriptive directives."
             )
-            analysis_text, tokens, latency_sec, used_model = execute_genai_with_retry_and_fallback(
-                client=self.client,
-                primary_model=self.model_name,
-                contents=prompt,
-                system_instruction=system_instruction,
-                temperature=0.1,
-                logger=self.logger
-            )
-
-            if self.logger:
-                self.logger.log_llm_event(
-                    agent_name="AdversarialCriticAgent",
-                    model_name=used_model,
-                    prompt=prompt,
-                    response_text=analysis_text,
-                    prompt_tokens=tokens["prompt_tokens"],
-                    completion_tokens=tokens["completion_tokens"],
-                    total_tokens=tokens["total_tokens"],
-                    latency_sec=latency_sec,
-                    iteration=iteration,
-                    is_valid_ast=True
+            try:
+                analysis_text, tokens, latency_sec, provider_name, used_model = execute_multi_provider_generation(
+                    gemini_client=self.client,
+                    gemini_model=self.model_name,
+                    contents=prompt,
+                    system_instruction=system_instruction,
+                    temperature=0.1,
+                    logger=self.logger
                 )
 
-            return analysis_text
+                if self.logger:
+                    self.logger.log_llm_event(
+                        agent_name="AdversarialCriticAgent",
+                        model_name=f"{provider_name}:{used_model}",
+                        prompt=prompt,
+                        response_text=analysis_text,
+                        prompt_tokens=tokens["prompt_tokens"],
+                        completion_tokens=tokens["completion_tokens"],
+                        total_tokens=tokens["total_tokens"],
+                        latency_sec=latency_sec,
+                        iteration=iteration,
+                        is_valid_ast=True
+                    )
+
+                return analysis_text
+            except Exception:
+                pass
 
         # Offline directive fallback
         latency_sec = time.perf_counter() - start_time
