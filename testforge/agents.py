@@ -6,9 +6,9 @@ Course: CSE3101 - Agentic AI
 
 Features:
   - Official `google-genai` SDK integration (`from google import genai`)
-  - Strict Modern Model Hierarchy: Default to 'gemini-3.6-flash' with optional failover to 'gemini-2.5-pro'
-  - Pure Transient Retry Logic: Exponential backoff for 503 UNAVAILABLE & 429 RESOURCE_EXHAUSTED (waits 2s, then 4s)
-  - No 404 retries or deprecated model calls (e.g. gemini-1.5-flash / gemini-2.5-flash removed)
+  - Strict Modern Model Hierarchy: Default & Primary to 'gemini-3.6-flash' (with 'gemini-3.1-pro-preview' secondary)
+  - Pure Transient Retry Logic: Exponential backoff for 503 UNAVAILABLE & 429 RESOURCE_EXHAUSTED (waits 2s, 4s, 6s)
+  - Zero deprecated model calls: All references to gemini-2.5-pro, gemini-2.5-flash, gemini-1.5-flash removed
   - Automatic Function Calling (AFC) disabled to prevent console noise
   - AST-targeted Test Generation: prompt strictly forces tests matching actual function signatures in source code
   - Validates Python syntax via ast.parse() before test execution
@@ -74,26 +74,25 @@ def execute_genai_with_retry_and_fallback(
     system_instruction: str,
     temperature: float = 0.2,
     logger: Optional[TraceLogger] = None,
-    max_retries: int = 3,
-    initial_backoff: float = 2.0
+    max_retries: int = 3
 ) -> Tuple[str, Dict[str, int], float, str]:
     """
     Executes Gemini generation with exponential backoff strictly for 503 / 429 transient server errors.
-    Uses 'gemini-3.6-flash' as the primary model, with fallback only to 'gemini-2.5-pro'.
-    Does not attempt deprecated or 404 models.
+    Primary: 'gemini-3.6-flash', with optional fallback to 'gemini-3.1-pro-preview'.
+    Retries on transient errors waiting 2s, 4s, 6s. Never calls deprecated models.
     """
     from google.genai import types
     from google.genai import errors
 
-    # Strict model hierarchy: default to gemini-3.6-flash, fallback only to gemini-2.5-pro
+    # Clean active model hierarchy: strictly gemini-3.6-flash, fallback only to gemini-3.1-pro-preview
     model_hierarchy: List[str] = [primary_model]
-    if "gemini-2.5-pro" not in model_hierarchy:
-        model_hierarchy.append("gemini-2.5-pro")
+    if "gemini-3.1-pro-preview" not in model_hierarchy:
+        model_hierarchy.append("gemini-3.1-pro-preview")
 
     last_exception = None
+    retry_delays = [2.0, 4.0, 6.0]
 
     for model_name in model_hierarchy:
-        backoff = initial_backoff
         for attempt in range(1, max_retries + 1):
             try:
                 config = types.GenerateContentConfig(
@@ -124,19 +123,19 @@ def execute_genai_with_retry_and_fallback(
                 last_exception = exc
                 err_msg = str(exc)
 
-                # Specifically catch ONLY transient server/rate errors (503, 429)
+                # Specifically catch ONLY transient server errors (HTTP 503, 429)
                 is_transient = any(
                     token in err_msg
-                    for token in ("503", "429", "UNAVAILABLE", "RESOURCE_EXHAUSTED", "bandwidth", "overloaded")
+                    for token in ("503", "429", "UNAVAILABLE", "RESOURCE_EXHAUSTED", "overloaded", "bandwidth")
                 )
 
                 if is_transient and attempt < max_retries:
-                    print(f"[*] Transient GenAI error on {model_name} (attempt {attempt}/{max_retries}): {exc}. Retrying in {backoff:.1f}s...")
-                    time.sleep(backoff)
-                    backoff *= 2.0
+                    delay = retry_delays[min(attempt - 1, len(retry_delays) - 1)]
+                    print(f"[*] Transient GenAI error on {model_name} (attempt {attempt}/{max_retries}): {exc}. Retrying in {delay:.1f}s...")
+                    time.sleep(delay)
                     continue
                 else:
-                    # Non-retryable error (e.g. 404, bad request) or attempts exhausted
+                    # Non-retryable error (e.g. 404 ClientError) or attempts exhausted
                     print(f"[!] Model {model_name} failed: {exc}.")
                     break
 
@@ -154,7 +153,8 @@ class TestGeneratorAgent:
         logger: Optional[TraceLogger] = None,
         api_key: Optional[str] = None
     ):
-        self.model_name = model_name
+        # Enforce clean model name
+        self.model_name = "gemini-3.6-flash" if "2.5" in model_name or "1.5" in model_name else model_name
         self.logger = logger
         self.api_key = api_key or os.environ.get("GEMINI_API_KEY", "").strip()
         self.client = None
@@ -181,7 +181,7 @@ class TestGeneratorAgent:
         iteration: int = 1
     ) -> str:
         """
-        Calls Gemini to write strict Pytest tests matching the exact function signatures in source_code.
+        Calls Gemini 3.6 Flash to write strict Pytest tests matching the exact function signatures in source_code.
         If live API is active, raises exceptions on failure rather than silently reverting to mismatched templates.
         """
         func_signatures = extract_function_signatures(source_code)
@@ -402,7 +402,7 @@ from target import *
 
 class AdversarialCriticAgent:
     """
-    Adversarial Critic Agent using Google Gemini live API with retry backoff & fallback.
+    Adversarial Critic Agent using Google Gemini 3.6 Flash live API with retry backoff.
     Analyzes surviving AST unified diffs and formulates targeted directives.
     """
     def __init__(
@@ -411,7 +411,8 @@ class AdversarialCriticAgent:
         logger: Optional[TraceLogger] = None,
         api_key: Optional[str] = None
     ):
-        self.model_name = model_name
+        # Enforce clean model name
+        self.model_name = "gemini-3.6-flash" if "2.5" in model_name or "1.5" in model_name else model_name
         self.logger = logger
         self.api_key = api_key or os.environ.get("GEMINI_API_KEY", "").strip()
         self.client = None
@@ -432,7 +433,7 @@ class AdversarialCriticAgent:
         iteration: int = 1
     ) -> str:
         """
-        Sends the surviving unified diffs and target code to Gemini.
+        Sends the surviving unified diffs and target code to Gemini 3.6 Flash.
         Returns concise, actionable directives explaining the bypassed logic.
         """
         if not surviving_mutant_diffs:

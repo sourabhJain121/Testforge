@@ -50,7 +50,7 @@ with st.sidebar:
 
     model_name = st.selectbox(
         "Foundation Model",
-        ["gemini-3.6-flash", "gemini-2.5-pro"],
+        ["gemini-3.6-flash", "gemini-3.1-pro-preview"],
         index=0
     )
     max_iterations = st.slider("Max Reflection Iterations", min_value=1, max_value=5, value=3)
