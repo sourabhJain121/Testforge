@@ -9,6 +9,7 @@ import os
 import sys
 import json
 import time
+import pandas as pd
 import streamlit as st
 
 # Ensure project root is on sys.path
@@ -93,7 +94,7 @@ with tab_ingest:
             st.write(f"**Module:** `{analysis.module_name}`")
             st.write(f"**Functions:** `{', '.join(analysis.functions) if analysis.functions else 'None'}`")
             st.write(f"**Classes:** `{', '.join(analysis.classes) if analysis.classes else 'None'}`")
-            with st.expander("View Source Code", expanded=False):
+            with st.expander("View Ingested Source Code", expanded=False):
                 st.code(target_code_to_run, language="python")
 
 with tab_synth:
@@ -120,7 +121,6 @@ if st.button("⚡ Run TestForge Autonomous Hardening", type="primary", use_conta
     if not target_code_to_run or not target_file_path:
         st.error("Please select, upload, or synthesize a target module first!")
     else:
-        status_container = st.container()
         progress_bar = st.progress(0.0)
         col_metrics1, col_metrics2, col_metrics3 = st.columns(3)
 
@@ -154,6 +154,13 @@ if st.button("⚡ Run TestForge Autonomous Hardening", type="primary", use_conta
         metric_score.metric("Mutation Score", f"{final_score:.1f}%", delta=f"{final_score - 50.0:.1f}%")
         metric_status.metric("Status", "SUCCESS" if final_score >= target_score else "TERMINATED")
 
+        # ----------------------------------------------------------------------
+        # ENHANCEMENT 1: SOURCE CODE INSPECTION DRAWER
+        # ----------------------------------------------------------------------
+        with st.expander("📄 View Generated Source Code Under Test", expanded=False):
+            st.caption(f"Inspecting file: `{target_file_path}`")
+            st.code(target_code_to_run, language="python")
+
         # Iteration History Table
         st.subheader("📈 Iteration Breakdown")
         history_rows = []
@@ -168,6 +175,52 @@ if st.button("⚡ Run TestForge Autonomous Hardening", type="primary", use_conta
             })
         st.table(history_rows)
 
+        # ----------------------------------------------------------------------
+        # ENHANCEMENT 2: AST MUTANT AUDIT INSPECTOR & DIFF VIEWER
+        # ----------------------------------------------------------------------
+        with st.expander("🔍 AST Mutation Audit & Diff Viewer", expanded=True):
+            st.caption("Detailed report of all injected deterministic AST faults, execution outcomes, and unified diffs.")
+            
+            if final_state.mutants:
+                audit_records = []
+                for m in final_state.mutants:
+                    # Extract mutated lines from diff for clear display
+                    orig_snippet = ""
+                    mut_snippet = ""
+                    for line in m.unified_diff.splitlines():
+                        if line.startswith("-") and not line.startswith("---"):
+                            orig_snippet = line[1:].strip()
+                        elif line.startswith("+") and not line.startswith("+++"):
+                            mut_snippet = line[1:].strip()
+
+                    status_badge = "🟢 KILLED" if m.status in ("KILLED", "TIMEOUT") else "🔴 SURVIVED"
+                    audit_records.append({
+                        "Mutant ID": m.mutant_id,
+                        "Type": m.mutation_type,
+                        "Line": m.line_number,
+                        "Original Statement": orig_snippet or "(AST Node)",
+                        "Mutated Statement": mut_snippet or "(AST Node)",
+                        "Outcome": status_badge,
+                        "Exec Time": f"{m.execution_time_ms:.1f} ms"
+                    })
+
+                audit_df = pd.DataFrame(audit_records)
+                st.dataframe(audit_df, use_container_width=True)
+
+                # Individual Unified Diff Viewer
+                st.markdown("**Inspect Unified AST Diffs:**")
+                selected_mutant_id = st.selectbox(
+                    "Choose Mutant to view unified diff:",
+                    [m.mutant_id for m in final_state.mutants]
+                )
+                selected_mutant = next((m for m in final_state.mutants if m.mutant_id == selected_mutant_id), None)
+                if selected_mutant:
+                    status_str = "🟢 KILLED (Caught by assertions)" if selected_mutant.status in ("KILLED", "TIMEOUT") else "🔴 SURVIVED (Test bypassed)"
+                    st.write(f"**Status:** {status_str} | **Type:** `{selected_mutant.mutation_type}` | **Line:** `{selected_mutant.line_number}`")
+                    st.code(selected_mutant.unified_diff, language="diff")
+            else:
+                st.info("No mutants generated for this module.")
+
         # Standalone Test Suite Export Viewer
         st.subheader("📦 Final Hardened Test Suite (`test_hardened.py`)")
         with open("test_hardened.py", "r", encoding="utf-8") as tf:
@@ -175,8 +228,36 @@ if st.button("⚡ Run TestForge Autonomous Hardening", type="primary", use_conta
         st.code(hardened_content, language="python")
         st.info("Verified standalone: You can run `pytest test_hardened.py -v` in any terminal.")
 
+        # ----------------------------------------------------------------------
+        # ENHANCEMENT 3: LIVE TELEMETRY & TOKEN AUDIT (AFTER RUN)
+        # ----------------------------------------------------------------------
+        with st.expander("📊 Live Telemetry & Token Trace Log (testforge_trace.jsonl)", expanded=False):
+            st.caption("Telemetry captured on every foundation model and evaluation step.")
+            logger = TraceLogger()
+            traces = logger.read_traces()
+            recent_llm_calls = [t for t in traces if t.get("event_type") == "LLM_INFERENCE_TELEMETRY"][-8:]
+
+            if recent_llm_calls:
+                telemetry_rows = []
+                for entry in reversed(recent_llm_calls):
+                    data = entry.get("data", {})
+                    tokens = data.get("tokens", {})
+                    telemetry_rows.append({
+                        "Agent Name": data.get("agent", "Unknown"),
+                        "Model": data.get("model", "Unknown"),
+                        "Iteration": data.get("iteration", 0),
+                        "Latency (s)": f"{data.get('latency_seconds', 0.0):.2f}s",
+                        "Prompt Tokens": tokens.get("prompt_tokens", 0),
+                        "Completion Tokens": tokens.get("completion_tokens", 0),
+                        "Total Tokens": tokens.get("total_tokens", 0),
+                        "AST Valid": "Yes" if data.get("is_valid_ast", True) else "No"
+                    })
+                st.table(telemetry_rows)
+            else:
+                st.info("No LLM inference calls recorded in this trace yet.")
+
 with tab_telemetry:
-    st.subheader("🔍 Real Telemetry & Trace Inspector (`testforge_trace.jsonl`)")
+    st.subheader("🔍 Complete Telemetry Trace Log (`testforge_trace.jsonl`)")
     logger = TraceLogger()
     traces = logger.read_traces()
     st.write(f"Total Logged Events: **{len(traces)}** | Total LLM Tokens Used: **{logger.get_total_tokens():,}**")
