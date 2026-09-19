@@ -1,17 +1,17 @@
 """
-agents.py - Resilient Foundation Model Agents with AST Guardrails, Retry Backoff & Targeted Generation.
+agents.py - Resilient Foundation Model Agents with AST Guardrails & Clean Model Hierarchy.
 
 Author: Sourabh (Module 1 & 3)
 Course: CSE3101 - Agentic AI
 
 Features:
   - Official `google-genai` SDK integration (`from google import genai`)
-  - Exponential backoff retry loop for transient Google API errors (503 UNAVAILABLE, 429 RATE_LIMIT)
-  - Automatic model hierarchy fallback: Primary (e.g. gemini-3.6-flash / gemini-2.5-flash) -> gemini-2.5-pro -> gemini-1.5-flash
-  - Clean Automatic Function Calling (AFC) disabling to eliminate console warnings
-  - AST-targeted Test Generation: inspects top-level function names & signatures in source code
-  - Strict Live Generation: raises explicit API/execution exceptions instead of silently masking with mock templates
-  - Dynamic AST-aware fallback: generates real asserts based on parsed function names when no key is present
+  - Strict Modern Model Hierarchy: Default to 'gemini-3.6-flash' with optional failover to 'gemini-2.5-pro'
+  - Pure Transient Retry Logic: Exponential backoff for 503 UNAVAILABLE & 429 RESOURCE_EXHAUSTED (waits 2s, then 4s)
+  - No 404 retries or deprecated model calls (e.g. gemini-1.5-flash / gemini-2.5-flash removed)
+  - Automatic Function Calling (AFC) disabled to prevent console noise
+  - AST-targeted Test Generation: prompt strictly forces tests matching actual function signatures in source code
+  - Validates Python syntax via ast.parse() before test execution
 """
 
 from __future__ import annotations
@@ -78,20 +78,17 @@ def execute_genai_with_retry_and_fallback(
     initial_backoff: float = 2.0
 ) -> Tuple[str, Dict[str, int], float, str]:
     """
-    Executes Gemini generation with exponential backoff for 503 / 429 transient errors
-    and an automatic model hierarchy fallback before degradation.
-    Returns:
-      (response_text, token_dict, latency_sec, successful_model_name)
+    Executes Gemini generation with exponential backoff strictly for 503 / 429 transient server errors.
+    Uses 'gemini-3.6-flash' as the primary model, with fallback only to 'gemini-2.5-pro'.
+    Does not attempt deprecated or 404 models.
     """
     from google.genai import types
     from google.genai import errors
 
-    # Model hierarchy fallback chain
+    # Strict model hierarchy: default to gemini-3.6-flash, fallback only to gemini-2.5-pro
     model_hierarchy: List[str] = [primary_model]
-    candidate_fallbacks = ["gemini-3.6-flash", "gemini-2.5-flash", "gemini-2.5-pro", "gemini-1.5-flash"]
-    for m in candidate_fallbacks:
-        if m not in model_hierarchy:
-            model_hierarchy.append(m)
+    if "gemini-2.5-pro" not in model_hierarchy:
+        model_hierarchy.append("gemini-2.5-pro")
 
     last_exception = None
 
@@ -126,7 +123,12 @@ def execute_genai_with_retry_and_fallback(
             except (errors.APIError, errors.ServerError, errors.ClientError, Exception) as exc:
                 last_exception = exc
                 err_msg = str(exc)
-                is_transient = any(code in err_msg for code in ("503", "429", "UNAVAILABLE", "RESOURCE_EXHAUSTED"))
+
+                # Specifically catch ONLY transient server/rate errors (503, 429)
+                is_transient = any(
+                    token in err_msg
+                    for token in ("503", "429", "UNAVAILABLE", "RESOURCE_EXHAUSTED", "bandwidth", "overloaded")
+                )
 
                 if is_transient and attempt < max_retries:
                     print(f"[*] Transient GenAI error on {model_name} (attempt {attempt}/{max_retries}): {exc}. Retrying in {backoff:.1f}s...")
@@ -134,7 +136,8 @@ def execute_genai_with_retry_and_fallback(
                     backoff *= 2.0
                     continue
                 else:
-                    print(f"[!] Model {model_name} failed ({exc}). Trying next fallback model in hierarchy...")
+                    # Non-retryable error (e.g. 404, bad request) or attempts exhausted
+                    print(f"[!] Model {model_name} failed: {exc}.")
                     break
 
     raise last_exception if last_exception else RuntimeError("Failed to generate content from model hierarchy.")
@@ -143,7 +146,7 @@ def execute_genai_with_retry_and_fallback(
 class TestGeneratorAgent:
     """
     Autonomous Test Generator Agent with targeted signature extraction,
-    live Gemini inference, and AST-aware synthesis.
+    live Gemini 3.6 Flash inference, and strict assertion synthesis.
     """
     def __init__(
         self,
@@ -188,8 +191,8 @@ class TestGeneratorAgent:
         system_instruction = (
             "You are a Principal Software QA Automation Engineer. "
             "Your mission is to generate and harden a standalone Pytest test suite for the provided Python source code. "
-            f"CRITICAL REQUIREMENT: You MUST ONLY test the functions present in the code: {sig_summary}. "
-            "DO NOT test or invent unrelated functions. "
+            f"CRITICAL REQUIREMENT: You MUST ONLY test the functions present in the target code: [{sig_summary}]. "
+            "DO NOT write tests for any other function names. "
             "Every test must import the module under test using: `from target import *`.\n"
             "Rules:\n"
             "1. Output ONLY executable Python code within a single ```python ... ``` markdown block.\n"
@@ -290,14 +293,12 @@ class TestGeneratorAgent:
         Never relies on mismatched static mock functions.
         """
         func_names = [f["name"] for f in signatures]
-
         test_functions = []
 
         for sig in signatures:
             fn = sig["name"]
             args = sig["args"]
-            
-            # Check for known sample signatures
+
             if fn == "calculate_discount":
                 test_functions.append("""
 def test_discount_rules():
@@ -320,26 +321,20 @@ def test_banking_rules():
     assert banking_transaction(-10.0, 50.0, 5.0) is False
 """)
             elif fn == "process_transaction":
-                # Matches generated synthesis module
                 test_functions.append("""
 def test_process_transaction_rules():
-    # Regular customer fee: 2.50
     ok, bal = process_transaction(10.0, 100.0, False)
     assert ok is True and bal == 87.50
 
-    # VIP waiver fee: 0.0
     ok_vip, bal_vip = process_transaction(10.0, 100.0, True)
     assert ok_vip is True and bal_vip == 90.0
 
-    # Boundary: balance == amount + fee (total_needed)
     ok_exact, bal_exact = process_transaction(10.0, 12.50, False)
     assert ok_exact is True and bal_exact == 0.0
 
-    # Insufficient funds
     ok_fail, bal_fail = process_transaction(10.0, 12.49, False)
     assert ok_fail is False and bal_fail == 12.49
 
-    # Zero or negative amount
     ok_zero, _ = process_transaction(0.0, 50.0, False)
     assert ok_zero is False
     ok_neg, _ = process_transaction(-5.0, 50.0, False)
@@ -386,7 +381,6 @@ def test_state_machine_rules():
     assert ok_guest is False and err_guest == "VERIFICATION_REQUIRED"
 """)
             else:
-                # Generic fallback for any arbitrary function name
                 dummy_args = ", ".join(["1"] * len(args))
                 test_functions.append(f"""
 def test_generic_{fn}():
