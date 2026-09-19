@@ -1,0 +1,37 @@
+{
+  "target_file": "samples/discount.py",
+  "model": "gemini-3.6-flash",
+  "timestamp": 1789823265.521437,
+  "runs": [
+    {
+      "run_type": "Condition A (Baseline Minimal)",
+      "line_coverage_pct": 76.9,
+      "mutation_score_pct": 54.5,
+      "killed_mutants": 6,
+      "total_mutants": 11,
+      "iterations": 0,
+      "latency_seconds": 0.97,
+      "tokens_used": 0
+    },
+    {
+      "run_type": "Condition B (Zero-Shot Single-Pass)",
+      "line_coverage_pct": 100.0,
+      "mutation_score_pct": 100.0,
+      "killed_mutants": 11,
+      "total_mutants": 11,
+      "iterations": 1,
+      "latency_seconds": 51.83,
+      "tokens_used": 3205
+    },
+    {
+      "run_type": "Condition C (TestForge Full Reflection)",
+      "line_coverage_pct": 100.0,
+      "mutation_score_pct": 100.0,
+      "killed_mutants": 11,
+      "total_mutants": 11,
+      "iterations": 1,
+      "latency_seconds": 22.45,
+      "tokens_used": 3879
+    }
+  ]
+}
