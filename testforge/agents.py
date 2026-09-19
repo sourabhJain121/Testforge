@@ -476,3 +476,7 @@ class AdversarialCriticAgent:
                 is_valid_ast=True
             )
         return analysis_text
+
+
+# Export TargetManagerAgent from testforge.ingestion
+from testforge.ingestion import TargetManagerAgent, IngestionAnalysis
