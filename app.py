@@ -11,6 +11,10 @@ import json
 import time
 import pandas as pd
 import streamlit as st
+from dotenv import load_dotenv
+
+# Load local .env file if present
+load_dotenv()
 
 # Ensure project root is on sys.path
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
@@ -33,6 +37,17 @@ st.caption("CSE3101: Agentic AI — Authors: Sourabh & Shreshth | Apple Silicon 
 # Sidebar Configuration
 with st.sidebar:
     st.header("⚙ System Configuration")
+    
+    # User-provided API Key input in UI to guard against missing shell env vars
+    ui_api_key = st.text_input(
+        "Gemini API Key (Optional Override)",
+        value=os.environ.get("GEMINI_API_KEY", ""),
+        type="password",
+        help="Paste your Gemini API key here if not exported in shell."
+    )
+    if ui_api_key.strip():
+        os.environ["GEMINI_API_KEY"] = ui_api_key.strip()
+
     model_name = st.selectbox(
         "Foundation Model",
         ["gemini-3.6-flash", "gemini-2.5-flash", "gemini-2.5-pro", "gemini-1.5-flash"],
@@ -50,7 +65,7 @@ with st.sidebar:
 
     has_key = bool(os.environ.get("GEMINI_API_KEY"))
     if has_key:
-        st.success("🟢 GEMINI_API_KEY Configured (Live API)")
+        st.success("🟢 GEMINI_API_KEY Active (Live Gemini Engine)")
     else:
         st.warning("🟡 GEMINI_API_KEY Not Set (Deterministic Fallback)")
 
@@ -89,7 +104,7 @@ with tab_ingest:
 
     with col2:
         if target_code_to_run and target_file_path:
-            supervisor = TargetManagerAgent(model_name=model_name)
+            supervisor = TargetManagerAgent(model_name=model_name, api_key=os.environ.get("GEMINI_API_KEY"))
             analysis = supervisor.ingest_file(target_file_path)
             st.write(f"**Module:** `{analysis.module_name}`")
             st.write(f"**Functions:** `{', '.join(analysis.functions) if analysis.functions else 'None'}`")
@@ -106,7 +121,7 @@ with tab_synth:
     if st.button("🚀 Synthesize Module", key="synth_btn"):
         if prompt_input.strip():
             with st.spinner("TargetManagerAgent synthesizing production code with rich boundary checks..."):
-                supervisor = TargetManagerAgent(model_name=model_name)
+                supervisor = TargetManagerAgent(model_name=model_name, api_key=os.environ.get("GEMINI_API_KEY"))
                 synthed_path, synthed_code = supervisor.synthesize_module(prompt_input)
                 target_file_path = synthed_path
                 target_code_to_run = synthed_code
@@ -121,6 +136,9 @@ if st.button("⚡ Run TestForge Autonomous Hardening", type="primary", use_conta
     if not target_code_to_run or not target_file_path:
         st.error("Please select, upload, or synthesize a target module first!")
     else:
+        # Ensure API key is bound before orchestrator runs
+        active_key = os.environ.get("GEMINI_API_KEY", "").strip()
+
         progress_bar = st.progress(0.0)
         col_metrics1, col_metrics2, col_metrics3 = st.columns(3)
 
@@ -139,7 +157,8 @@ if st.button("⚡ Run TestForge Autonomous Hardening", type="primary", use_conta
             target_mutation_score=target_score,
             model_name=model_name,
             trace_log_path=trace_log,
-            target_file_path=target_file_path
+            target_file_path=target_file_path,
+            api_key=active_key
         )
 
         with st.spinner("Multi-Agent reflection loop running across CPU cores..."):
@@ -184,7 +203,6 @@ if st.button("⚡ Run TestForge Autonomous Hardening", type="primary", use_conta
             if final_state.mutants:
                 audit_records = []
                 for m in final_state.mutants:
-                    # Extract mutated lines from diff for clear display
                     orig_snippet = ""
                     mut_snippet = ""
                     for line in m.unified_diff.splitlines():
