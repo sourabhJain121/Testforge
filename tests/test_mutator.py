@@ -31,3 +31,27 @@ def test_diff_generation():
         assert m.unified_diff != ""
         assert m.line_number > 0
         assert "target.py" in m.unified_diff
+
+
+def test_subtle_ast_mutations():
+    rich_code = """
+def process(x: float, y: int, flag: bool) -> tuple[bool, float]:
+    if x <= 10.0 and y > 5:
+        total = round(x + float(y), 2)
+        return True, abs(total)
+    return False, 0.0
+"""
+    mutants = ASTMutator.generate_mutants(rich_code)
+    types = {m.mutation_type for m in mutants}
+
+    # Verify subtle mutations are detected and generated
+    assert "BOUNDARY_SWAP" in types
+    assert "OFF_BY_ONE" in types
+    assert "LOGICAL_CONN" in types
+    assert "MATH_FUNC" in types
+
+    # Check that mutant IDs match format
+    for m in mutants:
+        assert m.mutant_id.startswith("MUT_")
+        assert m.line_number >= 1
+

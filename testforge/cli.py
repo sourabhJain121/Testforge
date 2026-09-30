@@ -51,6 +51,7 @@ def main():
     parser.add_argument("--max-iter", "-i", type=int, default=3, help="Maximum reflection iterations")
     parser.add_argument("--target-score", "-score", type=float, default=85.0, help="Target mutation score (pct)")
     parser.add_argument("--model", "-m", default="gemini-3.6-flash", help="LLM foundation model name")
+    parser.add_argument("--engine-mode", "-e", choices=["auto", "cloud", "openrouter", "local"], default="auto", help="Engine execution mode (auto, cloud, openrouter, local)")
     parser.add_argument("--output", "-o", default="test_hardened.py", help="Output file for hardened tests")
     args = parser.parse_args()
 
@@ -104,7 +105,8 @@ def main():
         max_iterations=args.max_iter,
         target_mutation_score=args.target_score,
         model_name=args.model,
-        target_file_path=target_path
+        target_file_path=target_path,
+        engine_mode=args.engine_mode
     )
 
     final_state = orchestrator.run()

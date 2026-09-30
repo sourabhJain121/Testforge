@@ -40,6 +40,12 @@ def format_standalone_test_suite(test_code: str, target_file_path: Optional[str]
     Inserts a dynamic path hook and resolves the target module's import.
     """
     code = test_code.strip()
+    if "```python" in code:
+        parts = code.split("```python")
+        code = parts[1].split("```")[0].strip()
+    elif "```" in code:
+        parts = code.split("```")
+        code = parts[1].split("```")[0].strip()
 
     # Determine module name if target path provided
     module_import_name = "target"
@@ -68,6 +74,9 @@ def format_standalone_test_suite(test_code: str, target_file_path: Optional[str]
     return code
 
 
+from testforge.llm_client import HybridLLMClient
+
+
 class TestForgeOrchestrator:
     """
     Coordinates the live multi-agent reflection loop across iterations until termination.
@@ -81,9 +90,14 @@ class TestForgeOrchestrator:
         model_name: str = "gemini-3.6-flash",
         trace_log_path: str = "testforge_trace.jsonl",
         api_key: Optional[str] = None,
-        target_file_path: Optional[str] = None
+        openrouter_api_key: Optional[str] = None,
+        target_file_path: Optional[str] = None,
+        engine_mode: str = "auto",
+        target_lines: Optional[List[int]] = None
     ):
         self.target_file_path = target_file_path
+        self.engine_mode = engine_mode
+        self.target_lines = target_lines
         self.state = TestForgeState(
             target_source_code=target_source_code.strip(),
             current_test_code=(initial_test_code or "").strip(),
@@ -93,15 +107,24 @@ class TestForgeOrchestrator:
         )
         self.logger = TraceLogger(log_path=trace_log_path)
         self.sandbox = ParallelSandboxRunner(timeout_seconds=5)
+        self.llm_client = HybridLLMClient(
+            cloud_model=model_name,
+            api_key=api_key,
+            openrouter_api_key=openrouter_api_key,
+            logger=self.logger,
+            engine_mode=engine_mode
+        )
         self.generator = TestGeneratorAgent(
             model_name=model_name,
             logger=self.logger,
-            api_key=api_key
+            api_key=api_key,
+            llm_client=self.llm_client
         )
         self.critic = AdversarialCriticAgent(
             model_name=model_name,
             logger=self.logger,
-            api_key=api_key
+            api_key=api_key,
+            llm_client=self.llm_client
         )
 
     def export_hardened_suite(self, output_path: str = "test_hardened.py") -> str:
@@ -156,6 +179,23 @@ class TestForgeOrchestrator:
                 critic_feedback=repair_prompt,
                 iteration=0
             )
+            self.state.active_provider = self.generator.active_provider
+
+            recheck = self.sandbox.run_single(self.state.current_test_code, self.state.target_source_code)
+            if recheck["status"] != "PASS":
+                console.print("[yellow][!] Self-repaired tests failed clean target check. Engaging deterministic AST synthesis...[/yellow]")
+                from testforge.agents import extract_function_signatures, CodeSanitizer
+                sigs = extract_function_signatures(self.state.target_source_code)
+                raw_ast_code = self.generator._synthesize_ast_aware_tests(
+                    source_code=self.state.target_source_code,
+                    signatures=sigs,
+                    surviving_diffs=None
+                )
+                _, sanitized_ast, _ = CodeSanitizer.extract_and_validate(raw_ast_code)
+                self.state.current_test_code = sanitized_ast
+                self.state.active_provider = "AST Deterministic Synthesizer"
+            else:
+                console.print("[green][✓] Self-repaired candidate test suite passed on clean code.[/green]")
         else:
             console.print("[green][✓] Candidate test suite passed on clean code.[/green]")
 
@@ -191,9 +231,12 @@ class TestForgeOrchestrator:
                     console.print("  [yellow]• Hardened assertions broke clean code. Retaining previous working test suite.[/yellow]")
 
             # B. Invert AST to generate deterministic mutants
-            mutants = ASTMutator.generate_mutants(self.state.target_source_code)
+            mutants = ASTMutator.mutate(self.state.target_source_code, target_lines=self.target_lines)
             self.state.mutants = mutants
-            console.print(f"  [cyan]• AST Mutator injected {len(mutants)} deterministic faults.[/cyan]")
+            if self.target_lines:
+                console.print(f"  [cyan]• Git Diff-Aware Mutation injected {len(mutants)} targeted faults across lines {self.target_lines}.[/cyan]")
+            else:
+                console.print(f"  [cyan]• AST Mutator injected {len(mutants)} deterministic faults.[/cyan]")
 
             # C. Evaluate mutants across parallel sandbox workers
             console.print(f"  [cyan]• Parallel Sandbox evaluating mutants across {self.sandbox.max_workers} CPU workers...[/cyan]")

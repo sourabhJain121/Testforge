@@ -13,6 +13,7 @@ from testforge.logger import TraceLogger
 
 AVAILABLE_TARGETS = {
     "banking": ("samples/banking.py", "Banking Transaction Boundary Rules"),
+    "discount": ("samples/discount.py", "Volume & VIP Tiered Discount Rules"),
     "inventory": ("samples/inventory_pricing.py", "Tiered Inventory & Bulk Pricing Engine"),
     "ratelimit": ("samples/rate_limiter.py", "Token Bucket Rate Limiter with Decay"),
     "statemachine": ("samples/state_machine.py", "Order Finite State Machine with RBAC")
@@ -28,7 +29,8 @@ def main():
     )
     parser.add_argument("--max-iter", "-i", type=int, default=3, help="Max reflection iterations")
     parser.add_argument("--target-score", "-score", type=float, default=85.0, help="Target mutation score")
-    parser.add_argument("--model", "-m", default="gemini-2.5-flash", help="Foundation model name")
+    parser.add_argument("--model", "-m", default="gemini-3.6-flash", help="Foundation model name")
+    parser.add_argument("--engine-mode", "-e", choices=["auto", "cloud", "openrouter", "local"], default="auto", help="Engine execution mode")
     args = parser.parse_args()
 
     rel_path, desc = AVAILABLE_TARGETS[args.target]
@@ -37,6 +39,7 @@ def main():
     print("==========================================================")
     print(f"  BENCHMARK TARGET: {args.target.upper()} - {desc}")
     print(f"  Source Path: {rel_path}")
+    print(f"  Engine Mode: {args.engine_mode}")
     print("==========================================================\n")
 
     with open(full_path, "r", encoding="utf-8") as f:
@@ -47,7 +50,9 @@ def main():
         initial_test_code=None,  # Generates initial tests autonomously
         max_iterations=args.max_iter,
         target_mutation_score=args.target_score,
-        model_name=args.model
+        model_name=args.model,
+        target_file_path=full_path,
+        engine_mode=args.engine_mode
     )
 
     final_state = orchestrator.run()

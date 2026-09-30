@@ -51,15 +51,18 @@ class TraceLogger:
         latency_sec: float,
         iteration: int = 1,
         is_valid_ast: bool = True,
-        validation_error: str = ""
+        validation_error: str = "",
+        provider_type: Optional[str] = None
     ):
         """
         Logs genuine Foundation Model telemetry including real tokens,
-        latency in seconds, and AST validation status.
+        latency in seconds, provider type, and AST validation status.
         """
+        resolved_provider = provider_type or (model_name.split(":")[0] if ":" in model_name else "Unknown")
         payload = {
             "agent": agent_name,
             "model": model_name,
+            "provider_type": resolved_provider,
             "iteration": iteration,
             "tokens": {
                 "prompt_tokens": prompt_tokens,

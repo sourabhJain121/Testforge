@@ -11,7 +11,10 @@ from pydantic import BaseModel, Field
 
 class MutantRecord(BaseModel):
     mutant_id: str = Field(..., description="Deterministic unique identifier, e.g. 'MUT_COMP_OP_001'")
-    mutation_type: Literal["COMP_OP", "ARITH_OP", "COND_INV", "RETURN_VAL"]
+    mutation_type: Literal[
+        "COMP_OP", "ARITH_OP", "COND_INV", "RETURN_VAL",
+        "OFF_BY_ONE", "BOUNDARY_SWAP", "LOGICAL_CONN", "MATH_FUNC"
+    ]
     line_number: int
     original_code_snippet: str
     mutated_code_snippet: str

@@ -19,8 +19,101 @@ from __future__ import annotations
 import os
 import re
 import ast
+from pathlib import Path
+import urllib.request
+import urllib.error
 from typing import List, Dict, Any, Optional, Tuple
 from testforge.logger import TraceLogger
+
+
+def fetch_github_source(github_url: str, output_dir: str = "samples") -> Path:
+    """
+    Fetches raw Python source code from a GitHub URL, validates AST syntax,
+    saves into `samples/github_<repo>_<filename>.py`, and returns the Path.
+
+    Supports:
+      - Standard GitHub blob URLs (e.g., https://github.com/psf/requests/blob/main/requests/utils.py)
+      - Raw GitHub URLs (e.g., https://raw.githubusercontent.com/psf/requests/main/requests/utils.py)
+    """
+    clean_url = github_url.strip()
+    if not clean_url:
+        raise ValueError("GitHub URL cannot be empty.")
+
+    # Strip URL fragments / query strings for endpoint derivation
+    base_url = clean_url.split("#")[0].split("?")[0].rstrip("/")
+
+    # Pattern 1: standard github.com blob or raw URL
+    # https://github.com/<owner>/<repo>/blob/<ref>/<filepath> or .../raw/...
+    blob_pattern = r"^https?://github\.com/([^/]+)/([^/]+)/(?:blob|raw)/([^/]+)/(.+)$"
+    # Pattern 2: raw.githubusercontent.com URL
+    # https://raw.githubusercontent.com/<owner>/<repo>/<ref>/<filepath>
+    raw_pattern = r"^https?://raw\.githubusercontent\.com/([^/]+)/([^/]+)/([^/]+)/(.+)$"
+
+    m_blob = re.match(blob_pattern, base_url)
+    m_raw = re.match(raw_pattern, base_url)
+
+    if m_blob:
+        owner, repo, branch, file_path = m_blob.groups()
+        raw_url = f"https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{file_path}"
+        filename = os.path.basename(file_path)
+    elif m_raw:
+        owner, repo, branch, file_path = m_raw.groups()
+        raw_url = base_url
+        filename = os.path.basename(file_path)
+    else:
+        # Fallback heuristic if URL is roughly github
+        if "github.com" in base_url and "/blob/" in base_url:
+            raw_url = base_url.replace("github.com", "raw.githubusercontent.com").replace("/blob/", "/")
+            parts = base_url.split("/")
+            repo = parts[4] if len(parts) > 4 else "repo"
+            filename = parts[-1] if parts else "module.py"
+        else:
+            raise ValueError(
+                f"Unsupported GitHub URL format: {github_url}. "
+                "Expected https://github.com/<owner>/<repo>/blob/<branch>/<path.py> "
+                "or https://raw.githubusercontent.com/<owner>/<repo>/<branch>/<path.py>"
+            )
+
+    if not filename.endswith(".py"):
+        filename = f"{filename}.py"
+
+    # Sanitize repo and filename for safe filesystem path
+    clean_repo = re.sub(r"[^\w\-]", "_", repo)
+    clean_filename = re.sub(r"[^\w\-\.]", "_", filename)
+
+    # Download source content
+    req = urllib.request.Request(
+        raw_url,
+        headers={"User-Agent": "TestForge/1.0 (Autonomous Systems Ingestion)"}
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            content_bytes = resp.read()
+            content = content_bytes.decode("utf-8", errors="replace")
+    except urllib.error.HTTPError as http_err:
+        raise RuntimeError(
+            f"Failed to fetch GitHub file from {raw_url} (HTTP {http_err.code}: {http_err.reason})"
+        ) from http_err
+    except Exception as exc:
+        raise RuntimeError(f"Network error fetching GitHub file: {exc}") from exc
+
+    # Validate AST
+    try:
+        ast.parse(content)
+    except SyntaxError as syn_err:
+        raise ValueError(
+            f"Fetched file from {github_url} contains invalid Python AST (line {syn_err.lineno}: {syn_err.msg})"
+        ) from syn_err
+    except Exception as exc:
+        raise ValueError(f"Failed to parse AST of fetched file: {exc}") from exc
+
+    # Save into target path
+    out_dir = Path(output_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    target_path = out_dir / f"github_{clean_repo}_{clean_filename}"
+    target_path.write_text(content, encoding="utf-8")
+
+    return target_path.resolve()
 
 
 class IngestionAnalysis:
@@ -124,6 +217,17 @@ class TargetManagerAgent:
             )
 
     # --------------------------------------------------------------------------
+    # Mode C: Direct GitHub URL Ingestion
+    # --------------------------------------------------------------------------
+    def ingest_github(self, github_url: str, output_dir: str = "samples") -> Tuple[Path, IngestionAnalysis]:
+        """
+        Ingests and validates an arbitrary Python source file directly from a public GitHub URL.
+        """
+        saved_path = fetch_github_source(github_url, output_dir=output_dir)
+        analysis = self.ingest_file(str(saved_path))
+        return saved_path, analysis
+
+    # --------------------------------------------------------------------------
     # Mode B: Autonomous Module Synthesis
     # --------------------------------------------------------------------------
     def synthesize_module(self, prompt: str, output_dir: str = "samples") -> Tuple[str, str]:
@@ -209,3 +313,24 @@ def process_transaction(amount: float, balance: float, is_vip: bool) -> tuple[bo
 
     return (False, balance)
 '''
+
+    # --------------------------------------------------------------------------
+    # Mode C: Direct GitHub Ingestion & AST Inspection
+    # --------------------------------------------------------------------------
+    def fetch_and_ingest_github(self, github_url: str, output_dir: str = "samples") -> Tuple[Path, IngestionAnalysis]:
+        """
+        Pulls raw Python file from public GitHub URL, validates AST syntax,
+        persists into samples directory, and inspects exported symbols.
+        """
+        saved_path = fetch_github_source(github_url, output_dir=output_dir)
+        analysis = self.ingest_file(str(saved_path))
+        if self.logger:
+            self.logger.log_event("GITHUB_FILE_INGESTION", {
+                "github_url": github_url,
+                "saved_path": str(saved_path),
+                "module_name": analysis.module_name,
+                "functions": analysis.functions,
+                "classes": analysis.classes
+            })
+        return saved_path, analysis
+

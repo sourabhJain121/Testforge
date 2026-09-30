@@ -173,3 +173,7 @@ class ParallelSandboxRunner:
                     pass
 
             return 0.0, res.stderr
+
+
+# Alias for ADK and single-process usage
+SubprocessSandbox = ParallelSandboxRunner

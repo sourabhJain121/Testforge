@@ -47,9 +47,13 @@ def extract_features(mutant: MutantRecord, total_lines: int = 50) -> List[float]
     """
     type_map = {
         "COMP_OP": [1.0, 0.0, 0.0, 0.0],
+        "BOUNDARY_SWAP": [1.0, 0.0, 0.0, 0.0],
         "ARITH_OP": [0.0, 1.0, 0.0, 0.0],
+        "MATH_FUNC": [0.0, 1.0, 0.0, 0.0],
         "COND_INV": [0.0, 0.0, 1.0, 0.0],
-        "RETURN_VAL": [0.0, 0.0, 0.0, 1.0]
+        "LOGICAL_CONN": [0.0, 0.0, 1.0, 0.0],
+        "RETURN_VAL": [0.0, 0.0, 0.0, 1.0],
+        "OFF_BY_ONE": [0.5, 0.5, 0.0, 0.0]
     }
     vec = list(type_map.get(mutant.mutation_type, [0.0, 0.0, 0.0, 0.0]))
     
@@ -62,9 +66,9 @@ def extract_features(mutant: MutantRecord, total_lines: int = 50) -> List[float]
     vec.append(diff_len)
     
     # Heuristic complexity proxy
-    has_arith = 1.0 if mutant.mutation_type in ("ARITH_OP", "COMP_OP") else 0.0
+    has_arith = 1.0 if mutant.mutation_type in ("ARITH_OP", "COMP_OP", "BOUNDARY_SWAP", "OFF_BY_ONE", "MATH_FUNC") else 0.0
     vec.append(has_arith)
-    vec.append(1.0 if mutant.mutation_type == "COND_INV" else 0.0)
+    vec.append(1.0 if mutant.mutation_type in ("COND_INV", "LOGICAL_CONN") else 0.0)
     
     return vec
 
