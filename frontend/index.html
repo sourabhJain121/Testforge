@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TestForge — Autonomous Agentic Test Hardening</title>
+  <meta name="description" content="State-of-the-art Autonomous Multi-Agent Test Hardening System powered by FastAPI and Apple Silicon hardware optimization.">
+  
+  <!-- Modern Typography from Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="dark-theme">
+  <!-- Dynamic Ambient Glow Orbs -->
+  <div class="ambient-glow orb-1"></div>
+  <div class="ambient-glow orb-2"></div>
+  <div class="ambient-glow orb-3"></div>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- Header Section -->
+  <header class="navbar" id="main-header">
+    <div class="nav-left">
+      <div class="brand">
+        <span class="brand-icon">⚡</span>
+        <div class="brand-text">
+          <h1 class="brand-title">TestForge</h1>
+          <span class="brand-subtitle">Autonomous Agentic Test Hardening</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Status Bar -->
+    <div class="nav-center status-pills" id="system-status-pills">
+      <div class="pill" id="pill-hardware" title="Hardware Profile">
+        <span class="indicator-dot green"></span>
+        <span id="label-hardware">Apple Silicon (arm64)</span>
+      </div>
+      <div class="pill" id="pill-ollama" title="Local Model Engine">
+        <span class="indicator-dot" id="dot-ollama"></span>
+        <span id="label-ollama">Local Ollama</span>
+      </div>
+      <div class="pill" id="pill-gemini" title="Google Gemini Cloud">
+        <span class="indicator-dot" id="dot-gemini"></span>
+        <span id="label-gemini">Gemini Live</span>
+      </div>
+      <div class="pill" id="pill-openrouter" title="OpenRouter Cloud Fallback">
+        <span class="indicator-dot" id="dot-openrouter"></span>
+        <span id="label-openrouter">OpenRouter</span>
+      </div>
+    </div>
+
+    <div class="nav-right">
+      <button type="button" class="btn btn-outline btn-icon" id="btn-a2a-card" title="A2A AgentCard Discovery">
+        <span class="icon">🤖</span> A2A Card
+      </button>
+      <button type="button" class="btn btn-outline btn-icon" id="btn-mcp-status" title="Model Context Protocol (FastMCP) Tools Status">
+        <span class="icon">🔌</span> MCP Tools (<span id="mcp-tool-count">4</span>)
+      </button>
+      <button class="btn btn-secondary btn-icon" id="btn-toggle-settings" title="System Settings">
+        <span class="icon">⚙️</span> Settings
+      </button>
+      <a href="https://github.com/sourabhJain121/Testforge" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-icon" id="btn-github-repo">
+        <span class="icon">🐙</span> Repo
+      </a>
+    </div>
+  </header>
+
+  <!-- Settings Drawer / Modal -->
+  <div class="modal-backdrop hidden" id="settings-modal-backdrop">
+    <div class="modal glass-panel" id="settings-modal" role="dialog" aria-labelledby="settings-title">
+      <div class="modal-header">
+        <h2 id="settings-title"><span class="icon">⚙️</span> System & Provider Configuration</h2>
+        <button class="close-btn" id="btn-close-settings" aria-label="Close settings">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="engine-mode-select">Execution Provider Mode</label>
+          <select id="engine-mode-select" class="form-control">
+            <option value="auto" selected>Auto (Gemini -> OpenRouter -> Local Ollama Fallback)</option>
+            <option value="cloud">Force Cloud (Google Gemini)</option>
+            <option value="openrouter">OpenRouter Cloud API</option>
+            <option value="local">Force Local Engine (Ollama - Offline Mode)</option>
+          </select>
+          <p class="form-hint">Controls the fallback cascade tier when synthesizing assertions and diagnosing mutants.</p>
+        </div>
+
+        <div class="form-group">
+          <label for="model-name-select">Foundation Model</label>
+          <select id="model-name-select" class="form-control">
+            <option value="gemini-3.6-flash" selected>gemini-3.6-flash (Primary Cloud)</option>
+            <option value="gemini-3.1-pro-preview">gemini-3.1-pro-preview (Secondary Fallback)</option>
+            <option value="qwen2.5-coder:7b">qwen2.5-coder:7b (Local Ollama Engine)</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col">
+            <label for="slider-iterations">Max Reflection Iterations: <span id="val-iterations" class="val-badge">3</span></label>
+            <input type="range" id="slider-iterations" min="1" max="5" value="3" class="slider">
+          </div>
+          <div class="form-group col">
+            <label for="slider-mutation-score">Target Mutation Score (%): <span id="val-mutation-score" class="val-badge">85%</span></label>
+            <input type="range" id="slider-mutation-score" min="50" max="100" step="5" value="85" class="slider">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="input-gemini-key">Gemini API Key</label>
+          <input type="password" id="input-gemini-key" class="form-control" placeholder="AIzaSy...">
+          <p class="form-hint">Stored securely in runtime environment. Never exposed to browser or disk.</p>
+        </div>
+
+        <div class="form-group">
+          <label for="input-openrouter-key">OpenRouter API Key (Optional)</label>
+          <input type="password" id="input-openrouter-key" class="form-control" placeholder="sk-or-v1-...">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btn-cancel-settings">Cancel</button>
+        <button class="btn btn-primary" id="btn-save-settings">Save Configuration</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- A2A Agent Card Discovery Modal -->
+  <div class="modal-backdrop hidden" id="a2a-modal-backdrop">
+    <div class="modal glass-panel" id="a2a-modal" role="dialog" aria-labelledby="a2a-modal-title" style="max-width: 680px;">
+      <div class="modal-header">
+        <h2 id="a2a-modal-title"><span class="icon">🤖</span> A2A Agent Card Discovery</h2>
+        <button type="button" class="close-btn" id="btn-close-a2a-modal" aria-label="Close A2A Card">&times;</button>
+      </div>
+      <div class="modal-body" id="a2a-modal-body" style="max-height: 70vh; overflow-y: auto;">
+        <!-- Loading State -->
+        <div id="a2a-loading-state" class="text-center" style="padding: 2.5rem 1rem;">
+          <div class="spinner" style="margin: 0 auto 0.75rem auto;"></div>
+          <p class="text-muted" style="font-size: 0.85rem; margin: 0;">Querying official A2A discovery endpoint (<code>/.well-known/agent-card.json</code>)...</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="a2a-error-state" class="alert danger hidden" style="margin-bottom: 1rem;">
+          <p id="a2a-error-message" style="margin: 0; font-size: 0.85rem;"></p>
+        </div>
+
+        <!-- Empty State -->
+        <div id="a2a-empty-state" class="alert info hidden" style="margin-bottom: 1rem;">
+          <p style="margin: 0; font-size: 0.85rem;">No agent card data was returned by the discovery endpoint.</p>
+        </div>
+
+        <!-- Rendered Card Content -->
+        <div id="a2a-card-content" class="hidden">
+          <!-- Injected safely via DOM textContent -->
+        </div>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <a href="/.well-known/agent-card.json" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm" id="btn-view-raw-a2a" title="Open raw machine-readable JSON in new tab">
+            🌐 View Raw JSON
+          </a>
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-copy-a2a-json" title="Copy agent-card JSON payload to clipboard">
+            📋 Copy JSON
+          </button>
+        </div>
+        <button type="button" class="btn btn-secondary" id="btn-close-a2a-footer">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MCP Tools Status Modal -->
+  <div class="modal-backdrop hidden" id="mcp-modal-backdrop">
+    <div class="modal glass-panel" id="mcp-modal" role="dialog" aria-labelledby="mcp-modal-title" style="max-width: 680px;">
+      <div class="modal-header">
+        <h2 id="mcp-modal-title"><span class="icon">🔌</span> Model Context Protocol (FastMCP) Tools</h2>
+        <button type="button" class="close-btn" id="btn-close-mcp-modal" aria-label="Close MCP modal">&times;</button>
+      </div>
+      <div class="modal-body" id="mcp-modal-body" style="max-height: 70vh; overflow-y: auto;">
+        <!-- Loading State -->
+        <div id="mcp-loading-state" class="text-center" style="padding: 2rem 1rem;">
+          <div class="spinner" style="margin: 0 auto 0.75rem auto;"></div>
+          <p class="text-muted" style="font-size: 0.85rem; margin: 0;">Querying MCP status endpoint (<code>/api/mcp/status</code>)...</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="mcp-error-state" class="alert danger hidden" style="margin-bottom: 1rem;">
+          <p id="mcp-error-message" style="margin: 0; font-size: 0.85rem;"></p>
+        </div>
+
+        <!-- Rendered MCP Content -->
+        <div id="mcp-card-content" class="hidden">
+          <!-- Injected via DOM -->
+        </div>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <a href="/api/mcp/status" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm" id="btn-view-raw-mcp" title="Open raw MCP status JSON in new tab">
+            🌐 View Raw JSON
+          </a>
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-copy-mcp-json" title="Copy MCP status JSON to clipboard">
+            📋 Copy JSON
+          </button>
+        </div>
+        <button type="button" class="btn btn-secondary" id="btn-close-mcp-footer">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <main class="main-layout">
+    <!-- Active Target Hero Card -->
+    <section class="active-target-banner glass-card" id="active-target-card">
+      <div class="banner-content">
+        <div class="banner-badge" id="target-mode-badge">Active Target: Mode A</div>
+        <div class="banner-details">
+          <h2 class="target-title" id="target-module-title">samples.discount</h2>
+          <div class="target-tags">
+            <span class="tag" id="tag-file-path">📁 samples/discount.py</span>
+            <span class="tag" id="tag-sha">🔑 SHA: calculating...</span>
+            <span class="tag" id="tag-funcs">⚡ 1 Function</span>
+            <span class="tag" id="tag-classes">🏛️ 0 Classes</span>
+            <span class="tag" id="tag-lines">📄 24 Lines</span>
+          </div>
+        </div>
+      </div>
+      <div class="banner-actions">
+        <button class="btn btn-primary btn-glow" id="btn-scroll-to-hardening">
+          ⚡ Run Hardening Pipeline
+        </button>
+      </div>
+    </section>
+
+    <!-- Navigation Tabs -->
+    <nav class="tab-nav" id="main-tab-nav" role="tablist">
+      <button class="tab-btn active" data-tab="tab-mode-a" id="nav-mode-a" role="tab" aria-selected="true">
+        📁 Mode A: Workspace & Upload
+      </button>
+      <button class="tab-btn" data-tab="tab-mode-b" id="nav-mode-b" role="tab" aria-selected="false">
+        ✨ Mode B: AI Synthesis
+      </button>
+      <button class="tab-btn" data-tab="tab-mode-c" id="nav-mode-c" role="tab" aria-selected="false">
+        🌐 Mode C: GitHub Direct Import
+      </button>
+      <button class="tab-btn" data-tab="tab-blast" id="nav-blast" role="tab" aria-selected="false">
+        💥 Blast Radius & Call Graph
+      </button>
+      <button class="tab-btn" data-tab="tab-hardening" id="nav-hardening" role="tab" aria-selected="false">
+        🔥 Hardening Lab & Results
+      </button>
+      <button class="tab-btn" data-tab="tab-wiretap" id="nav-wiretap" role="tab" aria-selected="false">
+        🤖 Multi-Agent Wiretap
+      </button>
+      <button class="tab-btn" data-tab="tab-telemetry" id="nav-telemetry" role="tab" aria-selected="false">
+        📊 Observability Trace
+      </button>
+      <button class="tab-btn" data-tab="tab-benchmark" id="nav-benchmark" role="tab" aria-selected="false">
+        ⚡ Benchmarks & Ablation
+      </button>
+      <button class="tab-btn" data-tab="tab-checkpoints" id="nav-checkpoints" role="tab" aria-selected="false">
+        💾 Checkpoint Timeline & Diff
+      </button>
+    </nav>
+
+    <!-- Tab Contents Container -->
+    <div class="tab-content-container">
+
+      <!-- TAB: MODE A -->
+      <section class="tab-pane active" id="tab-mode-a" role="tabpanel">
+        <div class="grid-2col">
+          <!-- Left: Sample Selector & File Upload -->
+          <div class="glass-panel panel-padded">
+            <h3 class="panel-title"><span class="icon">📁</span> Select Workspace Target</h3>
+            <p class="panel-desc">Choose from built-in sample modules or upload a standalone Python file for autonomous hardening.</p>
+            
+            <div class="source-toggle-group">
+              <label class="radio-label">
+                <input type="radio" name="mode-a-source" value="sample" checked id="radio-source-sample">
+                <span>Built-in Samples</span>
+              </label>
+              <label class="radio-label">
+                <input type="radio" name="mode-a-source" value="upload" id="radio-source-upload">
+                <span>Upload Custom .py</span>
+              </label>
+            </div>
+
+            <!-- Built-in sample dropdown -->
+            <div class="form-group" id="group-sample-select">
+              <label for="sample-file-select">Choose Sample Module:</label>
+              <div class="input-with-button">
+                <select id="sample-file-select" class="form-control">
+                  <option value="discount.py">discount.py (Tiered volume discount)</option>
+                  <option value="banking.py">banking.py (Multi-tier overdraft transaction)</option>
+                  <option value="inventory_pricing.py">inventory_pricing.py (SKU stock & tax calculator)</option>
+                  <option value="rate_limiter.py">rate_limiter.py (Token bucket rate limiter)</option>
+                  <option value="state_machine.py">state_machine.py (Order transition state engine)</option>
+                </select>
+                <button class="btn btn-secondary" id="btn-load-sample">Load Sample</button>
+              </div>
+            </div>
+
+            <!-- File Upload Area -->
+            <div class="form-group hidden" id="group-file-upload">
+              <label>Upload Python File (.py):</label>
+              <div class="dropzone" id="file-dropzone">
+                <input type="file" id="file-upload-input" accept=".py" class="hidden">
+                <div class="dropzone-content">
+                  <span class="upload-icon">📤</span>
+                  <p class="dropzone-text">Click or drag a <code>.py</code> file here to ingest</p>
+                  <span class="file-name-preview" id="upload-filename-preview">No file selected</span>
+                </div>
+              </div>
+              <button class="btn btn-secondary btn-block" id="btn-submit-upload" disabled>Ingest Uploaded File</button>
+            </div>
+
+            <!-- Git Diff Awareness Toggle -->
+            <div class="divider"></div>
+            <div class="toggle-card">
+              <div class="toggle-info">
+                <h4>⚡ Git Diff-Aware Targeted Hardening</h4>
+                <p>Restricts mutation synthesis to modified git lines instead of the full file.</p>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="toggle-git-diff">
+                <span class="slider round"></span>
+              </label>
+            </div>
+            <div class="git-diff-status hidden" id="git-diff-alert"></div>
+          </div>
+
+          <!-- Right: AST & Source Code Inspection -->
+          <div class="glass-panel panel-padded">
+            <h3 class="panel-title"><span class="icon">🔍</span> AST Inspection & Source Code</h3>
+            <div class="ast-meta-summary" id="mode-a-ast-summary">
+              <div class="mini-metric">
+                <span class="mini-label">Module:</span>
+                <span class="mini-val" id="mode-a-module-name">samples.discount</span>
+              </div>
+              <div class="mini-metric">
+                <span class="mini-label">Functions:</span>
+                <span class="mini-val" id="mode-a-funcs-list">calculate_discount</span>
+              </div>
+              <div class="mini-metric">
+                <span class="mini-label">Classes:</span>
+                <span class="mini-val" id="mode-a-classes-list">None</span>
+              </div>
+            </div>
+
+            <div class="code-viewer-container">
+              <div class="code-viewer-header">
+                <div class="code-header-left">
+                  <div class="window-controls">
+                    <span class="w-dot dot-red"></span>
+                    <span class="w-dot dot-yellow"></span>
+                    <span class="w-dot dot-green"></span>
+                  </div>
+                  <span class="code-lang">Python</span>
+                </div>
+                <button class="btn-copy" id="btn-copy-mode-a-code" title="Copy code">📋 Copy</button>
+              </div>
+              <pre class="code-block"><code id="mode-a-code-display"># Loading source code...</code></pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: MODE B -->
+      <section class="tab-pane" id="tab-mode-b" role="tabpanel">
+        <div class="grid-2col">
+          <!-- Left: Specification Input -->
+          <div class="glass-panel panel-padded">
+            <h3 class="panel-title"><span class="icon">✨</span> AI Module Synthesis</h3>
+            <p class="panel-desc">Describe business logic or complex state algorithms in natural language. TargetManagerAgent synthesizes production code with rich boundary conditions.</p>
+
+            <div class="form-group">
+              <label for="synth-prompt-input">Algorithm / Module Specification:</label>
+              <textarea id="synth-prompt-input" class="form-control text-area" rows="6" placeholder="e.g. Implement a high-performance order book matching engine with limit orders, bid/ask spread checks, and partial fills."></textarea>
+            </div>
+
+            <div class="quick-prompts">
+              <span class="quick-prompt-label">Quick Templates:</span>
+              <button class="prompt-chip" data-prompt="Implement a stock trading limit order book with BUY and SELL matching and price-time priority.">Order Book Engine</button>
+              <button class="prompt-chip" data-prompt="Implement a token bucket rate limiter with burst capability, sliding window replenishment, and client IP tracking.">Token Bucket Rate Limiter</button>
+              <button class="prompt-chip" data-prompt="Implement a currency conversion and exchange fee calculator supporting tiered spreads, fee waivers, and rounding.">Forex Converter</button>
+            </div>
+
+            <button class="btn btn-primary btn-block btn-glow" id="btn-synthesize-module">
+              <span class="icon">🚀</span> Synthesize Module
+            </button>
+          </div>
+
+          <!-- Right: Synthesized Output & Preview -->
+          <div class="glass-panel panel-padded">
+            <h3 class="panel-title"><span class="icon">📄</span> Synthesized Code & Target Integration</h3>
+            <div id="synth-status-box" class="info-callout">
+              Enter a specification and click <strong>Synthesize Module</strong> to generate code with AST verification.
+            </div>
+
+            <div class="code-viewer-container hidden" id="synth-code-container">
+              <div class="code-viewer-header">
+                <div class="code-header-left">
+                  <div class="window-controls">
+                    <span class="w-dot dot-red"></span>
+                    <span class="w-dot dot-yellow"></span>
+                    <span class="w-dot dot-green"></span>
+                  </div>
+                  <span class="code-lang" id="synth-file-title">samples/generated_module.py</span>
+                </div>
+                <button class="btn-copy" id="btn-copy-synth-code">📋 Copy</button>
+              </div>
+              <pre class="code-block"><code id="synth-code-display"></code></pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: MODE C -->
+      <section class="tab-pane" id="tab-mode-c" role="tabpanel">
+        <div class="grid-2col">
+          <!-- Left: GitHub URL Ingestion Input -->
+          <div class="glass-panel panel-padded">
+            <h3 class="panel-title"><span class="icon">🌐</span> Direct GitHub File Ingestion</h3>
+            <p class="panel-desc">Fetches raw Python modules directly from public GitHub repositories, validates AST syntax, normalizes URLs, and resolves single-file package dependencies.</p>
+
+            <div class="form-group">
+              <label for="github-url-input">GitHub Python File URL:</label>
+              <input type="text" id="github-url-input" class="form-control" placeholder="https://github.com/psf/requests/blob/main/src/requests/models.py">
+              <p class="form-hint">Accepts standard GitHub blob URLs or raw.githubusercontent.com URLs.</p>
+            </div>
+
+            <!-- Quick sample buttons -->
+            <div class="quick-prompts">
+              <span class="quick-prompt-label">Try Real Repository Files:</span>
+              <button class="prompt-chip" data-url="https://github.com/psf/requests/blob/main/src/requests/models.py">requests/models.py</button>
+              <button class="prompt-chip" data-url="https://github.com/psf/requests/blob/main/src/requests/cookies.py">requests/cookies.py</button>
+              <button class="prompt-chip" data-url="https://github.com/psf/requests/blob/main/src/requests/status_codes.py">requests/status_codes.py</button>
+            </div>
+
+            <button class="btn btn-primary btn-block btn-glow" id="btn-fetch-github">
+              <span class="icon">⬇️</span> Fetch & Ingest
+            </button>
+
+            <div class="url-validation-indicator hidden" id="url-validation-badge">
+              <span class="icon">🛡️</span> <span id="url-validation-text">URL Normalized & Validated</span>
+            </div>
+          </div>
+
+          <!-- Right: Mode C Metadata & AST Audit -->
+          <div class="glass-panel panel-padded">
+            <h3 class="panel-title"><span class="icon">📋</span> Ingestion Metadata & AST Audit</h3>
+            
+            <div id="mode-c-empty-state" class="info-callout">
+              Enter a GitHub URL on the left and click <strong>Fetch & Ingest</strong> to load a public Python module.
+            </div>
+
+            <div id="mode-c-details" class="hidden">
+              <div class="meta-grid">
+                <div class="meta-item">
+                  <span class="meta-label">Repository:</span>
+                  <span class="meta-val" id="mc-repo">psf/requests</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">Branch:</span>
+                  <span class="meta-val" id="mc-branch">main</span>
+                </div>
+                <div class="meta-item full">
+                  <span class="meta-label">File Path:</span>
+                  <span class="meta-val" id="mc-path">src/requests/models.py</span>
+                </div>
+                <div class="meta-item full">
+                  <span class="meta-label">Generated Module:</span>
+                  <span class="meta-val" id="mc-module">samples.github_requests_models</span>
+                </div>
+                <div class="meta-item full">
+                  <span class="meta-label">SHA-256 Fingerprint:</span>
+                  <span class="meta-val mono" id="mc-sha">...</span>
+                </div>
+              </div>
+
+              <!-- Metric counters -->
+              <div class="stats-row">
+                <div class="stat-card">
+                  <span class="stat-num" id="mc-lines">0</span>
+                  <span class="stat-lbl">Lines of Code</span>
+                </div>
+                <div class="stat-card">
+                  <span class="stat-num" id="mc-classes-cnt">0</span>
+                  <span class="stat-lbl">AST Classes</span>
+                </div>
+                <div class="stat-card">
+                  <span class="stat-num" id="mc-callables-cnt">0</span>
+                  <span class="stat-lbl">AST Callables</span>
+                </div>
+              </div>
+
+              <!-- Classes & Methods Chips -->
+              <div class="chip-container">
+                <span class="chip-group-title">Classes Detected:</span>
+                <div class="chip-list" id="mc-class-chips"></div>
+              </div>
+
+              <!-- Collapsible Source Code -->
+              <div class="code-viewer-container" style="margin-top: 1rem;">
+                <div class="code-viewer-header">
+                  <div class="code-header-left">
+                    <div class="window-controls">
+                      <span class="w-dot dot-red"></span>
+                      <span class="w-dot dot-yellow"></span>
+                      <span class="w-dot dot-green"></span>
+                    </div>
+                    <span class="code-lang">Downloaded GitHub Source</span>
+                  </div>
+                  <button class="btn-copy" id="btn-copy-mode-c-code">📋 Copy</button>
+                </div>
+                <pre class="code-block code-collapsed"><code id="mode-c-code-display"></code></pre>
+              </div>
+
+              <button class="btn btn-secondary btn-block" id="btn-activate-mode-c" style="margin-top: 1rem;">
+                🎯 Target Confirmed for Hardening
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: BLAST RADIUS -->
+      <section class="tab-pane" id="tab-blast" role="tabpanel">
+        <div class="grid-2col">
+          <!-- Left: Call Graph Controls & Tree -->
+          <div class="glass-panel panel-padded">
+            <h3 class="panel-title"><span class="icon">💥</span> Blast Radius & Dependency Impact Analysis</h3>
+            <p class="panel-desc">Static AST call-graph inspection, recursive caller propagation, downstream sub-routines, and architectural risk categorization.</p>
+
+            <div class="form-group">
+              <label for="blast-func-select">Select Function to Inspect Blast Radius:</label>
+              <select id="blast-func-select" class="form-control"></select>
+            </div>
+
+            <div class="stats-row">
+              <div class="stat-card">
+                <span class="stat-num" id="blast-risk-badge">🟢 LOW</span>
+                <span class="stat-lbl">Risk Category</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-num" id="blast-affected-count">0 / 0</span>
+                <span class="stat-lbl">Affected Functions</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-num" id="blast-impact-ratio">0.0%</span>
+                <span class="stat-lbl">Impact Ratio</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-num" id="blast-callees-count">0</span>
+                <span class="stat-lbl">Direct Callees</span>
+              </div>
+            </div>
+
+            <!-- ASCII Call Tree -->
+            <div class="tree-container">
+              <span class="tree-header">ASCII Dependency Call Tree:</span>
+              <pre class="tree-code" id="blast-tree-display">Select a function to compute blast radius...</pre>
+            </div>
+          </div>
+
+          <!-- Right: Graph Visualization -->
+          <div class="glass-panel panel-padded">
+            <h3 class="panel-title"><span class="icon">🕸️</span> Architectural Call Graph Visualizer</h3>
+            <div class="call-graph-canvas-wrapper" id="call-graph-container">
+              <div id="call-graph-canvas" class="call-graph-canvas"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: HARDENING LAB -->
+      <section class="tab-pane" id="tab-hardening" role="tabpanel">
+        <div class="hardening-dashboard">
+          
+          <!-- Execution Trigger Control Bar -->
+          <div class="glass-panel run-bar-panel">
+            <div class="run-bar-left">
+              <div class="active-config-preview">
+                <span class="cfg-item">Target: <strong id="harden-target-lbl">samples.discount</strong></span>
+                <span class="cfg-item">Model: <strong id="harden-model-lbl">gemini-3.6-flash</strong></span>
+                <span class="cfg-item">Max Iter: <strong id="harden-iter-lbl">3</strong></span>
+                <span class="cfg-item">Target Score: <strong id="harden-score-lbl">85%</strong></span>
+              </div>
+            </div>
+            <div class="run-bar-right" style="display: flex; gap: 0.75rem; align-items: center;">
+              <button class="btn btn-primary btn-glow btn-lg" id="btn-run-hardening">
+                <span class="icon">⚡</span> Run TestForge Autonomous Hardening
+              </button>
+              <button class="btn btn-danger btn-lg hidden" id="btn-cancel-hardening">
+                <span class="icon">🛑</span> Cancel Hardening
+              </button>
+            </div>
+          </div>
+
+          <!-- Progress Bar & Active State Spinner -->
+          <div class="progress-wrapper hidden" id="hardening-progress-box">
+            <div class="progress-meta">
+              <span class="progress-status-text" id="hardening-status-text">Multi-Agent reflection loop running across CPU cores...</span>
+              <span class="progress-percent" id="hardening-percent-text">0%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" id="hardening-progress-bar"></div>
+            </div>
+          </div>
+
+          <!-- Hardening Verdict Banner -->
+          <div class="verdict-banner hidden" id="hardening-verdict-banner"></div>
+
+          <!-- 3-ROW STRUCTURED METRICS BOARDS -->
+          <div class="metrics-dashboard-grid" id="hardening-metrics-board">
+            
+            <!-- ROW 1: BASELINE EXECUTION -->
+            <div class="glass-panel panel-padded">
+              <h4 class="metric-row-title"><span class="icon">🧪</span> Baseline Test Suite Execution (Pass@1 Integrity)</h4>
+              <div class="kpi-grid-5">
+                <div class="kpi-card">
+                  <span class="kpi-val" id="kpi-base-gen">0</span>
+                  <span class="kpi-lbl">Baseline Generated</span>
+                </div>
+                <div class="kpi-card">
+                  <span class="kpi-val" id="kpi-base-exec">0</span>
+                  <span class="kpi-lbl">Baseline Executed</span>
+                </div>
+                <div class="kpi-card">
+                  <span class="kpi-val text-green" id="kpi-base-pass">0</span>
+                  <span class="kpi-lbl">Baseline Passed</span>
+                </div>
+                <div class="kpi-card">
+                  <span class="kpi-val text-red" id="kpi-base-fail">0</span>
+                  <span class="kpi-lbl">Baseline Failed</span>
+                </div>
+                <div class="kpi-card">
+                  <span class="kpi-val" id="kpi-base-verdict">⚪ PENDING</span>
+                  <span class="kpi-lbl">Clean Code Verdict</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- ROW 2: MUTATION & COVERAGE -->
+            <div class="glass-panel panel-padded">
+              <h4 class="metric-row-title"><span class="icon">🧬</span> Mutation Hardening & Line Coverage Analysis</h4>
+              <div class="kpi-grid-7">
+                <div class="kpi-card">
+                  <span class="kpi-val" id="kpi-lines-cov">0 / 0</span>
+                  <span class="kpi-lbl">Lines Covered</span>
+                </div>
+                <div class="kpi-card">
+                  <span class="kpi-val text-cyan" id="kpi-cov-pct">0.0%</span>
+                  <span class="kpi-lbl">Line Coverage %</span>
+                </div>
+                <div class="kpi-card">
+                  <span class="kpi-val" id="kpi-mut-gen">0</span>
+                  <span class="kpi-lbl">Mutants Generated</span>
+                </div>
+                <div class="kpi-card">
+                  <span class="kpi-val" id="kpi-mut-exec">0</span>
+                  <span class="kpi-lbl">Mutants Executed</span>
+                </div>
+                <div class="kpi-card">
+                  <span class="kpi-val text-green" id="kpi-mut-kill">0</span>
+                  <span class="kpi-lbl">Mutants Killed</span>
+                </div>
+                <div class="kpi-card">
+                  <span class="kpi-val text-red" id="kpi-mut-surv">0</span>
+                  <span class="kpi-lbl">Mutants Survived</span>
+                </div>
+                <div class="kpi-card">
+                  <span class="kpi-val text-amber" id="kpi-mut-err">0</span>
+                  <span class="kpi-lbl">Exec Errors</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- ROW 3: FINAL STATUS & REFLECTION -->
+            <div class="glass-panel panel-padded">
+              <h4 class="metric-row-title"><span class="icon">🏁</span> Hardening Status & Reflection Cycles</h4>
+              <div class="kpi-grid-3">
+                <div class="kpi-card highlight">
+                  <span class="kpi-val text-glow" id="kpi-mut-score">0.0%</span>
+                  <span class="kpi-lbl">Verified Mutation Score</span>
+                </div>
+                <div class="kpi-card">
+                  <span class="kpi-val" id="kpi-cycles-done">0</span>
+                  <span class="kpi-lbl">Reflection Iterations</span>
+                </div>
+                <div class="kpi-card">
+                  <span class="kpi-val" id="kpi-final-status">INITIALIZING</span>
+                  <span class="kpi-lbl">Final Pipeline Status</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Iteration Breakdown Table -->
+          <div class="glass-panel panel-padded" id="history-panel">
+            <h4 class="metric-row-title"><span class="icon">📈</span> Iteration-by-Iteration Reflection Breakdown</h4>
+            <div class="table-responsive">
+              <table class="data-table" id="history-table">
+                <thead>
+                  <tr>
+                    <th>Iteration</th>
+                    <th>Total Mutants</th>
+                    <th>Killed</th>
+                    <th>Survived</th>
+                    <th>Mutation Score</th>
+                    <th>Line Coverage</th>
+                    <th>Duration</th>
+                  </tr>
+                </thead>
+                <tbody id="history-table-body">
+                  <tr><td colspan="7" class="text-center text-muted">No hardening run executed yet.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- AST Mutant Audit & Unified Diff Viewer -->
+          <div class="glass-panel panel-padded" id="mutant-audit-panel">
+            <div class="panel-header-with-filter">
+              <h4 class="metric-row-title"><span class="icon">🔍</span> AST Mutation Audit & Diff Inspector</h4>
+              <div class="filter-group">
+                <button class="filter-btn active" data-filter="ALL">All (<span id="cnt-all-mut">0</span>)</button>
+                <button class="filter-btn" data-filter="KILLED">🟢 Killed (<span id="cnt-kill-mut">0</span>)</button>
+                <button class="filter-btn" data-filter="SURVIVED">🔴 Survived (<span id="cnt-surv-mut">0</span>)</button>
+                <button class="filter-btn" data-filter="EQUIVALENT">🔵 Equiv (<span id="cnt-equiv-mut">0</span>)</button>
+              </div>
+            </div>
+
+            <div class="grid-2col" style="margin-top: 1rem;">
+              <!-- Mutant Table -->
+              <div class="table-responsive mutant-table-scroll">
+                <table class="data-table" id="mutants-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Type</th>
+                      <th>Line</th>
+                      <th>Outcome</th>
+                      <th>Time</th>
+                    </tr>
+                  </thead>
+                  <tbody id="mutants-table-body">
+                    <tr><td colspan="5" class="text-center text-muted">Mutants will be listed after running hardening.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Unified Diff Viewer -->
+              <div class="diff-viewer-panel">
+                <div class="diff-header">
+                  <div class="code-header-left">
+                    <div class="window-controls">
+                      <span class="w-dot dot-red"></span>
+                      <span class="w-dot dot-yellow"></span>
+                      <span class="w-dot dot-green"></span>
+                    </div>
+                    <span id="diff-selected-mutant-title">Unified AST Diff Viewer</span>
+                  </div>
+                  <span class="badge" id="diff-status-badge">Select a mutant</span>
+                </div>
+                <pre class="diff-code-block"><code id="diff-code-display">// Click on any mutant in the table to inspect its unified AST diff...</code></pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- Standalone Test Suite Export Viewer -->
+          <div class="glass-panel panel-padded" id="hardened-suite-panel">
+            <div class="panel-header-flex">
+              <div>
+                <h4 class="metric-row-title"><span class="icon">📦</span> Final Hardened Test Suite (<code>test_hardened.py</code>)</h4>
+                <p class="panel-desc">Executable Pytest suite synthesized across multi-agent reflection loops.</p>
+              </div>
+              <div class="btn-group">
+                <button class="btn btn-secondary btn-icon" id="btn-copy-hardened-suite">📋 Copy Suite</button>
+                <button class="btn btn-outline btn-icon" id="btn-download-hardened-suite">💾 Download</button>
+              </div>
+            </div>
+            <pre class="code-block"><code id="hardened-suite-code">// Hardened tests will appear here after completion.</code></pre>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- TAB: WIRETAP -->
+      <section class="tab-pane" id="tab-wiretap" role="tabpanel">
+        <div class="glass-panel panel-padded">
+          <div class="panel-header-flex">
+            <div>
+              <div style="display: inline-flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                <h3 class="panel-title" style="margin-bottom: 0;"><span class="icon">🤖</span> Live Multi-Agent Wiretap & Inter-Agent Handoff Trajectory</h3>
+                <span id="wiretap-ws-status-badge" class="badge badge-cyan" title="WebSocket Live Event Stream Status">⚡ Connecting...</span>
+              </div>
+              <p class="panel-desc" style="margin-top: 0.35rem;">Visualizes sequential state transitions, contract input/output payloads, and ADK tool deliberation telemetries across reflection loops in real-time.</p>
+            </div>
+            <button class="btn btn-secondary btn-icon" id="btn-refresh-wiretap">🔄 Refresh Wiretap</button>
+          </div>
+
+          <!-- KPI stats row -->
+          <div class="stats-row">
+            <div class="stat-card">
+              <span class="stat-num" id="wiretap-kpi-handoffs">0</span>
+              <span class="stat-lbl">Captured Handoffs</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-num" id="wiretap-kpi-agents">0</span>
+              <span class="stat-lbl">Active Agents</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-num" id="wiretap-kpi-adk">0</span>
+              <span class="stat-lbl">ADK Tool Calls</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-num" id="wiretap-kpi-loops">0</span>
+              <span class="stat-lbl">Reflection Loops</span>
+            </div>
+          </div>
+
+          <!-- Stepper timeline container -->
+          <div class="wiretap-timeline" id="wiretap-timeline-container">
+            <div class="info-callout">No agent handoffs captured yet. Run a hardening pipeline to stream live inter-agent communications!</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: TELEMETRY -->
+      <section class="tab-pane" id="tab-telemetry" role="tabpanel">
+        <div class="glass-panel panel-padded">
+          <div class="panel-header-flex">
+            <div>
+              <h3 class="panel-title"><span class="icon">📊</span> Observability & Telemetry Trace Log</h3>
+              <p class="panel-desc">Real-time telemetry captured from <code>testforge_trace.jsonl</code> detailing token consumption, LLM latency, and agent deliberation events.</p>
+            </div>
+            <button class="btn btn-secondary btn-icon" id="btn-refresh-telemetry">🔄 Refresh Telemetry</button>
+          </div>
+
+          <div class="stats-row">
+            <div class="stat-card">
+              <span class="stat-num" id="telem-kpi-events">0</span>
+              <span class="stat-lbl">Total Events</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-num text-cyan" id="telem-kpi-tokens">0</span>
+              <span class="stat-lbl">Total LLM Tokens Used</span>
+            </div>
+          </div>
+
+          <h4 class="metric-row-title" style="margin-top: 1.5rem;"><span class="icon">⚡</span> Recent LLM Inference Telemetries</h4>
+          <div class="table-responsive">
+            <table class="data-table" id="telemetry-table">
+              <thead>
+                <tr>
+                  <th>Agent</th>
+                  <th>Model / Provider</th>
+                  <th>Iteration</th>
+                  <th>Latency</th>
+                  <th>Prompt Tokens</th>
+                  <th>Completion Tokens</th>
+                  <th>Total Tokens</th>
+                  <th>AST Valid</th>
+                </tr>
+              </thead>
+              <tbody id="telemetry-table-body">
+                <tr><td colspan="8" class="text-center text-muted">No telemetry logged yet.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: BENCHMARK -->
+      <section class="tab-pane" id="tab-benchmark" role="tabpanel">
+        <div class="glass-panel panel-padded">
+          <div class="panel-header-flex">
+            <div>
+              <h3 class="panel-title"><span class="icon">⚡</span> Statistical Benchmarking & Cost Accounting</h3>
+              <p class="panel-desc">Empirical comparison of Baseline vs Zero-Shot vs Multi-Agent Reflection with explicit categorization of measured, calculated, and estimated metrics.</p>
+            </div>
+            <div class="btn-group">
+              <button class="btn btn-primary btn-icon" id="btn-run-benchmark">🚀 Run Benchmark</button>
+              <button class="btn btn-secondary btn-icon" id="btn-refresh-benchmark">🔄 Refresh Results</button>
+            </div>
+          </div>
+
+          <!-- Benchmark Controls -->
+          <div class="benchmark-controls-card">
+            <div class="form-row">
+              <div class="form-group col">
+                <label for="bench-target-select">Benchmark Target Module:</label>
+                <select id="bench-target-select" class="form-control">
+                  <option value="samples/discount.py" selected>samples/discount.py (Discount Calculator)</option>
+                  <option value="samples/banking.py">samples/banking.py (Banking Transactions)</option>
+                  <option value="samples/inventory_pricing.py">samples/inventory_pricing.py (Inventory & Tax)</option>
+                </select>
+              </div>
+              <div class="form-group col">
+                <label for="bench-repetitions">Repetitions per Scenario:</label>
+                <select id="bench-repetitions" class="form-control">
+                  <option value="1" selected>1 Repetition (Fast)</option>
+                  <option value="2">2 Repetitions (Mean ± StdDev)</option>
+                  <option value="3">3 Repetitions (Robust Statistical Sample)</option>
+                </select>
+              </div>
+              <div class="form-group col">
+                <label>Scenarios to Evaluate:</label>
+                <div class="checkbox-group-inline" style="display: flex; gap: 1rem; align-items: center; height: 38px;">
+                  <label><input type="checkbox" id="bench-sc-baseline" checked> Baseline</label>
+                  <label><input type="checkbox" id="bench-sc-zeroshot" checked> Zero-Shot</label>
+                  <label><input type="checkbox" id="bench-sc-refl" checked> Reflection</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Benchmark Status / Progress alert -->
+          <div id="benchmark-status-alert" class="hidden alert info" style="margin-top: 1rem;"></div>
+
+          <!-- Summary Comparison Table -->
+          <h4 class="metric-row-title" style="margin-top: 1.5rem;"><span class="icon">📊</span> Comparative Ablation Results</h4>
+          <div class="table-responsive">
+            <table class="data-table" id="benchmark-summary-table">
+              <thead>
+                <tr>
+                  <th>Scenario</th>
+                  <th>Runs Completed</th>
+                  <th>Mean Latency</th>
+                  <th>StdDev Latency</th>
+                  <th>Mutation Score</th>
+                  <th>Line Coverage</th>
+                  <th>Total Tokens (Measured)</th>
+                  <th>Est. Cost USD (Estimated)</th>
+                </tr>
+              </thead>
+              <tbody id="benchmark-summary-table-body">
+                <tr><td colspan="8" class="text-center text-muted">No benchmark results loaded. Click "Run Benchmark" or "Refresh Results".</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Metric Categorization Callouts -->
+          <div class="grid-3col" style="margin-top: 1.5rem;">
+            <div class="card metric-category-card">
+              <h5 class="cat-title green">📏 Measured Metrics</h5>
+              <p class="cat-desc">Direct hardware wall-clock runtimes, AST mutant counts (generated, killed, survived, timeouts), and exact provider token counts.</p>
+              <div id="bench-measured-details" class="cat-details">Awaiting benchmark execution...</div>
+            </div>
+            <div class="card metric-category-card">
+              <h5 class="cat-title cyan">🧮 Calculated Metrics</h5>
+              <p class="cat-desc">Derived mathematical rates: Mutation Score % = (Killed / Total * 100), Line Coverage %, and Speedup Ratios.</p>
+              <div id="bench-calculated-details" class="cat-details">Awaiting benchmark execution...</div>
+            </div>
+            <div class="card metric-category-card">
+              <h5 class="cat-title amber">💲 Estimated Metrics</h5>
+              <p class="cat-desc">Financial cost in USD estimated using published Gemini pricing rates ($0.075/1M prompt, $0.30/1M completion tokens).</p>
+              <div id="bench-estimated-details" class="cat-details">Awaiting benchmark execution...</div>
+            </div>
+          </div>
+
+          <!-- Markdown Report Preview (Formatted & Raw Toggle) -->
+          <div class="card" style="margin-top: 1.5rem;">
+            <div class="card-header-flex">
+              <h4 class="metric-row-title" style="margin: 0;"><span class="icon">📝</span> Benchmark Report Preview</h4>
+              <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <div class="pill-group" style="display: flex; gap: 4px; background: rgba(15,23,42,0.8); padding: 2px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.08);">
+                  <button type="button" class="btn btn-xs active" id="btn-bench-md-rendered" style="padding: 2px 8px; font-size: 0.72rem; border-radius: 4px;">📑 Formatted</button>
+                  <button type="button" class="btn btn-xs btn-outline" id="btn-bench-md-raw" style="padding: 2px 8px; font-size: 0.72rem; border-radius: 4px;">💻 Raw Markdown</button>
+                </div>
+                <a href="/api/benchmark/markdown" target="_blank" class="btn btn-outline btn-sm">Open Raw Endpoint</a>
+              </div>
+            </div>
+            <div id="bench-rendered-markdown-view" class="markdown-preview-pane" style="padding: 1rem; max-height: 280px; overflow-y: auto;">
+              <p class="text-muted" style="font-size: 0.85rem; margin: 0;">Run a benchmark to preview the generated statistical report.</p>
+            </div>
+            <pre class="code-block hidden" id="bench-raw-markdown-container" style="max-height: 250px;"><code id="bench-markdown-preview">Run a benchmark to preview the generated Markdown report.</code></pre>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- TAB: CHECKPOINT TIMELINE & DIFF INSPECTOR -->
+      <section class="tab-pane" id="tab-checkpoints" role="tabpanel">
+        <div class="glass-panel panel-padded">
+          <div class="panel-header-row" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem;">
+            <div>
+              <h3 class="panel-title" style="margin: 0 0 0.25rem 0;"><span class="icon">💾</span> Blackboard Checkpoint Timeline & Diff Inspector</h3>
+              <p class="panel-desc" style="margin: 0;">Persistent SQLite point-in-time snapshots, deterministic semantic diffing, and safe recovery.</p>
+            </div>
+            <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+              <button class="btn btn-primary btn-sm" id="btn-refresh-checkpoints">
+                🔄 Refresh Checkpoints
+              </button>
+              <button class="btn btn-secondary btn-sm" id="btn-trigger-diff-modal" disabled title="Select Base and Target checkpoints to compare">
+                ⚖️ Compare Selected Checkpoints
+              </button>
+            </div>
+          </div>
+
+          <!-- Filter & Search Controls Bar -->
+          <div class="filter-bar-card glass-panel" style="padding: 0.75rem 1rem; margin-bottom: 1.5rem; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px;">
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
+              <div class="form-group" style="margin: 0; min-width: 180px;">
+                <label for="cp-stage-filter" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 0.25rem;">Workflow Stage:</label>
+                <select id="cp-stage-filter" class="form-control" style="font-size: 0.85rem; padding: 0.4rem 0.6rem;">
+                  <option value="ALL" selected>All Stages</option>
+                  <option value="INITIAL_INGESTION">INITIAL_INGESTION</option>
+                  <option value="BASELINE_SYNTHESIS">BASELINE_SYNTHESIS</option>
+                  <option value="BASELINE_VALIDATED">BASELINE_VALIDATED</option>
+                  <option value="REFLECTION_ITERATION">REFLECTION_ITERATION (Any)</option>
+                  <option value="FINALIZED">FINALIZED</option>
+                  <option value="CANCELLED">CANCELLED</option>
+                  <option value="TIMED_OUT">TIMED_OUT</option>
+                </select>
+              </div>
+
+              <div class="form-group" style="margin: 0; min-width: 140px;">
+                <label for="cp-status-filter" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 0.25rem;">Status:</label>
+                <select id="cp-status-filter" class="form-control" style="font-size: 0.85rem; padding: 0.4rem 0.6rem;">
+                  <option value="ALL" selected>All Statuses</option>
+                  <option value="SUCCESS">SUCCESS</option>
+                  <option value="IN_PROGRESS">IN_PROGRESS</option>
+                  <option value="CANCELLED">CANCELLED</option>
+                  <option value="TIMED_OUT">TIMED_OUT</option>
+                  <option value="FAILED">FAILED</option>
+                </select>
+              </div>
+
+              <div class="form-group" style="margin: 0; flex: 1; min-width: 180px;">
+                <label for="cp-job-filter" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 0.25rem;">Filter by Job ID:</label>
+                <input type="text" id="cp-job-filter" class="form-control" placeholder="e.g. job_123 or leave blank..." style="font-size: 0.85rem; padding: 0.4rem 0.6rem;">
+              </div>
+
+              <div class="form-group" style="margin: 0; min-width: 140px;">
+                <label for="cp-sort-order" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 0.25rem;">Sort Order:</label>
+                <select id="cp-sort-order" class="form-control" style="font-size: 0.85rem; padding: 0.4rem 0.6rem;">
+                  <option value="newest" selected>Newest First</option>
+                  <option value="oldest">Oldest First</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Active Diff Selection Indicators -->
+            <div id="diff-selection-banner" style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid rgba(255, 255, 255, 0.06); display: flex; align-items: center; justify-content: space-between; font-size: 0.82rem; flex-wrap: wrap; gap: 0.5rem;">
+              <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                <span><strong>Diff Base (A):</strong> <span id="label-diff-base" class="text-muted">None selected</span></span>
+                <span><strong>Diff Target (B):</strong> <span id="label-diff-target" class="text-muted">None selected</span></span>
+              </div>
+              <div style="display: flex; gap: 0.5rem;">
+                <button type="button" class="btn btn-xs btn-outline" id="btn-swap-diff-selection" disabled>Swap A ⇄ B</button>
+                <button type="button" class="btn btn-xs btn-outline" id="btn-clear-diff-selection">Clear Selection</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Alert boxes for status / errors -->
+          <div id="checkpoints-error-alert" class="alert danger hidden" style="margin-bottom: 1rem;"></div>
+          <div id="checkpoints-restore-alert" class="alert success hidden" style="margin-bottom: 1rem;"></div>
+
+          <!-- Split Workspace: Left Timeline List, Right Inspector / Diff Panel -->
+          <div class="grid-2col" style="grid-template-columns: 42% 58%; gap: 1.25rem; align-items: start;">
+            
+            <!-- Left: Checkpoint Timeline Stream -->
+            <div class="checkpoint-timeline-pane">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                <h4 style="margin: 0; font-size: 0.95rem; font-weight: 600;"><span class="icon">📜</span> Snapshot History (<span id="cp-count-badge">0</span>)</h4>
+                <span id="cp-pagination-info" class="text-muted" style="font-size: 0.75rem;">Showing persistent records</span>
+              </div>
+
+              <!-- Loading Skeleton -->
+              <div id="checkpoints-loading-state" class="hidden text-center" style="padding: 2rem;">
+                <div class="spinner" style="margin: 0 auto 0.75rem auto;"></div>
+                <p class="text-muted" style="font-size: 0.85rem;">Querying SQLite Checkpoint Storage...</p>
+              </div>
+
+              <!-- Empty State -->
+              <div id="checkpoints-empty-state" class="hidden text-center" style="padding: 2.5rem 1rem; background: rgba(15,23,42,0.4); border: 1px dashed rgba(255,255,255,0.1); border-radius: 8px;">
+                <span style="font-size: 2rem; display: block; margin-bottom: 0.5rem;">📭</span>
+                <h5 style="margin: 0 0 0.25rem 0; font-weight: 600;">No Checkpoints Found</h5>
+                <p class="text-muted" style="font-size: 0.82rem; margin: 0;">Run a hardening job or adjust filter criteria above to populate persistent snapshots.</p>
+              </div>
+
+              <!-- Checkpoint Cards Container -->
+              <div id="checkpoint-cards-stream" class="timeline-stream-container" style="display: flex; flex-direction: column; gap: 0.75rem; max-height: 680px; overflow-y: auto; padding-right: 4px;"></div>
+            </div>
+
+            <!-- Right: Inspector / Diff / JSON Workspace -->
+            <div class="checkpoint-inspector-pane glass-panel panel-padded" style="min-height: 500px;">
+              <!-- View Switcher Tabs -->
+              <div class="pill-group" style="display: flex; gap: 6px; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.75rem;">
+                <button type="button" class="btn btn-sm active" id="btn-subtab-detail">🔍 Structured Inspector</button>
+                <button type="button" class="btn btn-sm btn-outline" id="btn-subtab-diff">⚖️ Deterministic Diff</button>
+                <button type="button" class="btn btn-sm btn-outline" id="btn-subtab-json">💻 Raw Snapshot JSON</button>
+              </div>
+
+              <!-- View A: Structured Detail Inspector -->
+              <div id="view-cp-detail" class="inspector-subview">
+                <div id="cp-detail-empty-placeholder" class="text-center" style="padding: 3rem 1rem;">
+                  <span style="font-size: 2.2rem; display: block; margin-bottom: 0.5rem;">👈</span>
+                  <h5 style="margin: 0 0 0.25rem 0;">Select a Checkpoint from the Timeline</h5>
+                  <p class="text-muted" style="font-size: 0.82rem; margin: 0;">Click "Inspect" on any snapshot card to review its partitions, source symbols, test suites, and metrics.</p>
+                </div>
+                <div id="cp-detail-content" class="hidden">
+                  <!-- Injected safely via DOM -->
+                </div>
+              </div>
+
+              <!-- View B: Deterministic Diff View -->
+              <div id="view-cp-diff" class="inspector-subview hidden">
+                <div id="cp-diff-empty-placeholder" class="text-center" style="padding: 3rem 1rem;">
+                  <span style="font-size: 2.2rem; display: block; margin-bottom: 0.5rem;">⚖️</span>
+                  <h5 style="margin: 0 0 0.25rem 0;">Select Two Checkpoints to Compare</h5>
+                  <p class="text-muted" style="font-size: 0.82rem; margin: 0;">Use the "Set as Base" and "Set as Target" buttons on checkpoint cards, then click "Compare".</p>
+                </div>
+                <div id="cp-diff-content" class="hidden">
+                  <!-- Injected safely via DOM -->
+                </div>
+              </div>
+
+              <!-- View C: Raw JSON View -->
+              <div id="view-cp-json" class="inspector-subview hidden">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                  <span id="raw-json-title" style="font-size: 0.82rem; font-weight: 600; color: #94a3b8;">Snapshot Payload</span>
+                  <button class="btn btn-xs btn-outline" id="btn-copy-checkpoint-json">📋 Copy JSON</button>
+                </div>
+                <pre class="code-block" style="max-height: 600px; overflow-y: auto;"><code id="checkpoint-raw-json-display">// Select a checkpoint to view its raw payload</code></pre>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Restore Confirmation Modal -->
+  <div class="modal-backdrop hidden" id="restore-modal-backdrop">
+    <div class="modal glass-panel" id="restore-modal" role="dialog" aria-labelledby="restore-modal-title" style="max-width: 520px;">
+      <div class="modal-header">
+        <h2 id="restore-modal-title"><span class="icon">⚠️</span> Confirm State Restoration</h2>
+        <button class="close-btn" id="btn-close-restore-modal" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="alert warning" style="margin-bottom: 1rem;">
+          <p style="margin: 0; font-size: 0.85rem;"><strong>Safety Notice:</strong> Restoring this checkpoint instantiates an isolated Blackboard state with the exact partition snapshot recorded at this stage.</p>
+        </div>
+        <div style="background: rgba(15,23,42,0.6); padding: 0.75rem 1rem; border-radius: 6px; font-size: 0.82rem; margin-bottom: 1rem;">
+          <p style="margin: 0 0 0.25rem 0;"><strong>Checkpoint ID:</strong> <code id="restore-target-id">-</code></p>
+          <p style="margin: 0 0 0.25rem 0;"><strong>Workflow Stage:</strong> <span id="restore-target-stage" class="badge">-</span></p>
+          <p style="margin: 0 0 0.25rem 0;"><strong>Revision:</strong> <span id="restore-target-rev">-</span></p>
+          <p style="margin: 0;"><strong>Creation Time:</strong> <span id="restore-target-time">-</span></p>
+        </div>
+        <p style="font-size: 0.82rem; color: #94a3b8; line-height: 1.4; margin: 0;">
+          <strong>What this changes:</strong> The backend deserializes this snapshot into an isolated Blackboard instance, verifying all partition invariants and enabling historical test code and mutant state inspection. Historical database records remain immutable.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btn-cancel-restore">Cancel</button>
+        <button class="btn btn-primary" id="btn-confirm-restore">Confirm & Restore Snapshot</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-left">
+      <span>⚡ TestForge v2.0 &bull; CSE3101: Agentic AI &bull; Authors: Sourabh & Shreshth</span>
+    </div>
+    <div class="footer-right">
+      <span>Hardware Optimized for Apple Silicon Neural Engine & Multi-core Sandboxing</span>
+    </div>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

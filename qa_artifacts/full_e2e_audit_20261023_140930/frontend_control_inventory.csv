@@ -1,0 +1,95 @@
+name,selector,expected_behavior,enabled,actual_action,result_status,endpoint_or_handler,console_errors,evidence_reference
+Brand Logo & Title,h1.brand-title,Displays TestForge title,true,Verified title text and subtitle,PASS,Static DOM,0,01_initial_dashboard.png
+Hardware Profile Pill,#pill-hardware,Displays Apple Silicon hardware badge,true,Verified Apple Silicon (arm64),PASS,GET /api/status,0,01_initial_dashboard.png
+Ollama Local Engine Pill,#pill-ollama,Displays Ollama connection status dot,true,Verified indicator dot & label,PASS,GET /api/status,0,01_initial_dashboard.png
+Google Gemini Pill,#pill-gemini,Displays Gemini cloud readiness status,true,Verified indicator dot & label,PASS,GET /api/status,0,01_initial_dashboard.png
+OpenRouter Pill,#pill-openrouter,Displays OpenRouter fallback status,true,Verified indicator dot & label,PASS,GET /api/status,0,01_initial_dashboard.png
+GitHub Repo Link,#btn-github-repo,Links to GitHub repository,true,Verified href to sourabhJain121/Testforge,PASS,External Link,0,01_initial_dashboard.png
+Settings Modal Toggle Button,#btn-toggle-settings,Opens settings modal dialog,true,"Clicked button, modal backdrop unhidden",PASS,DOM class toggle,0,02a_settings_modal.png
+Execution Provider Mode Select,#engine-mode-select,"Select execution mode (auto, cloud, local)",true,Read default value: auto,PASS,Change listener,0,02a_settings_modal.png
+Foundation Model Select,#model-name-select,Select foundation model,true,Read default value: gemini-3.6-flash,PASS,Change listener,0,02a_settings_modal.png
+Max Iterations Slider,#slider-iterations,Configure max reflection iterations,true,Read value: 3,PASS,Input listener,0,02a_settings_modal.png
+Target Mutation Score Slider,#slider-mutation-score,Configure target mutation score %,true,Read value: 85%,PASS,Input listener,0,02a_settings_modal.png
+Gemini API Key Input,#input-gemini-key,Secure password input for Gemini key,true,Verified type=password and placeholder,PASS,Form input,0,02a_settings_modal.png
+OpenRouter API Key Input,#input-openrouter-key,Secure password input for OpenRouter key,true,Verified type=password and placeholder,PASS,Form input,0,02a_settings_modal.png
+Settings Close Button,#btn-close-settings,Closes settings modal dialog,true,"Clicked close button, hidden=True",PASS,DOM class toggle,0,02a_settings_modal.png
+Settings Cancel Button,#btn-cancel-settings,Cancels and dismisses settings modal,true,Verified handler mirrors close,PASS,DOM class toggle,0,02a_settings_modal.png
+Settings Save Button,#btn-save-settings,Saves config to localStorage and backend,true,Verified click triggers save & toast notification,PASS,localStorage & POST /api/config,0,02a_settings_modal.png
+Nav Tab: Mode A: Workspace & Upload,#nav-mode-a,Activates pane #tab-mode-a,true,"Clicked tab, pane active=True",PASS,switchTab handler,0,02b_mode_a_workspace.png
+Nav Tab: Mode B: AI Synthesis,#nav-mode-b,Activates pane #tab-mode-b,true,"Clicked tab, pane active=True",PASS,switchTab handler,0,02c_mode_b_synthesis.png
+Nav Tab: Mode C: GitHub Direct Import,#nav-mode-c,Activates pane #tab-mode-c,true,"Clicked tab, pane active=True",PASS,switchTab handler,0,02d_mode_c_github.png
+Nav Tab: Blast Radius & Call Graph,#nav-blast,Activates pane #tab-blast,true,"Clicked tab, pane active=True",PASS,switchTab handler,0,02e_blast_radius_call_graph.png
+Nav Tab: Multi-Agent Wiretap,#nav-wiretap,Activates pane #tab-wiretap,true,"Clicked tab, pane active=True",PASS,switchTab handler,0,09a_multi_agent_wiretap.png
+Nav Tab: Observability Trace,#nav-telemetry,Activates pane #tab-telemetry,true,"Clicked tab, pane active=True",PASS,switchTab handler,0,09b_observability_telemetry.png
+Nav Tab: Benchmarks & Ablation,#nav-benchmark,Activates pane #tab-benchmark,true,"Clicked tab, pane active=True",PASS,switchTab handler,0,09c_statistical_benchmarks.png
+Nav Tab: Checkpoint Timeline & Diff,#nav-checkpoints,Activates pane #tab-checkpoints,true,"Clicked tab, pane active=True",PASS,switchTab handler,0,06_checkpoint_timeline_detail.png
+Nav Tab: Hardening Lab & Results,#nav-hardening,Activates pane #tab-hardening,true,"Clicked tab, pane active=True",PASS,switchTab handler,0,03_hardening_completed.png
+Mode A Source Radio: Built-in,#radio-source-sample,Selects built-in sample mode,true,Checked by default,PASS,Radio change listener,0,02b_mode_a_workspace.png
+Mode A Source Radio: Upload,#radio-source-upload,Selects custom file upload mode,true,Toggles dropzone visibility,PASS,Radio change listener,0,02b_mode_a_workspace.png
+Sample Module Select,#sample-file-select,Dropdown of available sample modules,true,Selected discount.py,PASS,Select change,0,02b_mode_a_workspace.png
+Load Sample Button,#btn-load-sample,Loads selected sample and parses AST,true,Loaded samples.discount,PASS,POST /api/ingest/sample,0,02b_mode_a_workspace.png
+File Dropzone,#file-dropzone,Drag-and-drop target for Python files,true,Verified dropzone element and hover styles,PASS,Drag/drop handlers,0,02b_mode_a_workspace.png
+File Upload Input,#file-upload-input,Hidden file input accepting .py,true,Verified accept='.py',PASS,change event listener,0,02b_mode_a_workspace.png
+Submit Upload Button,#btn-submit-upload,Uploads custom python file,true,Enabled when file attached,PASS,POST /api/ingest/upload,0,02b_mode_a_workspace.png
+Git Diff Awareness Toggle,#toggle-git-diff,Restricts mutations to modified git lines,true,Toggled checkbox state,PASS,change listener,0,02b_mode_a_workspace.png
+Copy Mode A Code Button,#btn-copy-mode-a-code,Copies source code to clipboard,true,"Clicked button, verified toast message",PASS,navigator.clipboard.writeText,0,02b_mode_a_workspace.png
+Mode B Prompt Template Chip,#tab-mode-b .prompt-chip,Populates specification textarea with template,true,Set prompt: Implement a stock trading limit ord...,PASS,Click handler,0,02c_mode_b_synthesis.png
+Mode B Synthesis Textarea,#synth-prompt-input,Receives natural language specification,true,Content length: 94 chars,PASS,Textarea input,0,02c_mode_b_synthesis.png
+Synthesize Module Button,#btn-synthesize-module,Triggers AI code generation with TargetManagerAgent,true,Verified button present and enabled,PASS,POST /api/synthesize-module,0,02c_mode_b_synthesis.png
+Copy Synthesized Code Button,#btn-copy-synth-code,Copies synthesized Python module to clipboard,true,Verified button present,PASS,navigator.clipboard,0,02c_mode_b_synthesis.png
+Mode C GitHub Preset Chip,#tab-mode-c .prompt-chip,Populates GitHub file URL input,true,Set URL: https://github.com/psf/requests/blob/main/src/requests/models.py,PASS,Click handler,0,02d_mode_c_github.png
+GitHub URL Input,#github-url-input,Receives public GitHub repository file URL,true,Current URL: https://github.com/psf/requests/blob/main/src/requests/models.py,PASS,Input listener,0,02d_mode_c_github.png
+Fetch & Ingest GitHub Button,#btn-fetch-github,"Downloads, validates AST, and normalizes GitHub file",true,Verified button present and ready,PASS,POST /api/ingest/github,0,02d_mode_c_github.png
+Copy GitHub Source Button,#btn-copy-mode-c-code,Copies ingested GitHub file code to clipboard,true,Verified button present,PASS,navigator.clipboard,0,02d_mode_c_github.png
+Activate Mode C Target Button,#btn-activate-mode-c,Sets ingested GitHub file as active target,true,Verified button present,PASS,activateModeCTarget handler,0,02d_mode_c_github.png
+Blast Function Selector,#blast-func-select,Select function to inspect blast radius,true,"Selected function, risk=🟢 LOW",PASS,POST /api/blast-radius,0,09_blast_call_graph.png
+Blast Call Graph Canvas,#call-graph-canvas,Renders SVG/HTML interactive call graph,true,Verified call graph node elements,PASS,DOM render,0,09_blast_call_graph.png
+Scroll to Hardening Banner Button,#btn-scroll-to-hardening,Switches to hardening tab and scrolls,true,Verified tab switch and focus,PASS,switchTab('tab-hardening'),0,03_hardening_completed.png
+Run Autonomous Hardening Button,#btn-run-hardening,Triggers multi-agent hardening pipeline,true,"Clicked run button, initiated job",PASS,POST /api/harden/start,0,03_hardening_completed.png
+Cancel Hardening Button,#btn-cancel-hardening,Aborts running hardening job,true,"Visible during execution, sends cancellation",PASS,POST /api/harden/cancel/{id},0,03_hardening_completed.png
+KPI Card: Baseline Passed,#kpi-base-pass,Displays baseline test passes,true,Value: 0,PASS,Blackboard baseline,0,03_hardening_completed.png
+KPI Card: Coverage %,#kpi-cov-pct,Displays line coverage %,true,Value: 0.0%,PASS,Coverage engine,0,03_hardening_completed.png
+KPI Card: Mutants Generated,#kpi-mut-gen,Displays total mutants generated,true,Value: 19,PASS,Blackboard mutants,0,03_hardening_completed.png
+KPI Card: Mutants Killed,#kpi-mut-kill,Displays killed mutants,true,Value: 0,PASS,Sandbox execution,0,03_hardening_completed.png
+KPI Card: Mutants Survived,#kpi-mut-surv,Displays surviving mutants,true,Value: 0,PASS,Sandbox execution,0,03_hardening_completed.png
+KPI Card: Mutation Score,#kpi-mut-score,Displays verified mutation score %,true,Value: 0.0%,PASS,Deterministic formula,0,03_hardening_completed.png
+Copy Hardened Suite Button,#btn-copy-hardened-suite,Copies test_hardened.py to clipboard,true,"Clicked button, toast confirmed",PASS,navigator.clipboard,0,03_hardening_completed.png
+Download Hardened Suite Button,#btn-download-hardened-suite,Downloads test_hardened.py file,true,Verified blob download link generation,PASS,Blob URL trigger,0,03_hardening_completed.png
+Mutant Filter: ALL,.filter-btn[data-filter='ALL'],Filters table to ALL mutants,true,"Badge=19, visible=19",PASS,DOM table filter,0,04a_mutants_table_all.png
+Mutant Filter: KILLED,.filter-btn[data-filter='KILLED'],Filters table to KILLED mutants,true,"Badge=17, visible=17",PASS,DOM table filter,0,04b_mutants_table_killed.png
+Mutant Filter: SURVIVED,.filter-btn[data-filter='SURVIVED'],Filters table to SURVIVED mutants,true,"Badge=2, visible=2",PASS,DOM table filter,0,04c_mutants_table_survived.png
+Mutant Filter: EQUIVALENT,.filter-btn[data-filter='EQUIVALENT'],Filters table to EQUIVALENT mutants,true,"Badge=0, visible=0",PASS,DOM table filter,0,04d_mutants_table_equiv.png
+Mutants Table Row Click,#mutants-table-body tr.clickable-row,Selects mutant and renders AST diff,true,Rendered diff for AST Diff: MUT_COND_INV_001 (COND_INV) at line 9,PASS,renderMutantDiff handler,0,05_ast_diff_equivalence_inspector.png
+Refresh Checkpoints Button,#btn-refresh-checkpoints,Queries SQLite and refreshes timeline cards,true,Loaded 100 checkpoints,PASS,GET /api/checkpoints/list,0,06_checkpoint_timeline_detail.png
+Stage Filter Select,#cp-stage-filter,Filters timeline stream by stage,true,"Toggled options (ALL, INITIAL_INGESTION, etc.)",PASS,DOM filter handler,0,06_checkpoint_timeline_detail.png
+Status Filter Select,#cp-status-filter,Filters timeline stream by status,true,"Toggled options (ALL, SUCCESS, etc.)",PASS,DOM filter handler,0,06_checkpoint_timeline_detail.png
+Job Search Filter Input,#cp-job-filter,Text search filter by job ID,true,Input listener tested,PASS,keyup listener,0,06_checkpoint_timeline_detail.png
+Sort Order Select,#cp-sort-order,Sorts checkpoints newest/oldest,true,Verified order change,PASS,change listener,0,06_checkpoint_timeline_detail.png
+Inspect Checkpoint Card Button,.checkpoint-card .btn-cp-inspect,Loads and renders structured partitions,true,Partition view visible=True,PASS,GET /api/checkpoints/{id},0,06_checkpoint_timeline_detail.png
+Raw Snapshot JSON Subtab,#btn-subtab-json,Shows complete raw snapshot JSON,true,Rendered 218550 chars JSON,PASS,DOM view toggle,0,06_checkpoint_timeline_detail.png
+Copy Checkpoint JSON Button,#btn-copy-checkpoint-json,Copies snapshot JSON to clipboard,true,"Clicked, verified clipboard action",PASS,navigator.clipboard,0,06_checkpoint_timeline_detail.png
+Structured Inspector Subtab,#btn-subtab-detail,Switches to structured partition view,true,Activated inspector pane,PASS,DOM view toggle,0,06_checkpoint_timeline_detail.png
+Set Checkpoint Base Button,.checkpoint-card .btn-cp-set-base,Sets checkpoint as Diff Base A,true,Selected Base A card,PASS,setDiffBase handler,0,06_checkpoint_timeline_detail.png
+Set Checkpoint Target Button,.checkpoint-card .btn-cp-set-target,Sets checkpoint as Diff Target B,true,Selected Target B card,PASS,setDiffTarget handler,0,06_checkpoint_timeline_detail.png
+Swap Diff Selection Button,#btn-swap-diff-selection,Swaps Base A and Target B,true,"Clicked swap, verified label change",PASS,swapDiffSelection handler,0,06_checkpoint_timeline_detail.png
+Compare Selected Checkpoints Button,#btn-trigger-diff-modal,Calculates and renders deterministic diff,true,Rendered partition diffs & transitions,PASS,POST /api/checkpoints/diff,0,07_checkpoint_diff_viewer.png
+Checkpoint Card Restore Button,.checkpoint-card .btn-cp-restore,Opens state recovery confirmation dialog,true,Opened modal for chk_464af8e6717e,PASS,openRestoreModal handler,0,08_restore_confirmation_modal.png
+Restore Modal Close Button,#btn-close-restore-modal,Closes recovery modal without side-effects,true,Verified dismiss,PASS,DOM class toggle,0,08_restore_confirmation_modal.png
+Restore Confirm Button,#btn-confirm-restore,Executes safe snapshot restoration,true,Verified endpoint POST /api/checkpoints/restore/confirm,PASS,POST /api/checkpoints/restore/confirm,0,08_restore_confirmation_modal.png
+Restore Cancel Button,#btn-cancel-restore,Safely dismisses restoration dialog,true,"Closed modal, hidden=True",PASS,DOM class toggle,0,08_restore_confirmation_modal.png
+Refresh Wiretap Button,#btn-refresh-wiretap,Refreshes live multi-agent handoff stream,true,Fetched latest wiretap events,PASS,GET /api/wiretap,0,09a_multi_agent_wiretap.png
+Refresh Telemetry Button,#btn-refresh-telemetry,Refreshes observability trace events,true,Fetched trace events from backend,PASS,GET /api/telemetry,0,09b_observability_telemetry.png
+Refresh Benchmark Button,#btn-refresh-benchmark,Refreshes comparative ablation results,true,Queried benchmark results,PASS,GET /api/benchmark/results,0,09c_statistical_benchmarks.png
+Run Benchmark Button,#btn-run-benchmark,Triggers empirical statistical benchmark suite,true,Verified button present and enabled,PASS,POST /api/benchmark/run,0,09c_statistical_benchmarks.png
+Benchmark Target Select,#bench-target-select,Selects target module for benchmarking,true,Dropdown tested,PASS,Select change,0,09c_statistical_benchmarks.png
+Benchmark Repetitions Select,#bench-repetitions,"Configures runs per scenario (1, 2, 3)",true,Dropdown tested,PASS,Select change,0,09c_statistical_benchmarks.png
+Scenario Checkbox: Baseline,#bench-sc-baseline,Toggle baseline scenario,true,Checked state tested,PASS,Checkbox toggle,0,09c_statistical_benchmarks.png
+Scenario Checkbox: Zero-Shot,#bench-sc-zeroshot,Toggle zero-shot scenario,true,Checked state tested,PASS,Checkbox toggle,0,09c_statistical_benchmarks.png
+Scenario Checkbox: Reflection,#bench-sc-refl,Toggle agentic reflection scenario,true,Checked state tested,PASS,Checkbox toggle,0,09c_statistical_benchmarks.png
+Benchmark Markdown Rendered Tab,#btn-bench-md-rendered,Displays formatted markdown preview,true,Clicked tab,PASS,DOM toggle,0,09c_statistical_benchmarks.png
+Benchmark Markdown Raw Tab,#btn-bench-md-raw,Displays raw markdown code block,true,Clicked tab,PASS,DOM toggle,0,09c_statistical_benchmarks.png
+A2A Card Button,#btn-a2a-card,Opens readable A2A AgentCard Discovery modal,true,"Clicked button, opened #a2a-modal-backdrop and fetched /.well-known/agent-card.json",PASS,openA2aModal handler,0,a2a_02_card_modal.png
+A2A Modal Close Button,#btn-close-a2a-modal,Closes A2A AgentCard modal,true,"Clicked close icon, modal hidden",PASS,closeA2aModal handler,0,a2a_04_dashboard_restored.png
+A2A View Raw JSON Button,#btn-view-raw-a2a,Opens official machine-readable agent-card.json in new tab,true,Verified href=/.well-known/agent-card.json and target=_blank,PASS,Link navigation,0,a2a_03_raw_json_endpoint.png
+A2A Copy JSON Button,#btn-copy-a2a-json,Copies raw AgentCard JSON to clipboard with user feedback,true,"Clicked copy button, verified toast notification and clipboard copy",PASS,copyA2aJson handler,0,a2a_02_card_modal.png
+A2A Modal Footer Close Button,#btn-close-a2a-footer,Dismisses A2A modal dialog,true,"Clicked close button, modal hidden",PASS,closeA2aModal handler,0,a2a_04_dashboard_restored.png

@@ -1,0 +1,1280 @@
+{
+  "metadata": {
+    "timestamp": 1792667526.667177,
+    "browser": "Google Chrome 156.0.8078.48 (macOS arm64)",
+    "protocol": "Chrome DevTools Protocol (CDP)",
+    "base_url": "http://127.0.0.1:8000"
+  },
+  "controls": [
+    {
+      "page": "Header",
+      "element_id": "pill-hardware",
+      "label": "Hardware Profile Pill",
+      "action": "Inspect initial status",
+      "expected": "Displays Apple Silicon arm64",
+      "observed": "Darwin arm64 (10 cores, 16GB)",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "page": "Header",
+      "element_id": "btn-a2a-card",
+      "label": "A2A Agent Card Button",
+      "action": "Inspect link href",
+      "expected": "Points to /.well-known/agent-card.json",
+      "observed": "/.well-known/agent-card.json",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "page": "Header",
+      "element_id": "btn-toggle-settings",
+      "label": "Settings Button",
+      "action": "Click to open settings modal",
+      "expected": "Modal backdrop visible (not hidden)",
+      "observed": true,
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "page": "Settings Modal",
+      "element_id": "slider-iterations",
+      "label": "Max Iterations Slider",
+      "action": "Set slider value to 4",
+      "expected": "Badge text updates to 4",
+      "observed": "4",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "page": "Settings Modal",
+      "element_id": "btn-cancel-settings",
+      "label": "Cancel Settings Button",
+      "action": "Click cancel button",
+      "expected": "Modal backdrop hidden",
+      "observed": true,
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "page": "Mode A",
+      "element_id": "btn-load-sample",
+      "label": "Load Sample Button (banking.py)",
+      "action": "Click load sample",
+      "expected": "Target title updates to samples.banking and code displays",
+      "observed": "Title: samples.banking, Funcs: banking_transaction",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "page": "Mode A",
+      "element_id": "radio-source-upload",
+      "label": "Upload Radio Button",
+      "action": "Select custom upload source",
+      "expected": "Upload group shown, sample select hidden",
+      "observed": "upload_shown=True, sample_hidden=True",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "page": "Mode A",
+      "element_id": "toggle-git-diff",
+      "label": "Git Diff-Aware Switch",
+      "action": "Click toggle checkbox",
+      "expected": "Queries /api/analysis/git-diff and shows alert badge",
+      "observed": "\n          Clean Working Tree: No uncommitted git modificati",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "page": "Mode B",
+      "element_id": "btn-synthesize-module",
+      "label": "Synthesize Module Button (Negative Test: Empty)",
+      "action": "Click with empty specification",
+      "expected": "Shows warning toast requiring specification",
+      "observed": "\n      \u2705\n      Loaded sample module banking.py\n    ",
+      "status": "FAIL",
+      "details": ""
+    },
+    {
+      "page": "Mode B",
+      "element_id": "prompt-chip",
+      "label": "Quick Prompt Chip (Token Bucket)",
+      "action": "Click prompt chip",
+      "expected": "Fills textarea with template prompt",
+      "observed": "...",
+      "status": "FAIL",
+      "details": ""
+    },
+    {
+      "page": "Mode B",
+      "element_id": "btn-synthesize-module",
+      "label": "Synthesize Module (End-to-End)",
+      "action": "Trigger synthesis with prompt",
+      "expected": "Generates Python code and displays container",
+      "observed": "Success=False, Preview: ",
+      "status": "FAIL",
+      "details": ""
+    },
+    {
+      "page": "Mode C",
+      "element_id": "btn-fetch-github",
+      "label": "Fetch GitHub Button (Negative Test: Invalid URL)",
+      "action": "Submit non-github domain",
+      "expected": "Rejects URL and shows warning toast",
+      "observed": "\n      \u274c\n      GitHub Ingestion Error: Unsupported hostname 'not-github.com'. Expected 'github.com' or 'raw.githubusercontent.com'.\n    ",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "page": "Mode C",
+      "element_id": "btn-fetch-github",
+      "label": "Fetch GitHub Button (Valid File)",
+      "action": "Fetch requests/status_codes.py",
+      "expected": "Parses AST and displays lines/classes metadata",
+      "observed": "Module: samples.github_requests_models, Lines: 0",
+      "status": "FAIL",
+      "details": ""
+    },
+    {
+      "page": "Mode C",
+      "element_id": "btn-activate-mode-c",
+      "label": "Target Confirmed Button",
+      "action": "Click to set as active hardening target",
+      "expected": "Active Target hero badge updates to Mode C",
+      "observed": "Active Target: Mode A",
+      "status": "FAIL",
+      "details": ""
+    },
+    {
+      "page": "Blast Radius",
+      "element_id": "blast-func-select",
+      "label": "Function Selector",
+      "action": "Populate and select function",
+      "expected": "Computes call graph and displays risk badge",
+      "observed": "Options: 1, Risk: \ud83d\udfe2 LOW",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "page": "Hardening Lab",
+      "element_id": "btn-run-hardening",
+      "label": "Run Hardening Button",
+      "action": "Check initial render",
+      "expected": "Visible and enabled",
+      "observed": "\u26a1 Run TestForge Autonomous Hardening",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "page": "Hardening Lab",
+      "element_id": "btn-run-hardening",
+      "label": "Run Hardening Trigger",
+      "action": "Click to launch asynchronous hardening job",
+      "expected": "Displays progress bar and begins polling",
+      "observed": "Progress bar visible: True",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "page": "Hardening Lab",
+      "element_id": "hardening-metrics-board",
+      "label": "Hardening Metrics Board",
+      "action": "Observe final KPI outputs",
+      "expected": "Populates verified mutation score, killed count",
+      "observed": "Score: 0.0%, Killed: 0/18",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "page": "Hardening Lab",
+      "element_id": "mutants-table",
+      "label": "Mutant Audit Table",
+      "action": "Inspect generated mutants",
+      "expected": "Lists generated mutants with ID, type, outcome",
+      "observed": "Row count: 18",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "page": "Hardening Lab",
+      "element_id": "diff-code-display",
+      "label": "Unified AST Diff Viewer",
+      "action": "Click mutant row in table",
+      "expected": "Displays unified diff snippet and status badge",
+      "observed": "Badge: \ud83d\udfe2 KILLED BY ASSERTION, Preview: Mutant details:\nType: COND_INV\nLine: 9\nS...",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "page": "Hardening Lab",
+      "element_id": "filter-group",
+      "label": "Mutant Status Filter Buttons",
+      "action": "Filter by KILLED then ALL",
+      "expected": "Filters table rows according to mutant status",
+      "observed": "Killed rows: 18, All rows: 18",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "page": "Hardening Lab",
+      "element_id": "btn-copy-hardened-suite",
+      "label": "Copy Suite Button",
+      "action": "Verify DOM presence",
+      "expected": "Button exists with copy handler",
+      "observed": true,
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "page": "Hardening Lab",
+      "element_id": "btn-download-hardened-suite",
+      "label": "Download Suite Button",
+      "action": "Verify DOM presence",
+      "expected": "Button exists with download handler",
+      "observed": true,
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "page": "Wiretap",
+      "element_id": "btn-refresh-wiretap",
+      "label": "Refresh Wiretap Button",
+      "action": "Click to refresh handoffs",
+      "expected": "Populates inter-agent timeline cards",
+      "observed": "Handoffs KPI: 230, Cards: 0",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "page": "Telemetry",
+      "element_id": "btn-refresh-telemetry",
+      "label": "Refresh Telemetry Button",
+      "action": "Click to refresh trace log",
+      "expected": "Displays total events and token counters",
+      "observed": "Events: 2798, Tokens: 10,353,945",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "page": "Benchmarking",
+      "element_id": "btn-refresh-benchmark",
+      "label": "Refresh Results Button",
+      "action": "Click to load latest benchmark",
+      "expected": "Loads comparative summary table and markdown preview",
+      "observed": "Rows: 1, Preview: # TestForge Benchmark & Ablation Study R...",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "page": "Benchmarking",
+      "element_id": "btn-run-benchmark",
+      "label": "Run Benchmark Button (Negative Test: 0 Scenarios)",
+      "action": "Click run without selected scenarios",
+      "expected": "Displays warning toast requiring scenario selection",
+      "observed": "\n      \u26a0\ufe0f\n      Select at least one scenario to benchmark!\n    ",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "page": "Responsive",
+      "element_id": "viewport",
+      "label": "Mobile Viewport (375x812)",
+      "action": "Resize viewport to iPhone size",
+      "expected": "Layout stacks vertically without horizontal scroll explosion",
+      "observed": "Verified via screenshot",
+      "status": "PASS",
+      "details": ""
+    }
+  ],
+  "network_log": [
+    {
+      "requestId": "15777F8674B72FDDB3992AE023EF4688",
+      "url": "http://127.0.0.1:8000/",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667528.7222688
+    },
+    {
+      "requestId": "15777F8674B72FDDB3992AE023EF4688",
+      "url": "http://127.0.0.1:8000/",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "text/html",
+      "type": "RESPONSE",
+      "timestamp": 1792667528.724822
+    },
+    {
+      "requestId": "30509.2",
+      "url": "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667531.226157
+    },
+    {
+      "requestId": "30509.3",
+      "url": "http://127.0.0.1:8000/static/style.css",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667531.226166
+    },
+    {
+      "requestId": "30509.4",
+      "url": "http://127.0.0.1:8000/static/app.js",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667531.226173
+    },
+    {
+      "requestId": "30509.3",
+      "url": "http://127.0.0.1:8000/static/style.css",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "text/css",
+      "type": "RESPONSE",
+      "timestamp": 1792667531.22623
+    },
+    {
+      "requestId": "30509.4",
+      "url": "http://127.0.0.1:8000/static/app.js",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "text/javascript",
+      "type": "RESPONSE",
+      "timestamp": 1792667531.2266822
+    },
+    {
+      "requestId": "30509.2",
+      "url": "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap",
+      "status": 200,
+      "statusText": "",
+      "mimeType": "text/css",
+      "type": "RESPONSE",
+      "timestamp": 1792667531.226739
+    },
+    {
+      "requestId": "30509.14",
+      "url": "https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw.woff2",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667531.226753
+    },
+    {
+      "requestId": "30509.62",
+      "url": "https://fonts.gstatic.com/s/outfit/v15/QGYvz_MVcBeNP4NJtEtqUYLknw.woff2",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667531.226759
+    },
+    {
+      "requestId": "30509.48",
+      "url": "https://fonts.gstatic.com/s/jetbrainsmono/v24/tDbv2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKwBNntkaToggR7BYRbKPxDcwgknk-4.woff2",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667531.2267652
+    },
+    {
+      "requestId": "30509.71",
+      "url": "http://127.0.0.1:8000/api/status",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667531.226788
+    },
+    {
+      "requestId": "30509.14",
+      "url": "https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw.woff2",
+      "status": 200,
+      "statusText": "",
+      "mimeType": "font/woff2",
+      "type": "RESPONSE",
+      "timestamp": 1792667531.2268548
+    },
+    {
+      "requestId": "30509.62",
+      "url": "https://fonts.gstatic.com/s/outfit/v15/QGYvz_MVcBeNP4NJtEtqUYLknw.woff2",
+      "status": 200,
+      "statusText": "",
+      "mimeType": "font/woff2",
+      "type": "RESPONSE",
+      "timestamp": 1792667531.2268832
+    },
+    {
+      "requestId": "30509.48",
+      "url": "https://fonts.gstatic.com/s/jetbrainsmono/v24/tDbv2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKwBNntkaToggR7BYRbKPxDcwgknk-4.woff2",
+      "status": 200,
+      "statusText": "",
+      "mimeType": "font/woff2",
+      "type": "RESPONSE",
+      "timestamp": 1792667531.226908
+    },
+    {
+      "requestId": "30509.71",
+      "url": "http://127.0.0.1:8000/api/status",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667531.2269282
+    },
+    {
+      "requestId": "30509.72",
+      "url": "http://127.0.0.1:8000/api/samples",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667531.226939
+    },
+    {
+      "requestId": "30509.73",
+      "url": "http://127.0.0.1:8000/favicon.ico",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667531.22695
+    },
+    {
+      "requestId": "30509.72",
+      "url": "http://127.0.0.1:8000/api/samples",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667531.226968
+    },
+    {
+      "requestId": "30509.74",
+      "url": "http://127.0.0.1:8000/api/ingest/sample",
+      "method": "POST",
+      "type": "REQUEST",
+      "timestamp": 1792667531.226984
+    },
+    {
+      "requestId": "30509.73",
+      "url": "http://127.0.0.1:8000/favicon.ico",
+      "status": 404,
+      "statusText": "Not Found",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667531.226998
+    },
+    {
+      "requestId": "30509.74",
+      "url": "http://127.0.0.1:8000/api/ingest/sample",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667531.2270179
+    },
+    {
+      "requestId": "30509.75",
+      "url": "http://127.0.0.1:8000/api/telemetry",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667531.227029
+    },
+    {
+      "requestId": "30509.76",
+      "url": "http://127.0.0.1:8000/api/wiretap",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667531.227036
+    },
+    {
+      "requestId": "30509.77",
+      "url": "http://127.0.0.1:8000/api/hardened-code",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667531.227042
+    },
+    {
+      "requestId": "30509.77",
+      "url": "http://127.0.0.1:8000/api/hardened-code",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667531.227078
+    },
+    {
+      "requestId": "30509.75",
+      "url": "http://127.0.0.1:8000/api/telemetry",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667531.227094
+    },
+    {
+      "requestId": "30509.76",
+      "url": "http://127.0.0.1:8000/api/wiretap",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667531.227114
+    },
+    {
+      "requestId": "30509.78",
+      "url": "http://127.0.0.1:8000/api/ingest/sample",
+      "method": "POST",
+      "type": "REQUEST",
+      "timestamp": 1792667533.0310678
+    },
+    {
+      "requestId": "30509.78",
+      "url": "http://127.0.0.1:8000/api/ingest/sample",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667534.0323331
+    },
+    {
+      "requestId": "30509.79",
+      "url": "http://127.0.0.1:8000/api/analysis/git-diff",
+      "method": "POST",
+      "type": "REQUEST",
+      "timestamp": 1792667534.664681
+    },
+    {
+      "requestId": "30509.79",
+      "url": "http://127.0.0.1:8000/api/analysis/git-diff",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667535.1659362
+    },
+    {
+      "requestId": "30509.80",
+      "url": "http://127.0.0.1:8000/api/ingest/github",
+      "method": "POST",
+      "type": "REQUEST",
+      "timestamp": 1792667562.4629278
+    },
+    {
+      "requestId": "30509.80",
+      "url": "http://127.0.0.1:8000/api/ingest/github",
+      "status": 422,
+      "statusText": "Unprocessable Content",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667562.96419
+    },
+    {
+      "requestId": "30509.81",
+      "url": "http://127.0.0.1:8000/api/ingest/github",
+      "method": "POST",
+      "type": "REQUEST",
+      "timestamp": 1792667563.2669282
+    },
+    {
+      "requestId": "30509.81",
+      "url": "http://127.0.0.1:8000/api/ingest/github",
+      "status": 422,
+      "statusText": "Unprocessable Content",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667564.2681768
+    },
+    {
+      "requestId": "30509.82",
+      "url": "http://127.0.0.1:8000/api/ingest/sample",
+      "method": "POST",
+      "type": "REQUEST",
+      "timestamp": 1792667579.346426
+    },
+    {
+      "requestId": "30509.82",
+      "url": "http://127.0.0.1:8000/api/ingest/sample",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667579.847727
+    },
+    {
+      "requestId": "30509.83",
+      "url": "http://127.0.0.1:8000/api/analysis/git-diff",
+      "method": "POST",
+      "type": "REQUEST",
+      "timestamp": 1792667579.847745
+    },
+    {
+      "requestId": "30509.83",
+      "url": "http://127.0.0.1:8000/api/analysis/git-diff",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667579.8477702
+    },
+    {
+      "requestId": "30509.84",
+      "url": "http://127.0.0.1:8000/api/analysis/blast-radius",
+      "method": "POST",
+      "type": "REQUEST",
+      "timestamp": 1792667579.8630002
+    },
+    {
+      "requestId": "30509.84",
+      "url": "http://127.0.0.1:8000/api/analysis/blast-radius",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667580.664253
+    },
+    {
+      "requestId": "30509.85",
+      "url": "http://127.0.0.1:8000/api/harden/start",
+      "method": "POST",
+      "type": "REQUEST",
+      "timestamp": 1792667581.379572
+    },
+    {
+      "requestId": "30509.85",
+      "url": "http://127.0.0.1:8000/api/harden/start",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667582.380845
+    },
+    {
+      "requestId": "30509.86",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667583.382464
+    },
+    {
+      "requestId": "30509.86",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667583.3825128
+    },
+    {
+      "requestId": "30509.87",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667584.3842409
+    },
+    {
+      "requestId": "30509.87",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667584.384269
+    },
+    {
+      "requestId": "30509.88",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667585.3857868
+    },
+    {
+      "requestId": "30509.88",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667585.3858151
+    },
+    {
+      "requestId": "30509.89",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667586.387486
+    },
+    {
+      "requestId": "30509.89",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667586.38752
+    },
+    {
+      "requestId": "30509.90",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667587.388545
+    },
+    {
+      "requestId": "30509.90",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667587.3885849
+    },
+    {
+      "requestId": "30509.91",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667589.391789
+    },
+    {
+      "requestId": "30509.91",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667589.391823
+    },
+    {
+      "requestId": "30509.92",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667590.393467
+    },
+    {
+      "requestId": "30509.92",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667590.3934982
+    },
+    {
+      "requestId": "30509.93",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667591.395114
+    },
+    {
+      "requestId": "30509.93",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667591.395164
+    },
+    {
+      "requestId": "30509.94",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667592.397183
+    },
+    {
+      "requestId": "30509.94",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667592.3972118
+    },
+    {
+      "requestId": "30509.95",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667593.3989089
+    },
+    {
+      "requestId": "30509.95",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667593.398939
+    },
+    {
+      "requestId": "30509.96",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667595.402428
+    },
+    {
+      "requestId": "30509.96",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667595.4024699
+    },
+    {
+      "requestId": "30509.97",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667596.404139
+    },
+    {
+      "requestId": "30509.97",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667596.4041731
+    },
+    {
+      "requestId": "30509.98",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667597.4058392
+    },
+    {
+      "requestId": "30509.98",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667597.405869
+    },
+    {
+      "requestId": "30509.99",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667598.407547
+    },
+    {
+      "requestId": "30509.99",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667598.4075751
+    },
+    {
+      "requestId": "30509.100",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667599.409305
+    },
+    {
+      "requestId": "30509.100",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667599.4093351
+    },
+    {
+      "requestId": "30509.101",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667601.4132018
+    },
+    {
+      "requestId": "30509.101",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667601.413234
+    },
+    {
+      "requestId": "30509.102",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667602.414828
+    },
+    {
+      "requestId": "30509.102",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667602.414876
+    },
+    {
+      "requestId": "30509.103",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667603.416505
+    },
+    {
+      "requestId": "30509.103",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667603.416539
+    },
+    {
+      "requestId": "30509.104",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667604.417705
+    },
+    {
+      "requestId": "30509.104",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667604.4177332
+    },
+    {
+      "requestId": "30509.105",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667605.4191208
+    },
+    {
+      "requestId": "30509.105",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667605.419154
+    },
+    {
+      "requestId": "30509.106",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667607.422515
+    },
+    {
+      "requestId": "30509.106",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667607.4225469
+    },
+    {
+      "requestId": "30509.107",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667608.4232929
+    },
+    {
+      "requestId": "30509.107",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667608.423363
+    },
+    {
+      "requestId": "30509.108",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667609.424854
+    },
+    {
+      "requestId": "30509.108",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667609.424883
+    },
+    {
+      "requestId": "30509.109",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667610.4267242
+    },
+    {
+      "requestId": "30509.109",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667610.42679
+    },
+    {
+      "requestId": "30509.110",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667611.431147
+    },
+    {
+      "requestId": "30509.110",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667611.4321
+    },
+    {
+      "requestId": "30509.111",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667613.4808478
+    },
+    {
+      "requestId": "30509.111",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667613.4809148
+    },
+    {
+      "requestId": "30509.112",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667614.4846451
+    },
+    {
+      "requestId": "30509.112",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667614.484673
+    },
+    {
+      "requestId": "30509.113",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667615.486292
+    },
+    {
+      "requestId": "30509.113",
+      "url": "http://127.0.0.1:8000/api/harden/status/d66c9977",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667615.48632
+    },
+    {
+      "requestId": "30509.114",
+      "url": "http://127.0.0.1:8000/api/wiretap",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667616.5887492
+    },
+    {
+      "requestId": "30509.114",
+      "url": "http://127.0.0.1:8000/api/wiretap",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667617.089277
+    },
+    {
+      "requestId": "30509.115",
+      "url": "http://127.0.0.1:8000/api/wiretap",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667617.0900748
+    },
+    {
+      "requestId": "30509.115",
+      "url": "http://127.0.0.1:8000/api/wiretap",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667617.891317
+    },
+    {
+      "requestId": "30509.116",
+      "url": "http://127.0.0.1:8000/api/telemetry",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667618.071145
+    },
+    {
+      "requestId": "30509.116",
+      "url": "http://127.0.0.1:8000/api/telemetry",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667618.572404
+    },
+    {
+      "requestId": "30509.117",
+      "url": "http://127.0.0.1:8000/api/telemetry",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667618.573175
+    },
+    {
+      "requestId": "30509.117",
+      "url": "http://127.0.0.1:8000/api/telemetry",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667619.3737652
+    },
+    {
+      "requestId": "30509.118",
+      "url": "http://127.0.0.1:8000/api/benchmark/results",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667619.552004
+    },
+    {
+      "requestId": "30509.118",
+      "url": "http://127.0.0.1:8000/api/benchmark/results",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667620.0524569
+    },
+    {
+      "requestId": "30509.119",
+      "url": "http://127.0.0.1:8000/api/benchmark/markdown",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667620.052473
+    },
+    {
+      "requestId": "30509.119",
+      "url": "http://127.0.0.1:8000/api/benchmark/markdown",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "text/markdown",
+      "type": "RESPONSE",
+      "timestamp": 1792667620.052496
+    },
+    {
+      "requestId": "30509.120",
+      "url": "http://127.0.0.1:8000/api/benchmark/results",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667620.0532422
+    },
+    {
+      "requestId": "30509.120",
+      "url": "http://127.0.0.1:8000/api/benchmark/results",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792667621.054049
+    },
+    {
+      "requestId": "30509.121",
+      "url": "http://127.0.0.1:8000/api/benchmark/markdown",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792667621.054064
+    },
+    {
+      "requestId": "30509.121",
+      "url": "http://127.0.0.1:8000/api/benchmark/markdown",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "text/markdown",
+      "type": "RESPONSE",
+      "timestamp": 1792667621.05409
+    }
+  ],
+  "console_log": [],
+  "screenshots": [
+    {
+      "filename": "01_initial_dashboard.png",
+      "note": "Initial Dashboard State after DOMContentLoaded",
+      "size_bytes": 551492
+    },
+    {
+      "filename": "02_settings_modal_open.png",
+      "note": "Settings Modal Opened",
+      "size_bytes": 241668
+    },
+    {
+      "filename": "03_mode_a_workspace.png",
+      "note": "Mode A Workspace with Target Loaded and Git Diff Enabled",
+      "size_bytes": 408496
+    },
+    {
+      "filename": "04_mode_b_synthesis.png",
+      "note": "Mode B AI Synthesis Result",
+      "size_bytes": 520840
+    },
+    {
+      "filename": "05_mode_c_github.png",
+      "note": "Mode C GitHub Ingestion & Active Target State",
+      "size_bytes": 572940
+    },
+    {
+      "filename": "06_blast_radius.png",
+      "note": "Blast Radius Tab with Call Tree and Risk Assessment",
+      "size_bytes": 537376
+    },
+    {
+      "filename": "07_hardening_lab_complete.png",
+      "note": "Hardening Lab Completed Run with KPIs and Unified Diff Viewer",
+      "size_bytes": 275364
+    },
+    {
+      "filename": "08_wiretap_timeline.png",
+      "note": "Multi-Agent Wiretap Inter-Agent Handoffs",
+      "size_bytes": 449080
+    },
+    {
+      "filename": "09_telemetry_trace.png",
+      "note": "Observability Trace Log Table",
+      "size_bytes": 445700
+    },
+    {
+      "filename": "10_benchmarking_tab.png",
+      "note": "Benchmarking Tab with Comparative Results and Markdown Preview",
+      "size_bytes": 489928
+    },
+    {
+      "filename": "11_mobile_responsive_view.png",
+      "note": "Mobile Viewport (375x812) Navigation and Layout",
+      "size_bytes": 722076
+    }
+  ],
+  "defects": [],
+  "workflows": {}
+}

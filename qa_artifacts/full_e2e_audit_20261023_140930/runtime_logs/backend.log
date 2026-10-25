@@ -1,0 +1,677 @@
+/Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/google/cloud/aiplatform/models.py:52: FutureWarning: Support for google-cloud-storage < 3.0.0 will be removed in a future version of google-cloud-aiplatform. Please upgrade to google-cloud-storage >= 3.0.0.
+  from google.cloud.aiplatform.utils import gcs_utils
+INFO:     Started server process [54487]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:57537 - "HEAD / HTTP/1.1" 405 Method Not Allowed
+INFO:     127.0.0.1:57538 - "HEAD /static/style.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57539 - "HEAD /static/app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57540 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57541 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57543 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57546 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57547 - "GET /static/app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57546 - "GET /static/style.css HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:57547 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57547 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57547 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57549 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57546 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57547 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57599 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57599 - "GET /static/style.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57600 - "GET /static/app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57600 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57599 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:57599 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57599 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57609 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57600 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57599 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57618 - "POST /api/analysis/blast-radius HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57618 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57618 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57618 - "GET /api/benchmark/results HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57618 - "GET /api/benchmark/markdown HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57618 - "GET /api/checkpoints?limit=100&offset=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57618 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57618 - "POST /api/analysis/blast-radius HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57618 - "POST /api/analysis/blast-radius HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57618 - "POST /api/harden/start HTTP/1.1" 200 OK
+[2026-10-23 14:18:18,758] INFO in testforge.a2a: Registered A2A agent handler: 'agent:google-adk:generator' (actions=None)
+[2026-10-23 14:18:18,759] INFO in testforge.a2a: Registered A2A agent handler: 'agent:crewai:critic' (actions=None)
+==========================================================
+       TESTFORGE: AUTONOMOUS TEST HARDENING ENGINE        
+Hardware: Apple Silicon M-Series | Cores: 10 | Workers: 8
+Foundation Model: Google GenAI Live (gemini-3.6-flash)
+==========================================================
+
+[2026-10-23 14:18:18,769] INFO in testforge.persistence: Checkpoint 'chk_f2d6cef595e4' successfully saved (stage='INITIAL_INGESTION', rev=3, job_id='7113551f')
+[Step 1/6] Synthesizing initial candidate test suite...
+[2026-10-23 14:18:18,771] INFO in testforge.adk_generator: Running Google ADK Generator (Iteration 0)...
+[2026-10-23 14:18:18,776] INFO in testforge.a2a: Synchronized validated Google ADK test code to Blackboard SuiteSpace.
+[2026-10-23 14:18:18,777] INFO in testforge.persistence: Checkpoint 'chk_8d3a1529747e' successfully saved (stage='BASELINE_SYNTHESIS', rev=5, job_id='7113551f')
+[Step 2/6] Sandbox validating test suite against clean target (pass@1 check)...
+[!] Initial generated tests failed against clean code:
+============================= test session starts ==============================
+platform darwin -- Python 3.13.17, pytest-9.1.1, pluggy-1.7.0 -- 
+/Users/sourabh/TestForge/.venv-release/bin/python
+rootdir: /var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_yiq_c1ks
+plugins: cov-7.1.0, anyio-4.15.1, platformdirs-4.13.5
+collecting ... collected 1 item
+
+../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_b
+ox_yiq_c1ks/test_target.py::test_calculate_discount_nominal FAILED [100%]
+
+=================================== FAILURES ===================================
+_______________________ test_calculate_discount_nominal ________________________
+
+    def test_calculate_discount_nominal():
+>       assert calculate_discount() is not None
+               ^^^^^^^^^^^^^^^^^^^^
+E       TypeError: calculate_discount() missing 3 required positional arguments:
+'price', 'quantity', and 'is_member'
+
+/var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_yiq_c1ks/test_tar
+get.py:5: TypeError
+=========================== short test summary info ============================
+FAILED 
+../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_b
+ox_yiq_c1ks/test_target.py::test_calculate_discount_nominal
+============================== 1 failed in 0.02s ===============================
+
+[Self-Repair] Re-prompting TestGeneratorAgent to fix syntax/runtime error...
+INFO:     127.0.0.1:57618 - "GET /api/harden/status/7113551f HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57618 - "GET /api/harden/status/7113551f HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57618 - "GET /api/harden/status/7113551f HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57618 - "GET /api/harden/status/7113551f HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57618 - "GET /api/harden/status/7113551f HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57618 - "GET /api/harden/status/7113551f HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57618 - "GET /api/harden/status/7113551f HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57618 - "GET /api/harden/status/7113551f HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57618 - "GET /api/harden/status/7113551f HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57618 - "GET /api/harden/status/7113551f HTTP/1.1" 200 OK
+[2026-10-23 14:18:31,762] INFO in httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:57618 - "GET /api/harden/status/7113551f HTTP/1.1" 200 OK
+[✓] Candidate test suite passed on clean code (14/14 tests passed).
+[✓] Baseline Line Coverage: 100.0% (10/10 lines covered)
+
+[2026-10-23 14:18:32,299] INFO in testforge.persistence: Checkpoint 'chk_aa23f5095e82' successfully saved (stage='BASELINE_VALIDATED', rev=8, job_id='7113551f')
+▶ Iteration 1 of 3 (Target Score: 85.0%)
+  • AST Mutator injected 19 deterministic faults.
+  • Parallel Sandbox evaluating mutants across 8 CPU workers...
+INFO:     127.0.0.1:57618 - "GET /api/harden/status/7113551f HTTP/1.1" 200 OK
+[2026-10-23 14:18:33,379] INFO in testforge.persistence: Checkpoint 'chk_b3fd32ac079b' successfully saved (stage='REFLECTION_ITERATION_1', rev=11, job_id='7113551f')
+                  Iteration 1 Benchmark (M2 AST & Equivalence)                  
+┏━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━┓
+┃  Total  ┃        ┃          ┃         ┃       ┃   Raw    ┃   Adj   ┃         ┃
+┃ Mutants ┃ Killed ┃ Survived ┃ Timeou… ┃ Equiv ┃  Score   ┃  Score  ┃ Elapsed ┃
+┡━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━┩
+│   19    │   18   │    1     │    0    │   0   │  94.7%   │  94.7%  │  1.07s  │
+└─────────┴────────┴──────────┴─────────┴───────┴──────────┴─────────┴─────────┘
+✔ SUCCESS: Target mutation score achieved (Raw: 94.7%, Adjusted: 94.7% >= 85.0% 
+with 100.0% line coverage, 0 verified equivalent mutants excluded).
+
+[2026-10-23 14:18:33,393] INFO in testforge.persistence: Checkpoint 'chk_b7adc86337b5' successfully saved (stage='FINALIZED', rev=13, job_id='7113551f')
+INFO:     127.0.0.1:57618 - "GET /api/harden/status/7113551f HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57618 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57625 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57628 - "GET /api/checkpoints?limit=100&offset=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57628 - "GET /api/checkpoints?limit=100&offset=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57681 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57681 - "GET /static/style.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57682 - "GET /static/app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57682 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57681 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:57681 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57681 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57689 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57682 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57681 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57697 - "POST /api/analysis/blast-radius HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57697 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57697 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57697 - "GET /api/benchmark/results HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57697 - "GET /api/benchmark/markdown HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57697 - "GET /api/checkpoints?limit=100&offset=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57697 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57697 - "POST /api/analysis/blast-radius HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57697 - "POST /api/analysis/blast-radius HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57697 - "POST /api/harden/start HTTP/1.1" 200 OK
+[2026-10-23 14:22:28,062] INFO in testforge.a2a: Registered A2A agent handler: 'agent:google-adk:generator' (actions=None)
+[2026-10-23 14:22:28,062] INFO in testforge.a2a: Registered A2A agent handler: 'agent:crewai:critic' (actions=None)
+==========================================================
+       TESTFORGE: AUTONOMOUS TEST HARDENING ENGINE        
+Hardware: Apple Silicon M-Series | Cores: 10 | Workers: 8
+Foundation Model: Google GenAI Live (gemini-3.6-flash)
+==========================================================
+
+[2026-10-23 14:22:28,064] INFO in testforge.persistence: Checkpoint 'chk_33cb7aec8ccf' successfully saved (stage='INITIAL_INGESTION', rev=3, job_id='ddc7787f')
+[Step 1/6] Synthesizing initial candidate test suite...
+[2026-10-23 14:22:28,065] INFO in testforge.adk_generator: Running Google ADK Generator (Iteration 0)...
+[2026-10-23 14:22:28,067] INFO in testforge.a2a: Synchronized validated Google ADK test code to Blackboard SuiteSpace.
+[2026-10-23 14:22:28,068] INFO in testforge.persistence: Checkpoint 'chk_b925863d75fd' successfully saved (stage='BASELINE_SYNTHESIS', rev=5, job_id='ddc7787f')
+[Step 2/6] Sandbox validating test suite against clean target (pass@1 check)...
+[!] Initial generated tests failed against clean code:
+============================= test session starts ==============================
+platform darwin -- Python 3.13.17, pytest-9.1.1, pluggy-1.7.0 -- 
+/Users/sourabh/TestForge/.venv-release/bin/python
+rootdir: /var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_g3_egy6y
+plugins: cov-7.1.0, anyio-4.15.1, platformdirs-4.13.5
+collecting ... collected 1 item
+
+../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_b
+ox_g3_egy6y/test_target.py::test_calculate_discount_nominal FAILED [100%]
+
+=================================== FAILURES ===================================
+_______________________ test_calculate_discount_nominal ________________________
+
+    def test_calculate_discount_nominal():
+>       assert calculate_discount() is not None
+               ^^^^^^^^^^^^^^^^^^^^
+E       TypeError: calculate_discount() missing 3 required positional arguments:
+'price', 'quantity', and 'is_member'
+
+/var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_g3_egy6y/test_tar
+get.py:5: TypeError
+=========================== short test summary info ============================
+FAILED 
+../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_b
+ox_g3_egy6y/test_target.py::test_calculate_discount_nominal
+============================== 1 failed in 0.02s ===============================
+
+[Self-Repair] Re-prompting TestGeneratorAgent to fix syntax/runtime error...
+INFO:     127.0.0.1:57697 - "GET /api/harden/status/ddc7787f HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57697 - "GET /api/harden/status/ddc7787f HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57697 - "GET /api/harden/status/ddc7787f HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57697 - "GET /api/harden/status/ddc7787f HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57697 - "GET /api/harden/status/ddc7787f HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57697 - "GET /api/harden/status/ddc7787f HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57697 - "GET /api/harden/status/ddc7787f HTTP/1.1" 200 OK
+[2026-10-23 14:22:37,514] INFO in httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:57697 - "GET /api/harden/status/ddc7787f HTTP/1.1" 200 OK
+[!] Self-repaired tests failed clean target check. Engaging deterministic AST 
+synthesis...
+[✓] Candidate test suite passed on clean code (1/1 tests passed).
+[✓] Baseline Line Coverage: 100.0% (10/10 lines covered)
+
+[2026-10-23 14:22:38,157] INFO in testforge.persistence: Checkpoint 'chk_49b58f234402' successfully saved (stage='BASELINE_VALIDATED', rev=9, job_id='ddc7787f')
+▶ Iteration 1 of 3 (Target Score: 85.0%)
+  • AST Mutator injected 19 deterministic faults.
+  • Parallel Sandbox evaluating mutants across 8 CPU workers...
+INFO:     127.0.0.1:57697 - "GET /api/harden/status/ddc7787f HTTP/1.1" 200 OK
+[2026-10-23 14:22:39,127] INFO in testforge.persistence: Checkpoint 'chk_ef1fc0fd267f' successfully saved (stage='REFLECTION_ITERATION_1', rev=12, job_id='ddc7787f')
+                  Iteration 1 Benchmark (M2 AST & Equivalence)                  
+┏━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━┓
+┃  Total  ┃        ┃          ┃         ┃       ┃   Raw    ┃   Adj   ┃         ┃
+┃ Mutants ┃ Killed ┃ Survived ┃ Timeou… ┃ Equiv ┃  Score   ┃  Score  ┃ Elapsed ┃
+┡━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━┩
+│   19    │   12   │    7     │    0    │   0   │  63.2%   │  63.2%  │  0.97s  │
+└─────────┴────────┴──────────┴─────────┴───────┴──────────┴─────────┴─────────┘
+  • Adversarial Critic analyzing 7 surviving mutant(s)...
+[2026-10-23 14:22:39,133] INFO in testforge.crew_critic: Executing CrewAI Crew for 7 surviving mutant(s)...
+[2026-10-23 14:22:39,158] INFO in testforge.a2a: Synchronized validated CrewAI critique to Blackboard CriticSpace.
+  Critic Directive: Adversarial analysis of 15 surviving mutant(s): The test 
+suite lacked strict boundary and equality assertions, allowing mutated operators
+to...
+
+▶ Iteration 2 of 3 (Target Score: 85.0%)
+  • Hardening test assertions based on Critic reasoning...
+[2026-10-23 14:22:39,161] INFO in testforge.adk_generator: Running Google ADK Generator (Iteration 2)...
+[2026-10-23 14:22:39,163] INFO in testforge.a2a: Synchronized validated Google ADK test code to Blackboard SuiteSpace.
+  • Hardened assertions broke clean code. Retaining previous working test suite.
+  • AST Mutator injected 19 deterministic faults.
+  • Parallel Sandbox evaluating mutants across 8 CPU workers...
+INFO:     127.0.0.1:57697 - "GET /api/harden/status/ddc7787f HTTP/1.1" 200 OK
+[2026-10-23 14:22:40,315] INFO in testforge.persistence: Checkpoint 'chk_72b033434943' successfully saved (stage='REFLECTION_ITERATION_2', rev=18, job_id='ddc7787f')
+                  Iteration 2 Benchmark (M2 AST & Equivalence)                  
+┏━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━┓
+┃  Total  ┃        ┃          ┃         ┃       ┃   Raw    ┃   Adj   ┃         ┃
+┃ Mutants ┃ Killed ┃ Survived ┃ Timeou… ┃ Equiv ┃  Score   ┃  Score  ┃ Elapsed ┃
+┡━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━┩
+│   19    │   12   │    7     │    0    │   0   │  63.2%   │  63.2%  │  1.15s  │
+└─────────┴────────┴──────────┴─────────┴───────┴──────────┴─────────┴─────────┘
+  • Adversarial Critic analyzing 7 surviving mutant(s)...
+[2026-10-23 14:22:40,319] INFO in testforge.crew_critic: Executing CrewAI Crew for 7 surviving mutant(s)...
+[2026-10-23 14:22:40,329] INFO in testforge.a2a: Synchronized validated CrewAI critique to Blackboard CriticSpace.
+  Critic Directive: Adversarial analysis of 15 surviving mutant(s): The test 
+suite lacked strict boundary and equality assertions, allowing mutated operators
+to...
+
+▶ Iteration 3 of 3 (Target Score: 85.0%)
+  • Hardening test assertions based on Critic reasoning...
+[2026-10-23 14:22:40,331] INFO in testforge.adk_generator: Running Google ADK Generator (Iteration 3)...
+[2026-10-23 14:22:40,333] INFO in testforge.a2a: Synchronized validated Google ADK test code to Blackboard SuiteSpace.
+  • Hardened assertions broke clean code. Retaining previous working test suite.
+  • AST Mutator injected 19 deterministic faults.
+  • Parallel Sandbox evaluating mutants across 8 CPU workers...
+INFO:     127.0.0.1:57697 - "GET /api/harden/status/ddc7787f HTTP/1.1" 200 OK
+[2026-10-23 14:22:41,538] INFO in testforge.persistence: Checkpoint 'chk_ed90962f59c3' successfully saved (stage='REFLECTION_ITERATION_3', rev=24, job_id='ddc7787f')
+                  Iteration 3 Benchmark (M2 AST & Equivalence)                  
+┏━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━┓
+┃  Total  ┃        ┃          ┃         ┃       ┃   Raw    ┃   Adj   ┃         ┃
+┃ Mutants ┃ Killed ┃ Survived ┃ Timeou… ┃ Equiv ┃  Score   ┃  Score  ┃ Elapsed ┃
+┡━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━┩
+│   19    │   12   │    7     │    0    │   0   │  63.2%   │  63.2%  │  1.20s  │
+└─────────┴────────┴──────────┴─────────┴───────┴──────────┴─────────┴─────────┘
+⚠ TERMINATED: Maximum allowed reflection iterations reached.
+
+[2026-10-23 14:22:41,545] INFO in testforge.persistence: Checkpoint 'chk_741caef63447' successfully saved (stage='FINALIZED', rev=26, job_id='ddc7787f')
+INFO:     127.0.0.1:57697 - "GET /api/harden/status/ddc7787f HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57697 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57703 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57705 - "GET /api/checkpoints?limit=100&offset=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57705 - "GET /api/checkpoints?limit=100&offset=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57705 - "GET /api/checkpoints/chk_741caef63447 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57705 - "GET /api/checkpoints/diff?base_id=chk_ed90962f59c3&target_id=chk_741caef63447 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57705 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57705 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57705 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57705 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57705 - "GET /api/benchmark/results HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57705 - "GET /api/benchmark/markdown HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57705 - "GET /api/benchmark/results HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57705 - "GET /api/benchmark/markdown HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57709 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57709 - "GET /static/style.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57709 - "GET /static/app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57709 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57709 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57709 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57709 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57709 - "POST /api/blast-radius HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:57709 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57709 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57709 - "GET /api/benchmark/results HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57709 - "GET /api/benchmark/markdown HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57709 - "GET /api/checkpoints/list HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:57709 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57709 - "GET /api/checkpoints/list HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:57716 - "GET /api/checkpoints HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57717 - "POST /api/analysis/blast-radius HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57749 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57749 - "GET /static/style.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57750 - "GET /static/app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57750 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57749 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:57750 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57750 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57757 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57749 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57750 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57767 - "POST /api/analysis/blast-radius HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57767 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57767 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57767 - "GET /api/benchmark/results HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57767 - "GET /api/benchmark/markdown HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57767 - "GET /api/checkpoints?limit=100&offset=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57767 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57767 - "POST /api/analysis/blast-radius HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57767 - "POST /api/analysis/blast-radius HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57767 - "POST /api/harden/start HTTP/1.1" 200 OK
+[2026-10-23 14:24:24,313] INFO in testforge.a2a: Registered A2A agent handler: 'agent:google-adk:generator' (actions=None)
+[2026-10-23 14:24:24,313] INFO in testforge.a2a: Registered A2A agent handler: 'agent:crewai:critic' (actions=None)
+==========================================================
+       TESTFORGE: AUTONOMOUS TEST HARDENING ENGINE        
+Hardware: Apple Silicon M-Series | Cores: 10 | Workers: 8
+Foundation Model: Google GenAI Live (gemini-3.6-flash)
+==========================================================
+
+[2026-10-23 14:24:24,315] INFO in testforge.persistence: Checkpoint 'chk_351d4ec58868' successfully saved (stage='INITIAL_INGESTION', rev=3, job_id='2ba2714e')
+[Step 1/6] Synthesizing initial candidate test suite...
+[2026-10-23 14:24:24,316] INFO in testforge.adk_generator: Running Google ADK Generator (Iteration 0)...
+[2026-10-23 14:24:24,318] INFO in testforge.a2a: Synchronized validated Google ADK test code to Blackboard SuiteSpace.
+[2026-10-23 14:24:24,319] INFO in testforge.persistence: Checkpoint 'chk_caf29e21bdac' successfully saved (stage='BASELINE_SYNTHESIS', rev=5, job_id='2ba2714e')
+[Step 2/6] Sandbox validating test suite against clean target (pass@1 check)...
+[!] Initial generated tests failed against clean code:
+============================= test session starts ==============================
+platform darwin -- Python 3.13.17, pytest-9.1.1, pluggy-1.7.0 -- 
+/Users/sourabh/TestForge/.venv-release/bin/python
+rootdir: /var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_lg9jwpi5
+plugins: cov-7.1.0, anyio-4.15.1, platformdirs-4.13.5
+collecting ... collected 1 item
+
+../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_b
+ox_lg9jwpi5/test_target.py::test_calculate_discount_nominal FAILED [100%]
+
+=================================== FAILURES ===================================
+_______________________ test_calculate_discount_nominal ________________________
+
+    def test_calculate_discount_nominal():
+>       assert calculate_discount() is not None
+               ^^^^^^^^^^^^^^^^^^^^
+E       TypeError: calculate_discount() missing 3 required positional arguments:
+'price', 'quantity', and 'is_member'
+
+/var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_lg9jwpi5/test_tar
+get.py:5: TypeError
+=========================== short test summary info ============================
+FAILED 
+../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_b
+ox_lg9jwpi5/test_target.py::test_calculate_discount_nominal
+============================== 1 failed in 0.02s ===============================
+
+[Self-Repair] Re-prompting TestGeneratorAgent to fix syntax/runtime error...
+INFO:     127.0.0.1:57767 - "GET /api/harden/status/2ba2714e HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57767 - "GET /api/harden/status/2ba2714e HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57767 - "GET /api/harden/status/2ba2714e HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57767 - "GET /api/harden/status/2ba2714e HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57767 - "GET /api/harden/status/2ba2714e HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57767 - "GET /api/harden/status/2ba2714e HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57767 - "GET /api/harden/status/2ba2714e HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57767 - "GET /api/harden/status/2ba2714e HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57767 - "GET /api/harden/status/2ba2714e HTTP/1.1" 200 OK
+[2026-10-23 14:24:35,444] INFO in httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent "HTTP/1.1 200 OK"
+[✓] Candidate test suite passed on clean code (23/23 tests passed).
+[✓] Baseline Line Coverage: 100.0% (10/10 lines covered)
+
+[2026-10-23 14:24:35,905] INFO in testforge.persistence: Checkpoint 'chk_515a992b1e33' successfully saved (stage='BASELINE_VALIDATED', rev=8, job_id='2ba2714e')
+▶ Iteration 1 of 3 (Target Score: 85.0%)
+  • AST Mutator injected 19 deterministic faults.
+  • Parallel Sandbox evaluating mutants across 8 CPU workers...
+INFO:     127.0.0.1:57767 - "GET /api/harden/status/2ba2714e HTTP/1.1" 200 OK
+[2026-10-23 14:24:37,024] INFO in testforge.persistence: Checkpoint 'chk_3c0ccc109ff4' successfully saved (stage='REFLECTION_ITERATION_1', rev=11, job_id='2ba2714e')
+                  Iteration 1 Benchmark (M2 AST & Equivalence)                  
+┏━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━┓
+┃  Total  ┃        ┃          ┃         ┃       ┃   Raw    ┃   Adj   ┃         ┃
+┃ Mutants ┃ Killed ┃ Survived ┃ Timeou… ┃ Equiv ┃  Score   ┃  Score  ┃ Elapsed ┃
+┡━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━┩
+│   19    │   18   │    1     │    0    │   0   │  94.7%   │  94.7%  │  1.09s  │
+└─────────┴────────┴──────────┴─────────┴───────┴──────────┴─────────┴─────────┘
+✔ SUCCESS: Target mutation score achieved (Raw: 94.7%, Adjusted: 94.7% >= 85.0% 
+with 100.0% line coverage, 0 verified equivalent mutants excluded).
+
+[2026-10-23 14:24:37,053] INFO in testforge.persistence: Checkpoint 'chk_99920ed0eea4' successfully saved (stage='FINALIZED', rev=13, job_id='2ba2714e')
+INFO:     127.0.0.1:57767 - "GET /api/harden/status/2ba2714e HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57767 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57772 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57774 - "GET /api/checkpoints?limit=100&offset=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57774 - "GET /api/checkpoints?limit=100&offset=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57774 - "GET /api/checkpoints/chk_99920ed0eea4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57774 - "GET /api/checkpoints/diff?base_id=chk_3c0ccc109ff4&target_id=chk_99920ed0eea4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57774 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57774 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57774 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57774 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57774 - "GET /api/benchmark/results HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57774 - "GET /api/benchmark/markdown HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57774 - "GET /api/benchmark/results HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57774 - "GET /api/benchmark/markdown HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57780 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57780 - "GET /static/style.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57780 - "GET /static/app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57780 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57780 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57780 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57780 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57780 - "POST /api/analysis/blast-radius HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57780 - "POST /api/analysis/git-diff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57780 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57780 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57780 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57780 - "GET /api/benchmark/results HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57780 - "GET /api/benchmark/markdown HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57780 - "GET /api/checkpoints HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57780 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57780 - "GET /api/checkpoints HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57780 - "GET /api/checkpoints/chk_99920ed0eea4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57780 - "GET /api/checkpoints/diff?base_checkpoint_id=chk_3c0ccc109ff4&target_checkpoint_id=chk_99920ed0eea4 HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:57780 - "POST /api/checkpoints/chk_99920ed0eea4/restore HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57785 - "GET /api/checkpoints/diff?base_id=chk_99920ed0eea4&target_id=chk_3c0ccc109ff4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57789 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57789 - "GET /static/style.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57789 - "GET /static/app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57789 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57789 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57789 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57789 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57789 - "POST /api/analysis/blast-radius HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57789 - "POST /api/analysis/git-diff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57789 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57789 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57789 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57789 - "GET /api/benchmark/results HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57789 - "GET /api/benchmark/markdown HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57789 - "GET /api/checkpoints HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57789 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57789 - "GET /api/checkpoints HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57789 - "GET /api/checkpoints/chk_99920ed0eea4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57789 - "GET /api/checkpoints/diff?base_id=chk_3c0ccc109ff4&target_id=chk_99920ed0eea4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57789 - "POST /api/checkpoints/chk_99920ed0eea4/restore HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57814 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57815 - "GET /static/app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57814 - "GET /static/style.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57815 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57814 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:57814 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57814 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57823 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57815 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57814 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57831 - "POST /api/analysis/blast-radius HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57831 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57831 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57831 - "GET /api/benchmark/results HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57831 - "GET /api/benchmark/markdown HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57831 - "GET /api/checkpoints?limit=100&offset=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57831 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57831 - "POST /api/analysis/blast-radius HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57831 - "POST /api/analysis/blast-radius HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57831 - "POST /api/harden/start HTTP/1.1" 200 OK
+[2026-10-23 14:26:16,963] INFO in testforge.a2a: Registered A2A agent handler: 'agent:google-adk:generator' (actions=None)
+[2026-10-23 14:26:16,963] INFO in testforge.a2a: Registered A2A agent handler: 'agent:crewai:critic' (actions=None)
+==========================================================
+       TESTFORGE: AUTONOMOUS TEST HARDENING ENGINE        
+Hardware: Apple Silicon M-Series | Cores: 10 | Workers: 8
+Foundation Model: Google GenAI Live (gemini-3.6-flash)
+==========================================================
+
+[2026-10-23 14:26:16,965] INFO in testforge.persistence: Checkpoint 'chk_5cb0d7a723ae' successfully saved (stage='INITIAL_INGESTION', rev=3, job_id='a6303988')
+[Step 1/6] Synthesizing initial candidate test suite...
+[2026-10-23 14:26:16,966] INFO in testforge.adk_generator: Running Google ADK Generator (Iteration 0)...
+[2026-10-23 14:26:16,967] INFO in testforge.a2a: Synchronized validated Google ADK test code to Blackboard SuiteSpace.
+[2026-10-23 14:26:16,968] INFO in testforge.persistence: Checkpoint 'chk_b351a4a06b7e' successfully saved (stage='BASELINE_SYNTHESIS', rev=5, job_id='a6303988')
+[Step 2/6] Sandbox validating test suite against clean target (pass@1 check)...
+[!] Initial generated tests failed against clean code:
+============================= test session starts ==============================
+platform darwin -- Python 3.13.17, pytest-9.1.1, pluggy-1.7.0 -- 
+/Users/sourabh/TestForge/.venv-release/bin/python
+rootdir: /var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_ym4j92u9
+plugins: cov-7.1.0, anyio-4.15.1, platformdirs-4.13.5
+collecting ... collected 1 item
+
+../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_b
+ox_ym4j92u9/test_target.py::test_calculate_discount_nominal FAILED [100%]
+
+=================================== FAILURES ===================================
+_______________________ test_calculate_discount_nominal ________________________
+
+    def test_calculate_discount_nominal():
+>       assert calculate_discount() is not None
+               ^^^^^^^^^^^^^^^^^^^^
+E       TypeError: calculate_discount() missing 3 required positional arguments:
+'price', 'quantity', and 'is_member'
+
+/var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_ym4j92u9/test_tar
+get.py:5: TypeError
+=========================== short test summary info ============================
+FAILED 
+../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_b
+ox_ym4j92u9/test_target.py::test_calculate_discount_nominal
+============================== 1 failed in 0.02s ===============================
+
+[Self-Repair] Re-prompting TestGeneratorAgent to fix syntax/runtime error...
+INFO:     127.0.0.1:57831 - "GET /api/harden/status/a6303988 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57831 - "GET /api/harden/status/a6303988 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57831 - "GET /api/harden/status/a6303988 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57831 - "GET /api/harden/status/a6303988 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57831 - "GET /api/harden/status/a6303988 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57831 - "GET /api/harden/status/a6303988 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57831 - "GET /api/harden/status/a6303988 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57831 - "GET /api/harden/status/a6303988 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57831 - "GET /api/harden/status/a6303988 HTTP/1.1" 200 OK
+[2026-10-23 14:26:28,936] INFO in httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:57831 - "GET /api/harden/status/a6303988 HTTP/1.1" 200 OK
+[✓] Candidate test suite passed on clean code (11/11 tests passed).
+[✓] Baseline Line Coverage: 100.0% (10/10 lines covered)
+
+[2026-10-23 14:26:29,405] INFO in testforge.persistence: Checkpoint 'chk_de8b998d878d' successfully saved (stage='BASELINE_VALIDATED', rev=8, job_id='a6303988')
+▶ Iteration 1 of 3 (Target Score: 85.0%)
+  • AST Mutator injected 19 deterministic faults.
+  • Parallel Sandbox evaluating mutants across 8 CPU workers...
+INFO:     127.0.0.1:57831 - "GET /api/harden/status/a6303988 HTTP/1.1" 200 OK
+[2026-10-23 14:26:30,468] INFO in testforge.persistence: Checkpoint 'chk_dcdcc3da1a21' successfully saved (stage='REFLECTION_ITERATION_1', rev=11, job_id='a6303988')
+                  Iteration 1 Benchmark (M2 AST & Equivalence)                  
+┏━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━┓
+┃  Total  ┃        ┃          ┃         ┃       ┃   Raw    ┃   Adj   ┃         ┃
+┃ Mutants ┃ Killed ┃ Survived ┃ Timeou… ┃ Equiv ┃  Score   ┃  Score  ┃ Elapsed ┃
+┡━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━┩
+│   19    │   17   │    2     │    0    │   0   │  89.5%   │  89.5%  │  1.05s  │
+└─────────┴────────┴──────────┴─────────┴───────┴──────────┴─────────┴─────────┘
+✔ SUCCESS: Target mutation score achieved (Raw: 89.5%, Adjusted: 89.5% >= 85.0% 
+with 100.0% line coverage, 0 verified equivalent mutants excluded).
+
+[2026-10-23 14:26:30,483] INFO in testforge.persistence: Checkpoint 'chk_464af8e6717e' successfully saved (stage='FINALIZED', rev=13, job_id='a6303988')
+INFO:     127.0.0.1:57831 - "GET /api/harden/status/a6303988 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57831 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57837 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57840 - "GET /api/checkpoints?limit=100&offset=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57840 - "GET /api/checkpoints?limit=100&offset=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57840 - "GET /api/checkpoints/chk_464af8e6717e HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57840 - "GET /api/checkpoints/diff?base_id=chk_dcdcc3da1a21&target_id=chk_464af8e6717e HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57840 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57840 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57840 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57840 - "GET /api/benchmark/results HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57840 - "GET /api/benchmark/markdown HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57840 - "GET /api/benchmark/results HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57840 - "GET /api/benchmark/markdown HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57850 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57850 - "GET /static/style.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57850 - "GET /static/app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57850 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57850 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57850 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57850 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57850 - "POST /api/analysis/blast-radius HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57850 - "POST /api/analysis/git-diff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57850 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57850 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57850 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57850 - "GET /api/benchmark/results HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57850 - "GET /api/benchmark/markdown HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57850 - "GET /api/checkpoints HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57850 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57850 - "GET /api/checkpoints HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57850 - "GET /api/checkpoints/chk_464af8e6717e HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57850 - "GET /api/checkpoints/diff?base_id=chk_dcdcc3da1a21&target_id=chk_464af8e6717e HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57850 - "POST /api/checkpoints/chk_464af8e6717e/restore HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57885 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57902 - "GET /?utm_source=chatgpt.com HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57902 - "GET /static/style.css HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:57903 - "GET /static/app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57903 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57903 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57903 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57905 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57902 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57903 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57907 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57941 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57950 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58026 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58026 - "GET /static/style.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58027 - "GET /static/app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58027 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58026 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58027 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58027 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58031 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58026 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58027 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58034 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58034 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58034 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58034 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58034 - "GET /static/app.js HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:58034 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58034 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58034 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58044 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58039 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58034 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58072 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58072 - "GET /static/style.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58073 - "GET /static/app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58073 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58072 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58073 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58073 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58080 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58072 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58073 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58085 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58085 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58085 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58085 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58085 - "GET /static/app.js HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:58085 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58085 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58085 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58095 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58085 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58091 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58105 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58119 - "GET /?utm_source=chatgpt.com HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58119 - "GET /static/style.css HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:58120 - "GET /static/app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58120 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58120 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58120 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58122 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58119 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58120 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58120 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58120 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58120 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58267 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58268 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59113 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59114 - "GET /static/app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59113 - "GET /static/style.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59114 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59114 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59113 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59113 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59121 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59114 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59113 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59127 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59127 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59127 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59127 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59127 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59127 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59127 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59137 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59131 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59127 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59159 - "GET /?utm_source=chatgpt.com HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59159 - "GET /static/style.css HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:59160 - "GET /static/app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59160 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59160 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59160 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59162 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59162 - "GET /?utm_source=chatgpt.com HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59162 - "GET /?utm_source=chatgpt.com HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59163 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59162 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59162 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59162 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59167 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59166 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59162 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59162 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59321 - "GET /api/ws/status HTTP/1.1" 404 Not Found

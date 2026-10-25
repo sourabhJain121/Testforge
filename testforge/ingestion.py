@@ -19,69 +19,183 @@ from __future__ import annotations
 import os
 import re
 import ast
+import hashlib
 from pathlib import Path
 import urllib.request
 import urllib.error
+import urllib.parse
+import logging
 from typing import List, Dict, Any, Optional, Tuple
 from testforge.logger import TraceLogger
 
+logger = logging.getLogger("testforge.ingestion")
 
-def fetch_github_source(github_url: str, output_dir: str = "samples") -> Path:
-    """
-    Fetches raw Python source code from a GitHub URL, validates AST syntax,
-    saves into `samples/github_<repo>_<filename>.py`, and returns the Path.
 
-    Supports:
-      - Standard GitHub blob URLs (e.g., https://github.com/psf/requests/blob/main/requests/utils.py)
-      - Raw GitHub URLs (e.g., https://raw.githubusercontent.com/psf/requests/main/requests/utils.py)
+def parse_and_normalize_github_url(url: str) -> Dict[str, Any]:
     """
-    clean_url = github_url.strip()
-    if not clean_url:
+    Validates and normalizes GitHub Python file URLs.
+    Extracts repository coordinates, branch/ref, file path, normalized URL, and raw URL.
+
+    Requirements enforced:
+      1. Rejects empty URLs.
+      2. Strips leading and trailing whitespace.
+      3. Strips accidental surrounding quotes ('...', "...", `...`).
+      4. Strictly rejects control characters (\\r, \\n, \\t, \\x00) and any whitespace
+         or non-printable characters.
+      5. Parses using urllib.parse.urlparse.
+      6. Requires scheme == 'https'.
+      7. Requires hostname == 'github.com' or 'raw.githubusercontent.com'.
+      8. Validates path patterns:
+           - github.com: /<owner>/<repo>/blob/<ref>/<file path> or /raw/<ref>/<file path>
+           - raw.githubusercontent.com: /<owner>/<repo>/<ref>/<file path>
+      9. Rejects URLs containing unexpected UI text, button labels, or trailing tokens.
+      10. Produces debug-safe logging without secrets.
+    """
+    if not isinstance(url, str):
+        raise ValueError("GitHub URL must be a string.")
+
+    raw_input = url
+    cleaned = url.strip()
+    if not cleaned:
         raise ValueError("GitHub URL cannot be empty.")
 
-    # Strip URL fragments / query strings for endpoint derivation
-    base_url = clean_url.split("#")[0].split("?")[0].rstrip("/")
+    # Remove accidental surrounding quotes if present
+    if (cleaned.startswith('"') and cleaned.endswith('"')) or \
+       (cleaned.startswith("'") and cleaned.endswith("'")) or \
+       (cleaned.startswith("`") and cleaned.endswith("`")):
+        cleaned = cleaned[1:-1].strip()
 
-    # Pattern 1: standard github.com blob or raw URL
-    # https://github.com/<owner>/<repo>/blob/<ref>/<filepath> or .../raw/...
-    blob_pattern = r"^https?://github\.com/([^/]+)/([^/]+)/(?:blob|raw)/([^/]+)/(.+)$"
-    # Pattern 2: raw.githubusercontent.com URL
-    # https://raw.githubusercontent.com/<owner>/<repo>/<ref>/<filepath>
-    raw_pattern = r"^https?://raw\.githubusercontent\.com/([^/]+)/([^/]+)/([^/]+)/(.+)$"
-
-    m_blob = re.match(blob_pattern, base_url)
-    m_raw = re.match(raw_pattern, base_url)
-
-    if m_blob:
-        owner, repo, branch, file_path = m_blob.groups()
-        raw_url = f"https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{file_path}"
-        filename = os.path.basename(file_path)
-    elif m_raw:
-        owner, repo, branch, file_path = m_raw.groups()
-        raw_url = base_url
-        filename = os.path.basename(file_path)
-    else:
-        # Fallback heuristic if URL is roughly github
-        if "github.com" in base_url and "/blob/" in base_url:
-            raw_url = base_url.replace("github.com", "raw.githubusercontent.com").replace("/blob/", "/")
-            parts = base_url.split("/")
-            repo = parts[4] if len(parts) > 4 else "repo"
-            filename = parts[-1] if parts else "module.py"
-        else:
+    # Reject URLs containing control characters or whitespace
+    disallowed_chars = {'\r', '\n', '\t', '\x00'}
+    for ch in cleaned:
+        if ch in disallowed_chars or ord(ch) < 32 or ord(ch) >= 127 or ch.isspace():
             raise ValueError(
-                f"Unsupported GitHub URL format: {github_url}. "
-                "Expected https://github.com/<owner>/<repo>/blob/<branch>/<path.py> "
-                "or https://raw.githubusercontent.com/<owner>/<repo>/<branch>/<path.py>"
+                f"URL contains invalid control characters or unexpected text/whitespace: {repr(cleaned)}"
             )
 
+    # Reject unexpected UI artifacts or bracketed text like [Fetch & Ingest]
+    for bad_token in ('[', ']', '<', '>', '{', '}', '|', '^', '`', '"', "'"):
+        if bad_token in cleaned:
+            raise ValueError(
+                f"URL contains unexpected characters or UI artifacts ('{bad_token}'): {repr(cleaned)}"
+            )
+
+    # Parse with urllib.parse.urlparse
+    parsed = urllib.parse.urlparse(cleaned)
+
+    if parsed.scheme.lower() != "https":
+        raise ValueError(f"Invalid URL scheme '{parsed.scheme}'. Only 'https' is supported.")
+
+    hostname = (parsed.hostname or "").lower()
+    if hostname not in ("github.com", "raw.githubusercontent.com"):
+        raise ValueError(
+            f"Unsupported hostname '{hostname}'. Expected 'github.com' or 'raw.githubusercontent.com'."
+        )
+
+    path = parsed.path.strip("/")
+    parts = [p for p in path.split("/") if p]
+
+    if hostname == "github.com":
+        # Expected: /<owner>/<repo>/blob/<ref>/<file path...> or .../raw/...
+        if len(parts) < 5:
+            raise ValueError(
+                f"Invalid GitHub URL path '/{path}'. "
+                "Expected format: https://github.com/<owner>/<repo>/blob/<branch>/<path.py>"
+            )
+        owner = parts[0]
+        repo = parts[1]
+        mode = parts[2]
+        if mode not in ("blob", "raw"):
+            raise ValueError(
+                f"Invalid GitHub URL component '/{mode}/'. Expected '/blob/' or '/raw/'."
+            )
+        ref = parts[3]
+        file_path = "/".join(parts[4:])
+        normalized_url = f"https://github.com/{owner}/{repo}/blob/{ref}/{file_path}"
+        raw_url = f"https://raw.githubusercontent.com/{owner}/{repo}/{ref}/{file_path}"
+
+    else:
+        # hostname == "raw.githubusercontent.com"
+        # Expected: /<owner>/<repo>/<ref>/<file path...>
+        if len(parts) < 4:
+            raise ValueError(
+                f"Invalid raw GitHub URL path '/{path}'. "
+                "Expected format: https://raw.githubusercontent.com/<owner>/<repo>/<branch>/<path.py>"
+            )
+        owner = parts[0]
+        repo = parts[1]
+        ref = parts[2]
+        file_path = "/".join(parts[3:])
+        raw_url = f"https://raw.githubusercontent.com/{owner}/{repo}/{ref}/{file_path}"
+        normalized_url = raw_url  # Support raw URL directly without reconverting
+
+    filename = os.path.basename(file_path)
     if not filename.endswith(".py"):
-        filename = f"{filename}.py"
+        raise ValueError(f"Target file '{filename}' is not a Python (.py) source file.")
+
+    if not re.match(r"^[a-zA-Z0-9_.-]+$", owner) or not re.match(r"^[a-zA-Z0-9_.-]+$", repo):
+        raise ValueError(f"Invalid repository coordinates: owner='{owner}', repo='{repo}'.")
+
+    # Debug-safe logging (no secrets or API keys)
+    log_msg = (
+        "GitHub Ingestion URL Resolved:\n"
+        f"  Original input: {raw_input}\n"
+        f"  Normalized URL: {normalized_url}\n"
+        f"  Resolved raw URL: {raw_url}\n"
+        f"  Repository: {owner}/{repo}\n"
+        f"  Branch/ref: {ref}\n"
+        f"  File path: {file_path}"
+    )
+    logger.info(log_msg)
+    print(f"[TestForge:ModeC] {log_msg}", flush=True)
+
+    return {
+        "original_input": raw_input,
+        "normalized_url": normalized_url,
+        "raw_url": raw_url,
+        "owner": owner,
+        "repo": repo,
+        "repository": f"{owner}/{repo}",
+        "branch": ref,
+        "ref": ref,
+        "file_path": file_path,
+        "filename": filename,
+    }
+
+
+def normalize_github_url(url: str) -> str:
+    """
+    Normalizes a GitHub URL and returns the clean normalized URL string.
+    Rejects malformed strings, UI text, or control characters.
+    """
+    meta = parse_and_normalize_github_url(url)
+    return meta["normalized_url"]
+
+
+def fetch_github_source_with_meta(github_url: str, output_dir: str = "samples") -> Tuple[Path, Dict[str, Any]]:
+    """
+    Fetches raw Python source code from a GitHub URL, resolves relative package imports
+    for standalone sandbox execution, validates AST syntax, saves into `samples/github_<repo>_<filename>.py`,
+    and returns (Path, metadata_dict).
+
+    Supports:
+      - Standard GitHub blob URLs (e.g., https://github.com/psf/requests/blob/main/src/requests/models.py)
+      - Raw GitHub URLs (e.g., https://raw.githubusercontent.com/psf/requests/main/src/requests/models.py)
+    """
+    url_info = parse_and_normalize_github_url(github_url)
+    raw_url = url_info["raw_url"]
+    owner = url_info["owner"]
+    repo = url_info["repo"]
+    branch = url_info["branch"]
+    file_path = url_info["file_path"]
+    filename = url_info["filename"]
+    normalized_url = url_info["normalized_url"]
 
     # Sanitize repo and filename for safe filesystem path
     clean_repo = re.sub(r"[^\w\-]", "_", repo)
     clean_filename = re.sub(r"[^\w\-\.]", "_", filename)
 
-    # Download source content
+    # Download source content from raw_url (guaranteed to contain only the resolved URL)
     req = urllib.request.Request(
         raw_url,
         headers={"User-Agent": "TestForge/1.0 (Autonomous Systems Ingestion)"}
@@ -97,12 +211,18 @@ def fetch_github_source(github_url: str, output_dir: str = "samples") -> Path:
     except Exception as exc:
         raise RuntimeError(f"Network error fetching GitHub file: {exc}") from exc
 
+    # Resolve relative package imports (e.g. `from .compat import ...` -> `from requests.compat import ...`)
+    clean_repo_pkg = re.sub(r"[^\w]", "", repo)
+    if clean_repo_pkg:
+        content = re.sub(r"from\s+\.(\w+)", rf"from {clean_repo_pkg}.\1", content)
+        content = re.sub(r"from\s+\.\s+import", rf"from {clean_repo_pkg} import", content)
+
     # Validate AST
     try:
         ast.parse(content)
     except SyntaxError as syn_err:
         raise ValueError(
-            f"Fetched file from {github_url} contains invalid Python AST (line {syn_err.lineno}: {syn_err.msg})"
+            f"Fetched file from {normalized_url} contains invalid Python AST (line {syn_err.lineno}: {syn_err.msg})"
         ) from syn_err
     except Exception as exc:
         raise ValueError(f"Failed to parse AST of fetched file: {exc}") from exc
@@ -113,7 +233,30 @@ def fetch_github_source(github_url: str, output_dir: str = "samples") -> Path:
     target_path = out_dir / f"github_{clean_repo}_{clean_filename}"
     target_path.write_text(content, encoding="utf-8")
 
-    return target_path.resolve()
+    source_sha = hashlib.sha256(content.encode("utf-8")).hexdigest()
+    clean_mod_suffix = clean_filename[:-3] if clean_filename.endswith(".py") else clean_filename
+    meta = {
+        "source_github_url": normalized_url,
+        "raw_github_url": raw_url,
+        "repository": f"{owner}/{repo}",
+        "branch": branch,
+        "file_path": file_path,
+        "filename": filename,
+        "generated_module_name": f"samples.github_{clean_repo}_{clean_mod_suffix}",
+        "source_sha": source_sha,
+        "line_count": len(content.splitlines()),
+    }
+
+    return target_path.resolve(), meta
+
+
+def fetch_github_source(github_url: str, output_dir: str = "samples") -> Path:
+    """
+    Fetches raw Python source code from a GitHub URL and returns the Path.
+    Maintained for backwards compatibility.
+    """
+    saved_path, _ = fetch_github_source_with_meta(github_url, output_dir=output_dir)
+    return saved_path
 
 
 class IngestionAnalysis:
@@ -125,16 +268,62 @@ class IngestionAnalysis:
         module_name: str,
         functions: List[str],
         classes: List[str],
+        methods: Optional[Dict[str, List[str]]] = None,
+        all_callables: Optional[List[str]] = None,
+        source_sha: str = "",
+        line_count: int = 0,
+        ast_function_count: int = 0,
+        ast_class_count: int = 0,
         has_syntax_error: bool = False,
-        error_msg: str = ""
+        error_msg: str = "",
+        github_metadata: Optional[Dict[str, Any]] = None,
+        tree: Optional[ast.AST] = None,
+        dependencies: Optional[List[str]] = None
     ):
         self.file_path = file_path
         self.source_code = source_code
         self.module_name = module_name
-        self.functions = functions
-        self.classes = classes
+        self.functions = functions or []
+        self.classes = classes or []
+        self.methods = methods or {}
+        self.all_callables = all_callables if all_callables is not None else list(self.functions)
+        self.source_sha = source_sha or (hashlib.sha256(source_code.encode("utf-8")).hexdigest() if source_code else "")
+        self.line_count = line_count or (len(source_code.splitlines()) if source_code else 0)
+        self.ast_function_count = ast_function_count or len(self.all_callables)
+        self.ast_class_count = ast_class_count or len(self.classes)
         self.has_syntax_error = has_syntax_error
         self.error_msg = error_msg
+        self.github_metadata = github_metadata or {}
+        self.tree = tree
+        self.dependencies = dependencies or []
+
+    def get(self, key: str, default: Any = None) -> Any:
+        """Enables dict-like get access for defensive UI rendering."""
+        return getattr(self, key, default)
+
+    def __getattr__(self, name: str) -> Any:
+        """Defensive fallback so missing attributes never raise AttributeError."""
+        defaults = {
+            "methods": {},
+            "all_callables": getattr(self, "functions", []),
+            "source_sha": hashlib.sha256(getattr(self, "source_code", "").encode("utf-8")).hexdigest() if getattr(self, "source_code", "") else "",
+            "line_count": len(getattr(self, "source_code", "").splitlines()) if getattr(self, "source_code", "") else 0,
+            "ast_function_count": len(getattr(self, "functions", [])),
+            "ast_class_count": len(getattr(self, "classes", [])),
+            "github_metadata": {},
+            "classes": [],
+            "functions": [],
+            "source_code": "",
+            "module_name": "",
+            "file_path": "",
+            "has_syntax_error": False,
+            "error_msg": "",
+            "tree": None,
+            "dependencies": [],
+        }
+        if name in defaults:
+            return defaults[name]
+        raise AttributeError(f"'IngestionAnalysis' object has no attribute '{name}'")
 
 
 class TargetManagerAgent:
@@ -190,30 +379,65 @@ class TargetManagerAgent:
 
         functions: List[str] = []
         classes: List[str] = []
+        methods: Dict[str, List[str]] = {}
+        all_callables: List[str] = []
+        dependencies: List[str] = []
 
         try:
             tree = ast.parse(code)
             for node in tree.body:
                 if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                     functions.append(node.name)
+                    all_callables.append(node.name)
                 elif isinstance(node, ast.ClassDef):
                     classes.append(node.name)
+                    cls_methods: List[str] = []
+                    for item in node.body:
+                        if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                            cls_methods.append(item.name)
+                            all_callables.append(f"{node.name}.{item.name}")
+                    methods[node.name] = cls_methods
+                elif isinstance(node, ast.Import):
+                    for alias in node.names:
+                        dependencies.append(alias.name)
+                elif isinstance(node, ast.ImportFrom):
+                    if node.module:
+                        dependencies.append(node.module)
+
+            sha = hashlib.sha256(code.encode("utf-8")).hexdigest()
             return IngestionAnalysis(
                 file_path=abs_path,
                 source_code=code,
                 module_name=module_name,
                 functions=functions,
-                classes=classes
+                classes=classes,
+                methods=methods,
+                all_callables=all_callables,
+                source_sha=sha,
+                line_count=len(code.splitlines()),
+                ast_function_count=len(all_callables),
+                ast_class_count=len(classes),
+                tree=tree,
+                dependencies=sorted(list(set(dependencies)))
             )
         except SyntaxError as e:
+            sha = hashlib.sha256(code.encode("utf-8")).hexdigest()
             return IngestionAnalysis(
                 file_path=abs_path,
                 source_code=code,
                 module_name=module_name,
                 functions=[],
                 classes=[],
+                methods={},
+                all_callables=[],
+                source_sha=sha,
+                line_count=len(code.splitlines()),
+                ast_function_count=0,
+                ast_class_count=0,
                 has_syntax_error=True,
-                error_msg=f"SyntaxError on line {e.lineno}: {e.msg}"
+                error_msg=f"SyntaxError on line {e.lineno}: {e.msg}",
+                tree=None,
+                dependencies=[]
             )
 
     # --------------------------------------------------------------------------
@@ -222,9 +446,17 @@ class TargetManagerAgent:
     def ingest_github(self, github_url: str, output_dir: str = "samples") -> Tuple[Path, IngestionAnalysis]:
         """
         Ingests and validates an arbitrary Python source file directly from a public GitHub URL.
+        Returns the saved file path and complete IngestionAnalysis with robust GitHub metadata.
         """
-        saved_path = fetch_github_source(github_url, output_dir=output_dir)
+        saved_path, meta = fetch_github_source_with_meta(github_url, output_dir=output_dir)
         analysis = self.ingest_file(str(saved_path))
+        meta["ast_function_count"] = analysis.ast_function_count
+        meta["ast_class_count"] = analysis.ast_class_count
+        meta["functions"] = analysis.functions
+        meta["classes"] = analysis.classes
+        meta["all_callables"] = analysis.all_callables
+        meta["dependencies"] = analysis.dependencies
+        analysis.github_metadata = meta
         return saved_path, analysis
 
     # --------------------------------------------------------------------------
@@ -237,6 +469,11 @@ class TargetManagerAgent:
         Returns:
           (file_path, generated_source_code)
         """
+        from testforge.security import SecurityGuardrail
+        sec_check = SecurityGuardrail().inspect_prompt(prompt)
+        if not sec_check.allowed:
+            raise ValueError(f"SecurityGuardrail rejected input prompt: {sec_check.explanation}")
+
         slug = self._create_slug(prompt)
         os.makedirs(output_dir, exist_ok=True)
         target_path = os.path.join(output_dir, f"generated_{slug}.py")
@@ -322,8 +559,7 @@ def process_transaction(amount: float, balance: float, is_vip: bool) -> tuple[bo
         Pulls raw Python file from public GitHub URL, validates AST syntax,
         persists into samples directory, and inspects exported symbols.
         """
-        saved_path = fetch_github_source(github_url, output_dir=output_dir)
-        analysis = self.ingest_file(str(saved_path))
+        saved_path, analysis = self.ingest_github(github_url, output_dir=output_dir)
         if self.logger:
             self.logger.log_event("GITHUB_FILE_INGESTION", {
                 "github_url": github_url,

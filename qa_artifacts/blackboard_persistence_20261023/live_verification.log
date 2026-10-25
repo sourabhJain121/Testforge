@@ -1,0 +1,24 @@
+[2026-10-23 12:56:09] === Scenario 1: Live Hardening Pipeline with Checkpointing ===
+[2026-10-23 12:56:23] Pipeline executed in 13.46s with status 'TARGET_SCORE_UNREACHED'
+[2026-10-23 12:56:23] Checkpoints created (5 total): ['FINALIZED', 'REFLECTION_ITERATION_2', 'REFLECTION_ITERATION_1', 'BASELINE_VALIDATED', 'INITIAL_INGESTION']
+[2026-10-23 12:56:23] 
+=== Scenario 2: Recovery in a Fresh Blackboard Instance ===
+[2026-10-23 12:56:23] Restored target functions: ['compute_interest']
+[2026-10-23 12:56:23] Restored mutation score: 61.11%
+[2026-10-23 12:56:23] Restored hardening status: TARGET_SCORE_UNREACHED
+[2026-10-23 12:56:23] 
+=== Scenario 3: Checkpointing on Cooperative Cancellation ===
+[2026-10-23 12:56:23] Cancellation run outcome: CANCELLED
+[2026-10-23 12:56:23] Confirmed CANCELLED checkpoint: chk_601ed8436888
+[2026-10-23 12:56:23] 
+=== Scenario 4: Checkpointing on Bounded Timeout ===
+[2026-10-23 12:56:23] Timeout run outcome: TIMED_OUT
+[2026-10-23 12:56:23] Confirmed TIMED_OUT checkpoint: chk_71db572e6e9d
+[2026-10-23 12:56:23] 
+=== Scenario 5: REST API Checkpoint Endpoints ===
+[2026-10-23 12:56:23] GET /readyz: sqlite_persistence subsystem operational
+[2026-10-23 12:56:23] GET /api/checkpoints returned 7 checkpoints across jobs
+[2026-10-23 12:56:23] GET /api/checkpoints/chk_71db572e6e9d returned structured details: stage='TIMED_OUT'
+[2026-10-23 12:56:23] POST /api/checkpoints/chk_71db572e6e9d/restore successful: restored revision 4
+[2026-10-23 12:56:23] 
+>>> ALL LIVE CHECKPOINTING SCENARIOS PASSED WITH CODE 0! <<<

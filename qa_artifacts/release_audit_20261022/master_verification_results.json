@@ -1,0 +1,305 @@
+{
+  "timestamp": 1792675095.509941,
+  "base_url": "http://127.0.0.1:8000",
+  "browser": "Google Chrome 156.0.8078.48 (macOS arm64)",
+  "journeys": {
+    "journey_1_dashboard": {
+      "status": "PASS",
+      "hardware": "Darwin arm64 (10 cores, 16GB)",
+      "target": "samples.discount"
+    },
+    "journey_2_sample_selection": {
+      "hasCode": true,
+      "title": "samples.banking"
+    },
+    "journey_4_hardening": {
+      "status": "PASS",
+      "filter_counts": {
+        "all": 3,
+        "killed": 2,
+        "survived": 1
+      }
+    },
+    "journey_8_settings": {
+      "iterLbl": "4",
+      "scoreLbl": "85%",
+      "modalClosed": true
+    },
+    "journey_10_health_and_a2a": {
+      "healthz": {
+        "status": "healthy",
+        "service": "testforge-backend",
+        "version": "2.0.0",
+        "timestamp": 1792675107.314708
+      },
+      "readyz": {
+        "status": "ready",
+        "service": "testforge-backend",
+        "subsystems": {
+          "ast_mutator": "operational",
+          "blackboard": "operational",
+          "sandbox_storage": "operational"
+        },
+        "timestamp": 1792675107.316706
+      },
+      "agent_card_valid": true,
+      "status": "PASS"
+    },
+    "journey_11_blast_radius": {
+      "status": "PASS",
+      "details": {
+        "hasSelect": true,
+        "hasTree": true,
+        "riskText": "\ud83d\udfe2 LOW"
+      }
+    },
+    "journey_12_mode_b_synthesis": {
+      "status": "PASS",
+      "details": {
+        "chipCount": 3,
+        "hasInput": true
+      }
+    }
+  },
+  "controls": [
+    {
+      "page": "Header",
+      "element_id": "pill-hardware",
+      "label": "Hardware Pill",
+      "action": "Inspect system status",
+      "expected": "Displays arm64 system specs",
+      "observed": "Darwin arm64 (10 cores, 16GB)",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "page": "Mode A",
+      "element_id": "btn-load-sample",
+      "label": "Load Sample Button",
+      "action": "Load banking.py",
+      "expected": "Loads banking.py source and updates target",
+      "observed": {
+        "hasCode": true,
+        "title": "samples.banking"
+      },
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "page": "Mode C",
+      "element_id": "btn-activate-mode-c",
+      "label": "Target Confirmed Button",
+      "action": "Confirm GitHub target for hardening",
+      "expected": "Synchronizes active target and switches to tab-hardening",
+      "observed": {
+        "targetTitleAfterFetch": "samples.github_requests_models",
+        "hasGlow": true,
+        "btnText": "\ud83c\udfaf Target Confirmed for Hardening (Click to Proceed)",
+        "finalHardenTarget": "samples.github_requests_models",
+        "activePaneAfterConfirm": "tab-hardening"
+      },
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "page": "Hardening Lab",
+      "element_id": "filter-btn",
+      "label": "Mutant Filters (ALL/KILLED/SURVIVED)",
+      "action": "Filter mutant table rows",
+      "expected": "Isolates mutants by kill status",
+      "observed": {
+        "all": 3,
+        "killed": 2,
+        "survived": 1
+      },
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "page": "Wiretap",
+      "element_id": "nav-wiretap",
+      "label": "Wiretap Nav Tab",
+      "action": "Switch to Wiretap pane",
+      "expected": "Automatically hydrates timeline events without manual refresh",
+      "observed": {
+        "cardCount": 357,
+        "hasEmptyCallout": false,
+        "kpiHandoffs": "274",
+        "kpiAdk": "83"
+      },
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "page": "Global",
+      "element_id": "toast-container",
+      "label": "Toast Notification System",
+      "action": "Trigger error after success",
+      "expected": "Dismisses conflicting success toasts and caps stack",
+      "observed": {
+        "concurrentCountBefore": 2,
+        "toastsAfterError": [
+          {
+            "text": "\u274c\n      Validation Error Encountered!",
+            "hasSuccess": false,
+            "hasError": true
+          }
+        ]
+      },
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "page": "Benchmarks",
+      "element_id": "btn-bench-md-rendered",
+      "label": "Benchmark Report View Toggle",
+      "action": "Toggle between Formatted Table and Raw Markdown",
+      "expected": "Seamlessly toggles formatted table and raw syntax block",
+      "observed": {
+        "initRenderedVis": true,
+        "initRawHidden": true,
+        "afterRawVis": true,
+        "afterRenderedHidden": true,
+        "hasTableInRendered": true,
+        "rawContentLength": 963
+      },
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "page": "Settings Modal",
+      "element_id": "btn-save-settings",
+      "label": "Save Configuration Button",
+      "action": "Update iterations to 4 and score to 85%",
+      "expected": "Propagates config to state and updates hardening dashboard labels",
+      "observed": {
+        "iterLbl": "4",
+        "scoreLbl": "85%",
+        "modalClosed": true
+      },
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "page": "Endpoints",
+      "element_id": "healthz/readyz/agent-card",
+      "label": "Health & A2A Discovery",
+      "action": "Probe /healthz, /readyz, /.well-known/agent-card.json",
+      "expected": "Returns 200 OK with valid schemas",
+      "observed": "healthz:200, readyz:200, agent_card:200",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "page": "Blast Radius",
+      "element_id": "blast-tree-display",
+      "label": "Dependency Call Tree & Risk Badge",
+      "action": "Switch to Blast Radius tab and inspect call tree",
+      "expected": "Renders risk metrics and call tree view",
+      "observed": {
+        "hasSelect": true,
+        "hasTree": true,
+        "riskText": "\ud83d\udfe2 LOW"
+      },
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "page": "Mode B",
+      "element_id": "synth-prompt-input",
+      "label": "Natural Language Prompt Input",
+      "action": "Click prompt chip and inspect textarea",
+      "expected": "Populates prompt input with starter specification",
+      "observed": {
+        "chipCount": 3,
+        "hasInput": true
+      },
+      "status": "PASS",
+      "details": ""
+    }
+  ],
+  "defect_verifications": {
+    "TF-DEF-001": {
+      "status": "PASS",
+      "details": {
+        "targetTitleAfterFetch": "samples.github_requests_models",
+        "hasGlow": true,
+        "btnText": "\ud83c\udfaf Target Confirmed for Hardening (Click to Proceed)",
+        "finalHardenTarget": "samples.github_requests_models",
+        "activePaneAfterConfirm": "tab-hardening"
+      }
+    },
+    "TF-DEF-002": {
+      "status": "PASS",
+      "details": {
+        "cardCount": 357,
+        "hasEmptyCallout": false,
+        "kpiHandoffs": "274",
+        "kpiAdk": "83"
+      }
+    },
+    "TF-DEF-003": {
+      "status": "PASS",
+      "details": {
+        "concurrentCountBefore": 2,
+        "toastsAfterError": [
+          {
+            "text": "\u274c\n      Validation Error Encountered!",
+            "hasSuccess": false,
+            "hasError": true
+          }
+        ]
+      }
+    },
+    "TF-DEF-004": {
+      "status": "PASS",
+      "details": {
+        "initRenderedVis": true,
+        "initRawHidden": true,
+        "afterRawVis": true,
+        "afterRenderedHidden": true,
+        "hasTableInRendered": true,
+        "rawContentLength": 963
+      }
+    }
+  },
+  "console_messages": [],
+  "network_errors": [],
+  "screenshots": [
+    {
+      "filename": "01_initial_dashboard.png",
+      "description": "Initial Dashboard State with Hardware Profile",
+      "bytes": 550600
+    },
+    {
+      "filename": "02_mode_a_sample_loaded.png",
+      "description": "Mode A Banking Sample Loaded",
+      "bytes": 562532
+    },
+    {
+      "filename": "03_mode_c_ingestion_and_activation.png",
+      "description": "Mode C GitHub Target Confirmed & Switched to Hardening",
+      "bytes": 625912
+    },
+    {
+      "filename": "04_hardening_completed.png",
+      "description": "Hardening Lab Completed with Mutants and KPIs",
+      "bytes": 732972
+    },
+    {
+      "filename": "05_wiretap_timeline.png",
+      "description": "Multi-Agent Wiretap Timeline Auto-Hydrated",
+      "bytes": 530252
+    },
+    {
+      "filename": "06_benchmark_markdown_preview.png",
+      "description": "Benchmark Formatted Report View with Toggle",
+      "bytes": 534356
+    },
+    {
+      "filename": "07_mobile_responsive_final.png",
+      "description": "Mobile Viewport (375x812) Layout",
+      "bytes": 742192
+    }
+  ]
+}

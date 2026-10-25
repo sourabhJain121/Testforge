@@ -1,0 +1,176 @@
+{
+  "target_file": "samples/discount.py",
+  "model": "gemini-3.6-flash",
+  "mode": "fast-mock",
+  "simulated": true,
+  "disclaimer": "SIMULATED OFFLINE BENCHMARK: Results are deterministic fixtures for CI/CD checks and do NOT represent real foundation model synthesis quality or live API latency.",
+  "timestamp": 1792750422.9336262,
+  "repetitions": 5,
+  "runs": [
+    {
+      "run_type": "baseline (rep 1)",
+      "line_coverage_pct": 45.0,
+      "mutation_score_pct": 25.0,
+      "killed_mutants": 5,
+      "total_mutants": 20,
+      "iterations": 0,
+      "latency_seconds": 0.002,
+      "tokens_used": 0,
+      "simulated": true
+    },
+    {
+      "run_type": "baseline (rep 2)",
+      "line_coverage_pct": 45.0,
+      "mutation_score_pct": 25.0,
+      "killed_mutants": 5,
+      "total_mutants": 20,
+      "iterations": 0,
+      "latency_seconds": 0.002,
+      "tokens_used": 0,
+      "simulated": true
+    },
+    {
+      "run_type": "baseline (rep 3)",
+      "line_coverage_pct": 45.0,
+      "mutation_score_pct": 25.0,
+      "killed_mutants": 5,
+      "total_mutants": 20,
+      "iterations": 0,
+      "latency_seconds": 0.002,
+      "tokens_used": 0,
+      "simulated": true
+    },
+    {
+      "run_type": "baseline (rep 4)",
+      "line_coverage_pct": 45.0,
+      "mutation_score_pct": 25.0,
+      "killed_mutants": 5,
+      "total_mutants": 20,
+      "iterations": 0,
+      "latency_seconds": 0.002,
+      "tokens_used": 0,
+      "simulated": true
+    },
+    {
+      "run_type": "baseline (rep 5)",
+      "line_coverage_pct": 45.0,
+      "mutation_score_pct": 25.0,
+      "killed_mutants": 5,
+      "total_mutants": 20,
+      "iterations": 0,
+      "latency_seconds": 0.002,
+      "tokens_used": 0,
+      "simulated": true
+    },
+    {
+      "run_type": "zeroshot (rep 1)",
+      "line_coverage_pct": 75.0,
+      "mutation_score_pct": 60.0,
+      "killed_mutants": 12,
+      "total_mutants": 20,
+      "iterations": 1,
+      "latency_seconds": 0.002,
+      "tokens_used": 665,
+      "simulated": true
+    },
+    {
+      "run_type": "zeroshot (rep 2)",
+      "line_coverage_pct": 75.0,
+      "mutation_score_pct": 60.0,
+      "killed_mutants": 12,
+      "total_mutants": 20,
+      "iterations": 1,
+      "latency_seconds": 0.002,
+      "tokens_used": 680,
+      "simulated": true
+    },
+    {
+      "run_type": "zeroshot (rep 3)",
+      "line_coverage_pct": 75.0,
+      "mutation_score_pct": 60.0,
+      "killed_mutants": 12,
+      "total_mutants": 20,
+      "iterations": 1,
+      "latency_seconds": 0.002,
+      "tokens_used": 695,
+      "simulated": true
+    },
+    {
+      "run_type": "zeroshot (rep 4)",
+      "line_coverage_pct": 75.0,
+      "mutation_score_pct": 60.0,
+      "killed_mutants": 12,
+      "total_mutants": 20,
+      "iterations": 1,
+      "latency_seconds": 0.002,
+      "tokens_used": 710,
+      "simulated": true
+    },
+    {
+      "run_type": "zeroshot (rep 5)",
+      "line_coverage_pct": 75.0,
+      "mutation_score_pct": 60.0,
+      "killed_mutants": 12,
+      "total_mutants": 20,
+      "iterations": 1,
+      "latency_seconds": 0.002,
+      "tokens_used": 725,
+      "simulated": true
+    },
+    {
+      "run_type": "agentic_reflection (rep 1)",
+      "line_coverage_pct": 95.0,
+      "mutation_score_pct": 100.0,
+      "killed_mutants": 20,
+      "total_mutants": 20,
+      "iterations": 2,
+      "latency_seconds": 0.002,
+      "tokens_used": 1840,
+      "simulated": true
+    },
+    {
+      "run_type": "agentic_reflection (rep 2)",
+      "line_coverage_pct": 95.0,
+      "mutation_score_pct": 100.0,
+      "killed_mutants": 20,
+      "total_mutants": 20,
+      "iterations": 2,
+      "latency_seconds": 0.002,
+      "tokens_used": 1880,
+      "simulated": true
+    },
+    {
+      "run_type": "agentic_reflection (rep 3)",
+      "line_coverage_pct": 95.0,
+      "mutation_score_pct": 100.0,
+      "killed_mutants": 20,
+      "total_mutants": 20,
+      "iterations": 2,
+      "latency_seconds": 0.002,
+      "tokens_used": 1920,
+      "simulated": true
+    },
+    {
+      "run_type": "agentic_reflection (rep 4)",
+      "line_coverage_pct": 95.0,
+      "mutation_score_pct": 100.0,
+      "killed_mutants": 20,
+      "total_mutants": 20,
+      "iterations": 2,
+      "latency_seconds": 0.002,
+      "tokens_used": 1960,
+      "simulated": true
+    },
+    {
+      "run_type": "agentic_reflection (rep 5)",
+      "line_coverage_pct": 95.0,
+      "mutation_score_pct": 100.0,
+      "killed_mutants": 20,
+      "total_mutants": 20,
+      "iterations": 2,
+      "latency_seconds": 0.002,
+      "tokens_used": 2000,
+      "simulated": true
+    }
+  ]
+}

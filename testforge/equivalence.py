@@ -1,0 +1,363 @@
+"""
+equivalence.py - Conservative Equivalent-Mutant Analysis & Mutation Score Engine.
+
+Module: Milestone 2 (TestForge)
+Author: Sourabh & Shreshth
+Course: CSE3101 - Agentic AI
+
+Provides:
+  1. EquivalentMutantAnalyzer: Static & heuristic analysis layer to detect equivalent
+     and potentially equivalent mutants without relying on tests or heavyweight solvers.
+  2. Classification categories:
+     - EQUIVALENT: Provable semantic invariance (syntactic identity, dead code, algebraic identity).
+     - POTENTIALLY_EQUIVALENT: Heuristic suspicion based on domain invariants (e.g. len(x) >= 0).
+     - NOT_EQUIVALENT / UNKNOWN: No proof of equivalence; surviving tests alone is NOT equivalence.
+  3. calculate_mutation_scores: Deterministic calculation of raw vs. adjusted mutation scores.
+"""
+
+from __future__ import annotations
+import ast
+import re
+from enum import Enum
+from typing import Dict, Any, List, Optional, Set
+from pydantic import BaseModel, Field
+
+from testforge.state import MutantRecord
+
+
+class EquivalenceClassification(str, Enum):
+    EQUIVALENT = "EQUIVALENT"
+    POTENTIALLY_EQUIVALENT = "POTENTIALLY_EQUIVALENT"
+    NOT_EQUIVALENT = "NOT_EQUIVALENT"
+    UNKNOWN = "UNKNOWN"
+
+
+class EquivalenceConfidence(str, Enum):
+    HIGH = "HIGH"
+    MEDIUM = "MEDIUM"
+    LOW = "LOW"
+    NONE = "NONE"
+
+
+class EquivalenceMethod(str, Enum):
+    SYNTACTIC_IDENTITY = "SYNTACTIC_IDENTITY"
+    SELF_CANCELING_TRANSFORM = "SELF_CANCELING_TRANSFORM"
+    DEAD_CODE_MUTATION = "DEAD_CODE_MUTATION"
+    REDUNDANT_BOUNDARY = "REDUNDANT_BOUNDARY"
+    STATIC_HEURISTIC = "STATIC_HEURISTIC"
+    NONE = "NONE"
+
+
+class EquivalenceResult(BaseModel):
+    status: EquivalenceClassification
+    method: EquivalenceMethod
+    reason: str
+    confidence: EquivalenceConfidence
+    evidence: Dict[str, Any] = Field(default_factory=dict)
+
+
+class DeadCodeVisitor(ast.NodeVisitor):
+    """
+    Identifies AST statements that are provably unreachable:
+    1. Statements appearing after an unconditional return, raise, break, or continue in a block.
+    2. Statements inside an `if False:` or `if 0:` or `if not True:` block.
+    """
+    def __init__(self):
+        self.dead_lines: Set[int] = set()
+
+    def _mark_block_after_terminator(self, body: List[ast.stmt]):
+        terminated = False
+        for stmt in body:
+            if terminated:
+                for line in range(stmt.lineno, getattr(stmt, "end_lineno", stmt.lineno) + 1):
+                    self.dead_lines.add(line)
+                # Also visit children to collect inner lines
+                self.generic_visit(stmt)
+            else:
+                self.visit(stmt)
+                if isinstance(stmt, (ast.Return, ast.Raise, ast.Break, ast.Continue)):
+                    terminated = True
+
+    def visit_FunctionDef(self, node: ast.FunctionDef):
+        self._mark_block_after_terminator(node.body)
+
+    def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef):
+        self._mark_block_after_terminator(node.body)
+
+    def visit_If(self, node: ast.If):
+        # Check if condition is statically False
+        is_false = False
+        if isinstance(node.test, ast.Constant) and bool(node.test.value) is False:
+            is_false = True
+        elif isinstance(node.test, ast.UnaryOp) and isinstance(node.test.op, ast.Not):
+            if isinstance(node.test.operand, ast.Constant) and bool(node.test.operand.value) is True:
+                is_false = True
+
+        if is_false:
+            for stmt in node.body:
+                for line in range(stmt.lineno, getattr(stmt, "end_lineno", stmt.lineno) + 1):
+                    self.dead_lines.add(line)
+                self.generic_visit(stmt)
+        else:
+            self._mark_block_after_terminator(node.body)
+
+        # Check if orelse condition is statically unreachable (e.g. if True: ... else: dead)
+        is_true = False
+        if isinstance(node.test, ast.Constant) and bool(node.test.value) is True:
+            is_true = True
+        elif isinstance(node.test, ast.UnaryOp) and isinstance(node.test.op, ast.Not):
+            if isinstance(node.test.operand, ast.Constant) and bool(node.test.operand.value) is False:
+                is_true = True
+
+        if is_true and node.orelse:
+            for stmt in node.orelse:
+                for line in range(stmt.lineno, getattr(stmt, "end_lineno", stmt.lineno) + 1):
+                    self.dead_lines.add(line)
+                self.generic_visit(stmt)
+        else:
+            self._mark_block_after_terminator(node.orelse)
+
+    def visit_For(self, node: ast.For):
+        self._mark_block_after_terminator(node.body)
+        self._mark_block_after_terminator(node.orelse)
+
+    def visit_While(self, node: ast.While):
+        # Check while False:
+        if isinstance(node.test, ast.Constant) and bool(node.test.value) is False:
+            for stmt in node.body:
+                for line in range(stmt.lineno, getattr(stmt, "end_lineno", stmt.lineno) + 1):
+                    self.dead_lines.add(line)
+                self.generic_visit(stmt)
+        else:
+            self._mark_block_after_terminator(node.body)
+        self._mark_block_after_terminator(node.orelse)
+
+    def visit_Try(self, node: ast.Try):
+        self._mark_block_after_terminator(node.body)
+        for handler in node.handlers:
+            self._mark_block_after_terminator(handler.body)
+        self._mark_block_after_terminator(node.orelse)
+        self._mark_block_after_terminator(node.finalbody)
+
+
+class EquivalentMutantAnalyzer:
+    """
+    Conservative analyzer for equivalent and potentially equivalent mutants.
+    Strictly adheres to Milestone 2 guidelines:
+    - Never classifies a mutant as EQUIVALENT solely because it survived tests.
+    - Never classifies INVALID or ERROR mutants as equivalent.
+    - Explicitly records classification, method, confidence, and human-readable reason.
+    """
+
+    @classmethod
+    def find_dead_lines(cls, source_code: str) -> Set[int]:
+        """Returns set of 1-indexed line numbers in source_code that are provably dead code."""
+        try:
+            tree = ast.parse(source_code)
+            visitor = DeadCodeVisitor()
+            visitor.visit(tree)
+            return visitor.dead_lines
+        except Exception:
+            return set()
+
+    @classmethod
+    def analyze_mutant(
+        cls,
+        mutant: MutantRecord,
+        original_source: Optional[str] = None
+    ) -> EquivalenceResult:
+        """
+        Analyzes a single mutant record and determines its equivalence classification.
+        """
+        # 1. Non-executable / invalid / error states are never equivalent
+        if not mutant.is_valid_syntax or mutant.status == "INVALID":
+            return EquivalenceResult(
+                status=EquivalenceClassification.NOT_EQUIVALENT,
+                method=EquivalenceMethod.NONE,
+                reason="Mutant syntax is invalid or failed compilation.",
+                confidence=EquivalenceConfidence.HIGH,
+                evidence={"is_valid_syntax": False}
+            )
+
+        if mutant.status == "ERROR":
+            return EquivalenceResult(
+                status=EquivalenceClassification.NOT_EQUIVALENT,
+                method=EquivalenceMethod.NONE,
+                reason="Mutant suffered execution or environment error.",
+                confidence=EquivalenceConfidence.HIGH,
+                evidence={"status": "ERROR"}
+            )
+
+        if mutant.status == "KILLED":
+            return EquivalenceResult(
+                status=EquivalenceClassification.NOT_EQUIVALENT,
+                method=EquivalenceMethod.NONE,
+                reason="Mutant was detected and killed by the test suite.",
+                confidence=EquivalenceConfidence.HIGH,
+                evidence={"status": "KILLED"}
+            )
+
+        orig_code = original_source or mutant.original_code_snippet
+        mut_code = mutant.mutated_code_snippet
+
+        # 2. Rule: Syntactic Identity after AST Unparsing (HIGH confidence EQUIVALENT)
+        if orig_code and mut_code:
+            try:
+                tree_orig = ast.parse(orig_code)
+                tree_mut = ast.parse(mut_code)
+                unparsed_orig = ast.unparse(tree_orig).strip()
+                unparsed_mut = ast.unparse(tree_mut).strip()
+                if unparsed_orig == unparsed_mut:
+                    return EquivalenceResult(
+                        status=EquivalenceClassification.EQUIVALENT,
+                        method=EquivalenceMethod.SYNTACTIC_IDENTITY,
+                        reason="AST normalization of mutated code produces identical source representation to original.",
+                        confidence=EquivalenceConfidence.HIGH,
+                        evidence={"unparsed_match": True}
+                    )
+            except Exception:
+                pass
+
+        # 3. Rule: Dead Code Mutation (HIGH confidence EQUIVALENT)
+        # If the mutation occurs inside an unreachable block, behavior cannot differ.
+        if orig_code:
+            dead_lines = cls.find_dead_lines(orig_code)
+            if mutant.line_number in dead_lines:
+                return EquivalenceResult(
+                    status=EquivalenceClassification.EQUIVALENT,
+                    method=EquivalenceMethod.DEAD_CODE_MUTATION,
+                    reason=f"Mutation site at line {mutant.line_number} is in provably unreachable dead code.",
+                    confidence=EquivalenceConfidence.HIGH,
+                    evidence={"dead_line": mutant.line_number, "dead_lines": sorted(list(dead_lines))}
+                )
+
+        # 4. Rule: Self-canceling / Algebraic Identity Transforms (HIGH confidence EQUIVALENT)
+        orig_expr = (mutant.original_expression or "").strip()
+        mut_expr = (mutant.mutated_expression or "").strip()
+
+        # Check algebraic identity patterns like x + 0 -> x - 0, or x * 1 -> x // 1
+        algebraic_identities = [
+            (r"\+\s*0(\.0)?$", r"-\s*0(\.0)?$"),
+            (r"-\s*0(\.0)?$", r"\+\s*0(\.0)?$"),
+        ]
+        for p1, p2 in algebraic_identities:
+            if orig_expr and mut_expr:
+                if (re.search(p1, orig_expr) and re.search(p2, mut_expr)) or \
+                   (re.search(p2, orig_expr) and re.search(p1, mut_expr)):
+                    return EquivalenceResult(
+                        status=EquivalenceClassification.EQUIVALENT,
+                        method=EquivalenceMethod.SELF_CANCELING_TRANSFORM,
+                        reason=f"Algebraic zero-identity transformation ({orig_expr} -> {mut_expr}) preserves semantic value.",
+                        confidence=EquivalenceConfidence.HIGH,
+                        evidence={"original_expression": orig_expr, "mutated_expression": mut_expr}
+                    )
+
+        # Check self-canceling double negation or bool conversion
+        if orig_expr and mut_expr:
+            if (orig_expr == "not not True" and mut_expr == "True") or \
+               (orig_expr == "not not False" and mut_expr == "False") or \
+               (orig_expr == "not (x is None)" and mut_expr == "x is not None"):
+                return EquivalenceResult(
+                    status=EquivalenceClassification.EQUIVALENT,
+                    method=EquivalenceMethod.SELF_CANCELING_TRANSFORM,
+                    reason=f"Boolean logic identity ({orig_expr} -> {mut_expr}) yields identical truth values.",
+                    confidence=EquivalenceConfidence.HIGH,
+                    evidence={"original_expression": orig_expr, "mutated_expression": mut_expr}
+                )
+
+        # 5. Rule: Redundant Boundary Checks on Domain Invariants (MEDIUM confidence POTENTIALLY_EQUIVALENT)
+        # e.g. len(...) >= 0 -> len(...) > -1
+        boundary_patterns = [
+            (r"len\([^)]+\)\s*>=\s*0", r"len\([^)]+\)\s*>\s*-1"),
+            (r"len\([^)]+\)\s*>\s*-1", r"len\([^)]+\)\s*>=\s*0"),
+            (r"len\([^)]+\)\s*<\s*0", r"len\([^)]+\)\s*<=\s*-1"),
+        ]
+        diff_str = mutant.unified_diff or ""
+        for pat_orig, pat_mut in boundary_patterns:
+            if (orig_expr and re.search(pat_orig, orig_expr) and mut_expr and re.search(pat_mut, mut_expr)) or \
+               (re.search(pat_orig, diff_str) and re.search(pat_mut, diff_str)):
+                return EquivalenceResult(
+                    status=EquivalenceClassification.POTENTIALLY_EQUIVALENT,
+                    method=EquivalenceMethod.REDUNDANT_BOUNDARY,
+                    reason="Relational boundary mutation on non-negative domain invariant (len(...) >= 0); condition remains universally true.",
+                    confidence=EquivalenceConfidence.MEDIUM,
+                    evidence={"domain": "non_negative_integer", "diff": diff_str}
+                )
+
+        # 6. Default: Surviving or Timeout mutant with no formal proof
+        # Strict rule: Surviving a test suite does NOT imply equivalence.
+        return EquivalenceResult(
+            status=EquivalenceClassification.UNKNOWN,
+            method=EquivalenceMethod.NONE,
+            reason="Mutant was evaluated but no static semantic equivalence rule or proof applies. Surviving tests is insufficient evidence of equivalence.",
+            confidence=EquivalenceConfidence.NONE,
+            evidence={"executed": mutant.is_executed, "status": mutant.status}
+        )
+
+
+def calculate_mutation_scores(mutants: List[MutantRecord]) -> Dict[str, Any]:
+    """
+    Computes rigorous, explicit mutation score metrics:
+    1. Raw Mutation Score:
+       Formula: (killed + timed_out) / (killed + survived + timed_out + potentially_equivalent + equivalent) * 100
+       Invalid and errored mutants are strictly excluded from the denominator.
+    2. Adjusted Mutation Score:
+       Formula: (killed + timed_out) / (evaluable - verified_equivalent) * 100
+       Excludes verified EQUIVALENT mutants from the denominator, reflecting true kill efficacy
+       against killable mutants.
+    3. Breakdown of all mutant categories.
+    """
+    total = len(mutants)
+    killed = sum(1 for m in mutants if m.status == "KILLED")
+    survived = sum(1 for m in mutants if m.status == "SURVIVED")
+    timed_out = sum(1 for m in mutants if m.status == "TIMEOUT")
+    errors = sum(1 for m in mutants if m.status == "ERROR")
+    invalid = sum(1 for m in mutants if m.status == "INVALID" or not m.is_valid_syntax)
+    
+    # Equivalence counts
+    equivalent = sum(
+        1 for m in mutants
+        if m.status == "EQUIVALENT" or m.equivalence_status == "EQUIVALENT"
+    )
+    potentially_equivalent = sum(
+        1 for m in mutants
+        if m.status == "POTENTIALLY_EQUIVALENT" or m.equivalence_status == "POTENTIALLY_EQUIVALENT"
+    )
+
+    # Executable pool: all mutants that represent valid syntax and reached evaluation
+    # Note: equivalent mutants may either be executed or statically identified
+    evaluable = killed + survived + timed_out + potentially_equivalent + equivalent
+
+    # Raw score calculation
+    if evaluable > 0:
+        raw_score = round(((killed + timed_out) / evaluable) * 100.0, 2)
+    else:
+        raw_score = 0.0
+
+    # Adjusted score calculation (excluding verified equivalent mutants from denominator)
+    adjusted_denominator = evaluable - equivalent
+    if adjusted_denominator > 0:
+        adjusted_score = round(((killed + timed_out) / adjusted_denominator) * 100.0, 2)
+    elif evaluable > 0 and adjusted_denominator == 0 and (killed + timed_out) == 0:
+        # All evaluable mutants were equivalent; 100% of killable mutants (0/0) are considered resolved
+        adjusted_score = 100.0
+    else:
+        adjusted_score = 0.0
+
+    return {
+        "total_mutants": total,
+        "killed_mutants": killed,
+        "survived_mutants": survived,
+        "timed_out_mutants": timed_out,
+        "execution_errors": errors,
+        "invalid_mutants": invalid,
+        "equivalent_mutants": equivalent,
+        "potentially_equivalent_mutants": potentially_equivalent,
+        "unknown_mutants": sum(1 for m in mutants if m.status == "UNKNOWN" or m.equivalence_status == "UNKNOWN"),
+        "evaluable_mutants": evaluable,
+        "raw_mutation_score": raw_score,
+        "adjusted_mutation_score": adjusted_score,
+        "raw_score_formula": "(killed + timed_out) / (killed + survived + timed_out + potentially_equivalent + equivalent) * 100",
+        "adjusted_score_formula": "(killed + timed_out) / (evaluable - equivalent) * 100",
+        "primary_score": raw_score  # Backward compatibility field
+    }

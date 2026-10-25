@@ -1,0 +1,44 @@
+{
+  "timestamp": 1792740369.9158819,
+  "database": "qa_artifacts/blackboard_persistence_20261023/live_hardening_checkpoints.db",
+  "stages_verified": [],
+  "scenarios": {
+    "pipeline_checkpoints": {
+      "job_id": "job_live_001",
+      "checkpoint_count": 5,
+      "stages": [
+        "FINALIZED",
+        "REFLECTION_ITERATION_2",
+        "REFLECTION_ITERATION_1",
+        "BASELINE_VALIDATED",
+        "INITIAL_INGESTION"
+      ],
+      "final_status": "TARGET_SCORE_UNREACHED",
+      "final_mutation_score": 61.11
+    },
+    "fresh_blackboard_recovery": {
+      "checkpoint_id": "chk_0adacebc5082",
+      "restored_functions": [
+        "compute_interest"
+      ],
+      "restored_mutation_score": 61.11
+    },
+    "cancellation_checkpoint": {
+      "job_id": "job_cancelled_002",
+      "checkpoint_id": "chk_601ed8436888",
+      "status": "CANCELLED"
+    },
+    "timeout_checkpoint": {
+      "job_id": "job_timeout_003",
+      "checkpoint_id": "chk_71db572e6e9d",
+      "status": "TIMED_OUT"
+    },
+    "rest_api": {
+      "readyz_sqlite_persistence": "operational",
+      "total_checkpoints_listed": 7,
+      "sample_checkpoint_id": "chk_71db572e6e9d",
+      "restored_revision": 4
+    }
+  },
+  "verdict": "PASS"
+}

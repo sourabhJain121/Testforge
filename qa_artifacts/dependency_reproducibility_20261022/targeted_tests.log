@@ -1,0 +1,199 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.17, pytest-9.1.1, pluggy-1.7.0 -- /Users/sourabh/TestForge/.venv-release/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/sourabh/TestForge
+plugins: cov-7.1.0, anyio-4.15.1, platformdirs-4.13.5
+collecting ... collected 105 items
+
+test_hardened.py::test_price_zero_and_negative PASSED                    [  0%]
+test_hardened.py::test_price_boundary_positive PASSED                    [  1%]
+test_hardened.py::test_quantity_boundary_below_five PASSED               [  2%]
+test_hardened.py::test_quantity_boundary_exactly_five PASSED             [  3%]
+test_hardened.py::test_quantity_above_five PASSED                        [  4%]
+test_hardened.py::test_quantity_zero_and_negative PASSED                 [  5%]
+test_hardened.py::test_membership_discount PASSED                        [  6%]
+test_hardened.py::test_both_discounts_applied PASSED                     [  7%]
+test_hardened.py::test_discount_combinations_and_rounding[50.0-1-False-50.0] PASSED [  8%]
+test_hardened.py::test_discount_combinations_and_rounding[50.0-5-False-45.0] PASSED [  9%]
+test_hardened.py::test_discount_combinations_and_rounding[50.0-1-True-45.0] PASSED [ 10%]
+test_hardened.py::test_discount_combinations_and_rounding[50.0-5-True-40.0] PASSED [ 11%]
+test_hardened.py::test_discount_combinations_and_rounding[33.33-5-True-26.66] PASSED [ 12%]
+test_hardened.py::test_discount_combinations_and_rounding[12.345-1-False-12.35] PASSED [ 13%]
+test_hardened.py::test_discount_combinations_and_rounding[19.99-4-True-17.99] PASSED [ 14%]
+tests/test_deployment.py::TestDeploymentHealthProbes::test_liveness_probe_healthz PASSED [ 15%]
+tests/test_deployment.py::TestDeploymentHealthProbes::test_readiness_probe_readyz PASSED [ 16%]
+tests/test_deployment.py::TestDeploymentHealthProbes::test_a2a_agent_card_discovery_endpoints PASSED [ 17%]
+tests/test_deployment.py::TestDeploymentHealthProbes::test_api_status_endpoint PASSED [ 18%]
+tests/test_deployment.py::TestContainerConfigurationIntegrity::test_dockerfile_present_and_configured PASSED [ 19%]
+tests/test_deployment.py::TestContainerConfigurationIntegrity::test_docker_compose_valid_structure PASSED [ 20%]
+tests/test_deployment.py::TestContainerConfigurationIntegrity::test_dockerignore_present PASSED [ 20%]
+tests/test_deployment.py::TestBenchmarkEndpoints::test_get_benchmark_results_initial_or_cached PASSED [ 21%]
+tests/test_deployment.py::TestBenchmarkEndpoints::test_run_benchmark_sync_baseline PASSED [ 22%]
+tests/test_deployment.py::TestBenchmarkEndpoints::test_get_benchmark_results_and_markdown PASSED [ 23%]
+tests/test_deployment.py::TestBenchmarkEndpoints::test_start_benchmark_async_and_poll_job PASSED [ 24%]
+tests/test_crew_critic.py::TestCrewAICriticAgent::test_crewai_framework_classes_instantiated PASSED [ 25%]
+tests/test_crew_critic.py::TestCrewAICriticAgent::test_zero_surviving_mutants_fast_path PASSED [ 26%]
+tests/test_crew_critic.py::TestCrewAICriticAgent::test_genuine_crewai_crew_kickoff_execution PASSED [ 27%]
+tests/test_crew_critic.py::TestCrewAICriticAgent::test_controlled_mock_llm_response PASSED [ 28%]
+tests/test_crew_critic.py::TestCrewAICriticAgent::test_bounds_mutant_ids_to_known_survivors PASSED [ 29%]
+tests/test_crew_critic.py::TestCrewAICriticAgent::test_malformed_llm_output_graceful_fallback PASSED [ 30%]
+tests/test_crew_critic.py::TestCrewAICriticAgent::test_handle_a2a_message_success PASSED [ 31%]
+tests/test_crew_critic.py::TestCrewAICriticAgent::test_handle_a2a_message_unsupported_action PASSED [ 32%]
+tests/test_crew_critic.py::TestEndToEndBrokerCrewAICritic::test_broker_crewai_critic_handoff_and_blackboard_sync PASSED [ 33%]
+tests/test_blackboard.py::TestBlackboardCore::test_construction_with_default_partition_state PASSED [ 34%]
+tests/test_blackboard.py::TestBlackboardCore::test_valid_partition_updates PASSED [ 35%]
+tests/test_blackboard.py::TestBlackboardCore::test_pydantic_validation_failures PASSED [ 36%]
+tests/test_blackboard.py::TestBlackboardCore::test_invalid_updates_leave_existing_state_unchanged PASSED [ 37%]
+tests/test_blackboard.py::TestBlackboardCore::test_partition_isolation PASSED [ 38%]
+tests/test_blackboard.py::TestBlackboardCore::test_snapshot_consistency PASSED [ 39%]
+tests/test_blackboard.py::TestBlackboardCore::test_history_ordering_and_revision_increments PASSED [ 40%]
+tests/test_blackboard.py::TestBlackboardCore::test_defensive_copies_prevent_external_mutation PASSED [ 40%]
+tests/test_blackboard.py::TestBlackboardCore::test_safe_metadata_sanitization PASSED [ 41%]
+tests/test_blackboard.py::TestBlackboardSubscriptions::test_subscriber_registration_and_notification PASSED [ 42%]
+tests/test_blackboard.py::TestBlackboardSubscriptions::test_subscriber_unregistration PASSED [ 43%]
+tests/test_blackboard.py::TestBlackboardSubscriptions::test_filtering_subscriptions_by_partition PASSED [ 44%]
+tests/test_blackboard.py::TestBlackboardSubscriptions::test_deterministic_subscriber_notification_order PASSED [ 45%]
+tests/test_blackboard.py::TestBlackboardSubscriptions::test_subscriber_exception_isolation PASSED [ 46%]
+tests/test_blackboard.py::TestBlackboardConcurrency::test_concurrent_updates_from_multiple_threads PASSED [ 47%]
+tests/test_blackboard.py::TestBlackboardInterop::test_to_and_from_testforge_state PASSED [ 48%]
+tests/test_blackboard.py::TestBlackboardInterop::test_sync_to_state PASSED [ 49%]
+tests/test_blackboard.py::TestBlackboardInterop::test_orchestrator_integration PASSED [ 50%]
+tests/test_mcp.py::TestMCPConnection::test_client_connection_and_clean_shutdown[asyncio] PASSED [ 51%]
+tests/test_mcp.py::TestMCPConnection::test_server_unavailable_connection_failure[asyncio] PASSED [ 52%]
+tests/test_mcp.py::TestMCPToolDiscovery::test_filesystem_tool_discovery_and_schemas[asyncio] PASSED [ 53%]
+tests/test_mcp.py::TestMCPToolDiscovery::test_github_tool_discovery[asyncio] PASSED [ 54%]
+tests/test_mcp.py::TestMCPToolExecution::test_successful_read_text_file[asyncio] PASSED [ 55%]
+tests/test_mcp.py::TestMCPToolExecution::test_successful_get_file_info[asyncio] PASSED [ 56%]
+tests/test_mcp.py::TestMCPToolExecution::test_successful_list_directory[asyncio] PASSED [ 57%]
+tests/test_mcp.py::TestMCPSecurityPolicies::test_path_traversal_rejection[asyncio] PASSED [ 58%]
+tests/test_mcp.py::TestMCPSecurityPolicies::test_absolute_path_escape_rejection[asyncio] PASSED [ 59%]
+tests/test_mcp.py::TestMCPSecurityPolicies::test_sensitive_credential_file_rejection[asyncio] PASSED [ 60%]
+tests/test_mcp.py::TestMCPSecurityPolicies::test_blocked_destructive_tools[asyncio] PASSED [ 60%]
+tests/test_mcp.py::TestMCPSecurityPolicies::test_invalid_tool_name[asyncio] PASSED [ 61%]
+tests/test_mcp.py::TestMCPFailureHandlingAndIsolation::test_nonexistent_file_handling[asyncio] PASSED [ 62%]
+tests/test_mcp.py::TestMCPFailureHandlingAndIsolation::test_tool_timeout_handling[asyncio] PASSED [ 63%]
+tests/test_mcp.py::TestMCPCallbacksAndRedaction::test_lifecycle_callbacks_and_secret_redaction[asyncio] PASSED [ 64%]
+tests/test_mcp.py::TestMCPBlackboardAndOrchestrator::test_blackboard_target_space_sync[asyncio] PASSED [ 65%]
+tests/test_mcp.py::TestMCPGitHubIntegration::test_github_unauthenticated_or_rate_limit_handling[asyncio] PASSED [ 66%]
+tests/test_mcp.py::TestMCPGitHubIntegration::test_official_npx_filesystem_server_stdio[asyncio] PASSED [ 67%]
+tests/test_mcp.py::TestMCPGitHubIntegration::test_official_npx_github_server_stdio[asyncio] PASSED [ 68%]
+tests/test_mcp.py::TestMCPToolExecution::test_sync_execution_wrapper PASSED [ 69%]
+tests/test_mcp.py::TestMCPBlackboardAndOrchestrator::test_orchestrator_optional_mcp_integration PASSED [ 70%]
+tests/test_mcp.py::TestMCPBlackboardAndOrchestrator::test_orchestrator_legacy_behavior_without_mcp PASSED [ 71%]
+tests/test_security.py::TestPromptInspection::test_ordinary_valid_prompt PASSED [ 72%]
+tests/test_security.py::TestPromptInspection::test_suspicious_prompt_injection_system_override PASSED [ 73%]
+tests/test_security.py::TestPromptInspection::test_suspicious_prompt_injection_role_hijack PASSED [ 74%]
+tests/test_security.py::TestPromptInspection::test_suspicious_prompt_injection_guardrail_disable PASSED [ 75%]
+tests/test_security.py::TestPromptInspection::test_suspicious_delimiter_escape PASSED [ 76%]
+tests/test_security.py::TestPromptInspection::test_benign_prompt_with_security_words PASSED [ 77%]
+tests/test_security.py::TestPromptInspection::test_benign_test_name_with_ignore PASSED [ 78%]
+tests/test_security.py::TestPromptInspection::test_credential_redaction PASSED [ 79%]
+tests/test_security.py::TestPromptInspection::test_empty_prompt_is_allowed PASSED [ 80%]
+tests/test_security.py::TestASTCodeInspection::test_ordinary_valid_python_code PASSED [ 80%]
+tests/test_security.py::TestASTCodeInspection::test_syntax_error_reported PASSED [ 81%]
+tests/test_security.py::TestASTCodeInspection::test_detection_of_eval_and_exec PASSED [ 82%]
+tests/test_security.py::TestASTCodeInspection::test_benign_eval_method_not_flagged PASSED [ 83%]
+tests/test_security.py::TestASTCodeInspection::test_detection_of_os_system_and_popen PASSED [ 84%]
+tests/test_security.py::TestASTCodeInspection::test_detection_of_subprocess PASSED [ 85%]
+tests/test_security.py::TestASTCodeInspection::test_detection_of_dynamic_imports PASSED [ 86%]
+tests/test_security.py::TestASTCodeInspection::test_detection_of_network_socket_and_urlopen PASSED [ 87%]
+tests/test_security.py::TestASTCodeInspection::test_multiple_findings_in_one_file PASSED [ 88%]
+tests/test_security.py::TestASTCodeInspection::test_permissive_policy_allows_warnings PASSED [ 89%]
+tests/test_security.py::TestASTCodeInspection::test_legitimate_test_code_allowed PASSED [ 90%]
+tests/test_security.py::TestSecurityIntegrations::test_code_sanitizer_blocks_dangerous_code PASSED [ 91%]
+tests/test_security.py::TestSecurityIntegrations::test_code_sanitizer_allows_valid_test_code PASSED [ 92%]
+tests/test_security.py::TestSecurityIntegrations::test_sandbox_runner_blocks_dangerous_execution_before_subprocess PASSED [ 93%]
+tests/test_security.py::TestSecurityIntegrations::test_detection_of_aliased_import_bypasses PASSED [ 94%]
+tests/test_security.py::TestSecurityIntegrations::test_detection_of_getattr_reflection_bypasses PASSED [ 95%]
+tests/test_security.py::TestSecurityIntegrations::test_detection_of_wildcard_os_import PASSED [ 96%]
+tests/test_security.py::TestSecurityIntegrations::test_detection_of_bare_eval_assignment PASSED [ 97%]
+tests/test_security.py::TestSecurityIntegrations::test_prompt_injection_tool_bypass_and_embedded_instruction PASSED [ 98%]
+tests/test_security.py::TestToxicityAndAbuseInspection::test_toxic_abusive_harassment_blocked PASSED [ 99%]
+tests/test_security.py::TestToxicityAndAbuseInspection::test_benign_technical_terms_not_flagged_as_toxic PASSED [100%]
+
+=============================== warnings summary ===============================
+.venv-release/lib/python3.13/site-packages/starlette/testclient.py:45
+  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/starlette/testclient.py:45: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+.venv-release/lib/python3.13/site-packages/google/cloud/aiplatform/models.py:52
+  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/google/cloud/aiplatform/models.py:52: FutureWarning: Support for google-cloud-storage < 3.0.0 will be removed in a future version of google-cloud-aiplatform. Please upgrade to google-cloud-storage >= 3.0.0.
+    from google.cloud.aiplatform.utils import gcs_utils
+
+tests/test_crew_critic.py: 9 warnings
+tests/test_blackboard.py: 1 warning
+tests/test_mcp.py: 2 warnings
+  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/crewai/agent/core.py:425: DeprecationWarning: function_calling_llm is deprecated and will be removed in a future release.
+    if self.function_calling_llm and not isinstance(
+
+tests/test_crew_critic.py: 9 warnings
+tests/test_blackboard.py: 1 warning
+tests/test_mcp.py: 2 warnings
+  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/crewai/agent/core.py:433: DeprecationWarning: deprecated
+    if self.allow_code_execution:
+
+tests/test_crew_critic.py: 9 warnings
+tests/test_blackboard.py: 1 warning
+tests/test_mcp.py: 2 warnings
+  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/crewai/agent/core.py:444: DeprecationWarning: deprecated
+    if self.reasoning and self.planning_config is None:
+
+tests/test_crew_critic.py: 18 warnings
+  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/crewai/crew.py:650: DeprecationWarning: function_calling_llm is deprecated and will be removed in a future release.
+    if self.function_calling_llm and not isinstance(self.function_calling_llm, LLM):
+
+tests/test_crew_critic.py::TestCrewAICriticAgent::test_genuine_crewai_crew_kickoff_execution
+tests/test_crew_critic.py::TestCrewAICriticAgent::test_controlled_mock_llm_response
+tests/test_crew_critic.py::TestCrewAICriticAgent::test_bounds_mutant_ids_to_known_survivors
+tests/test_crew_critic.py::TestCrewAICriticAgent::test_malformed_llm_output_graceful_fallback
+tests/test_crew_critic.py::TestCrewAICriticAgent::test_handle_a2a_message_success
+tests/test_crew_critic.py::TestEndToEndBrokerCrewAICritic::test_broker_crewai_critic_handoff_and_blackboard_sync
+  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/crewai/crews/utils.py:372: DeprecationWarning: function_calling_llm is deprecated and will be removed in a future release.
+    crew.function_calling_llm,
+
+tests/test_crew_critic.py::TestCrewAICriticAgent::test_genuine_crewai_crew_kickoff_execution
+tests/test_crew_critic.py::TestCrewAICriticAgent::test_controlled_mock_llm_response
+tests/test_crew_critic.py::TestCrewAICriticAgent::test_bounds_mutant_ids_to_known_survivors
+tests/test_crew_critic.py::TestCrewAICriticAgent::test_malformed_llm_output_graceful_fallback
+tests/test_crew_critic.py::TestCrewAICriticAgent::test_handle_a2a_message_success
+tests/test_crew_critic.py::TestEndToEndBrokerCrewAICritic::test_broker_crewai_critic_handoff_and_blackboard_sync
+  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/crewai/crews/utils.py:87: DeprecationWarning: function_calling_llm is deprecated and will be removed in a future release.
+    if not agent.function_calling_llm:  # type: ignore[attr-defined]
+
+tests/test_crew_critic.py::TestCrewAICriticAgent::test_genuine_crewai_crew_kickoff_execution
+tests/test_crew_critic.py::TestCrewAICriticAgent::test_controlled_mock_llm_response
+tests/test_crew_critic.py::TestCrewAICriticAgent::test_bounds_mutant_ids_to_known_survivors
+tests/test_crew_critic.py::TestCrewAICriticAgent::test_malformed_llm_output_graceful_fallback
+tests/test_crew_critic.py::TestCrewAICriticAgent::test_handle_a2a_message_success
+tests/test_crew_critic.py::TestEndToEndBrokerCrewAICritic::test_broker_crewai_critic_handoff_and_blackboard_sync
+  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/crewai/agent/core.py:1300: DeprecationWarning: function_calling_llm is deprecated and will be removed in a future release.
+    function_calling_llm=self.function_calling_llm,
+
+tests/test_crew_critic.py: 12 warnings
+  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/crewai/crew.py:1675: DeprecationWarning: deprecated
+    if hasattr(agent, "allow_code_execution") and getattr(
+
+tests/test_crew_critic.py::TestCrewAICriticAgent::test_genuine_crewai_crew_kickoff_execution
+tests/test_crew_critic.py::TestCrewAICriticAgent::test_controlled_mock_llm_response
+tests/test_crew_critic.py::TestCrewAICriticAgent::test_bounds_mutant_ids_to_known_survivors
+tests/test_crew_critic.py::TestCrewAICriticAgent::test_malformed_llm_output_graceful_fallback
+tests/test_crew_critic.py::TestCrewAICriticAgent::test_handle_a2a_message_success
+tests/test_crew_critic.py::TestEndToEndBrokerCrewAICritic::test_broker_crewai_critic_handoff_and_blackboard_sync
+  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/crewai/crew.py:1682: DeprecationWarning: deprecated
+    and hasattr(agent, "multimodal")
+
+tests/test_crew_critic.py::TestCrewAICriticAgent::test_genuine_crewai_crew_kickoff_execution
+tests/test_crew_critic.py::TestCrewAICriticAgent::test_controlled_mock_llm_response
+tests/test_crew_critic.py::TestCrewAICriticAgent::test_bounds_mutant_ids_to_known_survivors
+tests/test_crew_critic.py::TestCrewAICriticAgent::test_malformed_llm_output_graceful_fallback
+tests/test_crew_critic.py::TestCrewAICriticAgent::test_handle_a2a_message_success
+tests/test_crew_critic.py::TestEndToEndBrokerCrewAICritic::test_broker_crewai_critic_handoff_and_blackboard_sync
+  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/crewai/crew.py:1683: DeprecationWarning: deprecated
+    and getattr(agent, "multimodal", False)
+
+tests/test_crew_critic.py::TestCrewAICriticAgent::test_malformed_llm_output_graceful_fallback
+  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/crewai/utilities/converter.py:379: DeprecationWarning: function_calling_llm is deprecated and will be removed in a future release.
+    llm = getattr(agent, "function_calling_llm", None) or agent.llm
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+====================== 105 passed, 99 warnings in 18.18s =======================

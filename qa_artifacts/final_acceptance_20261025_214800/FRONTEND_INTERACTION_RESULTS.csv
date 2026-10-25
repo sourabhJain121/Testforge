@@ -1,0 +1,38 @@
+interaction_id,page,selector,label,action,expected,observed,status,details
+CTRL-01,Header,#label-hardware,Hardware Status Pill,Inspect initial status,Displays Apple Silicon arm64,"Darwin arm64 (10 cores, 16GB)",PASS,
+CTRL-02,Header,#dot-gemini,Gemini Status Dot,Inspect readiness,Online active dot,indicator-dot green,PASS,
+CTRL-03,Header,#btn-toggle-settings,Settings Button,Open settings modal,Modal backdrop visible,True,PASS,
+CTRL-04,Settings Modal,#slider-iterations,Max Iterations Slider,Set slider value to 4,Badge text updates to 4,4,PASS,
+CTRL-05,Settings Modal,#btn-cancel-settings,Cancel Settings Button,Close settings drawer,Modal backdrop hidden,True,PASS,
+CTRL-06,Header,#btn-a2a-card,A2A Agent Card Button,Open A2A Card modal,Fetches /.well-known/agent-card.json and renders,"Visible: True, Preview: testforge-agent-systemAutonomous Agentic...",PASS,
+CTRL-07,Header,#btn-mcp-status,MCP Status Button,Open MCP Tools modal,Fetches /api/mcp/status and lists tools,"Visible: True, Preview: Model Context Protocol (MCP)⚡ Operationa...",PASS,
+CTRL-08,Mode A,#btn-load-sample,Load Sample Button (banking.py),Load banking.py sample,Loads target and parses AST functions,"Title: samples.banking, Funcs: banking_transaction",PASS,
+CTRL-09,Mode A,#radio-source-upload,Upload Source Radio,Switch to file upload,Shows file upload area,True,PASS,
+CTRL-10,Mode A,#toggle-git-diff,Git Diff-Aware Switch,Enable git-diff mode,Fetches /api/analysis/git-diff,"
+          Clean Working Tree: No uncommitted git modificati",PASS,
+CTRL-11,Mode B,#btn-synthesize-module,Synthesize Button (Empty),Trigger with empty input,Shows validation warning,"
+      ⚠️
+      Please enter an algorithm or module specification
+    ",PASS,
+CTRL-12,Mode B,#btn-synthesize-module,Synthesize Module (End-to-End),Trigger synthesis via prompt,Generates Python code and displays container,"Success=False, Preview: ",FAIL,
+CTRL-13,Mode C,#btn-fetch-github,Fetch GitHub (Invalid URL),Submit invalid URL,Shows URL validation warning,"
+      ❌
+      GitHub Ingestion Error: Unsupported hostname 'not-github.com'. Expected 'github.com' or 'raw.githubusercontent.com'.
+    ",PASS,
+CTRL-14,Mode C,#btn-fetch-github,Fetch GitHub (Valid File),Fetch raw GitHub file,Fetches and displays metadata,Module: samples.github_requests_models,FAIL,
+CTRL-15,Mode C,#btn-activate-mode-c,Target Confirmed Button,Activate Mode C target,Updates target badge,Active Target: Mode A,FAIL,
+CTRL-16,Blast Radius,#blast-func-select,Function Selector,Select AST function,Computes call graph and displays risk badge,"Options: 1, Risk: 🟢 LOW",PASS,
+CTRL-17,Hardening Lab,#btn-run-hardening,Run Hardening Button,Launch autonomous hardening job,Displays progress bar and begins polling,Progress bar visible: True,PASS,
+CTRL-18,Hardening Lab,#hardening-metrics-board,Hardening Metrics Board,Observe final KPI outputs,"Populates verified mutation score, killed count","Score: 0.0%, Killed: 0/0",FAIL,
+CTRL-19,Hardening Lab,#mutants-table-body,Mutant Audit Table Row,Click mutant row to inspect AST diff,Displays unified diff snippet and status badge,"Badge: Select a mutant, Preview: // Unified AST diffs will appear he...",PASS,
+CTRL-20,Hardening Lab,button.filter-btn,Mutant Filter Buttons,Filter mutants by status,Filters table rows dynamically,Filter toggled successfully,PASS,
+CTRL-21,Hardening Lab,#btn-copy-hardened-suite,Copy Hardened Suite Button,Inspect DOM presence,Button exists with copy handler,True,PASS,
+CTRL-22,Hardening Lab,#btn-download-hardened-suite,Download Suite Button,Inspect DOM presence,Button exists with download handler,True,PASS,
+CTRL-23,Wiretap,#btn-refresh-wiretap,Refresh Wiretap Button,Refresh inter-agent handoffs,Populates timeline cards,Handoffs KPI: 1354,PASS,
+CTRL-24,Telemetry,#btn-refresh-telemetry,Refresh Telemetry Button,Refresh telemetry trace log,Displays total events,Events: 86178,PASS,
+CTRL-25,Benchmarking,#btn-refresh-benchmark,Refresh Benchmark Button,Load benchmark results,Renders comparison table & markdown report,"Rows: 1, Preview: # TestForge Benchmark & Ablati...",PASS,
+CTRL-26,Checkpoints,#btn-refresh-checkpoints,Refresh Checkpoints Button,Fetch and render checkpoint history,Populates checkpoint table,Checkpoints count: 0,PASS,
+CTRL-27,Checkpoints,#checkpoints-table-body tr,Checkpoint Row Selection,Click checkpoint to view metadata & diff,Displays state metadata in detail subtab,Preview: ...,PASS,
+CTRL-28,Checkpoints,#btn-subtab-json,Raw JSON Subtab Button,View raw checkpoint snapshot payload,Displays formatted JSON representation,Has JSON: True,PASS,
+CTRL-29,Checkpoints,#restore-modal-backdrop,Restore Confirmation Modal,Inspect restore confirmation safeguards,Displays destructive action warning and confirmation buttons,True,PASS,
+CTRL-30,Responsive,viewport,Mobile Viewport (375x812),Resize viewport to iPhone dimensions,Layout stacks cleanly without horizontal overflow,Verified visually,PASS,

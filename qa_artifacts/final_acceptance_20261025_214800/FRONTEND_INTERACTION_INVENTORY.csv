@@ -1,0 +1,31 @@
+interaction_id,page,selector,label,type,expected_behavior
+CTRL-01,Header,#label-hardware,Hardware Status Pill,Status,Displays Apple Silicon arm64
+CTRL-02,Header,#dot-gemini,Gemini Status Dot,Indicator,Online active dot
+CTRL-03,Header,#btn-toggle-settings,Settings Button,Button,Modal backdrop visible
+CTRL-04,Settings Modal,#slider-iterations,Max Iterations Slider,Range,Badge text updates to 4
+CTRL-05,Settings Modal,#btn-cancel-settings,Cancel Settings Button,Button,Modal backdrop hidden
+CTRL-06,Header,#btn-a2a-card,A2A Agent Card Button,Button,Fetches /.well-known/agent-card.json and renders
+CTRL-07,Header,#btn-mcp-status,MCP Status Button,Button,Fetches /api/mcp/status and lists tools
+CTRL-08,Mode A,#btn-load-sample,Load Sample Button (banking.py),Button,Loads target and parses AST functions
+CTRL-09,Mode A,#radio-source-upload,Upload Source Radio,Radio,Shows file upload area
+CTRL-10,Mode A,#toggle-git-diff,Git Diff-Aware Switch,Checkbox,Fetches /api/analysis/git-diff
+CTRL-11,Mode B,#btn-synthesize-module,Synthesize Button (Empty),Button,Shows validation warning
+CTRL-12,Mode B,#btn-synthesize-module,Synthesize Module (End-to-End),Button,Generates Python code and displays container
+CTRL-13,Mode C,#btn-fetch-github,Fetch GitHub (Invalid URL),Button,Shows URL validation warning
+CTRL-14,Mode C,#btn-fetch-github,Fetch GitHub (Valid File),Button,Fetches and displays metadata
+CTRL-15,Mode C,#btn-activate-mode-c,Target Confirmed Button,Button,Updates target badge
+CTRL-16,Blast Radius,#blast-func-select,Function Selector,Select,Computes call graph and displays risk badge
+CTRL-17,Hardening Lab,#btn-run-hardening,Run Hardening Button,Button,Displays progress bar and begins polling
+CTRL-18,Hardening Lab,#hardening-metrics-board,Hardening Metrics Board,Panel,"Populates verified mutation score, killed count"
+CTRL-19,Hardening Lab,#mutants-table-body,Mutant Audit Table Row,Table Row,Displays unified diff snippet and status badge
+CTRL-20,Hardening Lab,button.filter-btn,Mutant Filter Buttons,Button Group,Filters table rows dynamically
+CTRL-21,Hardening Lab,#btn-copy-hardened-suite,Copy Hardened Suite Button,Button,Button exists with copy handler
+CTRL-22,Hardening Lab,#btn-download-hardened-suite,Download Suite Button,Button,Button exists with download handler
+CTRL-23,Wiretap,#btn-refresh-wiretap,Refresh Wiretap Button,Button,Populates timeline cards
+CTRL-24,Telemetry,#btn-refresh-telemetry,Refresh Telemetry Button,Button,Displays total events
+CTRL-25,Benchmarking,#btn-refresh-benchmark,Refresh Benchmark Button,Button,Renders comparison table & markdown report
+CTRL-26,Checkpoints,#btn-refresh-checkpoints,Refresh Checkpoints Button,Button,Populates checkpoint table
+CTRL-27,Checkpoints,#checkpoints-table-body tr,Checkpoint Row Selection,Table Row,Displays state metadata in detail subtab
+CTRL-28,Checkpoints,#btn-subtab-json,Raw JSON Subtab Button,Tab Button,Displays formatted JSON representation
+CTRL-29,Checkpoints,#restore-modal-backdrop,Restore Confirmation Modal,Modal,Displays destructive action warning and confirmation buttons
+CTRL-30,Responsive,viewport,Mobile Viewport (375x812),Viewport,Layout stacks cleanly without horizontal overflow

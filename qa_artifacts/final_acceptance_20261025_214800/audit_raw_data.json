@@ -1,0 +1,1704 @@
+{
+  "metadata": {
+    "timestamp": 1792945437.036509,
+    "browser": "Google Chrome (macOS arm64)",
+    "protocol": "Chrome DevTools Protocol (CDP)",
+    "base_url": "http://127.0.0.1:8000"
+  },
+  "controls": [
+    {
+      "interaction_id": "CTRL-01",
+      "page": "Header",
+      "selector": "#label-hardware",
+      "label": "Hardware Status Pill",
+      "type": "Status",
+      "action": "Inspect initial status",
+      "expected": "Displays Apple Silicon arm64",
+      "observed": "Darwin arm64 (10 cores, 16GB)",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "interaction_id": "CTRL-02",
+      "page": "Header",
+      "selector": "#dot-gemini",
+      "label": "Gemini Status Dot",
+      "type": "Indicator",
+      "action": "Inspect readiness",
+      "expected": "Online active dot",
+      "observed": "indicator-dot green",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "interaction_id": "CTRL-03",
+      "page": "Header",
+      "selector": "#btn-toggle-settings",
+      "label": "Settings Button",
+      "type": "Button",
+      "action": "Open settings modal",
+      "expected": "Modal backdrop visible",
+      "observed": "True",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "interaction_id": "CTRL-04",
+      "page": "Settings Modal",
+      "selector": "#slider-iterations",
+      "label": "Max Iterations Slider",
+      "type": "Range",
+      "action": "Set slider value to 4",
+      "expected": "Badge text updates to 4",
+      "observed": "4",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "interaction_id": "CTRL-05",
+      "page": "Settings Modal",
+      "selector": "#btn-cancel-settings",
+      "label": "Cancel Settings Button",
+      "type": "Button",
+      "action": "Close settings drawer",
+      "expected": "Modal backdrop hidden",
+      "observed": "True",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "interaction_id": "CTRL-06",
+      "page": "Header",
+      "selector": "#btn-a2a-card",
+      "label": "A2A Agent Card Button",
+      "type": "Button",
+      "action": "Open A2A Card modal",
+      "expected": "Fetches /.well-known/agent-card.json and renders",
+      "observed": "Visible: True, Preview: testforge-agent-systemAutonomous Agentic...",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "interaction_id": "CTRL-07",
+      "page": "Header",
+      "selector": "#btn-mcp-status",
+      "label": "MCP Status Button",
+      "type": "Button",
+      "action": "Open MCP Tools modal",
+      "expected": "Fetches /api/mcp/status and lists tools",
+      "observed": "Visible: True, Preview: Model Context Protocol (MCP)\u26a1 Operationa...",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "interaction_id": "CTRL-08",
+      "page": "Mode A",
+      "selector": "#btn-load-sample",
+      "label": "Load Sample Button (banking.py)",
+      "type": "Button",
+      "action": "Load banking.py sample",
+      "expected": "Loads target and parses AST functions",
+      "observed": "Title: samples.banking, Funcs: banking_transaction",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "interaction_id": "CTRL-09",
+      "page": "Mode A",
+      "selector": "#radio-source-upload",
+      "label": "Upload Source Radio",
+      "type": "Radio",
+      "action": "Switch to file upload",
+      "expected": "Shows file upload area",
+      "observed": "True",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "interaction_id": "CTRL-10",
+      "page": "Mode A",
+      "selector": "#toggle-git-diff",
+      "label": "Git Diff-Aware Switch",
+      "type": "Checkbox",
+      "action": "Enable git-diff mode",
+      "expected": "Fetches /api/analysis/git-diff",
+      "observed": "\n          Clean Working Tree: No uncommitted git modificati",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "interaction_id": "CTRL-11",
+      "page": "Mode B",
+      "selector": "#btn-synthesize-module",
+      "label": "Synthesize Button (Empty)",
+      "type": "Button",
+      "action": "Trigger with empty input",
+      "expected": "Shows validation warning",
+      "observed": "\n      \u26a0\ufe0f\n      Please enter an algorithm or module specification\n    ",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "interaction_id": "CTRL-12",
+      "page": "Mode B",
+      "selector": "#btn-synthesize-module",
+      "label": "Synthesize Module (End-to-End)",
+      "type": "Button",
+      "action": "Trigger synthesis via prompt",
+      "expected": "Generates Python code and displays container",
+      "observed": "Success=False, Preview: ",
+      "status": "FAIL",
+      "details": ""
+    },
+    {
+      "interaction_id": "CTRL-13",
+      "page": "Mode C",
+      "selector": "#btn-fetch-github",
+      "label": "Fetch GitHub (Invalid URL)",
+      "type": "Button",
+      "action": "Submit invalid URL",
+      "expected": "Shows URL validation warning",
+      "observed": "\n      \u274c\n      GitHub Ingestion Error: Unsupported hostname 'not-github.com'. Expected 'github.com' or 'raw.githubusercontent.com'.\n    ",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "interaction_id": "CTRL-14",
+      "page": "Mode C",
+      "selector": "#btn-fetch-github",
+      "label": "Fetch GitHub (Valid File)",
+      "type": "Button",
+      "action": "Fetch raw GitHub file",
+      "expected": "Fetches and displays metadata",
+      "observed": "Module: samples.github_requests_models",
+      "status": "FAIL",
+      "details": ""
+    },
+    {
+      "interaction_id": "CTRL-15",
+      "page": "Mode C",
+      "selector": "#btn-activate-mode-c",
+      "label": "Target Confirmed Button",
+      "type": "Button",
+      "action": "Activate Mode C target",
+      "expected": "Updates target badge",
+      "observed": "Active Target: Mode A",
+      "status": "FAIL",
+      "details": ""
+    },
+    {
+      "interaction_id": "CTRL-16",
+      "page": "Blast Radius",
+      "selector": "#blast-func-select",
+      "label": "Function Selector",
+      "type": "Select",
+      "action": "Select AST function",
+      "expected": "Computes call graph and displays risk badge",
+      "observed": "Options: 1, Risk: \ud83d\udfe2 LOW",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "interaction_id": "CTRL-17",
+      "page": "Hardening Lab",
+      "selector": "#btn-run-hardening",
+      "label": "Run Hardening Button",
+      "type": "Button",
+      "action": "Launch autonomous hardening job",
+      "expected": "Displays progress bar and begins polling",
+      "observed": "Progress bar visible: True",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "interaction_id": "CTRL-18",
+      "page": "Hardening Lab",
+      "selector": "#hardening-metrics-board",
+      "label": "Hardening Metrics Board",
+      "type": "Panel",
+      "action": "Observe final KPI outputs",
+      "expected": "Populates verified mutation score, killed count",
+      "observed": "Score: 0.0%, Killed: 0/0",
+      "status": "FAIL",
+      "details": ""
+    },
+    {
+      "interaction_id": "CTRL-19",
+      "page": "Hardening Lab",
+      "selector": "#mutants-table-body",
+      "label": "Mutant Audit Table Row",
+      "type": "Table Row",
+      "action": "Click mutant row to inspect AST diff",
+      "expected": "Displays unified diff snippet and status badge",
+      "observed": "Badge: Select a mutant, Preview: // Unified AST diffs will appear he...",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "interaction_id": "CTRL-20",
+      "page": "Hardening Lab",
+      "selector": "button.filter-btn",
+      "label": "Mutant Filter Buttons",
+      "type": "Button Group",
+      "action": "Filter mutants by status",
+      "expected": "Filters table rows dynamically",
+      "observed": "Filter toggled successfully",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "interaction_id": "CTRL-21",
+      "page": "Hardening Lab",
+      "selector": "#btn-copy-hardened-suite",
+      "label": "Copy Hardened Suite Button",
+      "type": "Button",
+      "action": "Inspect DOM presence",
+      "expected": "Button exists with copy handler",
+      "observed": "True",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "interaction_id": "CTRL-22",
+      "page": "Hardening Lab",
+      "selector": "#btn-download-hardened-suite",
+      "label": "Download Suite Button",
+      "type": "Button",
+      "action": "Inspect DOM presence",
+      "expected": "Button exists with download handler",
+      "observed": "True",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "interaction_id": "CTRL-23",
+      "page": "Wiretap",
+      "selector": "#btn-refresh-wiretap",
+      "label": "Refresh Wiretap Button",
+      "type": "Button",
+      "action": "Refresh inter-agent handoffs",
+      "expected": "Populates timeline cards",
+      "observed": "Handoffs KPI: 1354",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "interaction_id": "CTRL-24",
+      "page": "Telemetry",
+      "selector": "#btn-refresh-telemetry",
+      "label": "Refresh Telemetry Button",
+      "type": "Button",
+      "action": "Refresh telemetry trace log",
+      "expected": "Displays total events",
+      "observed": "Events: 86178",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "interaction_id": "CTRL-25",
+      "page": "Benchmarking",
+      "selector": "#btn-refresh-benchmark",
+      "label": "Refresh Benchmark Button",
+      "type": "Button",
+      "action": "Load benchmark results",
+      "expected": "Renders comparison table & markdown report",
+      "observed": "Rows: 1, Preview: # TestForge Benchmark & Ablati...",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "interaction_id": "CTRL-26",
+      "page": "Checkpoints",
+      "selector": "#btn-refresh-checkpoints",
+      "label": "Refresh Checkpoints Button",
+      "type": "Button",
+      "action": "Fetch and render checkpoint history",
+      "expected": "Populates checkpoint table",
+      "observed": "Checkpoints count: 0",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "interaction_id": "CTRL-27",
+      "page": "Checkpoints",
+      "selector": "#checkpoints-table-body tr",
+      "label": "Checkpoint Row Selection",
+      "type": "Table Row",
+      "action": "Click checkpoint to view metadata & diff",
+      "expected": "Displays state metadata in detail subtab",
+      "observed": "Preview: ...",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "interaction_id": "CTRL-28",
+      "page": "Checkpoints",
+      "selector": "#btn-subtab-json",
+      "label": "Raw JSON Subtab Button",
+      "type": "Tab Button",
+      "action": "View raw checkpoint snapshot payload",
+      "expected": "Displays formatted JSON representation",
+      "observed": "Has JSON: True",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "interaction_id": "CTRL-29",
+      "page": "Checkpoints",
+      "selector": "#restore-modal-backdrop",
+      "label": "Restore Confirmation Modal",
+      "type": "Modal",
+      "action": "Inspect restore confirmation safeguards",
+      "expected": "Displays destructive action warning and confirmation buttons",
+      "observed": "True",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "interaction_id": "CTRL-30",
+      "page": "Responsive",
+      "selector": "viewport",
+      "label": "Mobile Viewport (375x812)",
+      "type": "Viewport",
+      "action": "Resize viewport to iPhone dimensions",
+      "expected": "Layout stacks cleanly without horizontal overflow",
+      "observed": "Verified visually",
+      "status": "PASS",
+      "details": ""
+    }
+  ],
+  "network_log": [
+    {
+      "requestId": "C5669F800E13E3312A9AC7D4D884191E",
+      "url": "http://127.0.0.1:8000/",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945439.114411
+    },
+    {
+      "requestId": "C5669F800E13E3312A9AC7D4D884191E",
+      "url": "http://127.0.0.1:8000/",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "text/html",
+      "type": "RESPONSE",
+      "timestamp": 1792945439.126573
+    },
+    {
+      "requestId": "84848.2",
+      "url": "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945441.6287758
+    },
+    {
+      "requestId": "84848.3",
+      "url": "http://127.0.0.1:8000/static/style.css",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945441.6287858
+    },
+    {
+      "requestId": "84848.4",
+      "url": "http://127.0.0.1:8000/static/app.js",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945441.6287942
+    },
+    {
+      "requestId": "84848.3",
+      "url": "http://127.0.0.1:8000/static/style.css",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "text/css",
+      "type": "RESPONSE",
+      "timestamp": 1792945441.628992
+    },
+    {
+      "requestId": "84848.4",
+      "url": "http://127.0.0.1:8000/static/app.js",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "text/javascript",
+      "type": "RESPONSE",
+      "timestamp": 1792945441.63039
+    },
+    {
+      "requestId": "84848.2",
+      "url": "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap",
+      "status": 200,
+      "statusText": "",
+      "mimeType": "text/css",
+      "type": "RESPONSE",
+      "timestamp": 1792945441.6304572
+    },
+    {
+      "requestId": "84848.14",
+      "url": "https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw.woff2",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945441.630474
+    },
+    {
+      "requestId": "84848.62",
+      "url": "https://fonts.gstatic.com/s/outfit/v15/QGYvz_MVcBeNP4NJtEtqUYLknw.woff2",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945441.630481
+    },
+    {
+      "requestId": "84848.48",
+      "url": "https://fonts.gstatic.com/s/jetbrainsmono/v24/tDbv2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKwBNntkaToggR7BYRbKPxDcwgknk-4.woff2",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945441.630487
+    },
+    {
+      "requestId": "84848.71",
+      "url": "http://127.0.0.1:8000/api/status",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945441.630503
+    },
+    {
+      "requestId": "84848.14",
+      "url": "https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw.woff2",
+      "status": 200,
+      "statusText": "",
+      "mimeType": "font/woff2",
+      "type": "RESPONSE",
+      "timestamp": 1792945441.630574
+    },
+    {
+      "requestId": "84848.62",
+      "url": "https://fonts.gstatic.com/s/outfit/v15/QGYvz_MVcBeNP4NJtEtqUYLknw.woff2",
+      "status": 200,
+      "statusText": "",
+      "mimeType": "font/woff2",
+      "type": "RESPONSE",
+      "timestamp": 1792945441.630604
+    },
+    {
+      "requestId": "84848.48",
+      "url": "https://fonts.gstatic.com/s/jetbrainsmono/v24/tDbv2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKwBNntkaToggR7BYRbKPxDcwgknk-4.woff2",
+      "status": 200,
+      "statusText": "",
+      "mimeType": "font/woff2",
+      "type": "RESPONSE",
+      "timestamp": 1792945441.630629
+    },
+    {
+      "requestId": "84848.71",
+      "url": "http://127.0.0.1:8000/api/status",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945441.63065
+    },
+    {
+      "requestId": "84848.72",
+      "url": "http://127.0.0.1:8000/api/mcp/status",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945441.6306639
+    },
+    {
+      "requestId": "84848.73",
+      "url": "http://127.0.0.1:8000/api/samples",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945441.630674
+    },
+    {
+      "requestId": "84848.74",
+      "url": "http://127.0.0.1:8000/favicon.ico",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945441.63068
+    },
+    {
+      "requestId": "84848.72",
+      "url": "http://127.0.0.1:8000/api/mcp/status",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945441.630711
+    },
+    {
+      "requestId": "84848.73",
+      "url": "http://127.0.0.1:8000/api/samples",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945441.630729
+    },
+    {
+      "requestId": "84848.75",
+      "url": "http://127.0.0.1:8000/api/ingest/sample",
+      "method": "POST",
+      "type": "REQUEST",
+      "timestamp": 1792945441.630742
+    },
+    {
+      "requestId": "84848.74",
+      "url": "http://127.0.0.1:8000/favicon.ico",
+      "status": 404,
+      "statusText": "Not Found",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945441.630764
+    },
+    {
+      "requestId": "84848.75",
+      "url": "http://127.0.0.1:8000/api/ingest/sample",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945441.630794
+    },
+    {
+      "requestId": "84848.76",
+      "url": "http://127.0.0.1:8000/api/telemetry",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945441.630811
+    },
+    {
+      "requestId": "84848.77",
+      "url": "http://127.0.0.1:8000/api/wiretap",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945441.6308181
+    },
+    {
+      "requestId": "84848.79",
+      "url": "http://127.0.0.1:8000/api/hardened-code",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945441.630829
+    },
+    {
+      "requestId": "84848.79",
+      "url": "http://127.0.0.1:8000/api/hardened-code",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945441.6308758
+    },
+    {
+      "requestId": "84848.77",
+      "url": "http://127.0.0.1:8000/api/wiretap",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945442.372423
+    },
+    {
+      "requestId": "84848.80",
+      "url": "http://127.0.0.1:8000/.well-known/agent-card.json",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945442.915887
+    },
+    {
+      "requestId": "84848.80",
+      "url": "http://127.0.0.1:8000/.well-known/agent-card.json",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945443.717133
+    },
+    {
+      "requestId": "84848.76",
+      "url": "http://127.0.0.1:8000/api/telemetry",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945443.717155
+    },
+    {
+      "requestId": "84848.81",
+      "url": "http://127.0.0.1:8000/api/mcp/status",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945444.2585459
+    },
+    {
+      "requestId": "84848.81",
+      "url": "http://127.0.0.1:8000/api/mcp/status",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945445.059812
+    },
+    {
+      "requestId": "84848.82",
+      "url": "http://127.0.0.1:8000/api/ingest/sample",
+      "method": "POST",
+      "type": "REQUEST",
+      "timestamp": 1792945446.093893
+    },
+    {
+      "requestId": "84848.82",
+      "url": "http://127.0.0.1:8000/api/ingest/sample",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945447.095136
+    },
+    {
+      "requestId": "84848.83",
+      "url": "http://127.0.0.1:8000/api/analysis/git-diff",
+      "method": "POST",
+      "type": "REQUEST",
+      "timestamp": 1792945447.501128
+    },
+    {
+      "requestId": "84848.83",
+      "url": "http://127.0.0.1:8000/api/analysis/git-diff",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945448.0023732
+    },
+    {
+      "requestId": "84848.84",
+      "url": "http://127.0.0.1:8000/api/ingest/github",
+      "method": "POST",
+      "type": "REQUEST",
+      "timestamp": 1792945475.1637802
+    },
+    {
+      "requestId": "84848.84",
+      "url": "http://127.0.0.1:8000/api/ingest/github",
+      "status": 422,
+      "statusText": "Unprocessable Content",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945475.56509
+    },
+    {
+      "requestId": "84848.85",
+      "url": "http://127.0.0.1:8000/api/ingest/github",
+      "method": "POST",
+      "type": "REQUEST",
+      "timestamp": 1792945475.867535
+    },
+    {
+      "requestId": "84848.85",
+      "url": "http://127.0.0.1:8000/api/ingest/github",
+      "status": 422,
+      "statusText": "Unprocessable Content",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945476.868813
+    },
+    {
+      "requestId": "84848.86",
+      "url": "http://127.0.0.1:8000/api/ingest/sample",
+      "method": "POST",
+      "type": "REQUEST",
+      "timestamp": 1792945491.8076
+    },
+    {
+      "requestId": "84848.86",
+      "url": "http://127.0.0.1:8000/api/ingest/sample",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945492.308793
+    },
+    {
+      "requestId": "84848.87",
+      "url": "http://127.0.0.1:8000/api/analysis/git-diff",
+      "method": "POST",
+      "type": "REQUEST",
+      "timestamp": 1792945492.308813
+    },
+    {
+      "requestId": "84848.87",
+      "url": "http://127.0.0.1:8000/api/analysis/git-diff",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945492.308838
+    },
+    {
+      "requestId": "84848.88",
+      "url": "http://127.0.0.1:8000/api/analysis/blast-radius",
+      "method": "POST",
+      "type": "REQUEST",
+      "timestamp": 1792945492.3099241
+    },
+    {
+      "requestId": "84848.88",
+      "url": "http://127.0.0.1:8000/api/analysis/blast-radius",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945493.111275
+    },
+    {
+      "requestId": "84848.89",
+      "url": "http://127.0.0.1:8000/api/harden/start",
+      "method": "POST",
+      "type": "REQUEST",
+      "timestamp": 1792945493.827363
+    },
+    {
+      "requestId": "84848.89",
+      "url": "http://127.0.0.1:8000/api/harden/start",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945494.828693
+    },
+    {
+      "requestId": "84848.90",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945496.0658822
+    },
+    {
+      "requestId": "84848.90",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945496.065898
+    },
+    {
+      "requestId": "84848.91",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945497.067565
+    },
+    {
+      "requestId": "84848.91",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945497.067594
+    },
+    {
+      "requestId": "84848.92",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945498.0691452
+    },
+    {
+      "requestId": "84848.92",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945498.069176
+    },
+    {
+      "requestId": "84848.93",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945499.070976
+    },
+    {
+      "requestId": "84848.93",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945499.071004
+    },
+    {
+      "requestId": "84848.94",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945500.072709
+    },
+    {
+      "requestId": "84848.94",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945500.072738
+    },
+    {
+      "requestId": "84848.95",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945501.074316
+    },
+    {
+      "requestId": "84848.95",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945501.074344
+    },
+    {
+      "requestId": "84848.96",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945503.0776021
+    },
+    {
+      "requestId": "84848.96",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945503.077632
+    },
+    {
+      "requestId": "84848.97",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945504.079251
+    },
+    {
+      "requestId": "84848.97",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945504.079286
+    },
+    {
+      "requestId": "84848.98",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945505.081106
+    },
+    {
+      "requestId": "84848.98",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945505.081138
+    },
+    {
+      "requestId": "84848.99",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945506.082808
+    },
+    {
+      "requestId": "84848.99",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945506.08284
+    },
+    {
+      "requestId": "84848.100",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945507.0844202
+    },
+    {
+      "requestId": "84848.100",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945507.084451
+    },
+    {
+      "requestId": "84848.101",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945509.087819
+    },
+    {
+      "requestId": "84848.101",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945509.087892
+    },
+    {
+      "requestId": "84848.102",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945510.089497
+    },
+    {
+      "requestId": "84848.102",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945510.089528
+    },
+    {
+      "requestId": "84848.103",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945511.091145
+    },
+    {
+      "requestId": "84848.103",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945511.0911849
+    },
+    {
+      "requestId": "84848.104",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945512.0921102
+    },
+    {
+      "requestId": "84848.104",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945512.092142
+    },
+    {
+      "requestId": "84848.105",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945513.093303
+    },
+    {
+      "requestId": "84848.105",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945513.093338
+    },
+    {
+      "requestId": "84848.106",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945515.095954
+    },
+    {
+      "requestId": "84848.106",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945515.095985
+    },
+    {
+      "requestId": "84848.107",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945516.0976698
+    },
+    {
+      "requestId": "84848.107",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945516.0977018
+    },
+    {
+      "requestId": "84848.108",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945517.099343
+    },
+    {
+      "requestId": "84848.108",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945517.0993721
+    },
+    {
+      "requestId": "84848.109",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945518.1002848
+    },
+    {
+      "requestId": "84848.109",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945518.100321
+    },
+    {
+      "requestId": "84848.110",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945519.101176
+    },
+    {
+      "requestId": "84848.110",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945519.101208
+    },
+    {
+      "requestId": "84848.111",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945521.1044748
+    },
+    {
+      "requestId": "84848.111",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945521.104513
+    },
+    {
+      "requestId": "84848.112",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945522.106128
+    },
+    {
+      "requestId": "84848.112",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945522.1061618
+    },
+    {
+      "requestId": "84848.113",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945523.107747
+    },
+    {
+      "requestId": "84848.113",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945523.107782
+    },
+    {
+      "requestId": "84848.114",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945524.1093812
+    },
+    {
+      "requestId": "84848.114",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945524.10941
+    },
+    {
+      "requestId": "84848.115",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945525.1104472
+    },
+    {
+      "requestId": "84848.115",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945525.1104782
+    },
+    {
+      "requestId": "84848.116",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945527.113785
+    },
+    {
+      "requestId": "84848.116",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945527.113816
+    },
+    {
+      "requestId": "84848.117",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945528.115437
+    },
+    {
+      "requestId": "84848.117",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945528.115469
+    },
+    {
+      "requestId": "84848.118",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945529.1171148
+    },
+    {
+      "requestId": "84848.118",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945529.117147
+    },
+    {
+      "requestId": "84848.119",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945530.1187332
+    },
+    {
+      "requestId": "84848.119",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945530.118765
+    },
+    {
+      "requestId": "84848.120",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945531.120372
+    },
+    {
+      "requestId": "84848.120",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945531.120405
+    },
+    {
+      "requestId": "84848.121",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945533.1236942
+    },
+    {
+      "requestId": "84848.121",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945533.1237261
+    },
+    {
+      "requestId": "84848.122",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945534.125302
+    },
+    {
+      "requestId": "84848.122",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945534.125335
+    },
+    {
+      "requestId": "84848.123",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945535.126275
+    },
+    {
+      "requestId": "84848.123",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945535.1263082
+    },
+    {
+      "requestId": "84848.124",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945536.033294
+    },
+    {
+      "requestId": "84848.124",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945536.033322
+    },
+    {
+      "requestId": "84848.125",
+      "url": "http://127.0.0.1:8000/api/wiretap",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945536.194655
+    },
+    {
+      "requestId": "84848.125",
+      "url": "http://127.0.0.1:8000/api/wiretap",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945537.498197
+    },
+    {
+      "requestId": "84848.126",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945537.498434
+    },
+    {
+      "requestId": "84848.126",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945537.498476
+    },
+    {
+      "requestId": "84848.127",
+      "url": "http://127.0.0.1:8000/api/telemetry",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945537.678933
+    },
+    {
+      "requestId": "84848.128",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945538.981961
+    },
+    {
+      "requestId": "84848.128",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945538.981995
+    },
+    {
+      "requestId": "84848.127",
+      "url": "http://127.0.0.1:8000/api/telemetry",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945539.163404
+    },
+    {
+      "requestId": "84848.129",
+      "url": "http://127.0.0.1:8000/api/benchmark/results",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945539.164171
+    },
+    {
+      "requestId": "84848.129",
+      "url": "http://127.0.0.1:8000/api/benchmark/results",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945539.6646159
+    },
+    {
+      "requestId": "84848.130",
+      "url": "http://127.0.0.1:8000/api/benchmark/markdown",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945539.6646369
+    },
+    {
+      "requestId": "84848.130",
+      "url": "http://127.0.0.1:8000/api/benchmark/markdown",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "text/markdown",
+      "type": "RESPONSE",
+      "timestamp": 1792945539.66466
+    },
+    {
+      "requestId": "84848.131",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945539.664673
+    },
+    {
+      "requestId": "84848.131",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945539.664772
+    },
+    {
+      "requestId": "84848.132",
+      "url": "http://127.0.0.1:8000/api/benchmark/results",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945539.665482
+    },
+    {
+      "requestId": "84848.132",
+      "url": "http://127.0.0.1:8000/api/benchmark/results",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945540.66669
+    },
+    {
+      "requestId": "84848.133",
+      "url": "http://127.0.0.1:8000/api/benchmark/markdown",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945540.666708
+    },
+    {
+      "requestId": "84848.133",
+      "url": "http://127.0.0.1:8000/api/benchmark/markdown",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "text/markdown",
+      "type": "RESPONSE",
+      "timestamp": 1792945540.666734
+    },
+    {
+      "requestId": "84848.134",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945540.6667461
+    },
+    {
+      "requestId": "84848.134",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945540.6667972
+    },
+    {
+      "requestId": "84848.135",
+      "url": "http://127.0.0.1:8000/api/checkpoints?limit=100&offset=0",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945540.851912
+    },
+    {
+      "requestId": "84848.135",
+      "url": "http://127.0.0.1:8000/api/checkpoints?limit=100&offset=0",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945541.3533309
+    },
+    {
+      "requestId": "84848.136",
+      "url": "http://127.0.0.1:8000/api/checkpoints?limit=100&offset=0",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945541.355666
+    },
+    {
+      "requestId": "84848.136",
+      "url": "http://127.0.0.1:8000/api/checkpoints?limit=100&offset=0",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945542.356899
+    },
+    {
+      "requestId": "84848.137",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945542.356915
+    },
+    {
+      "requestId": "84848.137",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945542.356938
+    },
+    {
+      "requestId": "84848.138",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945543.052505
+    },
+    {
+      "requestId": "84848.138",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945543.052533
+    },
+    {
+      "requestId": "84848.139",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945544.232739
+    },
+    {
+      "requestId": "84848.139",
+      "url": "http://127.0.0.1:8000/api/harden/status/8e7af441",
+      "status": 200,
+      "statusText": "OK",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945544.2354
+    },
+    {
+      "requestId": "84848.140",
+      "url": "http://127.0.0.1:8000/api/wiretap",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945544.238056
+    },
+    {
+      "requestId": "84848.141",
+      "url": "http://127.0.0.1:8000/api/telemetry",
+      "method": "GET",
+      "type": "REQUEST",
+      "timestamp": 1792945544.238067
+    }
+  ],
+  "network_failures": [
+    {
+      "requestId": "84848.74",
+      "url": "http://127.0.0.1:8000/favicon.ico",
+      "status": 404,
+      "statusText": "Not Found",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945441.630764
+    },
+    {
+      "requestId": "84848.84",
+      "url": "http://127.0.0.1:8000/api/ingest/github",
+      "status": 422,
+      "statusText": "Unprocessable Content",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945475.56509
+    },
+    {
+      "requestId": "84848.85",
+      "url": "http://127.0.0.1:8000/api/ingest/github",
+      "status": 422,
+      "statusText": "Unprocessable Content",
+      "mimeType": "application/json",
+      "type": "RESPONSE",
+      "timestamp": 1792945476.868813
+    }
+  ],
+  "console_log": [],
+  "console_errors": [],
+  "screenshots": [
+    {
+      "filename": "01_initial_dashboard.png",
+      "note": "Initial Dashboard State with Status Pills and Mode A active",
+      "size_bytes": 554616
+    },
+    {
+      "filename": "02_settings_modal.png",
+      "note": "Settings Drawer with Engine Configuration and Sliders",
+      "size_bytes": 243720
+    },
+    {
+      "filename": "03_a2a_agent_card_modal.png",
+      "note": "A2A Agent Card Discovery Modal displaying specification",
+      "size_bytes": 262428
+    },
+    {
+      "filename": "04_mcp_tools_modal.png",
+      "note": "MCP Tools Modal listing registered FastMCP tools",
+      "size_bytes": 249980
+    },
+    {
+      "filename": "05_mode_a_workspace.png",
+      "note": "Mode A Workspace with Sample loaded and Git Diff active",
+      "size_bytes": 460148
+    },
+    {
+      "filename": "06_mode_b_synthesis.png",
+      "note": "Mode B AI Synthesis Result Container",
+      "size_bytes": 550092
+    },
+    {
+      "filename": "07_mode_c_github.png",
+      "note": "Mode C GitHub Ingestion and Active Target",
+      "size_bytes": 592048
+    },
+    {
+      "filename": "08_blast_radius.png",
+      "note": "Blast Radius Tab with Call Tree and Risk Assessment",
+      "size_bytes": 537360
+    },
+    {
+      "filename": "09_hardening_lab_running.png",
+      "note": "Hardening Lab Execution in Progress with Live Polling",
+      "size_bytes": 629804
+    },
+    {
+      "filename": "10_hardening_lab_complete.png",
+      "note": "Hardening Lab Completed Run with KPIs, Mutants Table, and Diff Viewer",
+      "size_bytes": 289404
+    },
+    {
+      "filename": "11_wiretap_timeline.png",
+      "note": "Multi-Agent Wiretap Inter-Agent Handoffs",
+      "size_bytes": 481788
+    },
+    {
+      "filename": "12_telemetry_trace.png",
+      "note": "Observability Telemetry Trace Log",
+      "size_bytes": 488896
+    },
+    {
+      "filename": "13_benchmarking_tab.png",
+      "note": "Statistical Benchmarking Tab with Comparative Results and Markdown Preview",
+      "size_bytes": 522028
+    },
+    {
+      "filename": "14_checkpoints_timeline.png",
+      "note": "Blackboard Checkpoints Timeline with State Snapshots",
+      "size_bytes": 552004
+    },
+    {
+      "filename": "15_checkpoint_diff_inspector.png",
+      "note": "Checkpoint Inspector showing Raw Snapshot Payload and Diff Controls",
+      "size_bytes": 366444
+    },
+    {
+      "filename": "16_restore_confirmation_modal.png",
+      "note": "Restore Confirmation Modal with Destructive Safety Safeguards",
+      "size_bytes": 230268
+    },
+    {
+      "filename": "17_mobile_responsive_375x812.png",
+      "note": "Mobile Viewport (375x812) Layout and Responsive Navigation",
+      "size_bytes": 459904
+    }
+  ]
+}

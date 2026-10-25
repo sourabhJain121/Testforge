@@ -1,0 +1,66 @@
+{
+  "timestamp": 1792752844.1510131,
+  "iterations": 500,
+  "results": [
+    {
+      "architecture": "Centralized Blackboard",
+      "operation_name": "update_critic_space",
+      "iterations": 500,
+      "total_time_seconds": 0.007448,
+      "mean_latency_microseconds": 14.825,
+      "stddev_latency_microseconds": 63.465,
+      "min_latency_microseconds": 10.958,
+      "max_latency_microseconds": 1430.584,
+      "throughput_ops_per_second": 67134.4,
+      "metadata": {
+        "locking": "threading.RLock",
+        "validation": "Pydantic v2 CriticSpace",
+        "revision_increment": true
+      }
+    },
+    {
+      "architecture": "Centralized Blackboard",
+      "operation_name": "get_state_snapshot (Deep-Copy)",
+      "iterations": 500,
+      "total_time_seconds": 0.013533,
+      "mean_latency_microseconds": 26.547,
+      "stddev_latency_microseconds": 4.079,
+      "min_latency_microseconds": 24.5,
+      "max_latency_microseconds": 73.167,
+      "throughput_ops_per_second": 36948.0,
+      "metadata": {
+        "isolation": "deepcopy",
+        "thread_safety": "RLock guarded"
+      }
+    },
+    {
+      "architecture": "Direct In-Process A2A Broker",
+      "operation_name": "send_message (Request-Response)",
+      "iterations": 500,
+      "total_time_seconds": 0.057647,
+      "mean_latency_microseconds": 107.663,
+      "stddev_latency_microseconds": 21.198,
+      "min_latency_microseconds": 85.583,
+      "max_latency_microseconds": 257.625,
+      "throughput_ops_per_second": 8673.4,
+      "metadata": {
+        "routing": "Dynamic handler dispatch",
+        "envelope": "Pydantic A2AMessage v2",
+        "security": "Prompt injection inspection & history recording"
+      }
+    }
+  ],
+  "semantic_comparison": {
+    "blackboard_use_cases": [
+      "TargetSpace call graphs",
+      "Mutant execution status",
+      "Checkpoint persistence"
+    ],
+    "broker_use_cases": [
+      "ADK to CrewAI handoff",
+      "Adversarial critique requests",
+      "External A2A protocol bridge"
+    ]
+  },
+  "disclaimer": "State mutation and message dispatch are not semantically identical abstractions. Blackboard provides durable, thread-safe shared data partitions with point-in-time snapshots and history tracking. A2A Broker provides decoupled peer-to-peer communicative acts with prompt security, authorization, and handoff tracing. Neither is universally faster; both operate concurrently within TestForge's multi-agent architecture."
+}

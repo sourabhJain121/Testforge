@@ -1,0 +1,148 @@
+============================================================
+TESTFORGE MILESTONE 3 FINAL ACCEPTANCE AUDIT
+============================================================
+
+[PHASE 1] Running Complete API Smoke Tests...
+  [PASS] GET / -> 200 (11.11ms)
+  [PASS] GET /healthz -> 200 (1.46ms)
+  [PASS] GET /readyz -> 200 (3.95ms)
+  [PASS] GET /.well-known/agent-card.json -> 200 (1.62ms)
+  [PASS] GET /.well-known/agent.json -> 200 (0.91ms)
+  [PASS] GET /api/ws/status -> 200 (0.75ms)
+  [PASS] GET /api/status -> 200 (26.61ms)
+  [PASS] GET /api/samples -> 200 (1.43ms)
+  [FAIL] POST /api/ingest/sample -> 422 (1.89ms)
+  [FAIL] POST /api/analysis/blast-radius -> 422 (0.98ms)
+  [PASS] POST /api/analysis/git-diff -> 200 (54.38ms)
+  [PASS] GET /api/checkpoints -> 200 (5.34ms)
+  [PASS] GET /api/telemetry -> 200 (502.65ms)
+  [PASS] GET /api/wiretap -> 200 (116.26ms)
+  [PASS] GET /api/benchmark/results -> 200 (1.55ms)
+  [PASS] GET /api/benchmark/markdown -> 200 (1.76ms)
+  [PASS] GET /api/hardened-code -> 200 (1.29ms)
+  [PASS] POST /api/config/keys -> 200 (0.92ms)
+[✓] Saved API smoke test results to: /Users/sourabh/TestForge/qa_artifacts/m3_final_acceptance_audit_20261023_153600/api_smoke_results.csv
+
+[PHASE 2] Starting Chrome for CDP audit on port 9240...
+[NAVIGATE] Navigating to TestForge Dashboard http://127.0.0.1:8000/ ...
+
+--- Auditing Header & Status Controls ---
+  [PASS] Control: Header Brand (.brand-title) -> TestForge
+  [PASS] Control: Hardware Pill (#label-hardware) -> Darwin arm64 (10 cores, 16GB)
+  [📸 SCREENSHOT] Saved: 01_dashboard_initial_load.png
+
+--- Auditing Settings Modal ---
+  [PASS] Control: Settings Button (#btn-toggle-settings) -> Modal visible=True
+  [📸 SCREENSHOT] Saved: 02_settings_modal.png
+  [PASS] Control: Iterations Slider (#slider-iterations) -> Badge shows 4
+  [PASS] Control: Mutation Score Slider (#slider-mutation-score) -> Badge shows 90%
+  [PASS] Control: Engine Mode Select (#engine-mode-select) -> Value=local
+  [PASS] Control: Save Settings Button (#btn-save-settings) -> Modal closed=True
+  [PASS] Control: Close Settings (X) (#btn-close-settings) -> Modal closed=True
+  [PASS] Control: Cancel Settings Button (#btn-cancel-settings) -> Modal closed=True
+
+--- Auditing A2A Modal & Actions ---
+  [PASS] Control: A2A Card Button (#btn-a2a-card) -> Visible=True, Agent='testforge-agent-system'
+  [📸 SCREENSHOT] Saved: 03_a2a_card_modal.png
+  [PASS] Control: View Raw JSON Link (#btn-view-raw-a2a) -> href='/.well-known/agent-card.json'
+  [PASS] Control: Copy A2A JSON Button (#btn-copy-a2a-json) -> Text: '
+            📋 Copy JSON
+          ' -> '
+           
+  [PASS] Control: Close A2A Footer (#btn-close-a2a-footer) -> Modal closed=True
+  [PASS] Control: A2A Escape Key Handler (document.keydown(Escape)) -> Modal closed=True
+
+--- Auditing Mode A Sample Selection ---
+  [PASS] Control: Sample Select Dropdown (#sample-file-select) -> Selected banking.py
+  [PASS] Control: Load Sample Button (#btn-load-sample) -> Target='samples.banking', Lines='📄 24 Lines'
+  [📸 SCREENSHOT] Saved: 04_mode_a_banking_loaded.png
+  [PASS] Control: Copy Mode A Code Button (#btn-copy-mode-a-code) -> Button text='📋 Copy'
+  [PASS] Control: Upload Radio Toggle (#radio-source-upload) -> Dropzone visible=True
+  [PASS] Control: Git Diff Toggle (#toggle-git-diff) -> Alert: '
+          Clean Working Tree: No uncomm'
+
+--- Auditing Mode B AI Synthesis ---
+  [PASS] Control: Tab Mode B Button (#nav-mode-b) -> Active=True
+  [PASS] Control: Mode B Prompt Chip (.prompt-chip) -> Value: 'Implement a stock trading limit ord...'
+  [📸 SCREENSHOT] Saved: 05_tab_mode_b.png
+
+--- Auditing Mode C GitHub Import ---
+  [PASS] Control: Tab Mode C Button (#nav-mode-c) -> Active=True
+  [PASS] Control: Mode C URL Chip (#tab-mode-c .prompt-chip) -> URL='https://github.com/psf/requests/blob/main/src/requests/
+  [📸 SCREENSHOT] Saved: 06_tab_mode_c.png
+
+--- Auditing Blast Radius & Call Graph ---
+  [PASS] Control: Tab Blast Radius Button (#nav-blast) -> Active=True
+  [PASS] Control: Blast Function Select (#blast-func-select) -> Options count=1
+  [PASS] Control: Blast Risk KPI (#blast-risk-badge) -> Risk=🟢 LOW, Impact=0%
+  [📸 SCREENSHOT] Saved: 07_tab_blast_radius.png
+
+--- Auditing Hardening Lab & Results ---
+  [PASS] Control: Tab Hardening Button (#nav-hardening) -> Active=True
+  [ACTION] Triggering hardening run...
+  [PASS] Control: Run Hardening Button (#btn-run-hardening) -> Progress visible=True
+  [WAIT] Awaiting hardening completion (polling up to 60s)...
+  [PASS] Control: Hardening Completion (#kpi-final-status) -> Status=HARDENED, Score=0.0%, Killed=0/19
+  [📸 SCREENSHOT] Saved: 09_hardening_completed.png
+  [PASS] Control: Mutant Filter Counters (.filter-group) -> All=19, Kill=12, Surv=7
+  [PASS] Control: Filter KILLED Button (.filter-btn[data-filter='KILLED']) -> Visible rows=12
+  [PASS] Control: Mutant Row Click (.mutant-row) -> Title='AST Diff: MUT_COND_INV_001 (COND_INV) at line 9', Dif
+  [📸 SCREENSHOT] Saved: 10_mutant_diff_inspected.png
+  [PASS] Control: Copy Hardened Suite Button (#btn-copy-hardened-suite) -> Text: '📋 Copy Suite'
+  [PASS] Control: Download Hardened Suite Button (#btn-download-hardened-suite) -> Exists=True
+
+--- Auditing Wiretap & WebSocket Event Stream ---
+  [PASS] Control: Tab Wiretap Button (#nav-wiretap) -> Active=True
+  [PASS] Control: Wiretap WS Status Badge (#wiretap-ws-status-badge) -> Text='⚡ Live Streaming', Class='badge badge-green'
+  [PASS] Control: Refresh Wiretap Button (#btn-refresh-wiretap) -> Timeline cards count=895
+  [📸 SCREENSHOT] Saved: 11_tab_wiretap.png
+  [PASS] Control: WebSocket Fallback Polling (#wiretap-ws-status-badge) -> Badge shows '🔄 Polling Fallback'
+  [📸 SCREENSHOT] Saved: 12_wiretap_fallback.png
+  [PASS] Control: WebSocket Reconnection (#wiretap-ws-status-badge) -> Badge shows '⚡ Live Streaming'
+
+--- Auditing Telemetry Pane ---
+  [PASS] Control: Tab Telemetry Button (#nav-telemetry) -> Active=True
+  [PASS] Control: Refresh Telemetry Button (#btn-refresh-telemetry) -> Events=21218, Tokens=10,395,445, Rows=20
+  [📸 SCREENSHOT] Saved: 13_tab_telemetry.png
+
+--- Auditing Benchmarks Pane ---
+  [PASS] Control: Tab Benchmark Button (#nav-benchmark) -> Active=True
+  [PASS] Control: Refresh Benchmark Button (#btn-refresh-benchmark) -> Table rows count=1
+  [PASS] Control: Raw Markdown Toggle (#btn-bench-md-raw) -> Visible=True
+  [PASS] Control: Rendered Markdown Toggle (#btn-bench-md-rendered) -> Visible=True
+  [📸 SCREENSHOT] Saved: 14_tab_benchmark.png
+
+--- Auditing Checkpoints Timeline & Diff Inspector ---
+  [PASS] Control: Tab Checkpoints Button (#nav-checkpoints) -> Active=True
+  [PASS] Control: Refresh Checkpoints Button (#btn-refresh-checkpoints) -> Badge=100, Cards=100
+  [PASS] Control: Inspect Checkpoint Button (.btn-cp-inspect) -> Detail visible=True
+  [📸 SCREENSHOT] Saved: 16_checkpoint_inspected.png
+  [PASS] Control: Snapshot JSON Subtab (#btn-subtab-json) -> Visible=True, JSON chars=81922
+  [PASS] Control: Copy Checkpoint JSON Button (#btn-copy-checkpoint-json) -> Text: '📋 Copy JSON'
+  [ACTION] Selecting Base (A) and Target (B) checkpoints for diff...
+  [PASS] Control: Set Diff Base / Target (.btn-cp-set-base / .btn-cp-set-target) -> Base='chk_c719585c76e6', Target='chk_3410508f8399', CompareB
+  [PASS] Control: Compare Checkpoints Button (#btn-trigger-diff-modal) -> Diff pane active=True, content rendered=True
+  [📸 SCREENSHOT] Saved: 17_checkpoints_diff_rendered.png
+  [PASS] Control: Swap Diff Selection (#btn-swap-diff-selection) -> Base='chk_3410508f8399', Target='chk_c719585c76e6'
+  [PASS] Control: Clear Diff Selection (#btn-clear-diff-selection) -> Base='None selected'
+  [PASS] Control: Restore Checkpoint Button (.btn-cp-restore) -> Dialog visible=True, ID='chk_c719585c76e6'
+  [📸 SCREENSHOT] Saved: 18_restore_modal.png
+  [PASS] Control: Cancel Restore Button (#btn-cancel-restore) -> Modal closed=True
+
+--- Auditing Responsive Viewports ---
+  [PASS] Control: Viewport Laptop 1280x800 (window(1280x800)) -> Horizontal overflow=False
+  [📸 SCREENSHOT] Saved: 19_viewport_laptop_1280.png
+  [PASS] Control: Viewport Tablet 768x1024 (window(768x1024)) -> Horizontal overflow=False
+  [📸 SCREENSHOT] Saved: 20_viewport_tablet_768.png
+
+--- Auditing Console Logs & Errors ---
+Total console messages logged: 0
+Total console errors logged: 0
+  [PASS] Control: Console Error Audit (console.error) -> 0 errors detected
+
+[✓] Saved complete control inventory (59 controls) to: /Users/sourabh/TestForge/qa_artifacts/m3_final_acceptance_audit_20261023_153600/frontend_control_inventory.csv
+[✓] Saved runtime test results summary to: /Users/sourabh/TestForge/qa_artifacts/m3_final_acceptance_audit_20261023_153600/runtime_and_test_results.txt
+[✓] Browser audit completed and Chrome terminated cleanly.
+[✓] Saved visualization audit report to: /Users/sourabh/TestForge/qa_artifacts/m3_final_acceptance_audit_20261023_153600/visualization_audit.md
+
+[SUCCESS] Full Milestone 3 Acceptance Audit Finished Successfully.

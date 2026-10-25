@@ -1,0 +1,16 @@
+{
+  "title": "TestForge \u2014 Autonomous Agentic Test Hardening",
+  "initial_cancel_btn_hidden": true,
+  "initial_run_btn_enabled": true,
+  "active_target": "/Users/sourabh/TestForge/samples/discount.py",
+  "job_id": "164dc836",
+  "cancel_btn_revealed": true,
+  "cancel_btn_text": "\ud83d\uded1\nCancel Hardening",
+  "cancelling_disabled": true,
+  "cancelling_text": "\u23f3\nCancelling...",
+  "banner_visible": true,
+  "banner_class": "verdict-banner cancelled",
+  "banner_has_cancelled_text": true,
+  "run_btn_re_enabled": true,
+  "cancel_btn_hidden_final": true
+}

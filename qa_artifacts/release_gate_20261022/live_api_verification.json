@@ -1,0 +1,38 @@
+{
+  "/healthz": {
+    "status": 200,
+    "size_bytes": 99
+  },
+  "/readyz": {
+    "status": 200,
+    "size_bytes": 181
+  },
+  "/api/status": {
+    "status": 200,
+    "size_bytes": 304
+  },
+  "/.well-known/agent-card.json": {
+    "status": 200,
+    "size_bytes": 1115
+  },
+  "/.well-known/agent.json": {
+    "status": 200,
+    "size_bytes": 1115
+  },
+  "/api/wiretap": {
+    "status": 200,
+    "size_bytes": 252697
+  },
+  "/api/telemetry": {
+    "status": 200,
+    "size_bytes": 51653
+  },
+  "/api/benchmark/results": {
+    "status": 200,
+    "size_bytes": 816
+  },
+  "/api/benchmark/markdown": {
+    "status": 200,
+    "size_bytes": 963
+  }
+}

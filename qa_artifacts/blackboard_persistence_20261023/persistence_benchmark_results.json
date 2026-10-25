@@ -1,0 +1,32 @@
+{
+  "timestamp": 1792740250.265748,
+  "database_path": "qa_artifacts/blackboard_persistence_20261023/perf_benchmark.db",
+  "database_size_bytes": 2641920,
+  "database_size_kb": 2580.0,
+  "representative_snapshot": {
+    "num_mutants": 50,
+    "num_history_entries": 3,
+    "snapshot_size_bytes": 24595,
+    "snapshot_size_kb": 24.02
+  },
+  "save_performance_ms": {
+    "samples": 100,
+    "mean": 0.964,
+    "median": 0.9,
+    "min": 0.846,
+    "max": 5.839,
+    "p95": 1.044
+  },
+  "load_performance_ms": {
+    "samples": 50,
+    "mean": 0.097,
+    "median": 0.092,
+    "min": 0.089,
+    "max": 0.171,
+    "p95": 0.135
+  },
+  "overhead_comparison_ms": {
+    "in_memory_update_only_ms": 0.0152,
+    "update_and_checkpoint_save_ms": 0.109
+  }
+}

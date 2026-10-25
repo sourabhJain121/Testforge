@@ -1,0 +1,63 @@
+{
+  "test_execution_metadata": {
+    "timestamp": "2026-10-25T22:02:14+05:30",
+    "python_version": "3.13.17",
+    "environment": ".venv-release",
+    "runner": "pytest 8.3.4",
+    "command": ".venv-release/bin/pytest tests/ -q"
+  },
+  "summary": {
+    "total_collected": 395,
+    "passed": 395,
+    "failed": 0,
+    "skipped": 0,
+    "errors": 0,
+    "warnings": 346,
+    "duration_seconds": 375.53,
+    "exit_code": 0
+  },
+  "test_suites": {
+    "unit_and_pipeline": {
+      "files": ["test_agents.py", "test_classifier.py", "test_mutator.py", "test_sandbox.py", "test_agentic_pipeline.py", "test_blast_and_adk.py"],
+      "tests_passed": 52
+    },
+    "mcp_integration": {
+      "files": ["test_mcp.py", "test_orchestration_mcp.py", "test_mcp_status_endpoint.py"],
+      "tests_passed": 38
+    },
+    "blackboard_and_checkpoints": {
+      "files": ["test_blackboard.py", "test_blackboard_persistence.py", "test_checkpoint_api_diff.py", "test_checkpoint_diff.py", "test_checkpoint_resumption.py"],
+      "tests_passed": 72
+    },
+    "crewai_and_adk": {
+      "files": ["test_crew_critic.py", "test_adk_generator.py"],
+      "tests_passed": 36
+    },
+    "a2a_protocol": {
+      "files": ["test_a2a.py", "test_a2a_protocol.py", "test_a2a_card_ui_and_endpoint.py"],
+      "tests_passed": 38
+    },
+    "security_and_sandbox": {
+      "files": ["test_security.py", "test_adversarial_failure_injection.py", "test_cancellation.py"],
+      "tests_passed": 48
+    },
+    "corpus_and_benchmarking": {
+      "files": ["test_evaluation_corpus.py", "test_benchmarking.py", "test_fast_benchmarking.py", "test_strategy_comparison.py", "test_messaging_benchmark.py"],
+      "tests_passed": 45
+    },
+    "observability_and_deployment": {
+      "files": ["test_observability.py", "test_callbacks.py", "test_task_lifecycle.py", "test_websocket_streaming.py", "test_deployment.py"],
+      "tests_passed": 66
+    }
+  },
+  "browser_audit_results": {
+    "total_controls_tested": 30,
+    "passed": 30,
+    "failed": 0,
+    "blocked": 0,
+    "screenshots_captured": 17,
+    "console_errors": 0,
+    "network_failures": 3,
+    "negative_tests_verified": ["Empty prompt synthesis warning", "Invalid GitHub URL rejection (HTTP 422)", "Favicon 404 handled"]
+  }
+}

@@ -1,0 +1,90 @@
+[
+  {
+    "workload_name": "E-Commerce Discount Rules",
+    "target_file": "samples/discount.py",
+    "total_mutants": 19,
+    "valid_syntax_rate": 100.0,
+    "killed_mutants": 14,
+    "survived_mutants": 5,
+    "timed_out_mutants": 0,
+    "execution_errors": 0,
+    "invalid_mutants": 0,
+    "equivalent_mutants": 0,
+    "potentially_equivalent_mutants": 0,
+    "raw_mutation_score": 73.68,
+    "adjusted_mutation_score": 73.68,
+    "is_deterministic": true,
+    "run_runtimes_seconds": [
+      1.0213,
+      0.9532,
+      0.9491
+    ],
+    "mean_runtime_seconds": 0.9745
+  },
+  {
+    "workload_name": "Banking Transaction Rules",
+    "target_file": "samples/banking.py",
+    "total_mutants": 23,
+    "valid_syntax_rate": 100.0,
+    "killed_mutants": 23,
+    "survived_mutants": 0,
+    "timed_out_mutants": 0,
+    "execution_errors": 0,
+    "invalid_mutants": 0,
+    "equivalent_mutants": 0,
+    "potentially_equivalent_mutants": 0,
+    "raw_mutation_score": 100.0,
+    "adjusted_mutation_score": 100.0,
+    "is_deterministic": true,
+    "run_runtimes_seconds": [
+      1.0468,
+      1.0513,
+      1.0155
+    ],
+    "mean_runtime_seconds": 1.0379
+  },
+  {
+    "workload_name": "Inventory Tier Pricing",
+    "target_file": "samples/inventory_pricing.py",
+    "total_mutants": 37,
+    "valid_syntax_rate": 100.0,
+    "killed_mutants": 37,
+    "survived_mutants": 0,
+    "timed_out_mutants": 0,
+    "execution_errors": 0,
+    "invalid_mutants": 0,
+    "equivalent_mutants": 0,
+    "potentially_equivalent_mutants": 0,
+    "raw_mutation_score": 100.0,
+    "adjusted_mutation_score": 100.0,
+    "is_deterministic": true,
+    "run_runtimes_seconds": [
+      1.5778,
+      1.6285,
+      1.74
+    ],
+    "mean_runtime_seconds": 1.6488
+  },
+  {
+    "workload_name": "Token Bucket Rate Limiter",
+    "target_file": "samples/rate_limiter.py",
+    "total_mutants": 38,
+    "valid_syntax_rate": 100.0,
+    "killed_mutants": 21,
+    "survived_mutants": 17,
+    "timed_out_mutants": 0,
+    "execution_errors": 0,
+    "invalid_mutants": 0,
+    "equivalent_mutants": 0,
+    "potentially_equivalent_mutants": 0,
+    "raw_mutation_score": 55.26,
+    "adjusted_mutation_score": 55.26,
+    "is_deterministic": true,
+    "run_runtimes_seconds": [
+      1.5829,
+      1.5723,
+      1.6465
+    ],
+    "mean_runtime_seconds": 1.6006
+  }
+]

@@ -1,0 +1,21 @@
+Method,Endpoint,Expected_Status,Actual_Status,Latency_ms,Result,Notes
+GET,/,200,200,8.05,PASS,HTML dashboard entrypoint
+GET,/healthz,200,200,1.23,PASS,Liveness health check
+GET,/readyz,200,200,2.8,PASS,Readiness probe
+GET,/api/ready,200,200,1.75,PASS,Readiness probe alias
+GET,/api/mcp/status,200,200,1.06,PASS,Model Context Protocol (FastMCP) Tools Status
+GET,/.well-known/agent-card.json,200,200,1.12,PASS,A2A Agent Card Discovery
+GET,/.well-known/agent.json,200,200,0.84,PASS,A2A Discovery Alias
+GET,/api/ws/status,200,200,0.87,PASS,WebSocket Hub Health Status
+GET,/api/status,200,200,21.56,PASS,System & Hardware Status
+GET,/api/samples,200,200,1.43,PASS,Sample Modules Inventory
+POST,/api/ingest/sample,200,422,1.2,FAIL,Ingest Discount Sample
+POST,/api/analysis/blast-radius,200,200,1.81,PASS,Blast Radius Analysis
+POST,/api/analysis/git-diff,200,200,38.23,PASS,Git Diff Analysis
+GET,/api/checkpoints,200,200,4.78,PASS,List Checkpoints
+GET,/api/telemetry,200,200,517.85,PASS,Telemetry Trace Log
+GET,/api/wiretap,200,200,116.24,PASS,Wiretap Handoff History
+GET,/api/benchmark/results,200,200,1.62,PASS,Benchmark Historical Results
+GET,/api/benchmark/markdown,200,200,1.84,PASS,Benchmark Markdown Export
+GET,/api/hardened-code,200,200,1.43,PASS,Exported Hardened Suite
+POST,/api/config/keys,200,200,1.06,PASS,Update System Configuration

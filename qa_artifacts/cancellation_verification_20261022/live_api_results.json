@@ -1,0 +1,580 @@
+{
+  "timestamp": 1792682787.729641,
+  "base_url": "http://127.0.0.1:8000",
+  "scenarios": {
+    "health_and_readiness": {
+      "healthz": {
+        "status_code": 200,
+        "body": {
+          "status": "healthy",
+          "service": "testforge-backend",
+          "version": "2.0.0",
+          "timestamp": 1792682787.737621
+        }
+      },
+      "readyz": {
+        "status_code": 200,
+        "body": {
+          "status": "ready",
+          "service": "testforge-backend",
+          "subsystems": {
+            "ast_mutator": "operational",
+            "blackboard": "operational",
+            "sandbox_storage": "operational"
+          },
+          "timestamp": 1792682787.742024
+        }
+      }
+    },
+    "cancel_unknown_job": {
+      "job_id": "test123",
+      "status_code": 404,
+      "body": {
+        "detail": "Hardening job 'test123' not found."
+      }
+    },
+    "live_cancellation": {
+      "job_id": "1ed6293d",
+      "cancel_request_latency_s": 0.0017,
+      "total_cancellation_duration_s": 21.554,
+      "lifecycle_history": [
+        {
+          "poll": 1,
+          "time": 0.51,
+          "status": "CANCELLING"
+        },
+        {
+          "poll": 2,
+          "time": 1.02,
+          "status": "CANCELLING"
+        },
+        {
+          "poll": 3,
+          "time": 1.52,
+          "status": "CANCELLING"
+        },
+        {
+          "poll": 4,
+          "time": 2.03,
+          "status": "CANCELLING"
+        },
+        {
+          "poll": 5,
+          "time": 2.54,
+          "status": "CANCELLING"
+        },
+        {
+          "poll": 6,
+          "time": 3.04,
+          "status": "CANCELLING"
+        },
+        {
+          "poll": 7,
+          "time": 3.55,
+          "status": "CANCELLING"
+        },
+        {
+          "poll": 8,
+          "time": 4.06,
+          "status": "CANCELLING"
+        },
+        {
+          "poll": 9,
+          "time": 4.56,
+          "status": "CANCELLING"
+        },
+        {
+          "poll": 10,
+          "time": 5.07,
+          "status": "CANCELLING"
+        },
+        {
+          "poll": 11,
+          "time": 5.58,
+          "status": "CANCELLING"
+        },
+        {
+          "poll": 12,
+          "time": 6.09,
+          "status": "CANCELLING"
+        },
+        {
+          "poll": 13,
+          "time": 6.59,
+          "status": "CANCELLING"
+        },
+        {
+          "poll": 14,
+          "time": 7.1,
+          "status": "CANCELLING"
+        },
+        {
+          "poll": 15,
+          "time": 7.61,
+          "status": "CANCELLING"
+        },
+        {
+          "poll": 16,
+          "time": 8.11,
+          "status": "CANCELLING"
+        },
+        {
+          "poll": 17,
+          "time": 8.62,
+          "status": "CANCELLING"
+        },
+        {
+          "poll": 18,
+          "time": 9.13,
+          "status": "CANCELLING"
+        },
+        {
+          "poll": 19,
+          "time": 9.64,
+          "status": "CANCELLING"
+        },
+        {
+          "poll": 20,
+          "time": 10.14,
+          "status": "CANCELLING"
+        },
+        {
+          "poll": 21,
+          "time": 10.65,
+          "status": "CANCELLING"
+        },
+        {
+          "poll": 22,
+          "time": 11.16,
+          "status": "CANCELLING"
+        },
+        {
+          "poll": 23,
+          "time": 11.67,
+          "status": "CANCELLING"
+        },
+        {
+          "poll": 24,
+          "time": 12.18,
+          "status": "CANCELLING"
+        },
+        {
+          "poll": 25,
+          "time": 12.68,
+          "status": "CANCELLING"
+        },
+        {
+          "poll": 26,
+          "time": 13.19,
+          "status": "CANCELLING"
+        },
+        {
+          "poll": 27,
+          "time": 13.7,
+          "status": "CANCELLING"
+        },
+        {
+          "poll": 28,
+          "time": 14.21,
+          "status": "CANCELLING"
+        },
+        {
+          "poll": 29,
+          "time": 14.71,
+          "status": "CANCELLING"
+        },
+        {
+          "poll": 30,
+          "time": 15.22,
+          "status": "CANCELLING"
+        },
+        {
+          "poll": 31,
+          "time": 15.73,
+          "status": "CANCELLING"
+        },
+        {
+          "poll": 32,
+          "time": 16.23,
+          "status": "CANCELLING"
+        },
+        {
+          "poll": 33,
+          "time": 16.74,
+          "status": "CANCELLING"
+        },
+        {
+          "poll": 34,
+          "time": 17.25,
+          "status": "CANCELLING"
+        },
+        {
+          "poll": 35,
+          "time": 17.76,
+          "status": "CANCELLING"
+        },
+        {
+          "poll": 36,
+          "time": 18.26,
+          "status": "CANCELLING"
+        },
+        {
+          "poll": 37,
+          "time": 18.77,
+          "status": "CANCELLING"
+        },
+        {
+          "poll": 38,
+          "time": 19.28,
+          "status": "CANCELLING"
+        },
+        {
+          "poll": 39,
+          "time": 19.78,
+          "status": "CANCELLING"
+        },
+        {
+          "poll": 40,
+          "time": 20.29,
+          "status": "CANCELLING"
+        },
+        {
+          "poll": 41,
+          "time": 21.05,
+          "status": "CANCELLING"
+        },
+        {
+          "poll": 42,
+          "time": 21.55,
+          "status": "CANCELLED"
+        }
+      ],
+      "final_job_data": {
+        "job_id": "1ed6293d",
+        "status": "CANCELLED",
+        "created_at": 1792682787.74639,
+        "target_file_path": "samples/banking.py",
+        "max_iterations": 3,
+        "target_mutation_score": 85.0,
+        "engine_mode": "auto",
+        "model_name": "gemini-3.6-flash",
+        "timeout_seconds": 300,
+        "start_time": 1792682787.747026,
+        "cancellation_requested_at": 1792682788.157056,
+        "end_time": 1792682809.2270331,
+        "duration_seconds": 21.48,
+        "final_state": {
+          "target_module_path": "target.py",
+          "test_module_path": "test_target.py",
+          "target_source_code": "\"\"\"\nbanking.py - Target sample function with tricky boundary constraints.\n\"\"\"\n\ndef banking_transaction(balance: float, amount: float, fee: float) -> bool:\n    \"\"\"\n    Executes a banking transaction with fee verification.\n    Requires:\n      - balance > 0\n      - amount > 0\n      - balance > amount + fee\n    \"\"\"\n    if balance <= 0:\n        return False\n\n    if amount <= 0:\n        return False\n\n    total_deduction = amount + fee\n    if balance > total_deduction:\n        balance = balance - total_deduction\n        return True\n\n    return False",
+          "current_test_code": "from target import *\n\ndef test_banking_transaction_nominal():\n    assert banking_transaction(100.0, 50.0, 5.0) is True\n\ndef test_banking_transaction_insufficient_balance():\n    assert banking_transaction(100.0, 55.0, 5.0) is False\n\ndef test_banking_transaction_zero_balance():\n    assert banking_transaction(0.0, 50.0, 5.0) is False\n\ndef test_banking_transaction_negative_balance():\n    assert banking_transaction(-10.0, 50.0, 5.0) is False\n\ndef test_banking_transaction_zero_amount():\n    assert banking_transaction(100.0, 0.0, 5.0) is False\n\ndef test_banking_transaction_negative_amount():\n    assert banking_transaction(100.0, -50.0, 5.0) is False\n\ndef test_banking_transaction_zero_fee():\n    assert banking_transaction(100.0, 50.0, 0.0) is True\n\ndef test_banking_transaction_negative_fee():\n    assert banking_transaction(100.0, 50.0, -5.0) is False\n\ndef test_banking_transaction_boundary_balance():\n    assert banking_transaction(50.0, 25.0, 25.0) is False\n\ndef test_banking_transaction_boundary_amount():\n    assert banking_transaction(100.0, 50.0, 0.0) is True\n\ndef test_banking_transaction_boundary_fee():\n    assert banking_transaction(100.0, 50.0, 0.0) is True\n\ndef test_banking_transaction_large_amount_and_fee():\n    assert banking_transaction(1000.0, 900.0, 100.0) is False\n\ndef test_banking_transaction_large_balance():\n    assert banking_transaction(10000.0, 500.0, 50.0) is True",
+          "current_iteration": 0,
+          "max_iterations": 3,
+          "target_mutation_score": 85.0,
+          "baseline_line_coverage": 0.0,
+          "lines_covered": 0,
+          "num_statements": 0,
+          "baseline_tests_generated": 0,
+          "baseline_tests_executed": 0,
+          "baseline_passed": false,
+          "baseline_tests_passed": 0,
+          "baseline_tests_failed": 0,
+          "mutants_generated": 0,
+          "mutants_executed": 0,
+          "mutants_killed": 0,
+          "mutants_survived": 0,
+          "mutation_execution_errors": 0,
+          "final_mutation_score": 0.0,
+          "reflection_iterations_performed": 0,
+          "final_hardening_status": "CANCELLED",
+          "mutants": [],
+          "history": [],
+          "surviving_mutant_diffs": [],
+          "reflection_notes": [],
+          "terminated": true,
+          "termination_reason": "Hardening job cancelled by user request.",
+          "hardware_info": {
+            "os": "Darwin",
+            "architecture": "arm64",
+            "cpu_cores": 10,
+            "total_ram_gb": 16.0,
+            "is_apple_silicon": true,
+            "has_mlx": false,
+            "recommended_workers": 8
+          },
+          "active_provider": "Local Ollama (qwen2.5-coder:7b)"
+        },
+        "test_hardened_code": "import os\nimport sys\nsys.path.insert(0, os.path.abspath('.'))\nsys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))\n\nfrom samples.banking import *\n\ndef test_banking_transaction_nominal():\n    assert banking_transaction(100.0, 50.0, 5.0) is True\n\ndef test_banking_transaction_insufficient_balance():\n    assert banking_transaction(100.0, 55.0, 5.0) is False\n\ndef test_banking_transaction_zero_balance():\n    assert banking_transaction(0.0, 50.0, 5.0) is False\n\ndef test_banking_transaction_negative_balance():\n    assert banking_transaction(-10.0, 50.0, 5.0) is False\n\ndef test_banking_transaction_zero_amount():\n    assert banking_transaction(100.0, 0.0, 5.0) is False\n\ndef test_banking_transaction_negative_amount():\n    assert banking_transaction(100.0, -50.0, 5.0) is False\n\ndef test_banking_transaction_zero_fee():\n    assert banking_transaction(100.0, 50.0, 0.0) is True\n\ndef test_banking_transaction_negative_fee():\n    assert banking_transaction(100.0, 50.0, -5.0) is False\n\ndef test_banking_transaction_boundary_balance():\n    assert banking_transaction(50.0, 25.0, 25.0) is False\n\ndef test_banking_transaction_boundary_amount():\n    assert banking_transaction(100.0, 50.0, 0.0) is True\n\ndef test_banking_transaction_boundary_fee():\n    assert banking_transaction(100.0, 50.0, 0.0) is True\n\ndef test_banking_transaction_large_amount_and_fee():\n    assert banking_transaction(1000.0, 900.0, 100.0) is False\n\ndef test_banking_transaction_large_balance():\n    assert banking_transaction(10000.0, 500.0, 50.0) is True",
+        "active_provider": "Local Ollama (qwen2.5-coder:7b)"
+      }
+    },
+    "cancellation_idempotency": {
+      "job_id": "1ed6293d",
+      "response": {
+        "status": "already_terminal",
+        "job_id": "1ed6293d",
+        "current_status": "CANCELLED",
+        "message": "Job '1ed6293d' is already in terminal state 'CANCELLED'."
+      }
+    },
+    "timeout_verification": {
+      "job_id": "3772be5d",
+      "configured_timeout_s": 5,
+      "actual_duration_s": 19.28,
+      "to_lifecycle": [
+        {
+          "poll": 1,
+          "time": 0.51,
+          "status": "RUNNING"
+        },
+        {
+          "poll": 2,
+          "time": 1.02,
+          "status": "RUNNING"
+        },
+        {
+          "poll": 3,
+          "time": 1.52,
+          "status": "RUNNING"
+        },
+        {
+          "poll": 4,
+          "time": 2.03,
+          "status": "RUNNING"
+        },
+        {
+          "poll": 5,
+          "time": 2.54,
+          "status": "RUNNING"
+        },
+        {
+          "poll": 6,
+          "time": 3.05,
+          "status": "RUNNING"
+        },
+        {
+          "poll": 7,
+          "time": 3.55,
+          "status": "RUNNING"
+        },
+        {
+          "poll": 8,
+          "time": 4.05,
+          "status": "RUNNING"
+        },
+        {
+          "poll": 9,
+          "time": 4.56,
+          "status": "RUNNING"
+        },
+        {
+          "poll": 10,
+          "time": 5.07,
+          "status": "RUNNING"
+        },
+        {
+          "poll": 11,
+          "time": 5.58,
+          "status": "RUNNING"
+        },
+        {
+          "poll": 12,
+          "time": 6.09,
+          "status": "RUNNING"
+        },
+        {
+          "poll": 13,
+          "time": 6.59,
+          "status": "RUNNING"
+        },
+        {
+          "poll": 14,
+          "time": 7.1,
+          "status": "RUNNING"
+        },
+        {
+          "poll": 15,
+          "time": 7.61,
+          "status": "RUNNING"
+        },
+        {
+          "poll": 16,
+          "time": 8.12,
+          "status": "RUNNING"
+        },
+        {
+          "poll": 17,
+          "time": 8.63,
+          "status": "RUNNING"
+        },
+        {
+          "poll": 18,
+          "time": 9.13,
+          "status": "RUNNING"
+        },
+        {
+          "poll": 19,
+          "time": 9.64,
+          "status": "RUNNING"
+        },
+        {
+          "poll": 20,
+          "time": 10.15,
+          "status": "RUNNING"
+        },
+        {
+          "poll": 21,
+          "time": 10.65,
+          "status": "RUNNING"
+        },
+        {
+          "poll": 22,
+          "time": 11.16,
+          "status": "RUNNING"
+        },
+        {
+          "poll": 23,
+          "time": 11.67,
+          "status": "RUNNING"
+        },
+        {
+          "poll": 24,
+          "time": 12.18,
+          "status": "RUNNING"
+        },
+        {
+          "poll": 25,
+          "time": 12.68,
+          "status": "RUNNING"
+        },
+        {
+          "poll": 26,
+          "time": 13.19,
+          "status": "RUNNING"
+        },
+        {
+          "poll": 27,
+          "time": 13.7,
+          "status": "RUNNING"
+        },
+        {
+          "poll": 28,
+          "time": 14.21,
+          "status": "RUNNING"
+        },
+        {
+          "poll": 29,
+          "time": 14.71,
+          "status": "RUNNING"
+        },
+        {
+          "poll": 30,
+          "time": 15.22,
+          "status": "RUNNING"
+        },
+        {
+          "poll": 31,
+          "time": 15.73,
+          "status": "RUNNING"
+        },
+        {
+          "poll": 32,
+          "time": 16.24,
+          "status": "RUNNING"
+        },
+        {
+          "poll": 33,
+          "time": 16.74,
+          "status": "RUNNING"
+        },
+        {
+          "poll": 34,
+          "time": 17.25,
+          "status": "RUNNING"
+        },
+        {
+          "poll": 35,
+          "time": 17.75,
+          "status": "RUNNING"
+        },
+        {
+          "poll": 36,
+          "time": 18.26,
+          "status": "RUNNING"
+        },
+        {
+          "poll": 37,
+          "time": 18.77,
+          "status": "RUNNING"
+        },
+        {
+          "poll": 38,
+          "time": 19.28,
+          "status": "TIMED_OUT"
+        }
+      ],
+      "final_job_data": {
+        "job_id": "3772be5d",
+        "status": "TIMED_OUT",
+        "created_at": 1792682809.712012,
+        "target_file_path": "samples/banking.py",
+        "max_iterations": 5,
+        "target_mutation_score": 95.0,
+        "engine_mode": "auto",
+        "model_name": "gemini-3.6-flash",
+        "timeout_seconds": 5,
+        "start_time": 1792682809.7122922,
+        "end_time": 1792682828.7714298,
+        "duration_seconds": 19.06,
+        "final_state": {
+          "target_module_path": "target.py",
+          "test_module_path": "test_target.py",
+          "target_source_code": "\"\"\"\nbanking.py - Target sample function with tricky boundary constraints.\n\"\"\"\n\ndef banking_transaction(balance: float, amount: float, fee: float) -> bool:\n    \"\"\"\n    Executes a banking transaction with fee verification.\n    Requires:\n      - balance > 0\n      - amount > 0\n      - balance > amount + fee\n    \"\"\"\n    if balance <= 0:\n        return False\n\n    if amount <= 0:\n        return False\n\n    total_deduction = amount + fee\n    if balance > total_deduction:\n        balance = balance - total_deduction\n        return True\n\n    return False",
+          "current_test_code": "from target import *\n\ndef test_banking_transaction_nominal():\n    assert banking_transaction(100.0, 50.0, 5.0) is True\n\ndef test_banking_transaction_insufficient_balance():\n    assert banking_transaction(100.0, 55.0, 5.0) is False\n\ndef test_banking_transaction_zero_balance():\n    assert banking_transaction(0.0, 50.0, 5.0) is False\n\ndef test_banking_transaction_negative_balance():\n    assert banking_transaction(-10.0, 50.0, 5.0) is False\n\ndef test_banking_transaction_zero_amount():\n    assert banking_transaction(100.0, 0.0, 5.0) is False\n\ndef test_banking_transaction_negative_amount():\n    assert banking_transaction(100.0, -50.0, 5.0) is False\n\ndef test_banking_transaction_zero_fee():\n    assert banking_transaction(100.0, 50.0, 0.0) is True\n\ndef test_banking_transaction_negative_fee():\n    assert banking_transaction(100.0, 50.0, -5.0) is False\n\ndef test_banking_transaction_boundary_balance():\n    assert banking_transaction(50.0, 25.0, 25.0) is False\n\ndef test_banking_transaction_boundary_amount():\n    assert banking_transaction(100.0, 50.0, 50.0) is False\n\ndef test_banking_transaction_boundary_fee():\n    assert banking_transaction(100.0, 50.0, 50.0) is False\n\ndef test_banking_transaction_large_amount():\n    assert banking_transaction(1000.0, 500.0, 50.0) is True\n\ndef test_banking_transaction_large_fee():\n    assert banking_transaction(1000.0, 500.0, 500.0) is False\n\ndef test_banking_transaction_small_amount():\n    assert banking_transaction(100.0, 1.0, 1.0) is True\n\ndef test_banking_transaction_small_fee():\n    assert banking_transaction(100.0, 1.0, 0.1) is True",
+          "current_iteration": 0,
+          "max_iterations": 5,
+          "target_mutation_score": 95.0,
+          "baseline_line_coverage": 0.0,
+          "lines_covered": 0,
+          "num_statements": 0,
+          "baseline_tests_generated": 0,
+          "baseline_tests_executed": 0,
+          "baseline_passed": false,
+          "baseline_tests_passed": 0,
+          "baseline_tests_failed": 0,
+          "mutants_generated": 0,
+          "mutants_executed": 0,
+          "mutants_killed": 0,
+          "mutants_survived": 0,
+          "mutation_execution_errors": 0,
+          "final_mutation_score": 0.0,
+          "reflection_iterations_performed": 0,
+          "final_hardening_status": "TIMED_OUT",
+          "mutants": [],
+          "history": [],
+          "surviving_mutant_diffs": [],
+          "reflection_notes": [],
+          "terminated": true,
+          "termination_reason": "Hardening job exceeded timeout bound of 5s (elapsed: 18.98s).",
+          "hardware_info": {
+            "os": "Darwin",
+            "architecture": "arm64",
+            "cpu_cores": 10,
+            "total_ram_gb": 16.0,
+            "is_apple_silicon": true,
+            "has_mlx": false,
+            "recommended_workers": 8
+          },
+          "active_provider": "Local Ollama (qwen2.5-coder:7b)"
+        },
+        "test_hardened_code": "import os\nimport sys\nsys.path.insert(0, os.path.abspath('.'))\nsys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))\n\nfrom samples.banking import *\n\ndef test_banking_transaction_nominal():\n    assert banking_transaction(100.0, 50.0, 5.0) is True\n\ndef test_banking_transaction_insufficient_balance():\n    assert banking_transaction(100.0, 55.0, 5.0) is False\n\ndef test_banking_transaction_zero_balance():\n    assert banking_transaction(0.0, 50.0, 5.0) is False\n\ndef test_banking_transaction_negative_balance():\n    assert banking_transaction(-10.0, 50.0, 5.0) is False\n\ndef test_banking_transaction_zero_amount():\n    assert banking_transaction(100.0, 0.0, 5.0) is False\n\ndef test_banking_transaction_negative_amount():\n    assert banking_transaction(100.0, -50.0, 5.0) is False\n\ndef test_banking_transaction_zero_fee():\n    assert banking_transaction(100.0, 50.0, 0.0) is True\n\ndef test_banking_transaction_negative_fee():\n    assert banking_transaction(100.0, 50.0, -5.0) is False\n\ndef test_banking_transaction_boundary_balance():\n    assert banking_transaction(50.0, 25.0, 25.0) is False\n\ndef test_banking_transaction_boundary_amount():\n    assert banking_transaction(100.0, 50.0, 50.0) is False\n\ndef test_banking_transaction_boundary_fee():\n    assert banking_transaction(100.0, 50.0, 50.0) is False\n\ndef test_banking_transaction_large_amount():\n    assert banking_transaction(1000.0, 500.0, 50.0) is True\n\ndef test_banking_transaction_large_fee():\n    assert banking_transaction(1000.0, 500.0, 500.0) is False\n\ndef test_banking_transaction_small_amount():\n    assert banking_transaction(100.0, 1.0, 1.0) is True\n\ndef test_banking_transaction_small_fee():\n    assert banking_transaction(100.0, 1.0, 0.1) is True",
+        "active_provider": "Local Ollama (qwen2.5-coder:7b)"
+      }
+    },
+    "post_cancellation_job": {
+      "job_id": "bf9947c1",
+      "status": "RUNNING"
+    }
+  },
+  "verdict": "PASS"
+}

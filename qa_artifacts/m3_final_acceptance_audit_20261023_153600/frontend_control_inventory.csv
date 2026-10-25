@@ -1,0 +1,65 @@
+Name,Selector,Expected,Action,Actual,Endpoint,Errors,Status,Evidence
+Header Brand,.brand-title,TestForge,Inspect text,TestForge,GET /,None,PASS,DOM
+Hardware Pill,#label-hardware,Apple Silicon / arm64 architecture,Inspect text,"Darwin arm64 (10 cores, 16GB)",GET /api/status,None,PASS,DOM
+Settings Button,#btn-toggle-settings,Opens Settings Modal,Click,Modal visible=True,None,None,PASS,02_settings_modal.png
+Iterations Slider,#slider-iterations,Updates badge to 4,Set to 4,Badge shows 4,None,None,PASS,DOM
+Mutation Score Slider,#slider-mutation-score,Updates badge to 90%,Set to 90,Badge shows 90%,None,None,PASS,DOM
+Engine Mode Select,#engine-mode-select,Sets mode to local,Change value,Value=local,None,None,PASS,DOM
+Save Settings Button,#btn-save-settings,Saves and closes modal,Click,Modal closed=True,POST /api/config/keys,None,PASS,DOM
+Close Settings (X),#btn-close-settings,Closes settings modal,Click X,Modal closed=True,None,None,PASS,DOM
+Cancel Settings Button,#btn-cancel-settings,Cancels settings modal,Click Cancel,Modal closed=True,None,None,PASS,DOM
+A2A Card Button,#btn-a2a-card,Opens A2A discovery modal with content,Click,"Visible=True, Agent='testforge-agent-system'",GET /.well-known/agent-card.json,None,PASS,03_a2a_card_modal.png
+View Raw JSON Link,#btn-view-raw-a2a,Points to /.well-known/agent-card.json,Inspect href,href='/.well-known/agent-card.json',GET /.well-known/agent-card.json,None,PASS,DOM
+Copy A2A JSON Button,#btn-copy-a2a-json,Copies JSON and shows feedback,Click,"Text: '
+            📋 Copy JSON
+          ' -> '
+            📋 Copy JSON
+          '",None,None,PASS,DOM
+Close A2A Footer,#btn-close-a2a-footer,Closes A2A modal,Click Close,Modal closed=True,None,None,PASS,DOM
+A2A Escape Key Handler,document.keydown(Escape),Closes A2A modal on Escape,Press Escape,Modal closed=True,None,None,PASS,DOM
+Sample Select Dropdown,#sample-file-select,Selects banking.py,Change value,Selected banking.py,None,None,PASS,DOM
+Load Sample Button,#btn-load-sample,Loads target banking.py,Click,"Target='samples.banking', Lines='📄 24 Lines'",POST /api/ingest/sample,None,PASS,04_mode_a_banking_loaded.png
+Copy Mode A Code Button,#btn-copy-mode-a-code,Copies source code,Click,Button text='📋 Copy',None,None,PASS,DOM
+Upload Radio Toggle,#radio-source-upload,Shows upload dropzone,Click radio,Dropzone visible=True,None,None,PASS,DOM
+Git Diff Toggle,#toggle-git-diff,Enables diff analysis,Click toggle,"Alert: '
+          Clean Working Tree: No uncomm'",POST /api/analysis/git-diff,None,PASS,DOM
+Tab Mode B Button,#nav-mode-b,Switches to Mode B pane,Click,Active=True,None,None,PASS,05_tab_mode_b.png
+Mode B Prompt Chip,.prompt-chip,Populates prompt textarea,Click chip 0,Value: 'Implement a stock trading limit ord...',None,None,PASS,DOM
+Tab Mode C Button,#nav-mode-c,Switches to Mode C pane,Click,Active=True,None,None,PASS,06_tab_mode_c.png
+Mode C URL Chip,#tab-mode-c .prompt-chip,Fills GitHub URL input,Click chip 0,URL='https://github.com/psf/requests/blob/main/src/requests/models.py',None,None,PASS,DOM
+Tab Blast Radius Button,#nav-blast,Switches to Blast Radius pane,Click,Active=True,None,None,PASS,07_tab_blast_radius.png
+Blast Function Select,#blast-func-select,Contains functions to analyze,Inspect options,Options count=1,None,None,PASS,DOM
+Blast Risk KPI,#blast-risk-badge,Shows risk category,Inspect text,"Risk=🟢 LOW, Impact=0%",POST /api/analysis/blast-radius,None,PASS,DOM
+Tab Hardening Button,#nav-hardening,Switches to Hardening Lab,Click,Active=True,None,None,PASS,08_tab_hardening_lab.png
+Run Hardening Button,#btn-run-hardening,Starts hardening job & shows progress,Click,Progress visible=True,POST /api/harden/start,None,PASS,DOM
+Hardening Completion,#kpi-final-status,Completes hardening job,Poll status,"Status=HARDENED, Score=0.0%, Killed=0/19",GET /api/harden/status/{job_id},None,PASS,09_hardening_completed.png
+Mutant Filter Counters,.filter-group,Displays mutant counts,Inspect counters,"All=19, Kill=12, Surv=7",None,None,PASS,DOM
+Filter KILLED Button,.filter-btn[data-filter='KILLED'],Filters mutant table to KILLED,Click,Visible rows=12,None,None,PASS,DOM
+Mutant Row Click,.mutant-row,Renders unified AST diff,Click row 0,"Title='AST Diff: MUT_COND_INV_001 (COND_INV) at line 9', Diff len=939",None,None,PASS,10_mutant_diff_inspected.png
+Copy Hardened Suite Button,#btn-copy-hardened-suite,Copies test suite,Click,Text: '📋 Copy Suite',None,None,PASS,DOM
+Download Hardened Suite Button,#btn-download-hardened-suite,Download suite control,Inspect element,Exists=True,None,None,PASS,DOM
+Tab Wiretap Button,#nav-wiretap,Switches to Wiretap pane,Click,Active=True,None,None,PASS,11_tab_wiretap.png
+Wiretap WS Status Badge,#wiretap-ws-status-badge,Shows Streaming (Live),Inspect badge,"Text='⚡ Live Streaming', Class='badge badge-green'",/ws/events,None,PASS,DOM
+Refresh Wiretap Button,#btn-refresh-wiretap,Refreshes wiretap timeline,Click,Timeline cards count=895,GET /api/wiretap,None,PASS,11_tab_wiretap.png
+WebSocket Fallback Polling,#wiretap-ws-status-badge,Degrades to Polling (Fallback),Disconnect WS,Badge shows '🔄 Polling Fallback',GET /api/wiretap (polling),None,PASS,12_wiretap_fallback.png
+WebSocket Reconnection,#wiretap-ws-status-badge,Re-establishes Streaming (Live),Reconnect WS,Badge shows '⚡ Live Streaming',/ws/events,None,PASS,DOM
+Tab Telemetry Button,#nav-telemetry,Switches to Telemetry pane,Click,Active=True,None,None,PASS,13_tab_telemetry.png
+Refresh Telemetry Button,#btn-refresh-telemetry,Refreshes trace table,Click,"Events=21218, Tokens=10,395,445, Rows=20",GET /api/telemetry,None,PASS,13_tab_telemetry.png
+Tab Benchmark Button,#nav-benchmark,Switches to Benchmark pane,Click,Active=True,None,None,PASS,14_tab_benchmark.png
+Refresh Benchmark Button,#btn-refresh-benchmark,Loads historical benchmark results,Click,Table rows count=1,GET /api/benchmark/results,None,PASS,14_tab_benchmark.png
+Raw Markdown Toggle,#btn-bench-md-raw,Shows raw markdown container,Click,Visible=True,None,None,PASS,DOM
+Rendered Markdown Toggle,#btn-bench-md-rendered,Shows formatted rendered markdown,Click,Visible=True,None,None,PASS,DOM
+Tab Checkpoints Button,#nav-checkpoints,Switches to Checkpoints pane,Click,Active=True,None,None,PASS,15_tab_checkpoints.png
+Refresh Checkpoints Button,#btn-refresh-checkpoints,Loads SQLite snapshots,Click,"Badge=100, Cards=100",GET /api/checkpoints,None,PASS,15_tab_checkpoints.png
+Inspect Checkpoint Button,.btn-cp-inspect,Renders structured snapshot inspector,Click on card 0,Detail visible=True,GET /api/checkpoints/{id},None,PASS,16_checkpoint_inspected.png
+Snapshot JSON Subtab,#btn-subtab-json,Renders formatted JSON payload,Click,"Visible=True, JSON chars=81922",None,None,PASS,DOM
+Copy Checkpoint JSON Button,#btn-copy-checkpoint-json,Copies JSON to clipboard,Click,Text: '📋 Copy JSON',None,None,PASS,DOM
+Set Diff Base / Target,.btn-cp-set-base / .btn-cp-set-target,Selects checkpoints A and B,Click cards,"Base='chk_c719585c76e6', Target='chk_3410508f8399', CompareBtnEnabled=True",None,None,PASS,DOM
+Compare Checkpoints Button,#btn-trigger-diff-modal,Calculates & displays semantic diff,Click,"Diff pane active=True, content rendered=True",GET /api/checkpoints/diff,None,PASS,17_checkpoints_diff_rendered.png
+Swap Diff Selection,#btn-swap-diff-selection,Swaps Base and Target,Click,"Base='chk_3410508f8399', Target='chk_c719585c76e6'",None,None,PASS,DOM
+Clear Diff Selection,#btn-clear-diff-selection,Resets diff selection,Click,Base='None selected',None,None,PASS,DOM
+Restore Checkpoint Button,.btn-cp-restore,Opens confirmation dialog,Click restore on card,"Dialog visible=True, ID='chk_c719585c76e6'",None,None,PASS,18_restore_modal.png
+Cancel Restore Button,#btn-cancel-restore,Closes restore modal safely,Click Cancel,Modal closed=True,None,None,PASS,DOM
+Viewport Laptop 1280x800,window(1280x800),No horizontal overflow,Resize,Horizontal overflow=False,None,None,PASS,19_viewport_laptop_1280.png
+Viewport Tablet 768x1024,window(768x1024),Responsive stacking,Resize,Horizontal overflow=False,None,None,PASS,20_viewport_tablet_768.png
+Console Error Audit,console.error,0 JavaScript console errors,Audit log stream,0 errors detected,None,0 errors,PASS,Console log

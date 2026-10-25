@@ -1,0 +1,575 @@
+"""
+security.py - Security Guardrails for Prompt Inspection and Generated Code AST Policy Enforcement.
+
+Features:
+  1. Input Inspection:
+     - Identifies prompt-injection instructions, system prompt overrides, credential exfiltration,
+       and security policy bypass attempts.
+     - Distinguishes malicious injection instructions from benign code, test names, and variables.
+     - Redacts sensitive credentials/tokens in error messages and logs.
+     - Configurable risk thresholds (allow, warn, block).
+  2. AST Code Inspection:
+     - Static AST-based policy analysis of Python code before sandboxed execution.
+     - Identifies dangerous primitives: eval, exec, os.system, subprocess execution,
+       dynamic import bypasses (__import__, importlib), and forbidden network sockets.
+     - Distinguishes detection from enforcement with structured findings (rule ID, severity, line/col, message).
+     - Does not false-positive on harmless method names like `model.eval()` or variables named `system`.
+"""
+
+from __future__ import annotations
+import ast
+import re
+from enum import Enum
+from typing import List, Dict, Any, Optional, Union, Set
+from pydantic import BaseModel, Field
+
+
+class SecuritySeverity(str, Enum):
+    INFO = "INFO"
+    WARN = "WARN"
+    BLOCK = "BLOCK"
+
+
+class SecurityRiskLevel(str, Enum):
+    SAFE = "SAFE"
+    LOW = "LOW"
+    MEDIUM = "MEDIUM"
+    HIGH = "HIGH"
+    CRITICAL = "CRITICAL"
+
+
+class RuleFinding(BaseModel):
+    rule_id: str = Field(..., description="Stable rule identifier, e.g. 'SEC_AST_EVAL_EXEC'")
+    severity: SecuritySeverity = Field(..., description="Severity level: INFO, WARN, or BLOCK")
+    message: str = Field(..., description="Human-readable explanation of the finding")
+    line_number: Optional[int] = Field(None, description="Source line number if available")
+    column_number: Optional[int] = Field(None, description="Source column offset if available")
+    node_type: Optional[str] = Field(None, description="AST node type or pattern identifier")
+
+
+class InputSecurityResult(BaseModel):
+    allowed: bool
+    risk_level: SecurityRiskLevel
+    findings: List[RuleFinding] = Field(default_factory=list)
+    explanation: str = ""
+    sanitized_text: Optional[str] = None
+
+
+class ASTSecurityResult(BaseModel):
+    allowed: bool
+    findings: List[RuleFinding] = Field(default_factory=list)
+    violations: List[RuleFinding] = Field(default_factory=list)
+    syntax_error: Optional[str] = None
+
+
+# Sensitive credential patterns for redaction
+_CREDENTIAL_PATTERNS = [
+    re.compile(r"(?i)(api[_-]?key\s*[:=]\s*['\"]?[a-zA-Z0-9_\-]{8,}['\"]?)"),
+    re.compile(r"(?i)(bearer\s+[a-zA-Z0-9_\-\.]{12,})"),
+    re.compile(r"(?i)(token\s*[:=]\s*['\"]?[a-zA-Z0-9_\-]{8,}['\"]?)"),
+    re.compile(r"(?i)(password\s*[:=]\s*['\"][^'\"]{4,}['\"])"),
+    re.compile(r"(?i)(secret\s*[:=]\s*['\"]?[a-zA-Z0-9_\-]{8,}['\"]?)"),
+    re.compile(r"\b(sk-[a-zA-Z0-9_\-]{16,})\b"),
+    re.compile(r"\b(ghp_[a-zA-Z0-9]{30,})\b"),
+    re.compile(r"\b(AIza[0-9A-Za-z-_]{35})\b"),
+]
+
+
+def redact_sensitive_data(text: Any) -> str:
+    """Masks raw API keys, tokens, and passwords in strings to prevent log leakage."""
+    if text is None:
+        return ""
+    if not isinstance(text, str):
+        text = str(text)
+    redacted = text
+    for pattern in _CREDENTIAL_PATTERNS:
+        redacted = pattern.sub(r"[REDACTED_SECRET]", redacted)
+    return redacted
+
+
+# Prompt Injection and Instruction Override Patterns
+_PROMPT_INJECTION_PATTERNS = [
+    (
+        "INJ_SYSTEM_OVERRIDE",
+        re.compile(
+            r"(?i)\b(?:ignore|disregard|forget|override|bypass)\s+(?:all\s+|the\s+)*(?:(?:previous|prior|above|system|developer)\s+)*(?:instructions|prompts|rules|constraints|directives)\b"
+        ),
+        SecurityRiskLevel.CRITICAL,
+        "Attempt to override or ignore system/developer instructions.",
+    ),
+    (
+        "INJ_NEW_ROLE_PROMPT",
+        re.compile(
+            r"(?i)\b(?:you\s+are\s+now|act\s+as|pretend\s+to\s+be)\s+(?:an?\s+)?(?:unrestricted|dan|jailbreak|root|system|admin)\b"
+        ),
+        SecurityRiskLevel.HIGH,
+        "Attempt to assign an unrestricted or unauthorized persona.",
+    ),
+    (
+        "INJ_SECRET_LEAK",
+        re.compile(
+            r"(?i)\b(?:reveal|output|print|show|leak|expose|dump)\s+(?:the\s+)?(?:system\s+prompt|hidden\s+prompt|api\s*key|credentials|secret|passwords?|env\s*variables?)\b"
+        ),
+        SecurityRiskLevel.CRITICAL,
+        "Attempt to exfiltrate system prompt, API keys, or credentials.",
+    ),
+    (
+        "INJ_SECURITY_DISABLE",
+        re.compile(
+            r"(?i)\b(?:disable|turn\s+off|bypass|circumvent|ignore)\s+(?:the\s+)?(?:guardrails|security\s*checks?|safety\s*filters?|ast\s*validation)\b"
+        ),
+        SecurityRiskLevel.HIGH,
+        "Attempt to disable safety guardrails or security checks.",
+    ),
+    (
+        "INJ_SYSTEM_DELIMITER_ESCAPE",
+        re.compile(
+            r"(?i)(?:<\s*/?\s*system\s*>|\[\s*system\s*\]|===\s*system\s*override\s*===)"
+        ),
+        SecurityRiskLevel.HIGH,
+        "Attempt to forge or escape system instruction boundaries.",
+    ),
+    (
+        "INJ_TOOL_BYPASS",
+        re.compile(
+            r"(?i)\b(?:bypass|override|ignore|elevate)\s+(?:tool\s+)?(?:permissions?|sandbox\s+restrictions?|tool\s+whitelists?)\b"
+        ),
+        SecurityRiskLevel.HIGH,
+        "Attempt to bypass tool permissions or sandbox restrictions.",
+    ),
+    (
+        "INJ_EMBEDDED_INSTRUCTION",
+        re.compile(
+            r"(?i)(?:\binstruction:\s*(?:ignore|override|bypass|reveal|disregard)\b|\[\s*(?:override|bypass)\s*\])"
+        ),
+        SecurityRiskLevel.HIGH,
+        "Attempt to embed unauthorized prompt override instructions in source or comments.",
+    ),
+    (
+        "INJ_TOXIC_ABUSIVE",
+        re.compile(
+            r"(?i)\b(?:kill\s+yourself|threaten\s+(?:to\s+kill|violence)|harass(?:ment)?|assault\s+someone|violent\s+attack|bomb\s+threat|death\s+threat)\b|"
+            r"\b(?:you\s+(?:piece\s+of\s+shit|idiot|moron|bastard|scum|fucker)|fuck\s+you|stfu|go\s+die)\b"
+        ),
+        SecurityRiskLevel.CRITICAL,
+        "Detection of toxic, abusive, threatening, or harassing content.",
+    ),
+]
+
+
+class SecurityPolicy:
+    """
+    Configurable policy controlling which security findings cause execution blocking.
+    """
+    def __init__(
+        self,
+        block_eval_exec: bool = True,
+        block_subprocesses: bool = True,
+        block_os_commands: bool = True,
+        block_dynamic_imports: bool = True,
+        block_sockets: bool = True,
+        block_dangerous_file_ops: bool = True,
+        allowed_modules: Optional[Set[str]] = None,
+        max_prompt_risk: SecurityRiskLevel = SecurityRiskLevel.MEDIUM,
+    ):
+        self.block_eval_exec = block_eval_exec
+        self.block_subprocesses = block_subprocesses
+        self.block_os_commands = block_os_commands
+        self.block_dynamic_imports = block_dynamic_imports
+        self.block_sockets = block_sockets
+        self.block_dangerous_file_ops = block_dangerous_file_ops
+        self.allowed_modules = allowed_modules or {
+            "math", "random", "json", "re", "datetime", "typing", "collections",
+            "itertools", "functools", "copy", "string", "hashlib", "dataclasses",
+            "enum", "decimal", "fractions", "pathlib", "os.path", "pytest", "target"
+        }
+        self.max_prompt_risk = max_prompt_risk
+
+    @classmethod
+    def default_strict(cls) -> "SecurityPolicy":
+        """Default strict policy suitable for hardening sandboxed test executions."""
+        return cls()
+
+    @classmethod
+    def permissive(cls) -> "SecurityPolicy":
+        """Permissive policy for warning-only or relaxed development environments."""
+        return cls(
+            block_eval_exec=False,
+            block_subprocesses=False,
+            block_os_commands=False,
+            block_dynamic_imports=False,
+            block_sockets=False,
+            block_dangerous_file_ops=False,
+            max_prompt_risk=SecurityRiskLevel.CRITICAL,
+        )
+
+
+class SecurityGuardrail:
+    """
+    Core security inspection engine providing:
+      1. Deterministic input prompt inspection for injection / jailbreak attempts.
+      2. AST-based policy analysis for generated or ingested Python code.
+    """
+    def __init__(self, policy: Optional[SecurityPolicy] = None):
+        self.policy = policy or SecurityPolicy.default_strict()
+
+    def inspect_prompt(self, prompt: str) -> InputSecurityResult:
+        """
+        Inspects an input string (e.g. natural language specification or prompt)
+        for injection attacks, secret exfiltration, and instruction overrides.
+        Deterministic check distinguishing malicious patterns from benign code words.
+        """
+        return self._inspect_prompt_impl(prompt)
+
+    inspect_input = inspect_prompt
+
+    def _inspect_prompt_impl(self, prompt: str) -> InputSecurityResult:
+        if not prompt or not prompt.strip():
+            return InputSecurityResult(
+                allowed=True,
+                risk_level=SecurityRiskLevel.SAFE,
+                explanation="Input is empty.",
+            )
+
+        findings: List[RuleFinding] = []
+        highest_risk = SecurityRiskLevel.SAFE
+
+        risk_order = {
+            SecurityRiskLevel.SAFE: 0,
+            SecurityRiskLevel.LOW: 1,
+            SecurityRiskLevel.MEDIUM: 2,
+            SecurityRiskLevel.HIGH: 3,
+            SecurityRiskLevel.CRITICAL: 4,
+        }
+
+        # Check prompt against injection patterns
+        for rule_id, pattern, risk, explanation in _PROMPT_INJECTION_PATTERNS:
+            match = pattern.search(prompt)
+            if match:
+                findings.append(
+                    RuleFinding(
+                        rule_id=rule_id,
+                        severity=SecuritySeverity.BLOCK if risk in (SecurityRiskLevel.HIGH, SecurityRiskLevel.CRITICAL) else SecuritySeverity.WARN,
+                        message=explanation,
+                        node_type="PROMPT_PATTERN",
+                    )
+                )
+                if risk_order[risk] > risk_order[highest_risk]:
+                    highest_risk = risk
+
+        # Evaluate against configured threshold
+        is_blocked = risk_order[highest_risk] > risk_order[self.policy.max_prompt_risk]
+        sanitized = redact_sensitive_data(prompt)
+
+        explanation = (
+            f"Blocked due to risk level '{highest_risk.value}' exceeding policy '{self.policy.max_prompt_risk.value}'."
+            if is_blocked
+            else f"Input allowed with risk level '{highest_risk.value}'."
+        )
+
+        return InputSecurityResult(
+            allowed=not is_blocked,
+            risk_level=highest_risk,
+            findings=findings,
+            explanation=explanation,
+            sanitized_text=sanitized,
+        )
+
+    def inspect_code_ast(
+        self,
+        code_or_tree: Union[str, ast.AST],
+        enforce_policy: bool = True
+    ) -> ASTSecurityResult:
+        """
+        Performs static AST inspection of Python code to detect unsafe execution
+        and escape primitives before sandbox execution.
+        """
+        if isinstance(code_or_tree, str):
+            try:
+                tree = ast.parse(code_or_tree)
+            except SyntaxError as e:
+                return ASTSecurityResult(
+                    allowed=False,
+                    findings=[],
+                    violations=[],
+                    syntax_error=f"SyntaxError on line {e.lineno}: {e.msg}",
+                )
+            except Exception as e:
+                return ASTSecurityResult(
+                    allowed=False,
+                    findings=[],
+                    violations=[],
+                    syntax_error=f"AST parse error: {str(e)}",
+                )
+        else:
+            tree = code_or_tree
+
+        visitor = _ASTSecurityVisitor(policy=self.policy)
+        visitor.visit(tree)
+
+        findings = visitor.findings
+        violations = [f for f in findings if f.severity == SecuritySeverity.BLOCK]
+
+        is_allowed = len(violations) == 0 if enforce_policy else True
+
+        return ASTSecurityResult(
+            allowed=is_allowed,
+            findings=findings,
+            violations=violations,
+        )
+
+
+class _ASTSecurityVisitor(ast.NodeVisitor):
+    """
+    Internal AST visitor that traverses the syntax tree and collects structured findings.
+    Distinguishes dangerous function calls from legitimate method invocations and data imports.
+    Tracks module aliasing, getattr invocations, and wildcard imports to prevent syntax bypasses.
+    """
+    def __init__(self, policy: SecurityPolicy):
+        self.policy = policy
+        self.findings: List[RuleFinding] = []
+        self._module_aliases: Dict[str, str] = {}
+        self._os_dangerous_funcs: Set[str] = set()
+        self._subprocess_funcs: Set[str] = set()
+        self._call_func_node_ids: Set[int] = set()
+
+    def _resolve_canonical_obj(self, obj: Optional[str]) -> Optional[str]:
+        if not obj:
+            return None
+        parts = obj.split(".")
+        resolved_first = self._module_aliases.get(parts[0], parts[0])
+        if len(parts) > 1:
+            return f"{resolved_first}.{'.'.join(parts[1:])}"
+        return resolved_first
+
+    def _resolve_call_parts(self, func_node: ast.AST) -> Tuple[Optional[str], Optional[str]]:
+        """
+        Returns (canonical_module_or_object, function_or_method_name).
+        Resolves imported aliases (e.g. `import os as my_os` -> `my_os.system` -> `("os", "system")`).
+        """
+        if isinstance(func_node, ast.Name):
+            return (None, func_node.id)
+        elif isinstance(func_node, ast.Attribute):
+            raw_obj = None
+            if isinstance(func_node.value, ast.Name):
+                raw_obj = func_node.value.id
+            elif isinstance(func_node.value, ast.Attribute):
+                if isinstance(func_node.value.value, ast.Name):
+                    raw_obj = f"{func_node.value.value.id}.{func_node.value.attr}"
+            resolved_obj = self._resolve_canonical_obj(raw_obj)
+            return (resolved_obj, func_node.attr)
+        return (None, None)
+
+    def visit_Call(self, node: ast.Call):
+        self._call_func_node_ids.add(id(node.func))
+        obj, func = self._resolve_call_parts(node.func)
+
+        # 0. Check getattr(..., "system"/"eval"/"exec") reflection bypasses
+        if (obj is None or obj in ("builtins", "__builtins__")) and func == "getattr":
+            if len(node.args) >= 2 and isinstance(node.args[1], ast.Constant) and isinstance(node.args[1].value, str):
+                target_attr = node.args[1].value
+                if target_attr in ("eval", "exec"):
+                    severity = SecuritySeverity.BLOCK if self.policy.block_eval_exec else SecuritySeverity.WARN
+                    self.findings.append(
+                        RuleFinding(
+                            rule_id="SEC_AST_EVAL_EXEC",
+                            severity=severity,
+                            message=f"Reflective access to dynamic code execution '{target_attr}' via getattr() is prohibited.",
+                            line_number=getattr(node, "lineno", None),
+                            column_number=getattr(node, "col_offset", None),
+                            node_type="Call",
+                        )
+                    )
+                elif target_attr in ("system", "popen", "spawnl", "spawnv"):
+                    severity = SecuritySeverity.BLOCK if self.policy.block_os_commands else SecuritySeverity.WARN
+                    self.findings.append(
+                        RuleFinding(
+                            rule_id="SEC_AST_OS_COMMAND",
+                            severity=severity,
+                            message=f"Reflective access to OS command execution '{target_attr}' via getattr() is prohibited.",
+                            line_number=getattr(node, "lineno", None),
+                            column_number=getattr(node, "col_offset", None),
+                            node_type="Call",
+                        )
+                    )
+                elif target_attr in ("Popen", "run", "call", "check_call", "check_output"):
+                    severity = SecuritySeverity.BLOCK if self.policy.block_subprocesses else SecuritySeverity.WARN
+                    self.findings.append(
+                        RuleFinding(
+                            rule_id="SEC_AST_SUBPROCESS",
+                            severity=severity,
+                            message=f"Reflective access to subprocess execution '{target_attr}' via getattr() is prohibited.",
+                            line_number=getattr(node, "lineno", None),
+                            column_number=getattr(node, "col_offset", None),
+                            node_type="Call",
+                        )
+                    )
+
+        # 1. Builtin eval / exec
+        # Target ONLY direct calls eval() or exec(), or builtins.eval() / builtins.exec() / __builtins__.eval()
+        # NOT obj.eval() (e.g. model.eval())
+        if (obj is None or obj in ("builtins", "__builtins__")) and func in ("eval", "exec"):
+            severity = SecuritySeverity.BLOCK if self.policy.block_eval_exec else SecuritySeverity.WARN
+            self.findings.append(
+                RuleFinding(
+                    rule_id="SEC_AST_EVAL_EXEC",
+                    severity=severity,
+                    message=f"Direct invocation of dynamic code execution '{func}()' is prohibited.",
+                    line_number=getattr(node, "lineno", None),
+                    column_number=getattr(node, "col_offset", None),
+                    node_type="Call",
+                )
+            )
+
+        # 2. Dangerous OS system / spawn commands (including aliased imports or posix)
+        elif (obj in ("os", "posix") and func in ("system", "popen", "popen2", "popen3", "popen4", "spawnl", "spawnle", "spawnlp", "spawnlpe", "spawnv", "spawnve", "spawnvp", "spawnvpe")) or (obj is None and func in self._os_dangerous_funcs):
+            severity = SecuritySeverity.BLOCK if self.policy.block_os_commands else SecuritySeverity.WARN
+            call_repr = f"{obj or 'os'}.{func}" if obj else func
+            self.findings.append(
+                RuleFinding(
+                    rule_id="SEC_AST_OS_COMMAND",
+                    severity=severity,
+                    message=f"Execution of shell command via '{call_repr}()' is prohibited.",
+                    line_number=getattr(node, "lineno", None),
+                    column_number=getattr(node, "col_offset", None),
+                    node_type="Call",
+                )
+            )
+
+        # 3. Subprocess execution
+        elif (obj == "subprocess" and func in ("Popen", "run", "call", "check_call", "check_output")) or (obj is None and func in self._subprocess_funcs):
+            severity = SecuritySeverity.BLOCK if self.policy.block_subprocesses else SecuritySeverity.WARN
+            call_repr = f"subprocess.{func}" if obj == "subprocess" else func
+            self.findings.append(
+                RuleFinding(
+                    rule_id="SEC_AST_SUBPROCESS",
+                    severity=severity,
+                    message=f"Spawning child subprocess via '{call_repr}()' is prohibited inside test sandbox.",
+                    line_number=getattr(node, "lineno", None),
+                    column_number=getattr(node, "col_offset", None),
+                    node_type="Call",
+                )
+            )
+
+        # 4. Dynamic import execution bypasses
+        elif (obj is None and func == "__import__") or (obj == "importlib" and func in ("import_module", "invalidate_caches")):
+            severity = SecuritySeverity.BLOCK if self.policy.block_dynamic_imports else SecuritySeverity.WARN
+            call_repr = f"importlib.{func}" if obj == "importlib" else func
+            self.findings.append(
+                RuleFinding(
+                    rule_id="SEC_AST_DYNAMIC_IMPORT",
+                    severity=severity,
+                    message=f"Dynamic module import via '{call_repr}()' is prohibited.",
+                    line_number=getattr(node, "lineno", None),
+                    column_number=getattr(node, "col_offset", None),
+                    node_type="Call",
+                )
+            )
+
+        # 5. Raw network socket creation and live URL fetching
+        elif (obj == "socket" and func in ("socket", "create_connection")) or (obj in ("urllib.request", "request") and func in ("urlopen", "urlretrieve")):
+            severity = SecuritySeverity.BLOCK if self.policy.block_sockets else SecuritySeverity.WARN
+            call_repr = f"{obj}.{func}" if obj else func
+            self.findings.append(
+                RuleFinding(
+                    rule_id="SEC_AST_NETWORK_SOCKET",
+                    severity=severity,
+                    message=f"Direct network socket connection via '{call_repr}()' is prohibited in test sandbox.",
+                    line_number=getattr(node, "lineno", None),
+                    column_number=getattr(node, "col_offset", None),
+                    node_type="Call",
+                )
+            )
+
+        # 6. Destructive filesystem operations
+        elif (obj == "shutil" and func in ("rmtree", "move")) or (obj in ("os", "posix") and func in ("remove", "unlink", "rmdir")):
+            severity = SecuritySeverity.BLOCK if (func == "rmtree" and self.policy.block_dangerous_file_ops) else SecuritySeverity.WARN
+            call_repr = f"{obj}.{func}" if obj else func
+            self.findings.append(
+                RuleFinding(
+                    rule_id="SEC_AST_FILE_DELETION",
+                    severity=severity,
+                    message=f"Potentially destructive filesystem operation '{call_repr}()' detected.",
+                    line_number=getattr(node, "lineno", None),
+                    column_number=getattr(node, "col_offset", None),
+                    node_type="Call",
+                )
+            )
+
+        self.generic_visit(node)
+
+    def visit_Name(self, node: ast.Name):
+        # Detect bare reference to eval/exec (e.g. `bad = eval` or `func = exec`)
+        if isinstance(node.ctx, ast.Load) and node.id in ("eval", "exec"):
+            if id(node) not in self._call_func_node_ids:
+                severity = SecuritySeverity.BLOCK if self.policy.block_eval_exec else SecuritySeverity.WARN
+                self.findings.append(
+                    RuleFinding(
+                        rule_id="SEC_AST_EVAL_EXEC",
+                        severity=severity,
+                        message=f"Reference to dynamic execution primitive '{node.id}' is prohibited.",
+                        line_number=getattr(node, "lineno", None),
+                        column_number=getattr(node, "col_offset", None),
+                        node_type="Name",
+                    )
+                )
+        self.generic_visit(node)
+
+    def visit_Import(self, node: ast.Import):
+        for alias in node.names:
+            base_mod = alias.name.split(".")[0]
+            local_name = alias.asname or alias.name
+            self._module_aliases[local_name] = alias.name
+
+            if base_mod in ("pty", "commands"):
+                if self.policy.block_subprocesses:
+                    self.findings.append(
+                        RuleFinding(
+                            rule_id="SEC_AST_SUBPROCESS_IMPORT",
+                            severity=SecuritySeverity.BLOCK,
+                            message=f"Import of process execution module '{alias.name}' is prohibited.",
+                            line_number=getattr(node, "lineno", None),
+                            column_number=getattr(node, "col_offset", None),
+                            node_type="Import",
+                        )
+                    )
+        self.generic_visit(node)
+
+    def visit_ImportFrom(self, node: ast.ImportFrom):
+        if node.module:
+            base_mod = node.module.split(".")[0]
+            if base_mod in ("os", "posix"):
+                for alias in node.names:
+                    if alias.name == "*":
+                        # Wildcard import from os introduces all dangerous primitives
+                        self._os_dangerous_funcs.update({"system", "popen", "spawnl", "spawnv"})
+                    elif alias.name in ("system", "popen", "spawnl", "spawnv"):
+                        self._os_dangerous_funcs.add(alias.asname or alias.name)
+                        self.findings.append(
+                            RuleFinding(
+                                rule_id="SEC_AST_OS_COMMAND",
+                                severity=SecuritySeverity.BLOCK if self.policy.block_os_commands else SecuritySeverity.WARN,
+                                message=f"Direct import of dangerous os function '{alias.name}' is prohibited.",
+                                line_number=getattr(node, "lineno", None),
+                                column_number=getattr(node, "col_offset", None),
+                                node_type="ImportFrom",
+                            )
+                        )
+            elif base_mod == "subprocess":
+                for alias in node.names:
+                    if alias.name == "*":
+                        self._subprocess_funcs.update({"Popen", "run", "call", "check_call", "check_output"})
+                    elif alias.name in ("Popen", "run", "call", "check_call", "check_output"):
+                        self._subprocess_funcs.add(alias.asname or alias.name)
+                        if self.policy.block_subprocesses:
+                            self.findings.append(
+                                RuleFinding(
+                                    rule_id="SEC_AST_SUBPROCESS_IMPORT",
+                                    severity=SecuritySeverity.BLOCK,
+                                    message=f"Direct import of subprocess function '{alias.name}' is prohibited.",
+                                    line_number=getattr(node, "lineno", None),
+                                    column_number=getattr(node, "col_offset", None),
+                                    node_type="ImportFrom",
+                                )
+                            )
+        self.generic_visit(node)

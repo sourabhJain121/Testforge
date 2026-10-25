@@ -1,0 +1,54 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.56kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/python:3.13-slim
+#2 DONE 10.9s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 151B done
+#3 DONE 0.0s
+
+#4 [1/8] FROM docker.io/library/python:3.13-slim@sha256:57b29a7c050c4e679e4bea572e14b3965cf4b5839de2da49d55e49ffc4024f39
+#4 resolve docker.io/library/python:3.13-slim@sha256:57b29a7c050c4e679e4bea572e14b3965cf4b5839de2da49d55e49ffc4024f39 done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 61.57MB 0.6s done
+#5 DONE 0.6s
+
+#6 [4/8] WORKDIR /app
+#6 CACHED
+
+#7 [5/8] COPY requirements.txt /app/
+#7 CACHED
+
+#8 [2/8] RUN apt-get update && apt-get install -y --no-install-recommends     git     curl     ca-certificates     && rm -rf /var/lib/apt/lists/*
+#8 CACHED
+
+#9 [3/8] RUN groupadd -r testforge && useradd -r -g testforge -m -d /home/testforge testforge
+#9 CACHED
+
+#10 [6/8] RUN pip install --no-cache-dir -r requirements.txt
+#10 CACHED
+
+#11 [7/8] COPY . /app/
+#11 DONE 0.5s
+
+#12 [8/8] RUN chown -R testforge:testforge /app
+#12 DONE 0.9s
+
+#13 exporting to image
+#13 exporting layers
+#13 exporting layers 1.5s done
+#13 exporting manifest sha256:e8f6d1f921a56936e89cfa28002192b952106dc167795dfbf0404029e6670a82
+#13 exporting manifest sha256:e8f6d1f921a56936e89cfa28002192b952106dc167795dfbf0404029e6670a82 done
+#13 exporting config sha256:a4a6f0ed8d49822bf4fa92107d2139100f0045a003f7785848529065484bd9e7 done
+#13 exporting attestation manifest sha256:cb2c5045f7d84bad59e2ce9e1fc7611c7443bec322a6f6f24761ce4f31c831a3 done
+#13 exporting manifest list sha256:10139b558ccf78746f18820e746b80741792d84a318dc00528df72693802ee3b done
+#13 naming to docker.io/library/testforge:phase2-smoke done
+#13 unpacking to docker.io/library/testforge:phase2-smoke
+#13 unpacking to docker.io/library/testforge:phase2-smoke 0.6s done
+#13 DONE 2.2s

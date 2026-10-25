@@ -1,5 +1,6 @@
 .env
 .venv/
+.venv*/
 venv/
 __pycache__/
 *.pyc
@@ -8,3 +9,7 @@ __pycache__/
 .vscode/
 target/
 node_modules/
+*.db
+*.db-wal
+*.db-shm
+trace_*.jsonl

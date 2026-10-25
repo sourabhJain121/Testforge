@@ -1,0 +1,48 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.17, pytest-9.1.1, pluggy-1.7.0 -- /Users/sourabh/TestForge/.venv-release/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/sourabh/TestForge
+plugins: cov-7.1.0, anyio-4.15.1, platformdirs-4.13.5
+collecting ... collected 11 items
+
+tests/test_websocket_streaming.py::test_ws_hub_status_endpoint PASSED    [  9%]
+tests/test_websocket_streaming.py::test_ws_connection_handshake_and_ping_pong PASSED [ 18%]
+tests/test_websocket_streaming.py::test_ws_event_broadcasting_from_callback_registry PASSED [ 27%]
+tests/test_websocket_streaming.py::test_ws_secret_redaction_invariant PASSED [ 36%]
+tests/test_websocket_streaming.py::test_ws_multiple_subscribers_and_disconnect_isolation PASSED [ 45%]
+tests/test_websocket_streaming.py::test_ws_threaded_dispatch PASSED      [ 54%]
+tests/test_websocket_streaming.py::test_ws_bounded_queue_drop_oldest_under_slow_client PASSED [ 63%]
+tests/test_websocket_streaming.py::test_ws_event_delivery_latency_measurement PASSED [ 72%]
+tests/test_fast_benchmarking.py::test_fast_benchmark_runner_five_repetitions_duration PASSED [ 81%]
+tests/test_fast_benchmarking.py::test_fast_benchmark_schema_and_simulated_flags PASSED [ 90%]
+tests/test_fast_benchmarking.py::test_run_benchmark_cli_fast_mode PASSED [100%]
+
+=============================== warnings summary ===============================
+.venv-release/lib/python3.13/site-packages/starlette/testclient.py:45
+  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/starlette/testclient.py:45: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+.venv-release/lib/python3.13/site-packages/google/cloud/aiplatform/models.py:52
+  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/google/cloud/aiplatform/models.py:52: FutureWarning: Support for google-cloud-storage < 3.0.0 will be removed in a future version of google-cloud-aiplatform. Please upgrade to google-cloud-storage >= 3.0.0.
+    from google.cloud.aiplatform.utils import gcs_utils
+
+server.py:58
+  /Users/sourabh/TestForge/server.py:58: DeprecationWarning: 
+          on_event is deprecated, use lifespan event handlers instead.
+  
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+          
+    @app.on_event("startup")
+
+.venv-release/lib/python3.13/site-packages/fastapi/applications.py:4723
+  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/fastapi/applications.py:4723: DeprecationWarning: 
+          on_event is deprecated, use lifespan event handlers instead.
+  
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+          
+    return self.router.on_event(event_type)  # ty: ignore[deprecated]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 11 passed, 4 warnings in 4.31s ========================

@@ -1,0 +1,26 @@
+{
+  "timestamp": 1792678302,
+  "docker_image": "testforge:release-test",
+  "base_image": "python:3.13-slim",
+  "build_status": "SUCCESS",
+  "exit_code": 0,
+  "container_runtime_test": {
+    "port": 8001,
+    "healthz": {
+      "status": "healthy",
+      "service": "testforge-backend",
+      "version": "2.0.0",
+      "http_code": 200
+    },
+    "readyz": {
+      "status": "ready",
+      "service": "testforge-backend",
+      "subsystems": {
+        "ast_mutator": "operational",
+        "blackboard": "operational",
+        "sandbox_storage": "operational"
+      },
+      "http_code": 200
+    }
+  }
+}

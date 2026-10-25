@@ -1,0 +1,17 @@
+Source_State,Allowed_Target_States,Transition_Trigger,Is_Terminal,Guard_Condition
+CREATED,"QUEUED, VALIDATING, INGESTING, RECOVERING, CANCELLING, CANCELLED, TIMED_OUT, FAILED",Task submitted or worker picked up,False,None
+QUEUED,"VALIDATING, INGESTING, RECOVERING, CANCELLING, CANCELLED, TIMED_OUT, FAILED",Job worker started or user cancelled queued job,False,None
+VALIDATING,"INGESTING, FAILED, CANCELLING, CANCELLED, TIMED_OUT",Security guardrail check passed or failed,False,Input security check allowed
+INGESTING,"PLANNING, GENERATING_TESTS, FAILED, CANCELLING, CANCELLED, TIMED_OUT",AST parsing & symbol analysis complete,False,None
+PLANNING,"GENERATING_TESTS, EXECUTING, EVALUATING, FAILED, CANCELLING, CANCELLED, TIMED_OUT",Test generation plan or repair strategy formulated,False,None
+GENERATING_TESTS,"EXECUTING, PLANNING, FAILED, CANCELLING, CANCELLED, TIMED_OUT",Candidate tests synthesized via ADK / LLM / AST,False,Generated test syntax valid
+EXECUTING,"MUTATION_ANALYSIS, PLANNING, GENERATING_TESTS, EVALUATING, FAILED, CANCELLING, CANCELLED, TIMED_OUT",Sandbox execution / coverage / mutant evaluation complete,False,Sandbox runner healthy
+MUTATION_ANALYSIS,"EXECUTING, EVALUATING, FAILED, CANCELLING, CANCELLED, TIMED_OUT",AST mutator injected deterministic faults,False,Mutants generated
+EVALUATING,"COMPLETED, PLANNING, MUTATION_ANALYSIS, FAILED, CANCELLING, CANCELLED, TIMED_OUT",Mutation score & equivalence evaluated,False,None
+CANCELLING,"CANCELLED, FAILED",Cooperative cancellation event acknowledged by runner,False,Cancel event set
+RECOVERING,"RECOVERED, FAILED, CANCELLED",SQLite checkpoint snapshot deserialization,False,Snapshot valid Pydantic model
+RECOVERED,"VALIDATING, INGESTING, PLANNING, GENERATING_TESTS, EXECUTING, MUTATION_ANALYSIS, EVALUATING, FAILED, CANCELLED, TIMED_OUT",Restoration confirmed; resuming target stage,False,Checkpoint revision matched
+COMPLETED,None,None,True,Terminal state - immutable
+FAILED,None,None,True,Terminal state - immutable
+CANCELLED,None,None,True,Terminal state - immutable
+TIMED_OUT,None,None,True,Terminal state - immutable

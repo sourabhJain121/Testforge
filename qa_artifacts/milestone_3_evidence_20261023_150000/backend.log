@@ -1,0 +1,822 @@
+/Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/google/cloud/aiplatform/models.py:52: FutureWarning: Support for google-cloud-storage < 3.0.0 will be removed in a future version of google-cloud-aiplatform. Please upgrade to google-cloud-storage >= 3.0.0.
+  from google.cloud.aiplatform.utils import gcs_utils
+INFO:     Started server process [58657]
+INFO:     Waiting for application startup.
+[2026-10-23 15:14:05,202] INFO in testforge.server: WebSocket event hub initialized on server startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:59326 - "GET /api/ws/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59327 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59354 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59354 - "GET /static/style.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59355 - "GET /static/app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59355 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59355 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59355 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59363 - "WebSocket /ws/events" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:59364 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59364 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59354 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59355 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59369 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59370 - "GET /api/ws/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59379 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59379 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59380 - "WebSocket /ws/events" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:59648 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59649 - "GET /readyz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59650 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59651 - "GET /.well-known/agent.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59652 - "GET /docs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59653 - "GET /openapi.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59654 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59655 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59657 - "POST /api/config/keys HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59658 - "POST /api/config/keys HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:59659 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59660 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59661 - "POST /api/ingest/sample HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59662 - "POST /api/ingest/sample HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:59663 - "POST /api/ingest/sample HTTP/1.1" 404 Not Found
+[2026-10-23 15:25:49,722] INFO in httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent "HTTP/1.1 429 Too Many Requests"
+
+[!] Gemini quota exhausted. Switching to secondary provider...
+[!] Live synthesis failed: All configured live LLM providers (Gemini, Groq, Ollama) failed or unavailable.. Using deterministic synthesis fallback.
+INFO:     127.0.0.1:59664 - "POST /api/ingest/synthesize HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59691 - "POST /api/ingest/synthesize HTTP/1.1" 422 Unprocessable Content
+[2026-10-23 15:26:14,746] INFO in testforge.ingestion: GitHub Ingestion URL Resolved:
+  Original input: https://raw.githubusercontent.com/psf/requests/main/src/requests/status_codes.py
+  Normalized URL: https://raw.githubusercontent.com/psf/requests/main/src/requests/status_codes.py
+  Resolved raw URL: https://raw.githubusercontent.com/psf/requests/main/src/requests/status_codes.py
+  Repository: psf/requests
+  Branch/ref: main
+  File path: src/requests/status_codes.py
+[TestForge:ModeC] GitHub Ingestion URL Resolved:
+  Original input: https://raw.githubusercontent.com/psf/requests/main/src/requests/status_codes.py
+  Normalized URL: https://raw.githubusercontent.com/psf/requests/main/src/requests/status_codes.py
+  Resolved raw URL: https://raw.githubusercontent.com/psf/requests/main/src/requests/status_codes.py
+  Repository: psf/requests
+  Branch/ref: main
+  File path: src/requests/status_codes.py
+[2026-10-23 15:26:14,768] INFO in testforge.ingestion: GitHub Ingestion URL Resolved:
+  Original input: https://raw.githubusercontent.com/psf/requests/main/src/requests/status_codes.py
+  Normalized URL: https://raw.githubusercontent.com/psf/requests/main/src/requests/status_codes.py
+  Resolved raw URL: https://raw.githubusercontent.com/psf/requests/main/src/requests/status_codes.py
+  Repository: psf/requests
+  Branch/ref: main
+  File path: src/requests/status_codes.py
+[TestForge:ModeC] GitHub Ingestion URL Resolved:
+  Original input: https://raw.githubusercontent.com/psf/requests/main/src/requests/status_codes.py
+  Normalized URL: https://raw.githubusercontent.com/psf/requests/main/src/requests/status_codes.py
+  Resolved raw URL: https://raw.githubusercontent.com/psf/requests/main/src/requests/status_codes.py
+  Repository: psf/requests
+  Branch/ref: main
+  File path: src/requests/status_codes.py
+INFO:     127.0.0.1:59692 - "POST /api/ingest/github HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59715 - "POST /api/ingest/github HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:59716 - "POST /api/ingest/github HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:59717 - "POST /api/ingest/github HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:59718 - "POST /api/analysis/blast-radius HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59719 - "POST /api/analysis/blast-radius HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:59720 - "POST /api/analysis/git-diff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59721 - "POST /api/analysis/git-diff HTTP/1.1" 422 Unprocessable Content
+[2026-10-23 15:26:29,979] INFO in testforge.a2a: Registered A2A agent handler: 'agent:google-adk:generator' (actions=None)
+[2026-10-23 15:26:29,979] INFO in testforge.a2a: Registered A2A agent handler: 'agent:crewai:critic' (actions=None)
+==========================================================
+       TESTFORGE: AUTONOMOUS TEST HARDENING ENGINE        
+Hardware: Apple Silicon M-Series | Cores: 10 | Workers: 8
+Foundation Model: Google GenAI Live (gemini-3.6-flash)
+==========================================================
+
+[2026-10-23 15:26:29,996] INFO in testforge.persistence: Checkpoint 'chk_3eb71490e452' successfully saved (stage='INITIAL_INGESTION', rev=3, job_id='sync_b7fe16')
+[Step 1/6] Synthesizing initial candidate test suite...
+[2026-10-23 15:26:29,999] INFO in testforge.adk_generator: Running Google ADK Generator (Iteration 0)...
+[2026-10-23 15:26:30,003] INFO in testforge.a2a: Synchronized validated Google ADK test code to Blackboard SuiteSpace.
+[2026-10-23 15:26:30,004] INFO in testforge.persistence: Checkpoint 'chk_fab0c671f477' successfully saved (stage='BASELINE_SYNTHESIS', rev=5, job_id='sync_b7fe16')
+[Step 2/6] Sandbox validating test suite against clean target (pass@1 check)...
+[!] Initial generated tests failed against clean code:
+============================= test session starts ==============================
+platform darwin -- Python 3.13.17, pytest-9.1.1, pluggy-1.7.0 -- 
+/Users/sourabh/TestForge/.venv-release/bin/python
+rootdir: /var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_6by41v02
+plugins: cov-7.1.0, anyio-4.15.1, platformdirs-4.13.5
+collecting ... collected 3 items
+
+../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_b
+ox_6by41v02/test_target.py::test_deposit_nominal FAILED [ 33%]
+../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_b
+ox_6by41v02/test_target.py::test_deposit_boundary_zero FAILED [ 66%]
+../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_b
+ox_6by41v02/test_target.py::test_deposit_adversarial_equal FAILED [100%]
+
+=================================== FAILURES ===================================
+_____________________________ test_deposit_nominal _____________________________
+
+    def test_deposit_nominal():
+>       result = deposit(2, 3)
+                 ^^^^^^^^^^^^^
+
+/var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_6by41v02/test_tar
+get.py:5: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+account = 2, amount = 3
+
+    def deposit(account: dict, amount: float) -> float:
+>       account['balance'] += amount
+        ^^^^^^^^^^^^^^^^^^
+E       TypeError: 'int' object is not subscriptable
+
+/var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_6by41v02/target.p
+y:2: TypeError
+__________________________ test_deposit_boundary_zero __________________________
+
+    def test_deposit_boundary_zero():
+>       assert deposit(0, 0) is not None
+               ^^^^^^^^^^^^^
+
+/var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_6by41v02/test_tar
+get.py:9: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+account = 0, amount = 0
+
+    def deposit(account: dict, amount: float) -> float:
+>       account['balance'] += amount
+        ^^^^^^^^^^^^^^^^^^
+E       TypeError: 'int' object is not subscriptable
+
+/var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_6by41v02/target.p
+y:2: TypeError
+________________________ test_deposit_adversarial_equal ________________________
+
+    def test_deposit_adversarial_equal():
+        # Explicit LHS == RHS equality check to kill inverted comparison mutants
+>       assert deposit(5, 5) is not None
+               ^^^^^^^^^^^^^
+
+/var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_6by41v02/test_tar
+get.py:15: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+account = 5, amount = 5
+
+    def deposit(account: dict, amount: float) -> float:
+>       account['balance'] += amount
+        ^^^^^^^^^^^^^^^^^^
+E       TypeError: 'int' object is not subscriptable
+
+/var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_6by41v02/target.p
+y:2: TypeError
+=========================== short test summary info ============================
+FAILED 
+../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_b
+ox_6by41v02/test_target.py::test_deposit_nominal
+FAILED 
+../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_b
+ox_6by41v02/test_target.py::test_deposit_boundary_zero
+FAILED 
+../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_b
+ox_6by41v02/test_target.py::test_deposit_adversarial_equal
+============================== 3 failed in 0.03s ===============================
+
+[Self-Repair] Re-prompting TestGeneratorAgent to fix syntax/runtime error...
+[2026-10-23 15:26:30,686] INFO in httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent "HTTP/1.1 429 Too Many Requests"
+
+[!] Gemini quota exhausted. Switching to secondary provider...
+[*] Successfully generated via Local Engine: qwen2.5-coder:7b
+[✓] Candidate test suite passed on clean code (5/5 tests passed).
+[✓] Baseline Line Coverage: 100.0% (3/3 lines covered)
+
+[2026-10-23 15:26:57,054] INFO in testforge.persistence: Checkpoint 'chk_a925814681a6' successfully saved (stage='BASELINE_VALIDATED', rev=8, job_id='sync_b7fe16')
+▶ Iteration 1 of 1 (Target Score: 75.0%)
+  • AST Mutator injected 3 deterministic faults.
+  • Parallel Sandbox evaluating mutants across 8 CPU workers...
+[2026-10-23 15:26:57,785] INFO in testforge.persistence: Checkpoint 'chk_a66e0075ad05' successfully saved (stage='REFLECTION_ITERATION_1', rev=11, job_id='sync_b7fe16')
+                  Iteration 1 Benchmark (M2 AST & Equivalence)                  
+┏━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━┓
+┃  Total  ┃        ┃          ┃         ┃       ┃   Raw    ┃   Adj   ┃         ┃
+┃ Mutants ┃ Killed ┃ Survived ┃ Timeou… ┃ Equiv ┃  Score   ┃  Score  ┃ Elapsed ┃
+┡━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━┩
+│    3    │   3    │    0     │    0    │   0   │  100.0%  │ 100.0%  │  0.73s  │
+└─────────┴────────┴──────────┴─────────┴───────┴──────────┴─────────┴─────────┘
+✔ SUCCESS: Target mutation score achieved (Raw: 100.0%, Adjusted: 100.0% >= 
+75.0% with 100.0% line coverage, 0 verified equivalent mutants excluded).
+
+[2026-10-23 15:26:57,790] INFO in testforge.persistence: Checkpoint 'chk_ad251261f54b' successfully saved (stage='FINALIZED', rev=13, job_id='sync_b7fe16')
+INFO:     127.0.0.1:59722 - "POST /api/harden/run HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59812 - "POST /api/harden/start HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59813 - "POST /api/harden/run HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:59814 - "GET /api/hardened-code HTTP/1.1" 200 OK
+[2026-10-23 15:26:58,184] INFO in testforge.a2a: Registered A2A agent handler: 'agent:google-adk:generator' (actions=None)
+[2026-10-23 15:26:58,184] INFO in testforge.a2a: Registered A2A agent handler: 'agent:crewai:critic' (actions=None)
+==========================================================
+       TESTFORGE: AUTONOMOUS TEST HARDENING ENGINE        
+Hardware: Apple Silicon M-Series | Cores: 10 | Workers: 8
+Foundation Model: Google GenAI Live (gemini-3.6-flash)
+==========================================================
+
+[2026-10-23 15:26:58,569] INFO in testforge.persistence: Checkpoint 'chk_392d9bda3918' successfully saved (stage='INITIAL_INGESTION', rev=3, job_id='b0354194')
+[Step 1/6] Synthesizing initial candidate test suite...
+[2026-10-23 15:26:58,665] INFO in testforge.adk_generator: Running Google ADK Generator (Iteration 0)...
+[2026-10-23 15:26:58,674] INFO in testforge.a2a: Synchronized validated Google ADK test code to Blackboard SuiteSpace.
+[2026-10-23 15:26:58,694] INFO in testforge.persistence: Checkpoint 'chk_49877acd7529' successfully saved (stage='BASELINE_SYNTHESIS', rev=5, job_id='b0354194')
+[Step 2/6] Sandbox validating test suite against clean target (pass@1 check)...
+INFO:     127.0.0.1:59816 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59827 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59833 - "GET /api/benchmark/results HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59834 - "GET /api/benchmark/markdown HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59835 - "POST /api/benchmark/start HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59836 - "GET /api/benchmark/job/non_existent_job_123 HTTP/1.1" 404 Not Found
+[!] Initial generated tests failed against clean code:
+============================= test session starts ==============================
+platform darwin -- Python 3.13.17, pytest-9.1.1, pluggy-1.7.0 -- 
+/Users/sourabh/TestForge/.venv-release/bin/python
+rootdir: /var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_ky8bk792
+plugins: cov-7.1.0, anyio-4.15.1, platformdirs-4.13.5
+collecting ... collected 3 items
+
+../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_b
+ox_ky8bk792/test_target.py::test_deposit_nominal FAILED [ 33%]
+../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_b
+ox_ky8bk792/test_target.py::test_deposit_boundary_zero FAILED [ 66%]
+../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_b
+ox_ky8bk792/test_target.py::test_deposit_adversarial_equal FAILED [100%]
+
+=================================== FAILURES ===================================
+_____________________________ test_deposit_nominal _____________________________
+
+    def test_deposit_nominal():
+>       result = deposit(2, 3)
+                 ^^^^^^^^^^^^^
+
+/var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_ky8bk792/test_tar
+get.py:5: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+account = 2, amount = 3
+
+    def deposit(account: dict, amount: float) -> float:
+>       account['balance'] += amount
+        ^^^^^^^^^^^^^^^^^^
+E       TypeError: 'int' object is not subscriptable
+
+/var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_ky8bk792/target.p
+y:2: TypeError
+__________________________ test_deposit_boundary_zero __________________________
+
+    def test_deposit_boundary_zero():
+>       assert deposit(0, 0) is not None
+               ^^^^^^^^^^^^^
+
+/var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_ky8bk792/test_tar
+get.py:9: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+account = 0, amount = 0
+
+    def deposit(account: dict, amount: float) -> float:
+>       account['balance'] += amount
+        ^^^^^^^^^^^^^^^^^^
+E       TypeError: 'int' object is not subscriptable
+
+/var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_ky8bk792/target.p
+y:2: TypeError
+________________________ test_deposit_adversarial_equal ________________________
+
+    def test_deposit_adversarial_equal():
+        # Explicit LHS == RHS equality check to kill inverted comparison mutants
+>       assert deposit(5, 5) is not None
+               ^^^^^^^^^^^^^
+
+/var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_ky8bk792/test_tar
+get.py:15: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+account = 5, amount = 5
+
+    def deposit(account: dict, amount: float) -> float:
+>       account['balance'] += amount
+        ^^^^^^^^^^^^^^^^^^
+E       TypeError: 'int' object is not subscriptable
+
+/var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_ky8bk792/target.p
+y:2: TypeError
+=========================== short test summary info ============================
+FAILED 
+../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_b
+ox_ky8bk792/test_target.py::test_deposit_nominal
+FAILED 
+../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_b
+ox_ky8bk792/test_target.py::test_deposit_boundary_zero
+FAILED 
+../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_b
+ox_ky8bk792/test_target.py::test_deposit_adversarial_equal
+============================== 3 failed in 0.03s ===============================
+
+[Self-Repair] Re-prompting TestGeneratorAgent to fix syntax/runtime error...
+[2026-10-23 15:26:59,497] INFO in httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent "HTTP/1.1 429 Too Many Requests"
+
+[!] Gemini quota exhausted. Switching to secondary provider...
+[!] HybridLLMClient Tier 3 engaged: HybridLLMClient: Tier 4 Fallback Engaged - All configured live LLM providers failed or offline.. Activating deterministic AST rule synthesizer...
+[✓] Candidate test suite passed on clean code (1/1 tests passed).
+[✓] Baseline Line Coverage: 66.7% (2/3 lines covered)
+
+[2026-10-23 15:27:01,693] INFO in testforge.persistence: Checkpoint 'chk_0c0201081a9a' successfully saved (stage='BASELINE_VALIDATED', rev=8, job_id='b0354194')
+▶ Iteration 1 of 1 (Target Score: 75.0%)
+  • AST Mutator injected 3 deterministic faults.
+  • Parallel Sandbox evaluating mutants across 8 CPU workers...
+[2026-10-23 15:27:02,527] INFO in testforge.persistence: Checkpoint 'chk_23c82e72a4b6' successfully saved (stage='REFLECTION_ITERATION_1', rev=11, job_id='b0354194')
+                  Iteration 1 Benchmark (M2 AST & Equivalence)                  
+┏━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━┓
+┃  Total  ┃        ┃          ┃         ┃       ┃   Raw    ┃   Adj   ┃         ┃
+┃ Mutants ┃ Killed ┃ Survived ┃ Timeou… ┃ Equiv ┃  Score   ┃  Score  ┃ Elapsed ┃
+┡━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━┩
+│    3    │   0    │    3     │    0    │   0   │   0.0%   │  0.0%   │  0.83s  │
+└─────────┴────────┴──────────┴─────────┴───────┴──────────┴─────────┴─────────┘
+⚠ TERMINATED: Maximum allowed reflection iterations reached.
+
+[2026-10-23 15:27:02,535] INFO in testforge.persistence: Checkpoint 'chk_7e2d175caaa1' successfully saved (stage='FINALIZED', rev=13, job_id='b0354194')
+INFO:     127.0.0.1:60119 - "GET /api/ws/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60596 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60597 - "GET /api/ws/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61027 - "GET /?utm_source=chatgpt.com HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61028 - "GET /static/app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61027 - "GET /static/style.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61028 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61028 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61028 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61030 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61031 - "WebSocket /ws/events" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:61027 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61028 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61583 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61605 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61606 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61607 - "GET /readyz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61608 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61609 - "GET /.well-known/agent.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61610 - "GET /api/ws/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61611 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61613 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61614 - "POST /api/ingest/sample HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:61615 - "POST /api/analysis/blast-radius HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:61616 - "POST /api/analysis/git-diff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61617 - "GET /api/checkpoints HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61618 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61619 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61620 - "GET /api/benchmark/results HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61621 - "GET /api/benchmark/markdown HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61622 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61623 - "POST /api/config/keys HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61647 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61647 - "GET /static/style.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61648 - "GET /static/app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61648 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61647 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61648 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61648 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61654 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61655 - "WebSocket /ws/events" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:61647 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61648 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61658 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61658 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61658 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61658 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61658 - "POST /api/analysis/git-diff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "POST /api/analysis/blast-radius HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "POST /api/harden/start HTTP/1.1" 200 OK
+[2026-10-23 15:46:58,397] INFO in testforge.a2a: Registered A2A agent handler: 'agent:google-adk:generator' (actions=None)
+[2026-10-23 15:46:58,397] INFO in testforge.a2a: Registered A2A agent handler: 'agent:crewai:critic' (actions=None)
+==========================================================
+       TESTFORGE: AUTONOMOUS TEST HARDENING ENGINE        
+Hardware: Apple Silicon M-Series | Cores: 10 | Workers: 8
+Foundation Model: Google GenAI Live (gemini-3.6-flash)
+==========================================================
+
+[2026-10-23 15:46:58,401] INFO in testforge.persistence: Checkpoint 'chk_66e3700d555b' successfully saved (stage='INITIAL_INGESTION', rev=3, job_id='19a42485')
+[Step 1/6] Synthesizing initial candidate test suite...
+[2026-10-23 15:46:58,402] INFO in testforge.adk_generator: Running Google ADK Generator (Iteration 0)...
+[2026-10-23 15:46:58,406] INFO in testforge.a2a: Synchronized validated Google ADK test code to Blackboard SuiteSpace.
+[2026-10-23 15:46:58,408] INFO in testforge.persistence: Checkpoint 'chk_32b3d966a5bb' successfully saved (stage='BASELINE_SYNTHESIS', rev=5, job_id='19a42485')
+[Step 2/6] Sandbox validating test suite against clean target (pass@1 check)...
+[!] Initial generated tests failed against clean code:
+============================= test session starts ==============================
+platform darwin -- Python 3.13.17, pytest-9.1.1, pluggy-1.7.0 -- 
+/Users/sourabh/TestForge/.venv-release/bin/python
+rootdir: /var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_2egjs9_4
+plugins: cov-7.1.0, anyio-4.15.1, platformdirs-4.13.5
+collecting ... collected 1 item
+
+../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_b
+ox_2egjs9_4/test_target.py::test_calculate_discount_nominal FAILED [100%]
+
+=================================== FAILURES ===================================
+_______________________ test_calculate_discount_nominal ________________________
+
+    def test_calculate_discount_nominal():
+>       assert calculate_discount() is not None
+               ^^^^^^^^^^^^^^^^^^^^
+E       TypeError: calculate_discount() missing 3 required positional arguments:
+'price', 'quantity', and 'is_member'
+
+/var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_2egjs9_4/test_tar
+get.py:5: TypeError
+=========================== short test summary info ============================
+FAILED 
+../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_b
+ox_2egjs9_4/test_target.py::test_calculate_discount_nominal
+============================== 1 failed in 0.02s ===============================
+
+[Self-Repair] Re-prompting TestGeneratorAgent to fix syntax/runtime error...
+INFO:     127.0.0.1:61667 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61689 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61709 - "WebSocket /ws/events" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:61667 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61711 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/benchmark/results HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/benchmark/markdown HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/benchmark/results HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/benchmark/markdown HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/checkpoints?limit=100&offset=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/checkpoints?limit=100&offset=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61667 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61716 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+[*] Successfully generated via Local Engine: qwen2.5:7b
+[!] Self-repaired tests failed clean target check. Engaging deterministic AST 
+synthesis...
+[✓] Candidate test suite passed on clean code (1/1 tests passed).
+[✓] Baseline Line Coverage: 100.0% (10/10 lines covered)
+
+[2026-10-23 15:47:48,427] INFO in testforge.persistence: Checkpoint 'chk_ac6d82b374c2' successfully saved (stage='BASELINE_VALIDATED', rev=9, job_id='19a42485')
+▶ Iteration 1 of 4 (Target Score: 90.0%)
+  • AST Mutator injected 19 deterministic faults.
+  • Parallel Sandbox evaluating mutants across 8 CPU workers...
+INFO:     127.0.0.1:61719 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+[2026-10-23 15:47:49,686] INFO in testforge.persistence: Checkpoint 'chk_edcb54888a38' successfully saved (stage='REFLECTION_ITERATION_1', rev=12, job_id='19a42485')
+                  Iteration 1 Benchmark (M2 AST & Equivalence)                  
+┏━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━┓
+┃  Total  ┃        ┃          ┃         ┃       ┃   Raw    ┃   Adj   ┃         ┃
+┃ Mutants ┃ Killed ┃ Survived ┃ Timeou… ┃ Equiv ┃  Score   ┃  Score  ┃ Elapsed ┃
+┡━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━┩
+│   19    │   12   │    7     │    0    │   0   │  63.2%   │  63.2%  │  1.25s  │
+└─────────┴────────┴──────────┴─────────┴───────┴──────────┴─────────┴─────────┘
+  • Adversarial Critic analyzing 7 surviving mutant(s)...
+[2026-10-23 15:47:49,693] INFO in testforge.crew_critic: Executing CrewAI Crew for 7 surviving mutant(s)...
+[2026-10-23 15:47:49,723] INFO in testforge.a2a: Synchronized validated CrewAI critique to Blackboard CriticSpace.
+  Critic Directive: Adversarial analysis of 15 surviving mutant(s): The test 
+suite lacked strict boundary and equality assertions, allowing mutated operators
+to...
+
+▶ Iteration 2 of 4 (Target Score: 90.0%)
+  • Hardening test assertions based on Critic reasoning...
+[2026-10-23 15:47:49,728] INFO in testforge.adk_generator: Running Google ADK Generator (Iteration 2)...
+[2026-10-23 15:47:49,732] INFO in testforge.a2a: Synchronized validated Google ADK test code to Blackboard SuiteSpace.
+  • Hardened assertions broke clean code. Retaining previous working test suite.
+  • AST Mutator injected 19 deterministic faults.
+  • Parallel Sandbox evaluating mutants across 8 CPU workers...
+INFO:     127.0.0.1:61719 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+[2026-10-23 15:47:51,131] INFO in testforge.persistence: Checkpoint 'chk_c0f1debe3973' successfully saved (stage='REFLECTION_ITERATION_2', rev=18, job_id='19a42485')
+                  Iteration 2 Benchmark (M2 AST & Equivalence)                  
+┏━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━┓
+┃  Total  ┃        ┃          ┃         ┃       ┃   Raw    ┃   Adj   ┃         ┃
+┃ Mutants ┃ Killed ┃ Survived ┃ Timeou… ┃ Equiv ┃  Score   ┃  Score  ┃ Elapsed ┃
+┡━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━┩
+│   19    │   12   │    7     │    0    │   0   │  63.2%   │  63.2%  │  1.40s  │
+└─────────┴────────┴──────────┴─────────┴───────┴──────────┴─────────┴─────────┘
+  • Adversarial Critic analyzing 7 surviving mutant(s)...
+[2026-10-23 15:47:51,136] INFO in testforge.crew_critic: Executing CrewAI Crew for 7 surviving mutant(s)...
+[2026-10-23 15:47:51,146] INFO in testforge.a2a: Synchronized validated CrewAI critique to Blackboard CriticSpace.
+  Critic Directive: Adversarial analysis of 15 surviving mutant(s): The test 
+suite lacked strict boundary and equality assertions, allowing mutated operators
+to...
+
+▶ Iteration 3 of 4 (Target Score: 90.0%)
+  • Hardening test assertions based on Critic reasoning...
+[2026-10-23 15:47:51,149] INFO in testforge.adk_generator: Running Google ADK Generator (Iteration 3)...
+[2026-10-23 15:47:51,151] INFO in testforge.a2a: Synchronized validated Google ADK test code to Blackboard SuiteSpace.
+INFO:     127.0.0.1:61719 - "GET /api/harden/status/19a42485 HTTP/1.1" 200 OK
+  • Hardened assertions broke clean code. Retaining previous working test suite.
+  • AST Mutator injected 19 deterministic faults.
+  • Parallel Sandbox evaluating mutants across 8 CPU workers...
+[2026-10-23 15:47:52,782] INFO in testforge.persistence: Checkpoint 'chk_7f42b923ad28' successfully saved (stage='REFLECTION_ITERATION_3', rev=24, job_id='19a42485')
+                  Iteration 3 Benchmark (M2 AST & Equivalence)                  
+┏━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━┓
+┃  Total  ┃        ┃          ┃         ┃       ┃   Raw    ┃   Adj   ┃         ┃
+┃ Mutants ┃ Killed ┃ Survived ┃ Timeou… ┃ Equiv ┃  Score   ┃  Score  ┃ Elapsed ┃
+┡━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━┩
+│   19    │   12   │    7     │    0    │   0   │  63.2%   │  63.2%  │  1.63s  │
+└─────────┴────────┴──────────┴─────────┴───────┴──────────┴─────────┴─────────┘
+  • Adversarial Critic analyzing 7 surviving mutant(s)...
+[2026-10-23 15:47:52,787] INFO in testforge.crew_critic: Executing CrewAI Crew for 7 surviving mutant(s)...
+[2026-10-23 15:47:52,798] INFO in testforge.a2a: Synchronized validated CrewAI critique to Blackboard CriticSpace.
+  Critic Directive: Adversarial analysis of 15 surviving mutant(s): The test 
+suite lacked strict boundary and equality assertions, allowing mutated operators
+to...
+
+▶ Iteration 4 of 4 (Target Score: 90.0%)
+  • Hardening test assertions based on Critic reasoning...
+[2026-10-23 15:47:52,800] INFO in testforge.adk_generator: Running Google ADK Generator (Iteration 4)...
+[2026-10-23 15:47:52,802] INFO in testforge.a2a: Synchronized validated Google ADK test code to Blackboard SuiteSpace.
+  • Hardened assertions broke clean code. Retaining previous working test suite.
+  • AST Mutator injected 19 deterministic faults.
+  • Parallel Sandbox evaluating mutants across 8 CPU workers...
+[2026-10-23 15:47:54,061] INFO in testforge.persistence: Checkpoint 'chk_f469d3369172' successfully saved (stage='REFLECTION_ITERATION_4', rev=30, job_id='19a42485')
+                  Iteration 4 Benchmark (M2 AST & Equivalence)                  
+┏━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━┓
+┃  Total  ┃        ┃          ┃         ┃       ┃   Raw    ┃   Adj   ┃         ┃
+┃ Mutants ┃ Killed ┃ Survived ┃ Timeou… ┃ Equiv ┃  Score   ┃  Score  ┃ Elapsed ┃
+┡━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━┩
+│   19    │   12   │    7     │    0    │   0   │  63.2%   │  63.2%  │  1.26s  │
+└─────────┴────────┴──────────┴─────────┴───────┴──────────┴─────────┴─────────┘
+⚠ TERMINATED: Maximum allowed reflection iterations reached.
+
+[2026-10-23 15:47:54,068] INFO in testforge.persistence: Checkpoint 'chk_1b0869e7a7f0' successfully saved (stage='FINALIZED', rev=32, job_id='19a42485')
+INFO:     127.0.0.1:61752 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61753 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61754 - "GET /readyz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61755 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61756 - "GET /.well-known/agent.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61757 - "GET /api/ws/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61758 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61760 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61761 - "POST /api/ingest/sample HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:61762 - "POST /api/analysis/blast-radius HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:61763 - "POST /api/analysis/git-diff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61764 - "GET /api/checkpoints HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61765 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61766 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61767 - "GET /api/benchmark/results HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61768 - "GET /api/benchmark/markdown HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61769 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61770 - "POST /api/config/keys HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61787 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61787 - "GET /static/style.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61788 - "GET /static/app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61788 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61787 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61788 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61788 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61793 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61794 - "WebSocket /ws/events" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:61787 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61788 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "POST /api/analysis/git-diff HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "POST /api/analysis/blast-radius HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "POST /api/harden/start HTTP/1.1" 200 OK
+[2026-10-23 15:51:00,576] INFO in testforge.a2a: Registered A2A agent handler: 'agent:google-adk:generator' (actions=None)
+[2026-10-23 15:51:00,576] INFO in testforge.a2a: Registered A2A agent handler: 'agent:crewai:critic' (actions=None)
+==========================================================
+       TESTFORGE: AUTONOMOUS TEST HARDENING ENGINE        
+Hardware: Apple Silicon M-Series | Cores: 10 | Workers: 8
+Foundation Model: Google GenAI Live (gemini-3.6-flash)
+==========================================================
+
+[2026-10-23 15:51:00,580] INFO in testforge.persistence: Checkpoint 'chk_3b7e18b358c2' successfully saved (stage='INITIAL_INGESTION', rev=3, job_id='b7b32744')
+[Step 1/6] Synthesizing initial candidate test suite...
+[2026-10-23 15:51:00,582] INFO in testforge.adk_generator: Running Google ADK Generator (Iteration 0)...
+[2026-10-23 15:51:00,586] INFO in testforge.a2a: Synchronized validated Google ADK test code to Blackboard SuiteSpace.
+[2026-10-23 15:51:00,587] INFO in testforge.persistence: Checkpoint 'chk_e4f17295f91f' successfully saved (stage='BASELINE_SYNTHESIS', rev=5, job_id='b7b32744')
+[Step 2/6] Sandbox validating test suite against clean target (pass@1 check)...
+[!] Initial generated tests failed against clean code:
+============================= test session starts ==============================
+platform darwin -- Python 3.13.17, pytest-9.1.1, pluggy-1.7.0 -- 
+/Users/sourabh/TestForge/.venv-release/bin/python
+rootdir: /var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_nk_d5yw2
+plugins: cov-7.1.0, anyio-4.15.1, platformdirs-4.13.5
+collecting ... collected 1 item
+
+../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_b
+ox_nk_d5yw2/test_target.py::test_calculate_discount_nominal FAILED [100%]
+
+=================================== FAILURES ===================================
+_______________________ test_calculate_discount_nominal ________________________
+
+    def test_calculate_discount_nominal():
+>       assert calculate_discount() is not None
+               ^^^^^^^^^^^^^^^^^^^^
+E       TypeError: calculate_discount() missing 3 required positional arguments:
+'price', 'quantity', and 'is_member'
+
+/var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_nk_d5yw2/test_tar
+get.py:5: TypeError
+=========================== short test summary info ============================
+FAILED 
+../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_b
+ox_nk_d5yw2/test_target.py::test_calculate_discount_nominal
+============================== 1 failed in 0.02s ===============================
+
+[Self-Repair] Re-prompting TestGeneratorAgent to fix syntax/runtime error...
+INFO:     127.0.0.1:61801 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61833 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61853 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61801 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61856 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61856 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61856 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+[*] Successfully generated via Local Engine: qwen2.5:7b
+INFO:     127.0.0.1:61856 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+[!] Self-repaired tests failed clean target check. Engaging deterministic AST 
+synthesis...
+[✓] Candidate test suite passed on clean code (1/1 tests passed).
+[✓] Baseline Line Coverage: 100.0% (10/10 lines covered)
+
+[2026-10-23 15:51:51,515] INFO in testforge.persistence: Checkpoint 'chk_50478c57c0a4' successfully saved (stage='BASELINE_VALIDATED', rev=9, job_id='b7b32744')
+▶ Iteration 1 of 4 (Target Score: 90.0%)
+  • AST Mutator injected 19 deterministic faults.
+  • Parallel Sandbox evaluating mutants across 8 CPU workers...
+INFO:     127.0.0.1:61856 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+[2026-10-23 15:51:52,544] INFO in testforge.persistence: Checkpoint 'chk_4256e9361c97' successfully saved (stage='REFLECTION_ITERATION_1', rev=12, job_id='b7b32744')
+                  Iteration 1 Benchmark (M2 AST & Equivalence)                  
+┏━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━┓
+┃  Total  ┃        ┃          ┃         ┃       ┃   Raw    ┃   Adj   ┃         ┃
+┃ Mutants ┃ Killed ┃ Survived ┃ Timeou… ┃ Equiv ┃  Score   ┃  Score  ┃ Elapsed ┃
+┡━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━┩
+│   19    │   12   │    7     │    0    │   0   │  63.2%   │  63.2%  │  1.02s  │
+└─────────┴────────┴──────────┴─────────┴───────┴──────────┴─────────┴─────────┘
+  • Adversarial Critic analyzing 7 surviving mutant(s)...
+[2026-10-23 15:51:52,551] INFO in testforge.crew_critic: Executing CrewAI Crew for 7 surviving mutant(s)...
+[2026-10-23 15:51:52,575] INFO in testforge.a2a: Synchronized validated CrewAI critique to Blackboard CriticSpace.
+  Critic Directive: Adversarial analysis of 15 surviving mutant(s): The test 
+suite lacked strict boundary and equality assertions, allowing mutated operators
+to...
+
+▶ Iteration 2 of 4 (Target Score: 90.0%)
+  • Hardening test assertions based on Critic reasoning...
+[2026-10-23 15:51:52,578] INFO in testforge.adk_generator: Running Google ADK Generator (Iteration 2)...
+[2026-10-23 15:51:52,580] INFO in testforge.a2a: Synchronized validated Google ADK test code to Blackboard SuiteSpace.
+  • Hardened assertions broke clean code. Retaining previous working test suite.
+  • AST Mutator injected 19 deterministic faults.
+  • Parallel Sandbox evaluating mutants across 8 CPU workers...
+INFO:     127.0.0.1:61856 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+[2026-10-23 15:51:53,869] INFO in testforge.persistence: Checkpoint 'chk_8383f569052a' successfully saved (stage='REFLECTION_ITERATION_2', rev=18, job_id='b7b32744')
+                  Iteration 2 Benchmark (M2 AST & Equivalence)                  
+┏━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━┓
+┃  Total  ┃        ┃          ┃         ┃       ┃   Raw    ┃   Adj   ┃         ┃
+┃ Mutants ┃ Killed ┃ Survived ┃ Timeou… ┃ Equiv ┃  Score   ┃  Score  ┃ Elapsed ┃
+┡━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━┩
+│   19    │   12   │    7     │    0    │   0   │  63.2%   │  63.2%  │  1.29s  │
+└─────────┴────────┴──────────┴─────────┴───────┴──────────┴─────────┴─────────┘
+  • Adversarial Critic analyzing 7 surviving mutant(s)...
+[2026-10-23 15:51:53,874] INFO in testforge.crew_critic: Executing CrewAI Crew for 7 surviving mutant(s)...
+[2026-10-23 15:51:53,883] INFO in testforge.a2a: Synchronized validated CrewAI critique to Blackboard CriticSpace.
+  Critic Directive: Adversarial analysis of 15 surviving mutant(s): The test 
+suite lacked strict boundary and equality assertions, allowing mutated operators
+to...
+
+▶ Iteration 3 of 4 (Target Score: 90.0%)
+  • Hardening test assertions based on Critic reasoning...
+[2026-10-23 15:51:53,887] INFO in testforge.adk_generator: Running Google ADK Generator (Iteration 3)...
+[2026-10-23 15:51:53,889] INFO in testforge.a2a: Synchronized validated Google ADK test code to Blackboard SuiteSpace.
+  • Hardened assertions broke clean code. Retaining previous working test suite.
+  • AST Mutator injected 19 deterministic faults.
+  • Parallel Sandbox evaluating mutants across 8 CPU workers...
+INFO:     127.0.0.1:61856 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+[2026-10-23 15:51:55,073] INFO in testforge.persistence: Checkpoint 'chk_c80100d2e40b' successfully saved (stage='REFLECTION_ITERATION_3', rev=24, job_id='b7b32744')
+                  Iteration 3 Benchmark (M2 AST & Equivalence)                  
+┏━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━┓
+┃  Total  ┃        ┃          ┃         ┃       ┃   Raw    ┃   Adj   ┃         ┃
+┃ Mutants ┃ Killed ┃ Survived ┃ Timeou… ┃ Equiv ┃  Score   ┃  Score  ┃ Elapsed ┃
+┡━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━┩
+│   19    │   12   │    7     │    0    │   0   │  63.2%   │  63.2%  │  1.18s  │
+└─────────┴────────┴──────────┴─────────┴───────┴──────────┴─────────┴─────────┘
+  • Adversarial Critic analyzing 7 surviving mutant(s)...
+[2026-10-23 15:51:55,078] INFO in testforge.crew_critic: Executing CrewAI Crew for 7 surviving mutant(s)...
+[2026-10-23 15:51:55,088] INFO in testforge.a2a: Synchronized validated CrewAI critique to Blackboard CriticSpace.
+  Critic Directive: Adversarial analysis of 15 surviving mutant(s): The test 
+suite lacked strict boundary and equality assertions, allowing mutated operators
+to...
+
+▶ Iteration 4 of 4 (Target Score: 90.0%)
+  • Hardening test assertions based on Critic reasoning...
+[2026-10-23 15:51:55,091] INFO in testforge.adk_generator: Running Google ADK Generator (Iteration 4)...
+[2026-10-23 15:51:55,093] INFO in testforge.a2a: Synchronized validated Google ADK test code to Blackboard SuiteSpace.
+  • Hardened assertions broke clean code. Retaining previous working test suite.
+  • AST Mutator injected 19 deterministic faults.
+  • Parallel Sandbox evaluating mutants across 8 CPU workers...
+INFO:     127.0.0.1:61860 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+[2026-10-23 15:51:56,329] INFO in testforge.persistence: Checkpoint 'chk_3410508f8399' successfully saved (stage='REFLECTION_ITERATION_4', rev=30, job_id='b7b32744')
+                  Iteration 4 Benchmark (M2 AST & Equivalence)                  
+┏━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━┓
+┃  Total  ┃        ┃          ┃         ┃       ┃   Raw    ┃   Adj   ┃         ┃
+┃ Mutants ┃ Killed ┃ Survived ┃ Timeou… ┃ Equiv ┃  Score   ┃  Score  ┃ Elapsed ┃
+┡━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━┩
+│   19    │   12   │    7     │    0    │   0   │  63.2%   │  63.2%  │  1.23s  │
+└─────────┴────────┴──────────┴─────────┴───────┴──────────┴─────────┴─────────┘
+⚠ TERMINATED: Maximum allowed reflection iterations reached.
+
+[2026-10-23 15:51:56,338] INFO in testforge.persistence: Checkpoint 'chk_c719585c76e6' successfully saved (stage='FINALIZED', rev=32, job_id='b7b32744')
+INFO:     127.0.0.1:61860 - "GET /api/harden/status/b7b32744 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61860 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61861 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61861 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61861 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61865 - "WebSocket /ws/events" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:61861 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61861 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61861 - "GET /api/benchmark/results HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61861 - "GET /api/benchmark/markdown HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61861 - "GET /api/benchmark/results HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61861 - "GET /api/benchmark/markdown HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61861 - "GET /api/checkpoints?limit=100&offset=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61861 - "GET /api/checkpoints?limit=100&offset=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61861 - "GET /api/checkpoints/chk_c719585c76e6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61861 - "GET /api/checkpoints/diff?base_id=chk_c719585c76e6&target_id=chk_3410508f8399 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61861 - "GET /api/checkpoints/diff?base_id=chk_3410508f8399&target_id=chk_c719585c76e6 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62164 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62165 - "GET /api/ready HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62166 - "GET /readyz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62200 - "GET /api/mcp/status HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62201 - "GET /api/ready HTTP/1.1" 404 Not Found
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [58657]

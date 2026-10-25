@@ -77,3 +77,43 @@ def test_adk_engine_contracts():
     assert res.output["target_function"] == "sanitize"
     assert ctx.active_tool == "tool_compute_blast_radius"
     assert len(ctx.reflection_history) == 1
+
+
+def test_agent_handoff_contracts(tmp_path):
+    from testforge.logger import TraceLogger
+    from testforge.orchestrator import TestForgeOrchestrator
+
+    trace_file = str(tmp_path / "test_handoff_trace.jsonl")
+    orch = TestForgeOrchestrator(
+        target_source_code=SAMPLE_CODE,
+        max_iterations=1,
+        target_mutation_score=100.0,
+        trace_log_path=trace_file,
+        target_file_path="sample.py",
+        engine_mode="local"
+    )
+
+    state = orch.run()
+    assert state is not None
+
+    logger = TraceLogger(trace_file)
+    traces = logger.read_traces()
+    handoffs = [t for t in traces if t.get("event_type") == "AGENT_HANDOFF"]
+
+    # Verify TargetManagerAgent -> TestGeneratorAgent handoff
+    tm_handoff = next((h for h in handoffs if h.get("data", {}).get("from_agent") == "TargetManagerAgent"), None)
+    assert tm_handoff is not None
+    tm_data = tm_handoff.get("data", {})
+    assert tm_data.get("to_agent") == "TestGeneratorAgent"
+    assert "Extracted AST symbols" in tm_data.get("summary", "")
+    assert "functions" in tm_data.get("payload", {})
+    assert "blast_risk" in tm_data.get("payload", {})
+    assert "target_lines" in tm_data.get("payload", {})
+
+    # Verify TestGeneratorAgent -> SubprocessSandbox handoff
+    tg_handoff = next((h for h in handoffs if h.get("data", {}).get("from_agent") == "TestGeneratorAgent"), None)
+    assert tg_handoff is not None
+    tg_data = tg_handoff.get("data", {})
+    assert tg_data.get("to_agent") == "SubprocessSandbox"
+    assert "test_code_preview" in tg_data.get("payload", {})
+    assert "provider_used" in tg_data.get("payload", {})

@@ -1,0 +1,278 @@
+{
+  "timestamp": 1792943292.491724,
+  "total_fixtures": 5,
+  "total_defects": 15,
+  "total_defects_detected": 15,
+  "fixtures": [
+    {
+      "fixture_id": "task_state_transition",
+      "fixture_name": "Task & Order Lifecycle State Machine",
+      "source_hash": "60cdd1dc4281bfbb126831f88d4e8faa99836dcd4caa13daaec563af2ac4140a",
+      "reference_tests_total": 9,
+      "reference_tests_passed": 9,
+      "reference_passed": true,
+      "defect_reports": [
+        {
+          "defect_id": "DEFECT-SM-001",
+          "fixture_id": "task_state_transition",
+          "detected": true,
+          "failing_test_name": "test_customer_cancellation_unauthorized_from_processing",
+          "observed_error_type": "AssertionError",
+          "observed_error_message": "============================= test session starts ==============================\nplatform darwin -- Python 3.13.17, pytest-9.1.1, pluggy-1.7.0 -- /Users/sourabh/TestForge/.venv-release/bin/python\nrootdir: /var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_xkosjmy9\nplugins: cov-7.1.0, any",
+          "matched_expected_assertion": true,
+          "duration_ms": 179.61
+        },
+        {
+          "defect_id": "DEFECT-SM-002",
+          "fixture_id": "task_state_transition",
+          "detected": true,
+          "failing_test_name": "test_terminal_state_completed_has_no_outgoing_transitions",
+          "observed_error_type": "AssertionError",
+          "observed_error_message": "============================= test session starts ==============================\nplatform darwin -- Python 3.13.17, pytest-9.1.1, pluggy-1.7.0 -- /Users/sourabh/TestForge/.venv-release/bin/python\nrootdir: /var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_nz32gtqz\nplugins: cov-7.1.0, any",
+          "matched_expected_assertion": true,
+          "duration_ms": 178.59
+        },
+        {
+          "defect_id": "DEFECT-SM-003",
+          "fixture_id": "task_state_transition",
+          "detected": true,
+          "failing_test_name": "test_high_value_guest_payment_requires_verification",
+          "observed_error_type": "AssertionError",
+          "observed_error_message": "============================= test session starts ==============================\nplatform darwin -- Python 3.13.17, pytest-9.1.1, pluggy-1.7.0 -- /Users/sourabh/TestForge/.venv-release/bin/python\nrootdir: /var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_o_9kcyb8\nplugins: cov-7.1.0, any",
+          "matched_expected_assertion": true,
+          "duration_ms": 177.24
+        }
+      ],
+      "defects_detected_count": 3,
+      "defects_total_count": 3,
+      "mutation_score_pct": 71.9,
+      "adjusted_mutation_score_pct": 71.9,
+      "mutants_total": 57,
+      "mutants_killed": 41,
+      "mutants_survived": 16,
+      "mutants_timed_out": 0,
+      "mutants_invalid": 0,
+      "mutants_equivalent": 0,
+      "mutants_potentially_equivalent": 0,
+      "line_coverage_pct": 100.0,
+      "execution_duration_sec": 3.266,
+      "raw_execution_output": "============================= test session starts ==============================\nplatform darwin -- Python 3.13.17, pytest-9.1.1, pluggy-1.7.0 -- /Users/sourabh/TestForge/.venv-release/bin/python\nrootdir: /var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_r_teijww\nplugins: cov-7.1.0, anyio-4.15.1, platformdirs-4.13.5\ncollecting ... collected 9 items\n\n../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_r_teijww/test_target.py::test_nominal_transition_created_to_payment_pending PASSED [ 11%]\n../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_r_teijww/test_target.py::test_nominal_shipping_to_delivery PASSED [ 22%]\n../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_r_teijww/test_target.py::test_invalid_current_state_rejected PASSED [ 33%]\n../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_r_teijww/test_target.py::test_disallowed_transition_sequence PASSED [ 44%]\n../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_r_teijww/test_target.py::test_terminal_state_completed_has_no_outgoing_transitions PASSED [ 55%]\n../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_r_teijww/test_target.py::test_admin_cancellation_authorized PASSED [ 66%]\n../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_r_teijww/test_target.py::test_customer_cancellation_unauthorized_from_processing PASSED [ 77%]\n../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_r_teijww/test_target.py::test_high_value_guest_payment_requires_verification PASSED [ 88%]\n../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_r_teijww/test_target.py::test_high_value_verified_user_payment_permitted PASSED [100%]\n\n============================== 9 passed in 0.01s ===============================\n"
+    },
+    {
+      "fixture_id": "token_bucket_rate_limiter",
+      "fixture_name": "Token Bucket Rate Limiter",
+      "source_hash": "526aeedc9eaa81dac8e7434ef763c153b3ffee47058036e1f4a27e86f665c945",
+      "reference_tests_total": 8,
+      "reference_tests_passed": 8,
+      "reference_passed": true,
+      "defect_reports": [
+        {
+          "defect_id": "DEFECT-RL-001",
+          "fixture_id": "token_bucket_rate_limiter",
+          "detected": true,
+          "failing_test_name": "test_refill_capped_at_bucket_capacity",
+          "observed_error_type": "AssertionError",
+          "observed_error_message": "============================= test session starts ==============================\nplatform darwin -- Python 3.13.17, pytest-9.1.1, pluggy-1.7.0 -- /Users/sourabh/TestForge/.venv-release/bin/python\nrootdir: /var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_ka862r2h\nplugins: cov-7.1.0, any",
+          "matched_expected_assertion": true,
+          "duration_ms": 183.25
+        },
+        {
+          "defect_id": "DEFECT-RL-002",
+          "fixture_id": "token_bucket_rate_limiter",
+          "detected": true,
+          "failing_test_name": "test_negative_elapsed_seconds_rejected",
+          "observed_error_type": "AssertionError",
+          "observed_error_message": "============================= test session starts ==============================\nplatform darwin -- Python 3.13.17, pytest-9.1.1, pluggy-1.7.0 -- /Users/sourabh/TestForge/.venv-release/bin/python\nrootdir: /var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_ndyivqde\nplugins: cov-7.1.0, any",
+          "matched_expected_assertion": true,
+          "duration_ms": 183.02
+        },
+        {
+          "defect_id": "DEFECT-RL-003",
+          "fixture_id": "token_bucket_rate_limiter",
+          "detected": true,
+          "failing_test_name": "test_exact_balance_boundary_request_granted",
+          "observed_error_type": "AssertionError",
+          "observed_error_message": "============================= test session starts ==============================\nplatform darwin -- Python 3.13.17, pytest-9.1.1, pluggy-1.7.0 -- /Users/sourabh/TestForge/.venv-release/bin/python\nrootdir: /var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_6t673pzi\nplugins: cov-7.1.0, any",
+          "matched_expected_assertion": true,
+          "duration_ms": 186.77
+        }
+      ],
+      "defects_detected_count": 3,
+      "defects_total_count": 3,
+      "mutation_score_pct": 81.6,
+      "adjusted_mutation_score_pct": 81.6,
+      "mutants_total": 38,
+      "mutants_killed": 31,
+      "mutants_survived": 7,
+      "mutants_timed_out": 0,
+      "mutants_invalid": 0,
+      "mutants_equivalent": 0,
+      "mutants_potentially_equivalent": 0,
+      "line_coverage_pct": 100.0,
+      "execution_duration_sec": 2.58,
+      "raw_execution_output": "============================= test session starts ==============================\nplatform darwin -- Python 3.13.17, pytest-9.1.1, pluggy-1.7.0 -- /Users/sourabh/TestForge/.venv-release/bin/python\nrootdir: /var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_95ldkliu\nplugins: cov-7.1.0, anyio-4.15.1, platformdirs-4.13.5\ncollecting ... collected 8 items\n\n../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_95ldkliu/test_target.py::test_nominal_request_allowed_with_deduction PASSED [ 12%]\n../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_95ldkliu/test_target.py::test_refill_capped_at_bucket_capacity PASSED [ 25%]\n../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_95ldkliu/test_target.py::test_request_denied_when_insufficient_tokens PASSED [ 37%]\n../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_95ldkliu/test_target.py::test_exact_balance_boundary_request_granted PASSED [ 50%]\n../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_95ldkliu/test_target.py::test_negative_elapsed_seconds_rejected PASSED [ 62%]\n../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_95ldkliu/test_target.py::test_invalid_zero_capacity_rejected PASSED [ 75%]\n../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_95ldkliu/test_target.py::test_invalid_zero_requested_tokens_rejected PASSED [ 87%]\n../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_95ldkliu/test_target.py::test_fractional_refill_precision PASSED [100%]\n\n============================== 8 passed in 0.01s ===============================\n"
+    },
+    {
+      "fixture_id": "inventory_pricing_calculator",
+      "fixture_name": "Inventory Tier Pricing Calculator",
+      "source_hash": "2f1d24d285d360d04787878996270eae024e57f92249e0c2721ab8c693384497",
+      "reference_tests_total": 9,
+      "reference_tests_passed": 9,
+      "reference_passed": true,
+      "defect_reports": [
+        {
+          "defect_id": "DEFECT-IP-001",
+          "fixture_id": "inventory_pricing_calculator",
+          "detected": true,
+          "failing_test_name": "test_bulk_volume_incentive_exact_boundary_50_items",
+          "observed_error_type": "AssertionError",
+          "observed_error_message": "============================= test session starts ==============================\nplatform darwin -- Python 3.13.17, pytest-9.1.1, pluggy-1.7.0 -- /Users/sourabh/TestForge/.venv-release/bin/python\nrootdir: /var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_tu_5qq02\nplugins: cov-7.1.0, any",
+          "matched_expected_assertion": true,
+          "duration_ms": 182.69
+        },
+        {
+          "defect_id": "DEFECT-IP-002",
+          "fixture_id": "inventory_pricing_calculator",
+          "detected": true,
+          "failing_test_name": "test_platinum_tier_25_pct_discount, test_gold_tier_15_pct_discount, test_express_shipping_waiver_exact_boundary_500, test_express_shipping_charged_under_500",
+          "observed_error_type": "AssertionError",
+          "observed_error_message": "============================= test session starts ==============================\nplatform darwin -- Python 3.13.17, pytest-9.1.1, pluggy-1.7.0 -- /Users/sourabh/TestForge/.venv-release/bin/python\nrootdir: /var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_svhrq09w\nplugins: cov-7.1.0, any",
+          "matched_expected_assertion": true,
+          "duration_ms": 183.39
+        },
+        {
+          "defect_id": "DEFECT-IP-003",
+          "fixture_id": "inventory_pricing_calculator",
+          "detected": true,
+          "failing_test_name": "test_silver_tier_5_pct_discount",
+          "observed_error_type": "AssertionError",
+          "observed_error_message": "============================= test session starts ==============================\nplatform darwin -- Python 3.13.17, pytest-9.1.1, pluggy-1.7.0 -- /Users/sourabh/TestForge/.venv-release/bin/python\nrootdir: /var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_mi76drun\nplugins: cov-7.1.0, any",
+          "matched_expected_assertion": true,
+          "duration_ms": 179.02
+        }
+      ],
+      "defects_detected_count": 3,
+      "defects_total_count": 3,
+      "mutation_score_pct": 73.0,
+      "adjusted_mutation_score_pct": 73.0,
+      "mutants_total": 37,
+      "mutants_killed": 27,
+      "mutants_survived": 10,
+      "mutants_timed_out": 0,
+      "mutants_invalid": 0,
+      "mutants_equivalent": 0,
+      "mutants_potentially_equivalent": 0,
+      "line_coverage_pct": 100.0,
+      "execution_duration_sec": 2.498,
+      "raw_execution_output": "============================= test session starts ==============================\nplatform darwin -- Python 3.13.17, pytest-9.1.1, pluggy-1.7.0 -- /Users/sourabh/TestForge/.venv-release/bin/python\nrootdir: /var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_nvmdnzcw\nplugins: cov-7.1.0, anyio-4.15.1, platformdirs-4.13.5\ncollecting ... collected 9 items\n\n../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_nvmdnzcw/test_target.py::test_regular_tier_no_discount PASSED [ 11%]\n../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_nvmdnzcw/test_target.py::test_platinum_tier_25_pct_discount PASSED [ 22%]\n../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_nvmdnzcw/test_target.py::test_gold_tier_15_pct_discount PASSED [ 33%]\n../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_nvmdnzcw/test_target.py::test_silver_tier_5_pct_discount PASSED [ 44%]\n../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_nvmdnzcw/test_target.py::test_bulk_volume_incentive_exact_boundary_50_items PASSED [ 55%]\n../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_nvmdnzcw/test_target.py::test_express_shipping_waiver_exact_boundary_500 PASSED [ 66%]\n../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_nvmdnzcw/test_target.py::test_express_shipping_charged_under_500 PASSED [ 77%]\n../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_nvmdnzcw/test_target.py::test_invalid_zero_or_negative_price PASSED [ 88%]\n../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_nvmdnzcw/test_target.py::test_invalid_zero_or_negative_quantity PASSED [100%]\n\n============================== 9 passed in 0.01s ===============================\n"
+    },
+    {
+      "fixture_id": "banking_operations_module",
+      "fixture_name": "Banking Operations Module",
+      "source_hash": "392c0db3bf364c9d1d2f0efa9f4323e070308b03bbfe02a0161f722690ccc728",
+      "reference_tests_total": 8,
+      "reference_tests_passed": 8,
+      "reference_passed": true,
+      "defect_reports": [
+        {
+          "defect_id": "DEFECT-BK-001",
+          "fixture_id": "banking_operations_module",
+          "detected": true,
+          "failing_test_name": "test_exact_balance_boundary_rejected_to_protect_reserve",
+          "observed_error_type": "AssertionError",
+          "observed_error_message": "============================= test session starts ==============================\nplatform darwin -- Python 3.13.17, pytest-9.1.1, pluggy-1.7.0 -- /Users/sourabh/TestForge/.venv-release/bin/python\nrootdir: /var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_dk_eyxa4\nplugins: cov-7.1.0, any",
+          "matched_expected_assertion": true,
+          "duration_ms": 194.87
+        },
+        {
+          "defect_id": "DEFECT-BK-002",
+          "fixture_id": "banking_operations_module",
+          "detected": true,
+          "failing_test_name": "test_nominal_transaction_succeeds, test_insufficient_funds_rejected, test_zero_fee_nominal_transaction",
+          "observed_error_type": "AssertionError",
+          "observed_error_message": "============================= test session starts ==============================\nplatform darwin -- Python 3.13.17, pytest-9.1.1, pluggy-1.7.0 -- /Users/sourabh/TestForge/.venv-release/bin/python\nrootdir: /var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_jm53qkdn\nplugins: cov-7.1.0, any",
+          "matched_expected_assertion": true,
+          "duration_ms": 189.33
+        },
+        {
+          "defect_id": "DEFECT-BK-003",
+          "fixture_id": "banking_operations_module",
+          "detected": true,
+          "failing_test_name": "test_negative_amount_rejected",
+          "observed_error_type": "AssertionError",
+          "observed_error_message": "============================= test session starts ==============================\nplatform darwin -- Python 3.13.17, pytest-9.1.1, pluggy-1.7.0 -- /Users/sourabh/TestForge/.venv-release/bin/python\nrootdir: /var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_cvm1uu0e\nplugins: cov-7.1.0, any",
+          "matched_expected_assertion": true,
+          "duration_ms": 179.93
+        }
+      ],
+      "defects_detected_count": 3,
+      "defects_total_count": 3,
+      "mutation_score_pct": 78.3,
+      "adjusted_mutation_score_pct": 78.3,
+      "mutants_total": 23,
+      "mutants_killed": 18,
+      "mutants_survived": 5,
+      "mutants_timed_out": 0,
+      "mutants_invalid": 0,
+      "mutants_equivalent": 0,
+      "mutants_potentially_equivalent": 0,
+      "line_coverage_pct": 100.0,
+      "execution_duration_sec": 1.945,
+      "raw_execution_output": "============================= test session starts ==============================\nplatform darwin -- Python 3.13.17, pytest-9.1.1, pluggy-1.7.0 -- /Users/sourabh/TestForge/.venv-release/bin/python\nrootdir: /var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_lfixm4fp\nplugins: cov-7.1.0, anyio-4.15.1, platformdirs-4.13.5\ncollecting ... collected 8 items\n\n../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_lfixm4fp/test_target.py::test_nominal_transaction_succeeds PASSED [ 12%]\n../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_lfixm4fp/test_target.py::test_insufficient_funds_rejected PASSED [ 25%]\n../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_lfixm4fp/test_target.py::test_exact_balance_boundary_rejected_to_protect_reserve PASSED [ 37%]\n../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_lfixm4fp/test_target.py::test_zero_amount_rejected PASSED [ 50%]\n../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_lfixm4fp/test_target.py::test_negative_amount_rejected PASSED [ 62%]\n../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_lfixm4fp/test_target.py::test_zero_balance_rejected PASSED [ 75%]\n../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_lfixm4fp/test_target.py::test_negative_balance_rejected PASSED [ 87%]\n../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_lfixm4fp/test_target.py::test_zero_fee_nominal_transaction PASSED [100%]\n\n============================== 8 passed in 0.01s ===============================\n"
+    },
+    {
+      "fixture_id": "currency_converter",
+      "fixture_name": "Deterministic Offline Currency Converter",
+      "source_hash": "323534758ae93a42c4a7702a5ff7fb7c6837ad08e6955dadd72dec834a953cde",
+      "reference_tests_total": 8,
+      "reference_tests_passed": 8,
+      "reference_passed": true,
+      "defect_reports": [
+        {
+          "defect_id": "DEFECT-CC-001",
+          "fixture_id": "currency_converter",
+          "detected": true,
+          "failing_test_name": "test_identical_currency_no_spread_or_fee",
+          "observed_error_type": "AssertionError",
+          "observed_error_message": "============================= test session starts ==============================\nplatform darwin -- Python 3.13.17, pytest-9.1.1, pluggy-1.7.0 -- /Users/sourabh/TestForge/.venv-release/bin/python\nrootdir: /var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_e5kp197_\nplugins: cov-7.1.0, any",
+          "matched_expected_assertion": true,
+          "duration_ms": 193.5
+        },
+        {
+          "defect_id": "DEFECT-CC-002",
+          "fixture_id": "currency_converter",
+          "detected": true,
+          "failing_test_name": "test_usd_to_eur_conversion_nominal, test_gbp_to_usd_conversion_nominal, test_small_order_under_50_incurs_flat_fee, test_vip_customer_receives_reduced_spread_and_fee_waiver",
+          "observed_error_type": "AssertionError",
+          "observed_error_message": "============================= test session starts ==============================\nplatform darwin -- Python 3.13.17, pytest-9.1.1, pluggy-1.7.0 -- /Users/sourabh/TestForge/.venv-release/bin/python\nrootdir: /var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_nq32m2oz\nplugins: cov-7.1.0, any",
+          "matched_expected_assertion": true,
+          "duration_ms": 192.52
+        },
+        {
+          "defect_id": "DEFECT-CC-003",
+          "fixture_id": "currency_converter",
+          "detected": true,
+          "failing_test_name": "test_small_order_under_50_incurs_flat_fee, test_vip_customer_receives_reduced_spread_and_fee_waiver",
+          "observed_error_type": "AssertionError",
+          "observed_error_message": "============================= test session starts ==============================\nplatform darwin -- Python 3.13.17, pytest-9.1.1, pluggy-1.7.0 -- /Users/sourabh/TestForge/.venv-release/bin/python\nrootdir: /var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_n3kfl2ah\nplugins: cov-7.1.0, any",
+          "matched_expected_assertion": true,
+          "duration_ms": 204.62
+        }
+      ],
+      "defects_detected_count": 3,
+      "defects_total_count": 3,
+      "mutation_score_pct": 78.3,
+      "adjusted_mutation_score_pct": 78.3,
+      "mutants_total": 46,
+      "mutants_killed": 36,
+      "mutants_survived": 10,
+      "mutants_timed_out": 0,
+      "mutants_invalid": 0,
+      "mutants_equivalent": 0,
+      "mutants_potentially_equivalent": 0,
+      "line_coverage_pct": 100.0,
+      "execution_duration_sec": 3.258,
+      "raw_execution_output": "============================= test session starts ==============================\nplatform darwin -- Python 3.13.17, pytest-9.1.1, pluggy-1.7.0 -- /Users/sourabh/TestForge/.venv-release/bin/python\nrootdir: /var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_4axrn7z_\nplugins: cov-7.1.0, anyio-4.15.1, platformdirs-4.13.5\ncollecting ... collected 8 items\n\n../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_4axrn7z_/test_target.py::test_identical_currency_no_spread_or_fee PASSED [ 12%]\n../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_4axrn7z_/test_target.py::test_usd_to_eur_conversion_nominal PASSED [ 25%]\n../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_4axrn7z_/test_target.py::test_gbp_to_usd_conversion_nominal PASSED [ 37%]\n../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_4axrn7z_/test_target.py::test_small_order_under_50_incurs_flat_fee PASSED [ 50%]\n../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_4axrn7z_/test_target.py::test_vip_customer_receives_reduced_spread_and_fee_waiver PASSED [ 62%]\n../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_4axrn7z_/test_target.py::test_zero_amount_returns_zero PASSED [ 75%]\n../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_4axrn7z_/test_target.py::test_negative_amount_raises_value_error PASSED [ 87%]\n../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_4axrn7z_/test_target.py::test_unsupported_currency_raises_value_error PASSED [100%]\n\n============================== 8 passed in 0.01s ===============================\n"
+    }
+  ]
+}

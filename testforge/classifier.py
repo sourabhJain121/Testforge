@@ -11,34 +11,50 @@ budget to tough mutants.
 """
 
 from __future__ import annotations
-import math
-import mlx.core as mx
-import mlx.nn as nn
-import mlx.optimizers as optim
+try:
+    import mlx.core as mx
+    import mlx.nn as nn
+    import mlx.optimizers as optim
+    HAS_MLX = True
+except ImportError:
+    HAS_MLX = False
+    mx = None
+    nn = None
+    optim = None
+
 from typing import List, Dict, Tuple
 from testforge.state import MutantRecord
 
 
-class MutantDifficultyClassifier(nn.Module):
-    """
-    MLP model executed directly on Apple Silicon GPU via Metal shaders in MLX.
-    Features:
-      - one-hot mutation type (4)
-      - normalized line number (1)
-      - diff size in tokens/chars (1)
-      - AST depth / complexity proxy (2)
-    Total input dimension = 8 -> Hidden 16 -> Output 2 (0: easy, 1: hard)
-    """
-    def __init__(self, input_dim: int = 8, hidden_dim: int = 16, num_classes: int = 2):
-        super().__init__()
-        self.fc1 = nn.Linear(input_dim, hidden_dim)
-        self.relu = nn.ReLU()
-        self.fc2 = nn.Linear(hidden_dim, num_classes)
+if HAS_MLX:
+    class MutantDifficultyClassifier(nn.Module):
+        """
+        MLP model executed directly on Apple Silicon GPU via Metal shaders in MLX.
+        Features:
+          - one-hot mutation type (4)
+          - normalized line number (1)
+          - diff size in tokens/chars (1)
+          - AST depth / complexity proxy (2)
+        Total input dimension = 8 -> Hidden 16 -> Output 2 (0: easy, 1: hard)
+        """
+        def __init__(self, input_dim: int = 8, hidden_dim: int = 16, num_classes: int = 2):
+            super().__init__()
+            self.fc1 = nn.Linear(input_dim, hidden_dim)
+            self.relu = nn.ReLU()
+            self.fc2 = nn.Linear(hidden_dim, num_classes)
 
-    def __call__(self, x: mx.array) -> mx.array:
-        x = self.relu(self.fc1(x))
-        x = self.fc2(x)
-        return x
+        def __call__(self, x: mx.array) -> mx.array:
+            x = self.relu(self.fc1(x))
+            x = self.fc2(x)
+            return x
+else:
+    class MutantDifficultyClassifier:
+        """Lightweight fallback classifier for non-MLX / Linux container environments."""
+        def __init__(self, input_dim: int = 8, hidden_dim: int = 16, num_classes: int = 2):
+            self.input_dim = input_dim
+
+        def parameters(self):
+            return []
 
 
 def extract_features(mutant: MutantRecord, total_lines: int = 50) -> List[float]:
@@ -79,14 +95,14 @@ class MutantTriageModel:
     """
     def __init__(self):
         self.model = MutantDifficultyClassifier()
-        # Initialize weights
-        mx.eval(self.model.parameters())
+        if HAS_MLX:
+            mx.eval(self.model.parameters())
 
     def train_on_history(self, dataset: List[Tuple[List[float], int]], epochs: int = 30, lr: float = 0.02) -> float:
         """
         Trains the classifier locally on past iteration outcomes (e.g. killed vs survived).
         """
-        if not dataset:
+        if not dataset or not HAS_MLX:
             return 0.0
 
         X_raw = [item[0] for item in dataset]
@@ -118,6 +134,15 @@ class MutantTriageModel:
         """
         if not mutants:
             return []
+
+        if not HAS_MLX:
+            # Deterministic heuristic fallback for non-Apple Silicon / container environments
+            res = []
+            for m in mutants:
+                f = extract_features(m)
+                is_hard = (f[6] > 0.5) or (f[5] > 0.3)
+                res.append("HIGH_PRIORITY_HARD" if is_hard else "STANDARD")
+            return res
 
         features = [extract_features(m) for m in mutants]
         X = mx.array(features, dtype=mx.float32)

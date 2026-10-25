@@ -1,0 +1,73 @@
+{
+  "timestamp": 1792678320,
+  "environment": {
+    "python_version": "Python 3.13.17",
+    "venv_path": "/Users/sourabh/TestForge/.venv-release",
+    "pip_check": "PASS (No broken requirements found)"
+  },
+  "dependency_manifest": {
+    "file": "requirements.txt",
+    "direct_packages_count": 21,
+    "lock_file": "qa_artifacts/dependency_reproducibility_20261022/requirements_resolved.lock"
+  },
+  "verification_commands": [
+    {
+      "command": ".venv-release/bin/pip install -r requirements.txt",
+      "exit_code": 0,
+      "status": "PASS",
+      "log": "pip_install.log"
+    },
+    {
+      "command": ".venv-release/bin/python -m pip check",
+      "exit_code": 0,
+      "status": "PASS",
+      "log": "pip_check.log"
+    },
+    {
+      "command": ".venv-release/bin/python -m pytest test_hardened.py tests/test_deployment.py tests/test_crew_critic.py tests/test_blackboard.py tests/test_mcp.py tests/test_security.py -v",
+      "exit_code": 0,
+      "passed_tests": 105,
+      "duration_sec": 18.18,
+      "status": "PASS",
+      "log": "targeted_tests.log"
+    },
+    {
+      "command": ".venv-release/bin/python -m pytest tests/ -q",
+      "exit_code": 0,
+      "passed_tests": 206,
+      "duration_sec": 207.80,
+      "status": "PASS",
+      "log": "full_pytest_suite.log"
+    },
+    {
+      "command": "docker compose config",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "docker build -t testforge:release-test .",
+      "exit_code": 0,
+      "duration_sec": 214.3,
+      "status": "PASS",
+      "log": "docker_build.log"
+    },
+    {
+      "command": "docker run -p 8001:8000 (probe /healthz & /readyz)",
+      "exit_code": 0,
+      "healthz_http_status": 200,
+      "readyz_http_status": 200,
+      "status": "PASS",
+      "log": "docker_container_verification.json"
+    },
+    {
+      "command": "node -c frontend/app.js",
+      "exit_code": 0,
+      "status": "PASS"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "status": "PASS"
+    }
+  ]
+}

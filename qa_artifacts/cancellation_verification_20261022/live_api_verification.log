@@ -1,0 +1,47 @@
+[2026-10-22 20:56:27] === Scenario 1: Healthz & Readyz Probes ===
+[2026-10-22 20:56:27] GET /healthz -> 200 {'status': 'healthy', 'service': 'testforge-backend', 'version': '2.0.0', 'timestamp': 1792682787.737621}
+[2026-10-22 20:56:27] GET /readyz -> 200 {'status': 'ready', 'service': 'testforge-backend', 'subsystems': {'ast_mutator': 'operational', 'blackboard': 'operational', 'sandbox_storage': 'operational'}, 'timestamp': 1792682787.742024}
+[2026-10-22 20:56:27] 
+=== Scenario 2: Cancel Non-Existent Job ID (404 Diagnosis) ===
+[2026-10-22 20:56:27] POST /api/harden/cancel/test123 -> 404 {"detail":"Hardening job 'test123' not found."}
+[2026-10-22 20:56:27] 
+=== Scenario 3: Real Hardening Job Creation and Cancellation Flow ===
+[2026-10-22 20:56:27] POST /api/harden/start -> 200 {'status': 'queued', 'job_id': '1ed6293d', 'poll_url': '/api/harden/status/1ed6293d'}
+[2026-10-22 20:56:27] Spawned real hardening job: 1ed6293d
+[2026-10-22 20:56:28] Initial GET /api/harden/status/1ed6293d -> 200 status='RUNNING'
+[2026-10-22 20:56:28] POST /api/harden/cancel/1ed6293d -> 200 {'status': 'cancelling', 'job_id': '1ed6293d', 'current_status': 'CANCELLING', 'message': "Cancellation request sent for running job '1ed6293d'."} (latency: 0.0017s)
+[2026-10-22 20:56:30] Poll #4 (2.0s): status='CANCELLING'
+[2026-10-22 20:56:32] Poll #8 (4.1s): status='CANCELLING'
+[2026-10-22 20:56:34] Poll #12 (6.1s): status='CANCELLING'
+[2026-10-22 20:56:36] Poll #16 (8.1s): status='CANCELLING'
+[2026-10-22 20:56:38] Poll #20 (10.1s): status='CANCELLING'
+[2026-10-22 20:56:40] Poll #24 (12.2s): status='CANCELLING'
+[2026-10-22 20:56:42] Poll #28 (14.2s): status='CANCELLING'
+[2026-10-22 20:56:44] Poll #32 (16.2s): status='CANCELLING'
+[2026-10-22 20:56:46] Poll #36 (18.3s): status='CANCELLING'
+[2026-10-22 20:56:48] Poll #40 (20.3s): status='CANCELLING'
+[2026-10-22 20:56:49] Poll #42 (21.6s): status='CANCELLED'
+[2026-10-22 20:56:49] Job 1ed6293d reached terminal state CANCELLED: True (total cancel duration: 21.554s)
+[2026-10-22 20:56:49] 
+=== Scenario 4: Cancellation Idempotency (Terminal Job) ===
+[2026-10-22 20:56:49] Repeated POST /api/harden/cancel/1ed6293d -> 200 {'status': 'already_terminal', 'job_id': '1ed6293d', 'current_status': 'CANCELLED', 'message': "Job '1ed6293d' is already in terminal state 'CANCELLED'."}
+[2026-10-22 20:56:49] 
+=== Scenario 5: Timeout Handling (timeout_seconds = 5) ===
+[2026-10-22 20:56:49] POST /api/harden/start (timeout=5s) -> 200 {'status': 'queued', 'job_id': '3772be5d', 'poll_url': '/api/harden/status/3772be5d'}
+[2026-10-22 20:56:51] Timeout Poll #4 (2.0s): status='RUNNING'
+[2026-10-22 20:56:53] Timeout Poll #8 (4.1s): status='RUNNING'
+[2026-10-22 20:56:55] Timeout Poll #12 (6.1s): status='RUNNING'
+[2026-10-22 20:56:57] Timeout Poll #16 (8.1s): status='RUNNING'
+[2026-10-22 20:56:59] Timeout Poll #20 (10.1s): status='RUNNING'
+[2026-10-22 20:57:01] Timeout Poll #24 (12.2s): status='RUNNING'
+[2026-10-22 20:57:03] Timeout Poll #28 (14.2s): status='RUNNING'
+[2026-10-22 20:57:05] Timeout Poll #32 (16.2s): status='RUNNING'
+[2026-10-22 20:57:07] Timeout Poll #36 (18.3s): status='RUNNING'
+[2026-10-22 20:57:08] Timeout Poll #38 (19.3s): status='TIMED_OUT'
+[2026-10-22 20:57:08] Job 3772be5d reached terminal state TIMED_OUT: True in 19.28s
+[2026-10-22 20:57:08] 
+=== Scenario 6: Subsequent Job Execution Post-Cancellation ===
+[2026-10-22 20:57:08] POST /api/harden/start (post-cancellation job) -> 200 {'status': 'queued', 'job_id': 'bf9947c1', 'poll_url': '/api/harden/status/bf9947c1'}
+[2026-10-22 20:57:09] Subsequent job bf9947c1 status: RUNNING
+[2026-10-22 20:57:09] 
+>>> ALL LIVE API CANCELLATION & TIMEOUT SCENARIOS PASSED! <<<

@@ -324,65 +324,64 @@ class HybridLLMClient:
         if self.engine_mode == "openrouter":
             raise RuntimeError("HybridLLMClient: Tier 4 Fallback Engaged - OpenRouter failed in force-openrouter mode.")
 
-        # ======================================================================
-        # TIER 3: TERTIARY LOCAL MODEL (Local Ollama - qwen2.5-coder:7b)
-        # ======================================================================
         if self.engine_mode in ("auto", "local"):
-            candidate_models = [self.local_model, "qwen2.5:7b", "codellama:7b"]
-            for model_candidate in candidate_models:
-                try:
-                    payload = {
-                        "model": model_candidate,
-                        "system": system_instruction,
-                        "prompt": prompt,
-                        "stream": False,
-                        "options": {"temperature": temperature}
-                    }
-                    req = urllib.request.Request(
-                        self.local_url,
-                        data=json.dumps(payload).encode("utf-8"),
-                        headers={"Content-Type": "application/json"}
-                    )
-                    start_t = time.perf_counter()
-                    with urllib.request.urlopen(req, timeout=30) as resp:
-                        data = json.loads(resp.read().decode("utf-8"))
-                    latency = time.perf_counter() - start_t
-                    raw_text = data.get("response", "")
-
-                    if not raw_text.strip():
-                        continue
-
-                    prompt_tokens = data.get("prompt_eval_count", 0)
-                    eval_tokens = data.get("eval_count", 0)
-                    tokens = {
-                        "prompt_tokens": prompt_tokens,
-                        "completion_tokens": eval_tokens,
-                        "total_tokens": prompt_tokens + eval_tokens
-                    }
-
-                    self.active_provider = f"Local Ollama ({model_candidate})"
-                    print(f"[*] Successfully generated via Local Engine: {model_candidate}")
-
-                    # Log telemetry to testforge_trace.jsonl
-                    if self.logger:
-                        self.logger.log_llm_event(
-                            agent_name=agent_name,
-                            model_name=f"Local Ollama:{model_candidate}",
-                            prompt=prompt,
-                            response_text=raw_text,
-                            prompt_tokens=tokens["prompt_tokens"],
-                            completion_tokens=tokens["completion_tokens"],
-                            total_tokens=tokens["total_tokens"],
-                            latency_sec=latency,
-                            iteration=iteration,
-                            provider_type="Local Ollama"
+            tags_url = self.local_url.replace("/api/generate", "/api/tags") if "/api/generate" in self.local_url else "http://localhost:11434/api/tags"
+            if is_ollama_running(tags_url, timeout=0.8):
+                candidate_models = [self.local_model, "qwen2.5:7b", "codellama:7b"]
+                for model_candidate in candidate_models:
+                    try:
+                        payload = {
+                            "model": model_candidate,
+                            "system": system_instruction,
+                            "prompt": prompt,
+                            "stream": False,
+                            "options": {"temperature": temperature}
+                        }
+                        req = urllib.request.Request(
+                            self.local_url,
+                            data=json.dumps(payload).encode("utf-8"),
+                            headers={"Content-Type": "application/json"}
                         )
+                        start_t = time.perf_counter()
+                        with urllib.request.urlopen(req, timeout=30) as resp:
+                            data = json.loads(resp.read().decode("utf-8"))
+                        latency = time.perf_counter() - start_t
+                        raw_text = data.get("response", "")
 
-                    return raw_text
+                        if not raw_text.strip():
+                            continue
 
-                except Exception as ollama_exc:
-                    # Model might not be installed or Ollama not running
-                    pass
+                        prompt_tokens = data.get("prompt_eval_count", 0)
+                        eval_tokens = data.get("eval_count", 0)
+                        tokens = {
+                            "prompt_tokens": prompt_tokens,
+                            "completion_tokens": eval_tokens,
+                            "total_tokens": prompt_tokens + eval_tokens
+                        }
+
+                        self.active_provider = f"Local Ollama ({model_candidate})"
+                        print(f"[*] Successfully generated via Local Engine: {model_candidate}")
+
+                        # Log telemetry to testforge_trace.jsonl
+                        if self.logger:
+                            self.logger.log_llm_event(
+                                agent_name=agent_name,
+                                model_name=f"Local Ollama:{model_candidate}",
+                                prompt=prompt,
+                                response_text=raw_text,
+                                prompt_tokens=tokens["prompt_tokens"],
+                                completion_tokens=tokens["completion_tokens"],
+                                total_tokens=tokens["total_tokens"],
+                                latency_sec=latency,
+                                iteration=iteration,
+                                provider_type="Local Ollama"
+                            )
+
+                        return raw_text
+
+                    except Exception as ollama_exc:
+                        # Model might not be installed or Ollama not running
+                        pass
 
         # ======================================================================
         # TIER 4: QUATERNARY AST DETERMINISTIC RULE SYNTHESIZER

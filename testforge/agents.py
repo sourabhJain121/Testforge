@@ -33,11 +33,12 @@ from testforge.adk_engine import ADKToolRegistry, ADKContext
 
 class CodeSanitizer:
     """
-    Extracts Python code from Markdown backticks and verifies AST validity.
-    Prevents syntax errors from crashing the sandboxed test executor.
+    Extracts Python code from Markdown backticks, verifies AST validity,
+    and enforces security guardrails against unsafe execution primitives.
+    Prevents syntax errors and dangerous payloads from executing in the sandbox.
     """
     @staticmethod
-    def extract_and_validate(raw_text: str) -> Tuple[bool, str, str]:
+    def extract_and_validate(raw_text: str, enforce_security: bool = True) -> Tuple[bool, str, str]:
         code = raw_text.strip()
         if "```python" in code:
             parts = code.split("```python")
@@ -47,7 +48,13 @@ class CodeSanitizer:
             code = parts[1].split("```")[0].strip()
 
         try:
-            ast.parse(code)
+            tree = ast.parse(code)
+            if enforce_security:
+                from testforge.security import SecurityGuardrail
+                sec_res = SecurityGuardrail().inspect_code_ast(tree, enforce_policy=True)
+                if not sec_res.allowed:
+                    violations = "; ".join(f"[{v.rule_id}] {v.message}" for v in sec_res.violations)
+                    return (False, code, f"SecurityPolicyViolation: {violations}")
             return (True, code, "")
         except SyntaxError as e:
             return (False, code, f"SyntaxError line {e.lineno}: {e.msg}")
@@ -342,11 +349,12 @@ class TestGeneratorAgent:
     ):
         self.model_name = "gemini-3.6-flash" if "2.5" in model_name or "1.5" in model_name else model_name
         self.logger = logger
-        self.api_key = api_key or os.environ.get("GEMINI_API_KEY", "").strip()
+        self.api_key = api_key if api_key is not None else os.environ.get("GEMINI_API_KEY", "").strip()
         self.llm_client = llm_client or HybridLLMClient(
             cloud_model=self.model_name,
             api_key=self.api_key,
-            logger=self.logger
+            logger=self.logger,
+            engine_mode="cloud" if self.api_key else "local"
         )
         self.active_provider = (
             self.llm_client.active_provider
@@ -638,6 +646,32 @@ def test_state_machine_rules_hardened():
     assert ok_admin is True and st_admin == "CANCELLED"
     ok_guest, err_guest = transition_order_state("PAYMENT_PENDING", "PAID", "GUEST", 15000.0)
     assert ok_guest is False and err_guest == "VERIFICATION_REQUIRED"
+""")
+            elif fn == "convert_currency":
+                if not is_hardened_round:
+                    test_functions.append("""
+def test_currency_basic():
+    res = convert_currency(100.0, "USD", "EUR")
+    assert res == 90.0
+    assert convert_currency(100.0, "USD", "USD") == 100.0
+    with pytest.raises(ValueError):
+        convert_currency(-10.0, "USD", "EUR")
+""")
+                else:
+                    test_functions.append("""
+def test_currency_rules_hardened():
+    assert convert_currency(100.0, "USD", "EUR") == 90.0
+    assert convert_currency(100.0, "USD", "USD", is_vip=False) == 100.0
+    assert convert_currency(1000.0, "USD", "EUR", is_vip=True) == 918.0
+    assert convert_currency(100.0, "GBP", "JPY") == 19200.0
+    with pytest.raises(ValueError):
+        convert_currency(0.0, "USD", "EUR")
+    with pytest.raises(ValueError):
+        convert_currency(-50.0, "USD", "EUR")
+    with pytest.raises(ValueError):
+        convert_currency(100.0, "XYZ", "EUR")
+    with pytest.raises(ValueError):
+        convert_currency(100.0, "USD", "EUR", spread_bps=0)
 """)
             else:
                 dummy_args = ", ".join(["1"] * len(args))

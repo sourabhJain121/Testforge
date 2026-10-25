@@ -1,0 +1,29 @@
+[
+  {
+    "requestId": "84848.74",
+    "url": "http://127.0.0.1:8000/favicon.ico",
+    "status": 404,
+    "statusText": "Not Found",
+    "mimeType": "application/json",
+    "type": "RESPONSE",
+    "timestamp": 1792945441.630764
+  },
+  {
+    "requestId": "84848.84",
+    "url": "http://127.0.0.1:8000/api/ingest/github",
+    "status": 422,
+    "statusText": "Unprocessable Content",
+    "mimeType": "application/json",
+    "type": "RESPONSE",
+    "timestamp": 1792945475.56509
+  },
+  {
+    "requestId": "84848.85",
+    "url": "http://127.0.0.1:8000/api/ingest/github",
+    "status": 422,
+    "statusText": "Unprocessable Content",
+    "mimeType": "application/json",
+    "type": "RESPONSE",
+    "timestamp": 1792945476.868813
+  }
+]
