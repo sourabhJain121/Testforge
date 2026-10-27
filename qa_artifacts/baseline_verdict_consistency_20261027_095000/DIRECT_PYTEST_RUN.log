@@ -1,0 +1,159 @@
+........................................................................ [ 16%]
+........................................................................ [ 33%]
+........................................................................ [ 50%]
+........................................................................ [ 67%]
+........................................................................ [ 84%]
+....................................................................     [100%]
+=============================== warnings summary ===============================
+.venv-release/lib/python3.13/site-packages/starlette/testclient.py:45
+  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/starlette/testclient.py:45: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+.venv-release/lib/python3.13/site-packages/google/cloud/aiplatform/models.py:52
+  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/google/cloud/aiplatform/models.py:52: FutureWarning: Support for google-cloud-storage < 3.0.0 will be removed in a future version of google-cloud-aiplatform. Please upgrade to google-cloud-storage >= 3.0.0.
+    from google.cloud.aiplatform.utils import gcs_utils
+
+server.py:70
+  /Users/sourabh/TestForge/server.py:70: DeprecationWarning: 
+          on_event is deprecated, use lifespan event handlers instead.
+  
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+          
+    @app.on_event("startup")
+
+.venv-release/lib/python3.13/site-packages/fastapi/applications.py:4723
+  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/fastapi/applications.py:4723: DeprecationWarning: 
+          on_event is deprecated, use lifespan event handlers instead.
+  
+          Read more about it in the
+          [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+          
+    return self.router.on_event(event_type)  # ty: ignore[deprecated]
+
+tests/test_a2a_protocol.py: 1 warning
+tests/test_adk_generator.py: 1 warning
+tests/test_adversarial_failure_injection.py: 1 warning
+tests/test_agentic_pipeline.py: 4 warnings
+tests/test_benchmarking.py: 1 warning
+tests/test_blackboard.py: 1 warning
+tests/test_blast_and_adk.py: 1 warning
+tests/test_callbacks.py: 1 warning
+tests/test_cancellation.py: 6 warnings
+tests/test_checkpoint_resumption.py: 10 warnings
+tests/test_crew_critic.py: 9 warnings
+tests/test_mcp.py: 2 warnings
+tests/test_mode_c_ingestion.py: 1 warning
+tests/test_observability.py: 2 warnings
+tests/test_orchestration_mcp.py: 8 warnings
+tests/test_task_lifecycle.py: 2 warnings
+  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/crewai/agent/core.py:425: DeprecationWarning: function_calling_llm is deprecated and will be removed in a future release.
+    if self.function_calling_llm and not isinstance(
+
+tests/test_a2a_protocol.py: 1 warning
+tests/test_adk_generator.py: 1 warning
+tests/test_adversarial_failure_injection.py: 1 warning
+tests/test_agentic_pipeline.py: 4 warnings
+tests/test_benchmarking.py: 1 warning
+tests/test_blackboard.py: 1 warning
+tests/test_blast_and_adk.py: 1 warning
+tests/test_callbacks.py: 1 warning
+tests/test_cancellation.py: 6 warnings
+tests/test_checkpoint_resumption.py: 10 warnings
+tests/test_crew_critic.py: 9 warnings
+tests/test_mcp.py: 2 warnings
+tests/test_mode_c_ingestion.py: 1 warning
+tests/test_observability.py: 2 warnings
+tests/test_orchestration_mcp.py: 8 warnings
+tests/test_task_lifecycle.py: 2 warnings
+  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/crewai/agent/core.py:433: DeprecationWarning: deprecated
+    if self.allow_code_execution:
+
+tests/test_a2a_protocol.py: 1 warning
+tests/test_adk_generator.py: 1 warning
+tests/test_adversarial_failure_injection.py: 1 warning
+tests/test_agentic_pipeline.py: 4 warnings
+tests/test_benchmarking.py: 1 warning
+tests/test_blackboard.py: 1 warning
+tests/test_blast_and_adk.py: 1 warning
+tests/test_callbacks.py: 1 warning
+tests/test_cancellation.py: 6 warnings
+tests/test_checkpoint_resumption.py: 10 warnings
+tests/test_crew_critic.py: 9 warnings
+tests/test_mcp.py: 2 warnings
+tests/test_mode_c_ingestion.py: 1 warning
+tests/test_observability.py: 2 warnings
+tests/test_orchestration_mcp.py: 8 warnings
+tests/test_task_lifecycle.py: 2 warnings
+  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/crewai/agent/core.py:444: DeprecationWarning: deprecated
+    if self.reasoning and self.planning_config is None:
+
+tests/test_a2a_protocol.py: 3 warnings
+tests/test_adk_generator.py: 3 warnings
+tests/test_agentic_pipeline.py: 9 warnings
+tests/test_checkpoint_resumption.py: 7 warnings
+tests/test_crew_critic.py: 18 warnings
+tests/test_orchestration_mcp.py: 12 warnings
+  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/crewai/crew.py:650: DeprecationWarning: function_calling_llm is deprecated and will be removed in a future release.
+    if self.function_calling_llm and not isinstance(self.function_calling_llm, LLM):
+
+tests/test_a2a_protocol.py: 1 warning
+tests/test_adk_generator.py: 1 warning
+tests/test_agentic_pipeline.py: 3 warnings
+tests/test_checkpoint_resumption.py: 3 warnings
+tests/test_crew_critic.py: 6 warnings
+tests/test_orchestration_mcp.py: 6 warnings
+  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/crewai/crews/utils.py:372: DeprecationWarning: function_calling_llm is deprecated and will be removed in a future release.
+    crew.function_calling_llm,
+
+tests/test_a2a_protocol.py: 1 warning
+tests/test_adk_generator.py: 1 warning
+tests/test_agentic_pipeline.py: 3 warnings
+tests/test_checkpoint_resumption.py: 3 warnings
+tests/test_crew_critic.py: 6 warnings
+tests/test_orchestration_mcp.py: 6 warnings
+  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/crewai/crews/utils.py:87: DeprecationWarning: function_calling_llm is deprecated and will be removed in a future release.
+    if not agent.function_calling_llm:  # type: ignore[attr-defined]
+
+tests/test_a2a_protocol.py: 1 warning
+tests/test_adk_generator.py: 1 warning
+tests/test_agentic_pipeline.py: 3 warnings
+tests/test_checkpoint_resumption.py: 2 warnings
+tests/test_crew_critic.py: 6 warnings
+tests/test_orchestration_mcp.py: 3 warnings
+  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/crewai/agent/core.py:1300: DeprecationWarning: function_calling_llm is deprecated and will be removed in a future release.
+    function_calling_llm=self.function_calling_llm,
+
+tests/test_a2a_protocol.py: 2 warnings
+tests/test_adk_generator.py: 2 warnings
+tests/test_agentic_pipeline.py: 6 warnings
+tests/test_checkpoint_resumption.py: 6 warnings
+tests/test_crew_critic.py: 12 warnings
+tests/test_orchestration_mcp.py: 12 warnings
+  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/crewai/crew.py:1675: DeprecationWarning: deprecated
+    if hasattr(agent, "allow_code_execution") and getattr(
+
+tests/test_a2a_protocol.py: 1 warning
+tests/test_adk_generator.py: 1 warning
+tests/test_agentic_pipeline.py: 3 warnings
+tests/test_checkpoint_resumption.py: 3 warnings
+tests/test_crew_critic.py: 6 warnings
+tests/test_orchestration_mcp.py: 6 warnings
+  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/crewai/crew.py:1682: DeprecationWarning: deprecated
+    and hasattr(agent, "multimodal")
+
+tests/test_a2a_protocol.py: 1 warning
+tests/test_adk_generator.py: 1 warning
+tests/test_agentic_pipeline.py: 3 warnings
+tests/test_checkpoint_resumption.py: 3 warnings
+tests/test_crew_critic.py: 6 warnings
+tests/test_orchestration_mcp.py: 6 warnings
+  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/crewai/crew.py:1683: DeprecationWarning: deprecated
+    and getattr(agent, "multimodal", False)
+
+tests/test_crew_critic.py::TestCrewAICriticAgent::test_malformed_llm_output_graceful_fallback
+  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/crewai/utilities/converter.py:379: DeprecationWarning: function_calling_llm is deprecated and will be removed in a future release.
+    llm = getattr(agent, "function_calling_llm", None) or agent.llm
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+428 passed, 346 warnings in 236.52s (0:03:56)

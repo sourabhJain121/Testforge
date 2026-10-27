@@ -1,6 +1,6 @@
 {
   "target_file": "samples/discount.py",
-  "timestamp": 1793071683.672559,
+  "timestamp": 1793075085.656235,
   "repetitions": 1,
   "hardware_summary": "arm64 (Darwin, 10 cores, 16.0GB RAM)",
   "runs": [
@@ -11,7 +11,7 @@
       "error_message": null,
       "metrics": {
         "measured": {
-          "duration_seconds": 1.271,
+          "duration_seconds": 1.091,
           "killed_mutants": 0,
           "total_mutants": 19,
           "total_tokens": 0,
@@ -36,7 +36,7 @@
       "scenario": "baseline",
       "runs_completed": 1,
       "runs_failed": 0,
-      "mean_duration_sec": 1.271,
+      "mean_duration_sec": 1.091,
       "stddev_duration_sec": 0.0,
       "mean_mutation_score": 0.0,
       "mean_line_coverage": 10.0,

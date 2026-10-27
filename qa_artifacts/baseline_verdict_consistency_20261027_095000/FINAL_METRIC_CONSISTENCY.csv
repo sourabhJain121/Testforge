@@ -1,0 +1,6 @@
+job_id,filename,baseline_tests_generated,baseline_tests_executed,baseline_tests_passed,baseline_tests_failed,baseline_clean_verdict,source_statements_total,source_statements_covered,line_coverage_pct,mutants_generated,mutants_killed,mutants_survived,mutation_score,final_hardening_status,dom_vs_backend_parity,screenshot
+5f996812,discount.py,1,1,1,0,🟢 ALL PASSED,10,10,100.0%,19,12,7,63.2%,TARGET_SCORE_UNREACHED,MATCH,01_discount_consistency_check.png
+012bc18d,banking.py,1,1,1,0,🟢 ALL PASSED,10,9,90.0%,23,12,11,52.2%,TARGET_SCORE_UNREACHED,MATCH,02_banking_consistency_check.png
+39a9cd38,inventory_pricing.py,1,1,1,0,🟢 ALL PASSED,21,15,71.4%,37,17,20,46.0%,TARGET_SCORE_UNREACHED,MATCH,03_inventory_pricing_consistency_check.png
+f5bc10ce,state_machine.py,1,1,1,0,🟢 ALL PASSED,14,9,64.3%,57,12,45,21.1%,TARGET_SCORE_UNREACHED,MATCH,04_state_machine_consistency_check.png
+90e26c48,rate_limiter.py,1,1,1,0,🟢 ALL PASSED,11,9,81.8%,38,16,22,42.1%,TARGET_SCORE_UNREACHED,MATCH,05_rate_limiter_consistency_check.png
