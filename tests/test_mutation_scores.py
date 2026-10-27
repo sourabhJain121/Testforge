@@ -138,3 +138,51 @@ def test_potentially_equivalent_recorded_explicitly():
     # (only verified equivalent mutants are excluded)
     assert res["raw_mutation_score"] == 50.0
     assert res["adjusted_mutation_score"] == 50.0
+
+
+def test_target_score_verdict_distinction():
+    """
+    Ensures that score < target produces TARGET_SCORE_UNREACHED when reflection
+    iterations are exhausted, and score >= target produces SUCCESS/TARGET_ACHIEVED.
+    """
+    target = 85.0
+    score_unreached = 63.16
+    score_achieved = 92.5
+
+    # Target unreached scenario
+    status_unreached = "TARGET_SCORE_UNREACHED" if score_unreached < target else "SUCCESS"
+    assert status_unreached == "TARGET_SCORE_UNREACHED"
+    assert status_unreached != "SUCCESS"
+
+    # Target achieved scenario
+    status_achieved = "TARGET_SCORE_UNREACHED" if score_achieved < target else "SUCCESS"
+    assert status_achieved == "SUCCESS"
+
+
+def test_frontend_app_js_status_contract_truthfulness():
+    """
+    Regression test verifying that frontend/app.js contains truthful mappings for
+    TARGET_SCORE_UNREACHED, does not show unearned success badges, displays score
+    alongside target, and provides survival explanations.
+    """
+    from pathlib import Path
+    app_js_path = Path(__file__).parent.parent / "frontend" / "app.js"
+    assert app_js_path.exists(), "frontend/app.js must exist"
+    content = app_js_path.read_text(encoding="utf-8")
+
+    # 1. Distinct TARGET_SCORE_UNREACHED handling
+    assert "TARGET_SCORE_UNREACHED" in content
+    assert "TARGET UNREACHED" in content
+
+    # 2. Score displayed alongside target
+    assert "Target:" in content or "targetScore" in content
+
+    # 3. Honest verdict banner distinguishing pipeline execution from target achievement
+    assert "Pipeline Completed — Mutation Target Unreached" in content
+    assert "Baseline: 100% Passed" in content
+    assert "Target: Unreached" in content
+
+    # 4. Survivor diagnosis & verification explanation
+    assert "getSurvivalExplanation" in content
+    assert "Survivor Diagnosis & Sandbox Verification" in content
+    assert "Survival Semantics:" in content

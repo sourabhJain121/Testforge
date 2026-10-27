@@ -155,6 +155,25 @@
         <div id="a2a-card-content" class="hidden">
           <!-- Injected safely via DOM textContent -->
         </div>
+
+        <!-- Diagnostic A2A Protocol Test (Improvement D) -->
+        <div class="glass-panel" id="a2a-test-runner-card" style="margin-top: 1.25rem; padding: 1rem; border-radius: 8px; border: 1px solid rgba(168, 85, 247, 0.25); background: rgba(15, 23, 42, 0.7);">
+          <h4 style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color: #c084fc; display: flex; align-items: center; gap: 0.5rem;">
+            <span>⚡</span> Real In-Browser A2A Protocol & Schema Verification
+          </h4>
+          <p style="font-size: 0.78rem; color: #94a3b8; margin: 0 0 0.75rem 0;">
+            Executes genuine Agent2Agent (A2A v0.3.0) protocol discovery and schema validation against the local agent instance.
+          </p>
+          <div style="display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.75rem;">
+            <button type="button" class="btn btn-primary btn-sm" id="btn-run-a2a-test">
+              <span class="icon">▶️</span> Test A2A Connection
+            </button>
+          </div>
+          <div id="a2a-test-result-box" class="hidden" style="background: rgba(0,0,0,0.4); padding: 0.6rem 0.8rem; border-radius: 6px; font-family: var(--font-mono); font-size: 0.75rem;">
+            <div id="a2a-test-status-line" style="margin-bottom: 0.4rem; font-weight: 600;"></div>
+            <pre id="a2a-test-output-json" style="max-height: 140px; overflow-y: auto; margin: 0; color: #e2e8f0;"></pre>
+          </div>
+        </div>
       </div>
       <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
         <div style="display: flex; gap: 0.5rem; align-items: center;">
@@ -192,6 +211,29 @@
         <!-- Rendered MCP Content -->
         <div id="mcp-card-content" class="hidden">
           <!-- Injected via DOM -->
+        </div>
+
+        <!-- Diagnostic FastMCP Tool Execution (Improvement C) -->
+        <div class="glass-panel" id="mcp-test-runner-card" style="margin-top: 1.25rem; padding: 1rem; border-radius: 8px; border: 1px solid rgba(56, 189, 248, 0.25); background: rgba(15, 23, 42, 0.7);">
+          <h4 style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color: #38bdf8; display: flex; align-items: center; gap: 0.5rem;">
+            <span>⚡</span> Real In-Browser FastMCP Diagnostic Tool Invocation
+          </h4>
+          <p style="font-size: 0.78rem; color: #94a3b8; margin: 0 0 0.75rem 0;">
+            Invokes genuine Model Context Protocol (FastMCP) stdio JSON-RPC transport to inspect permitted workspace fixtures.
+          </p>
+          <div style="display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.75rem;">
+            <select id="mcp-test-tool-select" class="form-control" style="font-size: 0.8rem; padding: 0.35rem 0.6rem; max-width: 240px;">
+              <option value="list_directory" selected>list_directory (samples/)</option>
+              <option value="get_file_info">get_file_info (discount.py)</option>
+            </select>
+            <button type="button" class="btn btn-primary btn-sm" id="btn-run-mcp-test">
+              <span class="icon">▶️</span> Test MCP Connection
+            </button>
+          </div>
+          <div id="mcp-test-result-box" class="hidden" style="background: rgba(0,0,0,0.4); padding: 0.6rem 0.8rem; border-radius: 6px; font-family: var(--font-mono); font-size: 0.75rem;">
+            <div id="mcp-test-status-line" style="margin-bottom: 0.4rem; font-weight: 600;"></div>
+            <pre id="mcp-test-output-json" style="max-height: 140px; overflow-y: auto; margin: 0; color: #e2e8f0;"></pre>
+          </div>
         </div>
       </div>
       <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
@@ -418,31 +460,101 @@
       <!-- TAB: MODE C -->
       <section class="tab-pane" id="tab-mode-c" role="tabpanel">
         <div class="grid-2col">
-          <!-- Left: GitHub URL Ingestion Input -->
+          <!-- Left: GitHub URL Ingestion & Repo Explorer -->
           <div class="glass-panel panel-padded">
-            <h3 class="panel-title"><span class="icon">🌐</span> Direct GitHub File Ingestion</h3>
-            <p class="panel-desc">Fetches raw Python modules directly from public GitHub repositories, validates AST syntax, normalizes URLs, and resolves single-file package dependencies.</p>
+            <h3 class="panel-title"><span class="icon">🌐</span> GitHub Ingest & Repository Explorer</h3>
+            <p class="panel-desc">Ingest isolated Python modules or explore entire public repositories via GitHub Git Trees API, validate AST syntax, and target for autonomous hardening.</p>
 
-            <div class="form-group">
-              <label for="github-url-input">GitHub Python File URL:</label>
-              <input type="text" id="github-url-input" class="form-control" placeholder="https://github.com/psf/requests/blob/main/src/requests/models.py">
-              <p class="form-hint">Accepts standard GitHub blob URLs or raw.githubusercontent.com URLs.</p>
+            <!-- Subtab Switcher -->
+            <div class="subtab-pill-group" role="tablist">
+              <button type="button" class="subtab-pill active" id="subtab-btn-file-url" data-target="subtab-pane-file-url">
+                <span>📄</span> Single File URL
+              </button>
+              <button type="button" class="subtab-pill" id="subtab-btn-repo-tree" data-target="subtab-pane-repo-tree">
+                <span>📦</span> Repository Explorer
+              </button>
             </div>
 
-            <!-- Quick sample buttons -->
-            <div class="quick-prompts">
-              <span class="quick-prompt-label">Try Real Repository Files:</span>
-              <button class="prompt-chip" data-url="https://github.com/psf/requests/blob/main/src/requests/models.py">requests/models.py</button>
-              <button class="prompt-chip" data-url="https://github.com/psf/requests/blob/main/src/requests/cookies.py">requests/cookies.py</button>
-              <button class="prompt-chip" data-url="https://github.com/psf/requests/blob/main/src/requests/status_codes.py">requests/status_codes.py</button>
+            <!-- Pane 1: Single File URL -->
+            <div id="subtab-pane-file-url" class="subtab-pane">
+              <div class="form-group">
+                <label for="github-url-input">GitHub Python File URL:</label>
+                <input type="text" id="github-url-input" class="form-control" placeholder="https://github.com/psf/requests/blob/main/src/requests/models.py">
+                <p class="form-hint">Accepts standard GitHub blob URLs or raw.githubusercontent.com URLs.</p>
+              </div>
+
+              <!-- Quick sample buttons -->
+              <div class="quick-prompts">
+                <span class="quick-prompt-label">Try Real Repository Files:</span>
+                <button class="prompt-chip" data-url="https://github.com/psf/requests/blob/main/src/requests/models.py">requests/models.py</button>
+                <button class="prompt-chip" data-url="https://github.com/psf/requests/blob/main/src/requests/cookies.py">requests/cookies.py</button>
+                <button class="prompt-chip" data-url="https://github.com/psf/requests/blob/main/src/requests/status_codes.py">requests/status_codes.py</button>
+              </div>
+
+              <button class="btn btn-primary btn-block btn-glow" id="btn-fetch-github">
+                <span class="icon">⬇️</span> Fetch & Ingest File
+              </button>
+
+              <div class="url-validation-indicator hidden" id="url-validation-badge" style="margin-top: 0.75rem;">
+                <span class="icon">🛡️</span> <span id="url-validation-text">URL Normalized & Validated</span>
+              </div>
             </div>
 
-            <button class="btn btn-primary btn-block btn-glow" id="btn-fetch-github">
-              <span class="icon">⬇️</span> Fetch & Ingest
-            </button>
+            <!-- Pane 2: Repository Explorer -->
+            <div id="subtab-pane-repo-tree" class="subtab-pane hidden">
+              <div class="form-group">
+                <label for="github-repo-url-input">GitHub Repository URL:</label>
+                <input type="text" id="github-repo-url-input" class="form-control" placeholder="https://github.com/sourabhJain121/Testforge">
+                <p class="form-hint">Enter any public repo URL or owner/repo format.</p>
+              </div>
 
-            <div class="url-validation-indicator hidden" id="url-validation-badge">
-              <span class="icon">🛡️</span> <span id="url-validation-text">URL Normalized & Validated</span>
+              <div class="form-group">
+                <label for="github-repo-ref-input">Branch, Tag, or Commit SHA (Optional):</label>
+                <input type="text" id="github-repo-ref-input" class="form-control" placeholder="main (defaults to repository HEAD)">
+              </div>
+
+              <!-- Quick repo prompts -->
+              <div class="quick-prompts">
+                <span class="quick-prompt-label">Explore Sample Repositories:</span>
+                <button class="prompt-chip repo-chip" data-repo="https://github.com/sourabhJain121/Testforge">sourabhJain121/Testforge</button>
+                <button class="prompt-chip repo-chip" data-repo="https://github.com/psf/requests">psf/requests</button>
+                <button class="prompt-chip repo-chip" data-repo="https://github.com/pallets/click">pallets/click</button>
+              </div>
+
+              <button class="btn btn-primary btn-block btn-glow" id="btn-discover-repo">
+                <span class="icon">🔍</span> Discover Repository Files
+              </button>
+
+              <!-- Repo Discovery Result -->
+              <div id="repo-discovery-results" class="hidden">
+                <div class="repo-summary-card">
+                  <div class="repo-summary-header">
+                    <span class="repo-title-text" id="repo-display-name">📦 owner/repo</span>
+                    <div class="repo-meta-badges">
+                      <span class="badge badge-mono" id="repo-commit-badge">commit: ...</span>
+                      <span class="badge badge-success" id="repo-file-count-badge">0 files</span>
+                    </div>
+                  </div>
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <input type="text" id="repo-filter-input" class="form-control" placeholder="🔍 Filter Python files...">
+                  </div>
+                </div>
+
+                <div class="repo-file-table-container">
+                  <table class="repo-file-table">
+                    <thead>
+                      <tr>
+                        <th>Python Source File</th>
+                        <th style="width: 70px;">Size</th>
+                        <th style="width: 100px; text-align: right;">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody id="repo-file-table-body">
+                      <!-- Dynamically rendered rows -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -605,6 +717,58 @@
             </div>
             <div class="progress-track">
               <div class="progress-fill" id="hardening-progress-bar"></div>
+            </div>
+          </div>
+
+          <!-- Live Blackboard Shared State Partition Strip (Improvement B) -->
+          <div class="glass-panel" id="hardening-blackboard-strip" style="margin-bottom: 1.5rem; padding: 0.85rem 1rem; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.08); background: rgba(15, 23, 42, 0.65);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; flex-wrap: wrap; gap: 0.5rem;">
+              <div style="display: flex; align-items: center; gap: 0.6rem;">
+                <span style="font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+                  <span>🧠</span> Live Blackboard Shared State Partition Strip
+                </span>
+                <span class="badge badge-cyan" id="bb-strip-stage" style="font-size: 0.7rem; padding: 1px 6px;">STANDBY</span>
+              </div>
+              <span id="bb-strip-revision" style="font-size: 0.75rem; font-family: var(--font-mono); color: #38bdf8; font-weight: 600;">
+                Revision: 0
+              </span>
+            </div>
+            <div class="bb-partitions-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.5rem;">
+              <!-- TargetSpace -->
+              <div class="bb-pill-card" id="bb-pill-target" style="background: rgba(15, 23, 42, 0.7); padding: 0.5rem 0.65rem; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.06); transition: all 0.3s ease;">
+                <div style="font-size: 0.72rem; font-weight: 600; color: #cbd5e1; display: flex; align-items: center; gap: 4px;">
+                  <span>📁</span> TargetSpace
+                </div>
+                <div id="bb-target-summary" style="font-size: 0.68rem; color: #94a3b8; margin-top: 2px;">Waiting...</div>
+              </div>
+              <!-- SuiteSpace -->
+              <div class="bb-pill-card" id="bb-pill-suite" style="background: rgba(15, 23, 42, 0.7); padding: 0.5rem 0.65rem; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.06); transition: all 0.3s ease;">
+                <div style="font-size: 0.72rem; font-weight: 600; color: #cbd5e1; display: flex; align-items: center; gap: 4px;">
+                  <span>🧪</span> SuiteSpace
+                </div>
+                <div id="bb-suite-summary" style="font-size: 0.68rem; color: #94a3b8; margin-top: 2px;">Waiting...</div>
+              </div>
+              <!-- MutantSpace -->
+              <div class="bb-pill-card" id="bb-pill-mutant" style="background: rgba(15, 23, 42, 0.7); padding: 0.5rem 0.65rem; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.06); transition: all 0.3s ease;">
+                <div style="font-size: 0.72rem; font-weight: 600; color: #cbd5e1; display: flex; align-items: center; gap: 4px;">
+                  <span>🧬</span> MutantSpace
+                </div>
+                <div id="bb-mutant-summary" style="font-size: 0.68rem; color: #94a3b8; margin-top: 2px;">Waiting...</div>
+              </div>
+              <!-- CriticSpace -->
+              <div class="bb-pill-card" id="bb-pill-critic" style="background: rgba(15, 23, 42, 0.7); padding: 0.5rem 0.65rem; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.06); transition: all 0.3s ease;">
+                <div style="font-size: 0.72rem; font-weight: 600; color: #cbd5e1; display: flex; align-items: center; gap: 4px;">
+                  <span>🧐</span> CriticSpace
+                </div>
+                <div id="bb-critic-summary" style="font-size: 0.68rem; color: #94a3b8; margin-top: 2px;">Waiting...</div>
+              </div>
+              <!-- MetricsSpace -->
+              <div class="bb-pill-card" id="bb-pill-metrics" style="background: rgba(15, 23, 42, 0.7); padding: 0.5rem 0.65rem; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.06); transition: all 0.3s ease;">
+                <div style="font-size: 0.72rem; font-weight: 600; color: #cbd5e1; display: flex; align-items: center; gap: 4px;">
+                  <span>📊</span> MetricsSpace
+                </div>
+                <div id="bb-metrics-summary" style="font-size: 0.68rem; color: #94a3b8; margin-top: 2px;">Waiting...</div>
+              </div>
             </div>
           </div>
 

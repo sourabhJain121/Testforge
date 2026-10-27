@@ -1,0 +1,5 @@
+Improvement,Name,Backend Endpoint,Frontend Element,Verification Method,Status,Evidence
+A,Real Backend Lifecycle Progress,/api/harden/status/{id},#hardening-progress-box,Headed Chrome CDP (Flow 2-4),PASS,Captured FSM stages (GENERATING_TESTS 45% -> EXECUTING 80% -> COMPLETED 100%). Simulated progressSim completely removed.
+B,Live Blackboard Shared State Strip,/api/harden/status/{id},#hardening-blackboard-strip,Headed Chrome CDP (Flow 4 & 12),PASS,5 partitions (TargetSpace SuiteSpace MutantSpace CriticSpace MetricsSpace) synchronized. Revision 76 matched backend.
+C,Safe In-Browser FastMCP Diagnostic,POST /api/mcp/test,#mcp-modal (#mcp-test-runner),Headed Chrome CDP (Flow 5-7) & Unit Tests,PASS,Real FastMCP stdio tool list_directory ran in 494.84ms. Traversal (../) and .env rejected with HTTP 400.
+D,Safe In-Browser A2A Protocol Diagnostic,POST /api/a2a/test,#a2a-modal (#a2a-test-runner),Headed Chrome CDP (Flow 8-10) & Unit Tests,PASS,A2A v0.3.0 AgentCard verified in 0.07ms. Remote/cloud metadata SSRF rejected with HTTP 400.

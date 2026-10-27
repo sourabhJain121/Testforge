@@ -49,7 +49,7 @@ DEFAULT_ALLOWED_TOOLS = {
     "directory_tree", "search_files", "list_allowed_directories",
     # GitHub tools
     "get_file_contents", "get_repository_info", "search_repositories",
-    "get_issue", "get_pull_request", "list_commits"
+    "get_repository_tree", "get_issue", "get_pull_request", "list_commits"
 }
 
 # Explicitly blocked destructive tools

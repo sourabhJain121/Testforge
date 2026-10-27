@@ -242,6 +242,30 @@ def create_github_server(github_token: Optional[str] = None) -> FastMCP:
             for item in items
         ]
 
+    @server.tool()
+    def get_repository_tree(owner: str, repo: str, ref: str = "main", recursive: bool = True) -> Dict[str, Any]:
+        """
+        Retrieves the Git tree for a repository and ref/commit.
+        Returns list of tree items (path, mode, type, size, sha) and truncation status.
+        """
+        rec_flag = "1" if recursive else "0"
+        url = f"https://api.github.com/repos/{urllib.parse.quote(owner)}/{urllib.parse.quote(repo)}/git/trees/{urllib.parse.quote(ref)}?recursive={rec_flag}"
+        data = _make_github_request(url)
+        return {
+            "sha": data.get("sha"),
+            "truncated": data.get("truncated", False),
+            "tree": [
+                {
+                    "path": item.get("path"),
+                    "mode": item.get("mode"),
+                    "type": item.get("type"),
+                    "size": item.get("size", 0),
+                    "sha": item.get("sha")
+                }
+                for item in data.get("tree", [])
+            ]
+        }
+
     return server
 
 

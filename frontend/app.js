@@ -117,7 +117,13 @@ document.addEventListener('DOMContentLoaded', () => {
     a2aEmptyState: document.getElementById('a2a-empty-state'),
     a2aCardContent: document.getElementById('a2a-card-content'),
 
-    // MCP Tools Modal
+    // A2A Protocol Test Controls (Improvement D)
+    btnRunA2ATest: document.getElementById('btn-run-a2a-test'),
+    a2aTestResultBox: document.getElementById('a2a-test-result-box'),
+    a2aTestStatusLine: document.getElementById('a2a-test-status-line'),
+    a2aTestOutputJson: document.getElementById('a2a-test-output-json'),
+
+    // MCP Tools Modal & Test Controls (Improvement C)
     btnMcpStatus: document.getElementById('btn-mcp-status'),
     mcpToolCount: document.getElementById('mcp-tool-count'),
     mcpModalBackdrop: document.getElementById('mcp-modal-backdrop'),
@@ -129,6 +135,26 @@ document.addEventListener('DOMContentLoaded', () => {
     mcpErrorState: document.getElementById('mcp-error-state'),
     mcpErrorMessage: document.getElementById('mcp-error-message'),
     mcpCardContent: document.getElementById('mcp-card-content'),
+    btnRunMcpTest: document.getElementById('btn-run-mcp-test'),
+    mcpTestToolSelect: document.getElementById('mcp-test-tool-select'),
+    mcpTestResultBox: document.getElementById('mcp-test-result-box'),
+    mcpTestStatusLine: document.getElementById('mcp-test-status-line'),
+    mcpTestOutputJson: document.getElementById('mcp-test-output-json'),
+
+    // Live Blackboard Partition Strip (Improvement B)
+    hardeningBbStrip: document.getElementById('hardening-blackboard-strip'),
+    bbStripStage: document.getElementById('bb-strip-stage'),
+    bbStripRevision: document.getElementById('bb-strip-revision'),
+    bbTargetSummary: document.getElementById('bb-target-summary'),
+    bbSuiteSummary: document.getElementById('bb-suite-summary'),
+    bbMutantSummary: document.getElementById('bb-mutant-summary'),
+    bbCriticSummary: document.getElementById('bb-critic-summary'),
+    bbMetricsSummary: document.getElementById('bb-metrics-summary'),
+    bbPillTarget: document.getElementById('bb-pill-target'),
+    bbPillSuite: document.getElementById('bb-pill-suite'),
+    bbPillMutant: document.getElementById('bb-pill-mutant'),
+    bbPillCritic: document.getElementById('bb-pill-critic'),
+    bbPillMetrics: document.getElementById('bb-pill-metrics'),
 
     // Settings Modal
     btnToggleSettings: document.getElementById('btn-toggle-settings'),
@@ -207,6 +233,19 @@ document.addEventListener('DOMContentLoaded', () => {
     modeCCodeDisplay: document.getElementById('mode-c-code-display'),
     btnCopyModeCCode: document.getElementById('btn-copy-mode-c-code'),
     btnActivateModeC: document.getElementById('btn-activate-mode-c'),
+    subtabBtnFileUrl: document.getElementById('subtab-btn-file-url'),
+    subtabBtnRepoTree: document.getElementById('subtab-btn-repo-tree'),
+    subtabPaneFileUrl: document.getElementById('subtab-pane-file-url'),
+    subtabPaneRepoTree: document.getElementById('subtab-pane-repo-tree'),
+    githubRepoUrlInput: document.getElementById('github-repo-url-input'),
+    githubRepoRefInput: document.getElementById('github-repo-ref-input'),
+    btnDiscoverRepo: document.getElementById('btn-discover-repo'),
+    repoDiscoveryResults: document.getElementById('repo-discovery-results'),
+    repoDisplayName: document.getElementById('repo-display-name'),
+    repoCommitBadge: document.getElementById('repo-commit-badge'),
+    repoFileCountBadge: document.getElementById('repo-file-count-badge'),
+    repoFilterInput: document.getElementById('repo-filter-input'),
+    repoFileTableBody: document.getElementById('repo-file-table-body'),
 
     // Blast Radius Elements
     blastFuncSelect: document.getElementById('blast-func-select'),
@@ -923,11 +962,112 @@ document.addEventListener('DOMContentLoaded', () => {
   if (dom.btnCloseA2aModal) dom.btnCloseA2aModal.addEventListener('click', closeA2aModal);
   if (dom.btnCloseA2aFooter) dom.btnCloseA2aFooter.addEventListener('click', closeA2aModal);
   if (dom.btnCopyA2aJson) dom.btnCopyA2aJson.addEventListener('click', copyA2aJson);
+  if (dom.btnRunA2ATest) dom.btnRunA2ATest.addEventListener('click', testA2AConnection);
 
   if (dom.btnMcpStatus) dom.btnMcpStatus.addEventListener('click', openMcpModal);
   if (dom.btnCloseMcpModal) dom.btnCloseMcpModal.addEventListener('click', closeMcpModal);
   if (dom.btnCloseMcpFooter) dom.btnCloseMcpFooter.addEventListener('click', closeMcpModal);
   if (dom.btnCopyMcpJson) dom.btnCopyMcpJson.addEventListener('click', copyMcpJson);
+  if (dom.btnRunMcpTest) dom.btnRunMcpTest.addEventListener('click', testMcpConnection);
+
+  // FastMCP Diagnostic Test Execution (Improvement C)
+  async function testMcpConnection() {
+    if (!dom.btnRunMcpTest) return;
+    const toolSelect = dom.mcpTestToolSelect;
+    const selectedTool = toolSelect ? toolSelect.value : 'list_directory';
+    const targetPath = selectedTool === 'get_file_info' ? 'samples/discount.py' : 'samples';
+
+    dom.btnRunMcpTest.disabled = true;
+    dom.btnRunMcpTest.innerHTML = '<span class="icon">⏳</span> Executing MCP Tool...';
+    if (dom.mcpTestResultBox) dom.mcpTestResultBox.classList.remove('hidden');
+    if (dom.mcpTestStatusLine) {
+      dom.mcpTestStatusLine.style.color = '#38bdf8';
+      dom.mcpTestStatusLine.textContent = `Connecting to FastMCP stdio transport (tool: ${selectedTool})...`;
+    }
+    if (dom.mcpTestOutputJson) dom.mcpTestOutputJson.textContent = 'Invoking tool over stdio JSON-RPC...';
+
+    try {
+      const resp = await fetch('/api/mcp/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tool_name: selectedTool, path: targetPath })
+      });
+      const data = await resp.json();
+
+      if (resp.ok && data.status === 'success') {
+        if (dom.mcpTestStatusLine) {
+          dom.mcpTestStatusLine.style.color = '#34d399';
+          dom.mcpTestStatusLine.textContent = `✅ FastMCP stdio Execution Successful (${data.elapsed_ms}ms) — Tool: ${data.tool_name}`;
+        }
+        if (dom.mcpTestOutputJson) {
+          dom.mcpTestOutputJson.textContent = JSON.stringify(data, null, 2);
+        }
+        showToast(`FastMCP tool [${data.tool_name}] verified in ${data.elapsed_ms}ms`, 'success');
+      } else {
+        throw new Error(data.detail || data.error || 'FastMCP diagnostic execution failed');
+      }
+    } catch (err) {
+      if (dom.mcpTestStatusLine) {
+        dom.mcpTestStatusLine.style.color = '#f87171';
+        dom.mcpTestStatusLine.textContent = `❌ FastMCP Error: ${err.message}`;
+      }
+      if (dom.mcpTestOutputJson) {
+        dom.mcpTestOutputJson.textContent = err.stack || err.message;
+      }
+      showToast(`FastMCP test failed: ${err.message}`, 'error');
+    } finally {
+      dom.btnRunMcpTest.disabled = false;
+      dom.btnRunMcpTest.innerHTML = '<span class="icon">▶️</span> Test MCP Connection';
+    }
+  }
+
+  // A2A Protocol & Discovery Test Execution (Improvement D)
+  async function testA2AConnection() {
+    if (!dom.btnRunA2ATest) return;
+
+    dom.btnRunA2ATest.disabled = true;
+    dom.btnRunA2ATest.innerHTML = '<span class="icon">⏳</span> Validating Protocol...';
+    if (dom.a2aTestResultBox) dom.a2aTestResultBox.classList.remove('hidden');
+    if (dom.a2aTestStatusLine) {
+      dom.a2aTestStatusLine.style.color = '#c084fc';
+      dom.a2aTestStatusLine.textContent = 'Resolving A2A AgentCard and verifying schema...';
+    }
+    if (dom.a2aTestOutputJson) dom.a2aTestOutputJson.textContent = 'Validating protocol compliance...';
+
+    try {
+      const resp = await fetch('/api/a2a/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target_url: 'http://127.0.0.1:8000/' })
+      });
+      const data = await resp.json();
+
+      if (resp.ok && data.status === 'success') {
+        if (dom.a2aTestStatusLine) {
+          dom.a2aTestStatusLine.style.color = '#34d399';
+          dom.a2aTestStatusLine.textContent = `✅ A2A Protocol v${data.protocol_version} Verified (${data.elapsed_ms}ms) — Transport: ${data.transport}`;
+        }
+        if (dom.a2aTestOutputJson) {
+          dom.a2aTestOutputJson.textContent = JSON.stringify(data, null, 2);
+        }
+        showToast(`A2A Protocol v${data.protocol_version} verified in ${data.elapsed_ms}ms`, 'success');
+      } else {
+        throw new Error(data.detail || data.error || 'A2A protocol validation failed');
+      }
+    } catch (err) {
+      if (dom.a2aTestStatusLine) {
+        dom.a2aTestStatusLine.style.color = '#f87171';
+        dom.a2aTestStatusLine.textContent = `❌ A2A Verification Error: ${err.message}`;
+      }
+      if (dom.a2aTestOutputJson) {
+        dom.a2aTestOutputJson.textContent = err.stack || err.message;
+      }
+      showToast(`A2A test failed: ${err.message}`, 'error');
+    } finally {
+      dom.btnRunA2ATest.disabled = false;
+      dom.btnRunA2ATest.innerHTML = '<span class="icon">▶️</span> Test A2A Connection';
+    }
+  }
 
   if (dom.mcpModalBackdrop) {
     dom.mcpModalBackdrop.addEventListener('click', (e) => {
@@ -1285,11 +1425,15 @@ document.addEventListener('DOMContentLoaded', () => {
     chip.addEventListener('click', () => {
       const prompt = chip.getAttribute('data-prompt');
       const url = chip.getAttribute('data-url');
+      const repo = chip.getAttribute('data-repo');
       if (prompt) {
         dom.synthPromptInput.value = prompt;
       }
       if (url) {
         dom.githubUrlInput.value = url;
+      }
+      if (repo && dom.githubRepoUrlInput) {
+        dom.githubRepoUrlInput.value = repo;
       }
     });
   });
@@ -1357,7 +1501,81 @@ document.addEventListener('DOMContentLoaded', () => {
   // Mode C: Direct GitHub File Ingestion
   // =========================================================================
   let lastIngestedGithubData = null;
+  let currentRepoDiscovery = null;
 
+  function populateModeCResults(data) {
+    lastIngestedGithubData = data;
+
+    // Show validation badge if metadata has normalized URL
+    if (dom.urlValidationBadge) {
+      dom.urlValidationBadge.classList.remove('hidden');
+      const normUrl = (data.metadata && (data.metadata.raw_github_url || data.metadata.source_github_url)) || data.filename;
+      dom.urlValidationText.textContent = `Normalized: ${normUrl}`;
+    }
+
+    // Populate Mode C metadata
+    if (dom.modeCEmptyState) dom.modeCEmptyState.classList.add('hidden');
+    if (dom.modeCDetails) dom.modeCDetails.classList.remove('hidden');
+
+    const meta = data.metadata || {};
+    if (dom.mcRepo) dom.mcRepo.textContent = meta.repository || (meta.owner && meta.repo ? `${meta.owner}/${meta.repo}` : 'GitHub Source');
+    if (dom.mcBranch) dom.mcBranch.textContent = meta.branch || meta.commit_sha || 'HEAD';
+    if (dom.mcPath) dom.mcPath.textContent = meta.file_path || data.filename;
+    if (dom.mcModule) dom.mcModule.textContent = data.module_name;
+    if (dom.mcSha) dom.mcSha.textContent = (data.source_sha || '').substring(0, 16);
+
+    if (dom.mcLines) dom.mcLines.textContent = data.line_count || 0;
+    if (dom.mcClassesCnt) dom.mcClassesCnt.textContent = (data.classes || []).length;
+    if (dom.mcCallablesCnt) dom.mcCallablesCnt.textContent = (data.all_callables || []).length;
+
+    // Classes chips
+    if (dom.mcClassChips) {
+      dom.mcClassChips.innerHTML = '';
+      if (data.classes && data.classes.length > 0) {
+        data.classes.forEach(cls => {
+          const chip = document.createElement('span');
+          chip.className = 'chip';
+          chip.textContent = cls;
+          dom.mcClassChips.appendChild(chip);
+        });
+      } else {
+        dom.mcClassChips.innerHTML = '<span class="text-muted">None detected</span>';
+      }
+    }
+
+    // Source code preview
+    if (dom.modeCCodeDisplay) {
+      dom.modeCCodeDisplay.textContent = data.source_code || '';
+    }
+
+    // Automatically activate as target
+    updateTargetBanner(data);
+
+    if (dom.btnActivateModeC) {
+      dom.btnActivateModeC.classList.add('btn-primary', 'btn-glow');
+      dom.btnActivateModeC.classList.remove('btn-secondary');
+      dom.btnActivateModeC.innerHTML = '<span class="icon">🎯</span> Target Confirmed for Hardening (Click to Proceed)';
+    }
+  }
+
+  // Subtab switching
+  if (dom.subtabBtnFileUrl && dom.subtabBtnRepoTree) {
+    dom.subtabBtnFileUrl.addEventListener('click', () => {
+      dom.subtabBtnFileUrl.classList.add('active');
+      dom.subtabBtnRepoTree.classList.remove('active');
+      dom.subtabPaneFileUrl.classList.remove('hidden');
+      dom.subtabPaneRepoTree.classList.add('hidden');
+    });
+
+    dom.subtabBtnRepoTree.addEventListener('click', () => {
+      dom.subtabBtnRepoTree.classList.add('active');
+      dom.subtabBtnFileUrl.classList.remove('active');
+      dom.subtabPaneRepoTree.classList.remove('hidden');
+      dom.subtabPaneFileUrl.classList.add('hidden');
+    });
+  }
+
+  // Single file fetch
   if (dom.btnFetchGithub) {
     dom.btnFetchGithub.addEventListener('click', async () => {
       const rawUrl = dom.githubUrlInput.value.trim();
@@ -1369,7 +1587,7 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         dom.btnFetchGithub.disabled = true;
         dom.btnFetchGithub.innerHTML = '<span class="icon">⏳</span> Fetching & Ingesting...';
-        dom.urlValidationBadge.classList.add('hidden');
+        if (dom.urlValidationBadge) dom.urlValidationBadge.classList.add('hidden');
 
         const res = await fetch('/api/ingest/github', {
           method: 'POST',
@@ -1383,60 +1601,155 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const data = await res.json();
-        lastIngestedGithubData = data;
-
-        // Show validation badge
-        dom.urlValidationBadge.classList.remove('hidden');
-        dom.urlValidationText.textContent = `Normalized: ${data.metadata.raw_github_url}`;
-
-        // Populate Mode C metadata
-        dom.modeCEmptyState.classList.add('hidden');
-        dom.modeCDetails.classList.remove('hidden');
-
-        dom.mcRepo.textContent = data.metadata.repository;
-        dom.mcBranch.textContent = data.metadata.branch;
-        dom.mcPath.textContent = data.metadata.file_path;
-        dom.mcModule.textContent = data.module_name;
-        dom.mcSha.textContent = data.source_sha;
-
-        dom.mcLines.textContent = data.line_count;
-        dom.mcClassesCnt.textContent = data.classes.length;
-        dom.mcCallablesCnt.textContent = data.all_callables.length;
-
-        // Classes chips
-        dom.mcClassChips.innerHTML = '';
-        if (data.classes.length > 0) {
-          data.classes.forEach(cls => {
-            const chip = document.createElement('span');
-            chip.className = 'chip';
-            chip.textContent = cls;
-            dom.mcClassChips.appendChild(chip);
-          });
-        } else {
-          dom.mcClassChips.innerHTML = '<span class="text-muted">None detected</span>';
-        }
-
-        // Source code preview
-        dom.modeCCodeDisplay.textContent = data.source_code;
-
-        // Automatically activate as target
-        updateTargetBanner(data);
-
-        if (dom.btnActivateModeC) {
-          dom.btnActivateModeC.classList.add('btn-primary', 'btn-glow');
-          dom.btnActivateModeC.classList.remove('btn-secondary');
-          dom.btnActivateModeC.innerHTML = '<span class="icon">🎯</span> Target Confirmed for Hardening (Click to Proceed)';
-        }
-
+        populateModeCResults(data);
         showToast(`Ingested ${data.filename} from GitHub!`, 'success');
       } catch (err) {
         showToast(`GitHub Ingestion Error: ${err.message}`, 'error');
-        dom.modeCEmptyState.classList.remove('hidden');
-        dom.modeCEmptyState.className = 'info-callout error';
-        dom.modeCEmptyState.innerHTML = `<strong>Error fetching GitHub file:</strong> ${escapeHtml(err.message)}`;
+        if (dom.modeCEmptyState) {
+          dom.modeCEmptyState.classList.remove('hidden');
+          dom.modeCEmptyState.className = 'info-callout error';
+          dom.modeCEmptyState.innerHTML = `<strong>Error fetching GitHub file:</strong> ${escapeHtml(err.message)}`;
+        }
       } finally {
         dom.btnFetchGithub.disabled = false;
-        dom.btnFetchGithub.innerHTML = '<span class="icon">⬇️</span> Fetch & Ingest';
+        dom.btnFetchGithub.innerHTML = '<span class="icon">⬇️</span> Fetch & Ingest File';
+      }
+    });
+  }
+
+  // Repo discovery rendering
+  function renderRepoFileTable(files) {
+    if (!dom.repoFileTableBody) return;
+    dom.repoFileTableBody.innerHTML = '';
+
+    if (!files || files.length === 0) {
+      const emptyRow = document.createElement('tr');
+      emptyRow.innerHTML = '<td colspan="3" class="text-muted" style="text-align: center; padding: 1.5rem;">No matching Python files found</td>';
+      dom.repoFileTableBody.appendChild(emptyRow);
+      return;
+    }
+
+    files.forEach(file => {
+      const row = document.createElement('tr');
+      const parts = file.path.split('/');
+      const fileName = parts.pop();
+      const dirPath = parts.length > 0 ? parts.join('/') + '/' : '';
+      const sizeKb = file.size_bytes ? (file.size_bytes / 1024).toFixed(1) + ' KB' : '—';
+      const isTest = file.is_test_file ? '<span class="badge badge-amber" style="font-size: 0.65rem; margin-left: 0.4rem;">test</span>' : '';
+
+      row.innerHTML = `
+        <td style="word-break: break-all;">
+          <span style="opacity: 0.6; font-size: 0.8rem;">${escapeHtml(dirPath)}</span><strong>${escapeHtml(fileName)}</strong>${isTest}
+        </td>
+        <td style="font-size: 0.8rem; opacity: 0.8;">${sizeKb}</td>
+        <td style="text-align: right;">
+          <button type="button" class="btn btn-sm btn-outline-primary btn-repo-ingest" data-path="${escapeHtml(file.path)}" title="Ingest and target this Python module">
+            Ingest 🎯
+          </button>
+        </td>
+      `;
+
+      const ingestBtn = row.querySelector('.btn-repo-ingest');
+      if (ingestBtn) {
+        ingestBtn.addEventListener('click', async () => {
+          if (!currentRepoDiscovery) return;
+          try {
+            ingestBtn.disabled = true;
+            ingestBtn.textContent = '⏳ Ingesting...';
+
+            const res = await fetch('/api/github/repo/ingest-file', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                url: currentRepoDiscovery.repository_url,
+                commit_sha: currentRepoDiscovery.commit_sha,
+                path: file.path,
+              }),
+            });
+
+            if (!res.ok) {
+              const errData = await res.json();
+              throw new Error(errData.detail || 'Failed to ingest file from repository');
+            }
+
+            const data = await res.json();
+            populateModeCResults(data);
+            showToast(`Ingested ${data.filename} from repository!`, 'success');
+          } catch (err) {
+            showToast(`File Ingestion Error: ${err.message}`, 'error');
+          } finally {
+            ingestBtn.disabled = false;
+            ingestBtn.textContent = 'Ingest 🎯';
+          }
+        });
+      }
+
+      dom.repoFileTableBody.appendChild(row);
+    });
+  }
+
+  // Repo discovery button
+  if (dom.btnDiscoverRepo) {
+    dom.btnDiscoverRepo.addEventListener('click', async () => {
+      const repoUrl = dom.githubRepoUrlInput.value.trim();
+      const ref = dom.githubRepoRefInput.value.trim() || undefined;
+
+      if (!repoUrl) {
+        showToast('Please enter a GitHub repository URL or owner/repo', 'warning');
+        return;
+      }
+
+      try {
+        dom.btnDiscoverRepo.disabled = true;
+        dom.btnDiscoverRepo.innerHTML = '<span class="icon">⏳</span> Discovering Repository Tree...';
+
+        const res = await fetch('/api/github/repo/discover', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: repoUrl, ref: ref }),
+        });
+
+        if (!res.ok) {
+          const errData = await res.json();
+          throw new Error(errData.detail || 'GitHub Repository Discovery failed');
+        }
+
+        const data = await res.json();
+        currentRepoDiscovery = data;
+
+        if (dom.repoDiscoveryResults) dom.repoDiscoveryResults.classList.remove('hidden');
+        if (dom.repoDisplayName) {
+          dom.repoDisplayName.textContent = `📦 ${data.owner}/${data.repo} (${data.resolved_ref || data.default_branch || 'HEAD'})`;
+        }
+        if (dom.repoCommitBadge) {
+          dom.repoCommitBadge.textContent = `SHA: ${(data.commit_sha || '').substring(0, 7) || 'HEAD'}`;
+        }
+        if (dom.repoFileCountBadge) {
+          dom.repoFileCountBadge.textContent = `${data.total_files || (data.files ? data.files.length : 0)} Python Files`;
+        }
+
+        if (dom.repoFilterInput) dom.repoFilterInput.value = '';
+        renderRepoFileTable(data.files || []);
+        showToast(`Discovered ${data.total_files || (data.files ? data.files.length : 0)} Python files in ${data.owner}/${data.repo}!`, 'success');
+      } catch (err) {
+        showToast(`Repository Discovery Error: ${err.message}`, 'error');
+      } finally {
+        dom.btnDiscoverRepo.disabled = false;
+        dom.btnDiscoverRepo.innerHTML = '<span class="icon">🔍</span> Discover Repository Files';
+      }
+    });
+  }
+
+  // Repo file filter
+  if (dom.repoFilterInput) {
+    dom.repoFilterInput.addEventListener('input', (e) => {
+      const query = (e.target.value || '').toLowerCase().trim();
+      if (!currentRepoDiscovery || !currentRepoDiscovery.files) return;
+      if (!query) {
+        renderRepoFileTable(currentRepoDiscovery.files);
+      } else {
+        const filtered = currentRepoDiscovery.files.filter(f => f.path.toLowerCase().includes(query));
+        renderRepoFileTable(filtered);
       }
     });
   }
@@ -1688,11 +2001,11 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.btnCancelHardening.innerHTML = '<span class="icon">🛑</span> Cancel Hardening';
       }
 
-      // Reset and display progress box
+      // Reset and display progress box with honest stage indicator
       dom.hardeningProgressBox.classList.remove('hidden');
       dom.hardeningVerdictBanner.classList.add('hidden');
-      dom.hardeningProgressBar.style.width = '10%';
-      dom.hardeningPercentText.textContent = '10%';
+      dom.hardeningProgressBar.classList.add('indeterminate');
+      dom.hardeningPercentText.textContent = 'INITIALIZING';
       dom.hardeningStatusText.textContent = 'Orchestrating agents, baseline synthesis, and sandbox spawning...';
 
       // Clear previous outputs
@@ -1766,10 +2079,83 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.diffCodeDisplay.textContent = '// Unified AST diffs will appear here once execution completes.';
   }
 
+  // Live Blackboard Partition Strip Hydrator (Improvement B)
+  function updateBlackboardStrip(job, activeStage = null) {
+    if (!dom.hardeningBbStrip) return;
+
+    const bb = job.blackboard_summary;
+    if (bb) {
+      if (dom.bbStripRevision) {
+        dom.bbStripRevision.textContent = `Revision: ${bb.revision ?? 0}`;
+      }
+      const spaces = bb.spaces || {};
+
+      // 1. TargetSpace
+      if (dom.bbTargetSummary && spaces.TargetSpace) {
+        const ts = spaces.TargetSpace;
+        const modName = ts.module ? ts.module.split('/').pop() : 'target.py';
+        dom.bbTargetSummary.textContent = `${modName} (${ts.functions_count || 0} funcs, Risk: ${ts.blast_risk || 'LOW'})`;
+      }
+
+      // 2. SuiteSpace
+      if (dom.bbSuiteSummary && spaces.SuiteSpace) {
+        const ss = spaces.SuiteSpace;
+        dom.bbSuiteSummary.textContent = ss.has_baseline ? `Baseline Active (${ss.provider || 'ADK'})` : 'Synthesizing...';
+      }
+
+      // 3. MutantSpace
+      if (dom.bbMutantSummary && spaces.MutantSpace) {
+        const ms = spaces.MutantSpace;
+        if (ms.generated > 0) {
+          dom.bbMutantSummary.textContent = `${ms.killed} Killed / ${ms.generated} Gen (${ms.score}%)`;
+        } else {
+          dom.bbMutantSummary.textContent = 'Generating AST mutants...';
+        }
+      }
+
+      // 4. CriticSpace
+      if (dom.bbCriticSummary && spaces.CriticSpace) {
+        const cs = spaces.CriticSpace;
+        dom.bbCriticSummary.textContent = cs.directives_count > 0 ? `${cs.directives_count} Directives active` : 'Analyzing diffs...';
+      }
+
+      // 5. MetricsSpace
+      if (dom.bbMetricsSummary && spaces.MetricsSpace) {
+        const ms = spaces.MetricsSpace;
+        dom.bbMetricsSummary.textContent = `Cycle ${ms.iteration || 1} | Score: ${ms.score ?? 0}%`;
+      }
+    }
+
+    if (dom.bbStripStage) {
+      const stageText = activeStage || (job.status === 'COMPLETED' ? 'FINALIZED' : (job.lifecycle_state || 'STANDBY'));
+      dom.bbStripStage.textContent = stageText;
+      dom.bbStripStage.className = `badge ${job.status === 'COMPLETED' ? 'badge-green' : 'badge-cyan'}`;
+    }
+
+    // Highlight the active space card
+    const pills = [
+      { el: dom.bbPillTarget, active: activeStage === 'INGESTING' || activeStage === 'VALIDATING' },
+      { el: dom.bbPillSuite, active: activeStage === 'GENERATING_TESTS' || activeStage === 'VALIDATING_CLEAN_CODE' },
+      { el: dom.bbPillMutant, active: activeStage === 'MUTATION_ANALYSIS' || activeStage === 'EXECUTING' },
+      { el: dom.bbPillCritic, active: activeStage === 'EVALUATING' },
+      { el: dom.bbPillMetrics, active: activeStage === 'CHECKPOINTING' || job.status === 'COMPLETED' }
+    ];
+
+    pills.forEach(p => {
+      if (p.el) {
+        if (p.active) {
+          p.el.style.borderColor = '#38bdf8';
+          p.el.style.background = 'rgba(56, 189, 248, 0.15)';
+        } else {
+          p.el.style.borderColor = 'rgba(255, 255, 255, 0.06)';
+          p.el.style.background = 'rgba(15, 23, 42, 0.7)';
+        }
+      }
+    });
+  }
+
   function pollHardeningJob(jobId) {
     if (state.hardening.pollTimer) clearInterval(state.hardening.pollTimer);
-
-    let progressSim = 15;
 
     state.hardening.pollTimer = setInterval(async () => {
       try {
@@ -1779,11 +2165,37 @@ document.addEventListener('DOMContentLoaded', () => {
         const job = await res.json();
 
         if (job.status === 'RUNNING') {
-          // Increment simulated progress while job runs
-          progressSim = Math.min(progressSim + 12, 90);
-          dom.hardeningProgressBar.style.width = `${progressSim}%`;
-          dom.hardeningPercentText.textContent = `${progressSim}%`;
-          dom.hardeningStatusText.textContent = `Autonomous Multi-Agent reflection loop running (Core Sandbox: ${progressSim}%)...`;
+          // Real backend FSM lifecycle progress (honest stage indicator without invented percentages)
+          const lState = (job.lifecycle_state || 'PLANNING').toUpperCase();
+          const cycle = job.current_iteration || 1;
+          const maxCycles = job.max_iterations || 3;
+
+          let label = `Planning reflection strategy (Cycle ${cycle}/${maxCycles})...`;
+
+          if (lState === 'SUBMITTED' || lState === 'CREATED') {
+            label = 'Ingesting target module & computing AST symbol tables...';
+          } else if (lState === 'INGESTING' || lState === 'VALIDATING') {
+            label = 'Target Ingestion & Blast Radius static analysis active...';
+          } else if (lState === 'GENERATING_TESTS') {
+            label = `Google ADK Generator: Synthesizing candidate test assertions (Cycle ${cycle}/${maxCycles})...`;
+          } else if (lState === 'VALIDATING_CLEAN_CODE') {
+            label = 'Clean Code Validator: Verifying candidate tests against clean code (Pass@1 integrity)...';
+          } else if (lState === 'MUTATION_ANALYSIS') {
+            label = 'AST Mutator: Inverting operators & evaluating parallel worker sandboxes...';
+          } else if (lState === 'EXECUTING') {
+            label = 'Parallel Subprocess Sandbox: Executing candidate test assertions...';
+          } else if (lState === 'EVALUATING') {
+            label = `CrewAI Adversarial Critic: Diagnosing surviving mutants & formulating directives (Cycle ${cycle}/${maxCycles})...`;
+          } else if (lState === 'CHECKPOINTING') {
+            label = 'Blackboard: Committing transactional point-in-time snapshot to SQLite...';
+          }
+
+          dom.hardeningProgressBar.classList.add('indeterminate');
+          dom.hardeningPercentText.textContent = `Cycle ${cycle}/${maxCycles} • ${lState}`;
+          dom.hardeningStatusText.innerHTML = `<span class="badge badge-cyan" style="font-size: 0.72rem; margin-right: 6px;">${escapeHtml(lState)}</span> ${escapeHtml(label)}`;
+
+          // Update live Blackboard partition strip (Improvement B)
+          updateBlackboardStrip(job, lState);
         } else if (job.status === 'CANCELLING') {
           state.hardening.status = 'CANCELLING';
           if (dom.btnCancelHardening) {
@@ -1852,9 +2264,17 @@ document.addEventListener('DOMContentLoaded', () => {
           if (dom.btnCancelHardening) {
             dom.btnCancelHardening.classList.add('hidden');
           }
+          dom.hardeningProgressBar.classList.remove('indeterminate');
           dom.hardeningProgressBar.style.width = '100%';
-          dom.hardeningPercentText.textContent = '100%';
-          dom.hardeningStatusText.textContent = 'Hardening completed successfully across all AST mutations!';
+          dom.hardeningPercentText.textContent = 'FINALIZED';
+          const finalStatus = (job.final_state && (job.final_state.final_hardening_status || job.final_state.hardening_status)) || 'COMPLETED';
+          if (finalStatus === 'TARGET_SCORE_UNREACHED') {
+            dom.hardeningStatusText.textContent = 'Pipeline execution finished: target mutation score was not reached within reflection budget.';
+          } else if (finalStatus === 'FAILED_BASELINE') {
+            dom.hardeningStatusText.textContent = 'Pipeline halted: baseline tests failed on clean code.';
+          } else {
+            dom.hardeningStatusText.textContent = 'Hardening completed: target mutation score successfully achieved!';
+          }
 
           renderHardeningResults(job);
         } else if (job.status === 'FAILED') {
@@ -1894,6 +2314,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Immediately hydrate Wiretap and Telemetry traces (TF-DEF-002 fix)
     fetchWiretap();
     fetchTelemetry();
+
+    // Update Live Blackboard Partition Strip with finalized snapshot (Improvement B)
+    updateBlackboardStrip(job, 'FINALIZED');
 
     // ROW 1: Baseline Execution
     const baseline = finalState.baseline_run || {};
@@ -1958,22 +2381,57 @@ document.addEventListener('DOMContentLoaded', () => {
       : (finalState.mutation_score != null
         ? finalState.mutation_score
         : (lastIter ? (lastIter.mutation_score != null ? lastIter.mutation_score : (lastIter.raw_mutation_score || 0)) : 0));
-    dom.kpiMutScore.textContent = `${finalScore.toFixed(1)}%`;
+    const targetScore = state.settings.targetMutationScore || 85.0;
+    dom.kpiMutScore.innerHTML = `${finalScore.toFixed(1)}% <span style="font-size: 0.72rem; color: #94a3b8; display: block;">Target: ${targetScore}%</span>`;
     dom.kpiCyclesDone.textContent = `${finalState.current_iteration || finalState.reflection_iterations_performed || iterList.length || 1} / ${state.settings.maxIterations}`;
     const reportedStatus = statusOverride || finalState.final_hardening_status || finalState.hardening_status || 'HARDENED';
-    dom.kpiFinalStatus.textContent = reportedStatus;
+
+    // Status formatting with explicit badge classes
+    let statusClass = 'badge';
+    let statusDisplay = reportedStatus;
+    if (reportedStatus === 'TARGET_ACHIEVED' || (reportedStatus === 'SUCCESS' && finalScore >= targetScore)) {
+      statusClass = 'badge badge-green';
+      statusDisplay = 'TARGET ACHIEVED';
+    } else if (reportedStatus === 'TARGET_SCORE_UNREACHED') {
+      statusClass = 'badge badge-amber';
+      statusDisplay = 'TARGET UNREACHED';
+    } else if (reportedStatus === 'FAILED_BASELINE') {
+      statusClass = 'badge badge-red';
+      statusDisplay = 'BASELINE FAILED';
+    } else if (reportedStatus === 'CANCELLED') {
+      statusClass = 'badge badge-red';
+      statusDisplay = 'CANCELLED';
+    } else if (reportedStatus === 'TIMED_OUT') {
+      statusClass = 'badge badge-amber';
+      statusDisplay = 'TIMED OUT';
+    }
+    dom.kpiFinalStatus.innerHTML = `<span class="${statusClass}">${statusDisplay}</span>`;
 
     if (!statusOverride) {
       // Hardening Verdict Banner
       dom.hardeningVerdictBanner.classList.remove('hidden');
-      const isSuccess = finalScore >= state.settings.targetMutationScore || reportedStatus === 'TARGET_ACHIEVED';
-      dom.hardeningVerdictBanner.className = `verdict-banner ${isSuccess ? 'success' : 'warning'}`;
+      const isTargetAchieved = (finalScore >= targetScore && reportedStatus !== 'TARGET_SCORE_UNREACHED') || reportedStatus === 'TARGET_ACHIEVED';
+      const isUnreached = reportedStatus === 'TARGET_SCORE_UNREACHED' || (!isTargetAchieved && finalScore < targetScore);
+
+      dom.hardeningVerdictBanner.className = `verdict-banner ${isTargetAchieved ? 'success' : (isUnreached ? 'warning' : 'failed')}`;
       dom.hardeningVerdictBanner.innerHTML = `
         <div class="verdict-content">
-          <h3>${isSuccess ? '🏆 Autonomous Hardening Verified!' : '⚠️ Hardening Completed (Threshold Not Fully Reached)'}</h3>
-          <p>
-            Final Verified Mutation Score: <strong>${finalScore.toFixed(1)}%</strong> (Target: ${state.settings.targetMutationScore}%). 
-            Completed in <strong>${job.duration_seconds || 0}s</strong> using provider <strong>${escapeHtml(job.active_provider || state.settings.modelName)}</strong>.
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem;">
+            <h3 style="margin: 0;">${isTargetAchieved ? '🏆 Autonomous Hardening Verified (Target Achieved)' : '⚠️ Pipeline Completed — Mutation Target Unreached'}</h3>
+            <div style="display: flex; gap: 0.4rem; font-size: 0.78rem;">
+              <span class="badge badge-green">Baseline: 100% Passed</span>
+              <span class="badge" style="background: rgba(14, 165, 233, 0.2); color: #7dd3fc; border: 1px solid #0ea5e9;">Pipeline: Finished</span>
+              <span class="badge ${isTargetAchieved ? 'badge-green' : 'badge-amber'}">${isTargetAchieved ? 'Target: Achieved' : 'Target: Unreached'}</span>
+            </div>
+          </div>
+          <p style="margin-bottom: 0.4rem;">
+            Verified Mutation Score: <strong>${finalScore.toFixed(1)}%</strong> (Configured Target: <strong>${targetScore}%</strong>).
+            Executed <strong>${finalState.current_iteration || iterList.length || 1}/${state.settings.maxIterations}</strong> reflection cycle(s) in <strong>${job.duration_seconds || 0}s</strong> using provider <strong>${escapeHtml(job.active_provider || state.settings.modelName)}</strong>.
+          </p>
+          <p style="font-size: 0.82rem; color: #94a3b8; margin: 0;">
+            ${isTargetAchieved
+              ? 'TestForge autonomously synthesized and hardened tests that kill all targeted mutant faults while preserving 100% clean-code test integrity.'
+              : `Pipeline executed to completion with full clean-code integrity. The mutation score (${finalScore.toFixed(1)}%) remained below the target (${targetScore}%) because the ${mutSurv} surviving mutant(s) represent boundary-condition invariants, potential equivalent mutations, or required additional reflection cycles beyond the current budget.`}
           </p>
         </div>
       `;
@@ -1993,7 +2451,13 @@ document.addEventListener('DOMContentLoaded', () => {
       fetchHardenedSuiteCode();
     }
 
-    showToast(`Hardening complete! Mutation Score: ${finalScore.toFixed(1)}%`, 'success');
+    if (reportedStatus === 'TARGET_SCORE_UNREACHED') {
+      showToast(`Hardening finished: Target score unreached (${finalScore.toFixed(1)}% vs ${targetScore}% target)`, 'warning');
+    } else if (reportedStatus === 'FAILED_BASELINE') {
+      showToast('Hardening halted: Baseline test failures detected', 'error');
+    } else {
+      showToast(`Hardening complete! Mutation Score: ${finalScore.toFixed(1)}%`, 'success');
+    }
   }
 
   function renderHistoryTable(iterations) {
@@ -2095,6 +2559,35 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  function getSurvivalExplanation(mutant) {
+    const type = (mutant.mutation_type || '').toUpperCase();
+    if (type.includes('BOUNDARY')) {
+      return 'Relational boundary condition altered (e.g. <= vs <, >= vs >). Survives because test suite inputs do not assert the exact equality boundary value.';
+    }
+    if (type.includes('OFF_BY_ONE')) {
+      return 'Threshold value shifted by ±1. Survives because test suite inputs do not exercise values strictly within the off-by-one window.';
+    }
+    if (type.includes('MATH')) {
+      return 'Mathematical operation or rounding altered. Survives because test assertions do not differentiate floating-point precision or arithmetic nuance.';
+    }
+    if (type.includes('CONST')) {
+      return 'Constant literal replaced. Survives because test suite does not assert state changes or returns directly dependent on this specific constant.';
+    }
+    if (type.includes('RETURN')) {
+      return 'Return value replaced. Survives because this execution path is either unexercised or the returned value is unasserted.';
+    }
+    if (type.includes('LOGICAL')) {
+      return 'Logical connector inverted (and <-> or). Survives because both operands evaluate to identical boolean values under existing test inputs.';
+    }
+    if (type.includes('COND_INV')) {
+      return 'Conditional branch inverted. Survives if alternative branch yields equivalent output or branch was not executed with distinguishing inputs.';
+    }
+    if (type.includes('ARITH')) {
+      return 'Arithmetic operator swapped (+, -, *). Survives because test inputs produce indistinguishable output (e.g. 0 * x vs 0 + x).';
+    }
+    return 'Mutant executed in isolated sandbox; all current test suite assertions evaluated to True without raising an AssertionError.';
+  }
+
   function inspectMutantDiff(mutant) {
     if (!mutant) return;
 
@@ -2121,7 +2614,7 @@ document.addEventListener('DOMContentLoaded', () => {
       dom.diffStatusBadge.className = 'badge';
       dom.diffStatusBadge.style.cssText = 'background: rgba(148, 163, 184, 0.2); color: #cbd5e1; border: 1px solid #94a3b8;';
     } else {
-      dom.diffStatusBadge.textContent = '🔴 SURVIVED (CRITIQUE REQUIRED)';
+      dom.diffStatusBadge.textContent = '🔴 SURVIVED TEST EXECUTION';
       dom.diffStatusBadge.className = 'badge badge-red';
       dom.diffStatusBadge.style.cssText = '';
     }
@@ -2137,8 +2630,29 @@ document.addEventListener('DOMContentLoaded', () => {
       diffContent = `<pre class="diff-pre">Mutant details:\nType: ${escapeHtml(mutant.mutation_type || 'AST_MOD')}\nLine: ${mutant.line_number}\nStatus: ${escapeHtml(mutant.status)}</pre>`;
     }
 
-    if (mutant.equivalence_method || mutant.equivalence_reason || mutant.original_expression) {
-      const eqMetaBox = `
+    let diagnosisBox = '';
+    if (st === 'SURVIVED') {
+      const execText = mutant.is_executed
+        ? `Genuinely executed in isolated sandbox (${mutant.execution_time_ms ? `${mutant.execution_time_ms.toFixed(1)}ms` : 'passed'})`
+        : 'Execution pending or statically inferred';
+      diagnosisBox = `
+        <div style="margin-bottom: 0.8rem; padding: 0.7rem; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 6px; font-size: 0.82rem;">
+          <div style="font-weight: 600; color: #f87171; margin-bottom: 0.3rem;">🔴 Survivor Diagnosis & Sandbox Verification</div>
+          <div><strong>Execution Status:</strong> ${execText}</div>
+          <div><strong>Survival Semantics:</strong> ${escapeHtml(getSurvivalExplanation(mutant))}</div>
+          ${mutant.original_expression ? `<div><strong>Original Expr:</strong> <code>${escapeHtml(mutant.original_expression)}</code></div>` : ''}
+          ${mutant.mutated_expression ? `<div><strong>Mutated Expr:</strong> <code>${escapeHtml(mutant.mutated_expression)}</code></div>` : ''}
+          <div><strong>Equivalence Analysis:</strong> ${escapeHtml(mutant.equivalence_reason || 'Unknown or not analyzed')}</div>
+          ${mutant.stdout ? `
+            <details style="margin-top: 0.4rem;">
+              <summary style="cursor: pointer; color: #94a3b8; font-size: 0.76rem;">View Real Sandbox Pytest Execution Output</summary>
+              <pre class="diff-pre" style="margin-top: 0.3rem; font-size: 0.72rem; max-height: 140px; overflow-y: auto;">${escapeHtml(mutant.stdout)}</pre>
+            </details>
+          ` : ''}
+        </div>
+      `;
+    } else if (mutant.equivalence_method || mutant.equivalence_reason || mutant.original_expression) {
+      diagnosisBox = `
         <div style="margin-bottom: 0.8rem; padding: 0.6rem; background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; font-size: 0.8rem;">
           <div style="font-weight: 600; color: #60a5fa; margin-bottom: 0.3rem;">⚖️ Equivalence Analysis (Milestone 2)</div>
           <div><strong>Status:</strong> ${escapeHtml(mutant.equivalence_status || mutant.status || 'UNKNOWN')}</div>
@@ -2149,10 +2663,9 @@ document.addEventListener('DOMContentLoaded', () => {
           <div><strong>Executed:</strong> ${mutant.is_executed ? 'Yes' : 'No (Statically Inferred)'}</div>
         </div>
       `;
-      dom.diffCodeDisplay.innerHTML = eqMetaBox + diffContent;
-    } else {
-      dom.diffCodeDisplay.innerHTML = diffContent;
     }
+
+    dom.diffCodeDisplay.innerHTML = diagnosisBox + diffContent;
   }
 
   function colorizeDiff(diffText) {

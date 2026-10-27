@@ -1,0 +1,24 @@
+{
+  "timestamp": 1793083419.087639,
+  "job_info": {
+    "hardeningStatus": "COMPLETED",
+    "bannerVisible": true,
+    "bannerHtml": "\n        <div class=\"verdict-content\">\n          <div style=\"display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem;\">\n            <h3 style=\"margin: 0;\">\u26a0\ufe0f Pipeline Completed \u2014 Mutation Target Unreached</h3>\n            <div style=\"display: flex; gap: 0.4rem; font-size: 0.78rem;\">\n              <span class=\"badge badge-green\">Baseline: 100% Passed</span>\n              <span class=\"badge\" style=\"background: rgba(14, 165, 233, 0.2); color: #7dd3fc; border: 1px solid #0ea5e9;\">Pipeline: Finished</span>\n              <span class=\"badge badge-amber\">Target: Unreached</span>\n            </div>\n          </div>\n          <p style=\"margin-bottom: 0.4rem;\">\n            Verified Mutation Score: <strong>63.2%</strong> (Configured Target: <strong>85%</strong>).\n            Executed <strong>3/3</strong> reflection cycle(s) in <strong>20.59s</strong> using provider <strong>Google ADK Generator</strong>.\n          </p>\n          <p style=\"font-size: 0.82rem; color: #94a3b8; margin: 0;\">\n            Pipeline executed to completion with full clean-code integrity. The mutation score (63.2%) remained below the target (85%) because the 7 surviving mutant(s) represent boundary-condition invariants, potential equivalent mutations, or required additional reflection cycles beyond the current budget.\n          </p>\n        </div>\n      ",
+    "bannerClass": "verdict-banner warning",
+    "kpiStatus": "TARGET UNREACHED",
+    "kpiScore": "63.2% Target: 85%",
+    "kpiCycles": "3 / 3",
+    "progressText": "FINALIZED"
+  },
+  "mutant_info": {
+    "title": "AST Diff: MUT_BOUNDARY_SWAP_003 (BOUNDARY_SWAP) at line 9",
+    "badge": "\ud83d\udd34 SURVIVED TEST EXECUTION",
+    "has_diagnosis_box": true,
+    "has_sandbox_execution_proof": true,
+    "has_survival_semantics": true
+  },
+  "screenshots": [
+    "01_target_score_unreached_verdict.png",
+    "02_survivor_diagnosis_and_sandbox_proof.png"
+  ]
+}

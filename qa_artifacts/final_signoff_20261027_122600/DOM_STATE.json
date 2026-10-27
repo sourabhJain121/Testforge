@@ -1,0 +1,11 @@
+{
+  "banner_class": "verdict-banner warning",
+  "banner_text": "\n        \n          \n            \u26a0\ufe0f Pipeline Completed \u2014 Mutation Target Unreached\n            \n              Baseline: 100% Passed\n              Pipeline: Finished\n              Target: Unreached\n            \n          \n          \n            Verified Mutation Score: 63.2% (Configured Target: 85%).\n            Executed 3/3 reflection cycle(s) in 20.59s using provider Google ADK Generator.\n          \n          \n            Pipeline executed to completion with full clean-code integrity. The mutation score (63.2%) remained below the target (85%) because the 7 surviving mutant(s) represent boundary-condition invariants, potential equivalent mutations, or required additional reflection cycles beyond the current budget.\n          \n        \n      ",
+  "status_kpi": "TARGET UNREACHED",
+  "score_kpi": null,
+  "cycles_kpi": null,
+  "progress_bar_class": "progress-fill",
+  "progress_bar_width": "100%",
+  "percent_text": "FINALIZED",
+  "status_text": "Pipeline execution finished: target mutation score was not reached within reflection budget."
+}

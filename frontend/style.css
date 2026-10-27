@@ -1312,6 +1312,18 @@ body {
   box-shadow: 0 0 16px var(--cyan);
 }
 
+.progress-fill.indeterminate {
+  width: 100% !important;
+  background: linear-gradient(90deg, var(--primary) 0%, var(--cyan) 50%, var(--primary) 100%);
+  background-size: 200% 100%;
+  animation: indeterminateProgress 1.6s infinite linear;
+}
+
+@keyframes indeterminateProgress {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 /* Verdict Banners */
 .verdict-banner {
   padding: 1.4rem 1.8rem;
@@ -2266,4 +2278,133 @@ input:checked + .slider.round:before {
   align-items: center;
   justify-content: space-between;
 }
+
+/* ==========================================================================
+   GitHub Repository Explorer & Tree Styles
+   ========================================================================== */
+
+.subtab-pill-group {
+  display: flex;
+  gap: 0.5rem;
+  background: rgba(15, 23, 42, 0.6);
+  padding: 0.3rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  margin-bottom: 1.2rem;
+}
+
+.subtab-pill {
+  flex: 1;
+  padding: 0.5rem 0.8rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+.subtab-pill:hover {
+  color: var(--text-heading);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.subtab-pill.active {
+  color: #fff;
+  background: var(--gradient-primary);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
+}
+
+.repo-summary-card {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.2rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.repo-summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.6rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.repo-title-text {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--cyan-light);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.repo-meta-badges {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.repo-file-table-container {
+  max-height: 380px;
+  overflow-y: auto;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: rgba(10, 15, 30, 0.6);
+  margin-top: 0.75rem;
+}
+
+.repo-file-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.repo-file-table th {
+  background: rgba(15, 23, 42, 0.9);
+  color: var(--text-muted);
+  font-weight: 600;
+  text-align: left;
+  padding: 0.6rem 0.8rem;
+  border-bottom: 1px solid var(--border-subtle);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.repo-file-table td {
+  padding: 0.55rem 0.8rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  color: var(--text-body);
+  vertical-align: middle;
+}
+
+.repo-file-table tr:hover td {
+  background: rgba(99, 102, 241, 0.08);
+}
+
+.repo-file-path {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--cyan-light);
+  word-break: break-all;
+}
+
+.btn-table-action {
+  padding: 0.25rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
 

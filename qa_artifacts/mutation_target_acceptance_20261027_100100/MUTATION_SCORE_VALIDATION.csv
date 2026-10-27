@@ -1,0 +1,6 @@
+job_id,file_name,mutants_generated,mutants_executed,mutants_killed,mutants_survived,mutants_timed_out,mutants_invalid,mutants_equivalent,formula,raw_score,adjusted_score,target_score,reported_status,match
+5f996812,discount.py,19,19,12,7,0,0,0,(killed + timed_out) / (killed + survived + timed_out) * 100,63.16%,63.16%,85.0%,TARGET_SCORE_UNREACHED,TRUE
+012bc18d,banking.py,23,23,12,11,0,0,0,(killed + timed_out) / (killed + survived + timed_out) * 100,52.17%,52.17%,85.0%,TARGET_SCORE_UNREACHED,TRUE
+39a9cd38,inventory_pricing.py,37,37,17,20,0,0,0,(killed + timed_out) / (killed + survived + timed_out) * 100,45.95%,45.95%,85.0%,TARGET_SCORE_UNREACHED,TRUE
+f5bc10ce,state_machine.py,57,57,12,45,0,0,0,(killed + timed_out) / (killed + survived + timed_out) * 100,21.05%,21.05%,85.0%,TARGET_SCORE_UNREACHED,TRUE
+90e26c48,rate_limiter.py,38,38,16,22,0,0,0,(killed + timed_out) / (killed + survived + timed_out) * 100,42.11%,42.11%,85.0%,TARGET_SCORE_UNREACHED,TRUE

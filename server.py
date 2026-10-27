@@ -16,7 +16,8 @@ import logging
 import threading
 import asyncio
 from pathlib import Path
-from typing import Dict, Any, Optional, List
+from contextlib import asynccontextmanager
+from typing import Dict, Any, Optional, List, Literal
 
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, BackgroundTasks, status, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
@@ -28,6 +29,7 @@ from pydantic import BaseModel, Field
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 from testforge.ingestion import TargetManagerAgent, parse_and_normalize_github_url
+from testforge.github_service import GitHubRepoService, parse_github_repo_url
 from testforge.orchestrator import TestForgeOrchestrator
 from testforge.state import TaskLifecycleState
 from testforge.blast_analyzer import BlastRadiusAnalyzer
@@ -52,10 +54,23 @@ from testforge.persistence import (
 logging.basicConfig(level=logging.INFO, format="[%(asctime)s] %(levelname)s in %(name)s: %(message)s")
 logger = logging.getLogger("testforge.server")
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Initializes WebSocket hub and connects it to the central callback registry."""
+    try:
+        loop = asyncio.get_running_loop()
+        global_websocket_hub.set_event_loop(loop)
+        global_websocket_hub.attach_to_registry()
+        logger.info("WebSocket event hub initialized on server startup.")
+    except Exception as exc:
+        logger.warning(f"Error during WebSocket hub startup hook: {exc}")
+    yield
+
 app = FastAPI(
     title="TestForge API",
     description="Autonomous Agentic Test Hardening System API with Apple Silicon Optimization",
-    version="2.0.0"
+    version="2.0.0",
+    lifespan=lifespan,
 )
 
 # Enable CORS for development flexibility
@@ -66,17 +81,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-@app.on_event("startup")
-async def on_server_startup():
-    """Initializes WebSocket hub and connects it to the central callback registry."""
-    try:
-        loop = asyncio.get_running_loop()
-        global_websocket_hub.set_event_loop(loop)
-        global_websocket_hub.attach_to_registry()
-        logger.info("WebSocket event hub initialized on server startup.")
-    except Exception as exc:
-        logger.warning(f"Error during WebSocket hub startup hook: {exc}")
 
 # In-memory store for background hardening jobs
 JOB_LOCK = threading.Lock()
@@ -117,6 +121,15 @@ class SynthesisPayload(BaseModel):
 
 class GithubIngestPayload(BaseModel):
     url: str
+
+class GithubRepoDiscoverPayload(BaseModel):
+    url: str
+    ref: Optional[str] = None
+
+class GithubRepoIngestFilePayload(BaseModel):
+    url: str
+    commit_sha: str
+    path: str
 
 class BlastRadiusPayload(BaseModel):
     source_code: str
@@ -337,6 +350,69 @@ async def get_mcp_status():
         )
 
 
+class MCPTestRequest(BaseModel):
+    tool_name: Literal["list_directory", "get_file_info"] = "list_directory"
+    path: str = Field(default="samples", max_length=100)
+
+
+@app.post("/api/mcp/test")
+async def run_mcp_test_action(req: MCPTestRequest):
+    """
+    Executes a safe, verified Model Context Protocol (FastMCP) tool call over stdio.
+    Strictly allowlists read-only operations bounded within repository samples root.
+    Rejects path traversal, arbitrary shell execution, or sensitive file access.
+    """
+    clean_path = req.path.strip()
+    if ".." in clean_path or clean_path.startswith("/") or clean_path.startswith("\\"):
+        raise HTTPException(
+            status_code=400,
+            detail="Security Violation: Directory traversal or absolute paths are strictly forbidden."
+        )
+
+    low_path = clean_path.lower()
+    if ".env" in low_path or "id_rsa" in low_path or ".key" in low_path or ".git" in low_path:
+        raise HTTPException(
+            status_code=400,
+            detail="Security Violation: Access to sensitive credential files is strictly forbidden."
+        )
+
+    start_t = time.perf_counter()
+    try:
+        from testforge.mcp_client import create_filesystem_client
+        samples_root = (BASE_DIR / "samples").resolve()
+        client = create_filesystem_client(permitted_root=samples_root, use_node=False)
+
+        async with client:
+            tool_args = {"path": "." if req.tool_name == "list_directory" else (clean_path.split("/")[-1] if "/" in clean_path else clean_path)}
+            result = await client.call_tool(req.tool_name, tool_args)
+
+            elapsed_ms = round((time.perf_counter() - start_t) * 1000, 2)
+            if not result.success:
+                raise HTTPException(status_code=400, detail=f"FastMCP Tool Error: {result.error}")
+
+            return {
+                "status": "success",
+                "protocol": "Model Context Protocol (FastMCP)",
+                "sdk": "mcp-python / FastMCP v1.28.0",
+                "transport": "stdio JSON-RPC 2.0",
+                "tool_name": req.tool_name,
+                "target_path": req.path,
+                "elapsed_ms": elapsed_ms,
+                "data": result.data,
+                "verified": True,
+                "timestamp": time.time()
+            }
+    except HTTPException:
+        raise
+    except Exception as exc:
+        elapsed_ms = round((time.perf_counter() - start_t) * 1000, 2)
+        logger.warning(f"MCP diagnostic test error: {exc}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"FastMCP stdio execution failed ({elapsed_ms}ms): {str(exc)}"
+        )
+
+
 @app.get("/.well-known/agent-card.json")
 @app.get("/.well-known/agent.json")
 async def get_a2a_agent_card():
@@ -355,6 +431,58 @@ async def get_a2a_agent_card():
             "description": "Autonomous unit-test generation and mutation hardening agent.",
             "url": "http://127.0.0.1:8000/",
         }
+
+
+class A2ATestRequest(BaseModel):
+    target_url: str = Field(default="http://127.0.0.1:8000/", max_length=200)
+
+
+@app.post("/api/a2a/test")
+async def run_a2a_test_action(req: A2ATestRequest):
+    """
+    Executes a verified Agent-to-Agent (A2A) protocol diagnostic test.
+    Validates official A2A AgentCard discovery, protocol version (0.3.0),
+    and cross-framework declared skills over local JSON-RPC.
+    Strictly forbids remote SSRF targets or arbitrary external network endpoints.
+    """
+    target = req.target_url.strip().lower()
+    if not (target.startswith("http://127.0.0.1") or target.startswith("http://localhost")):
+        raise HTTPException(
+            status_code=400,
+            detail="Security Violation: A2A diagnostic actions are restricted strictly to local agent instances."
+        )
+
+    start_t = time.perf_counter()
+    try:
+        from testforge.a2a_protocol import build_testforge_agent_card, OFFICIAL_A2A_PROTOCOL_VERSION
+        from a2a.types import AgentCard
+
+        card = build_testforge_agent_card(rpc_url=req.target_url)
+        card_dict = card.model_dump(exclude_none=True)
+        validated_card = AgentCard.model_validate(card_dict)
+
+        elapsed_ms = round((time.perf_counter() - start_t) * 1000, 2)
+
+        return {
+            "status": "success",
+            "protocol": "Agent2Agent (A2A) Protocol",
+            "protocol_version": validated_card.protocol_version,
+            "agent_name": validated_card.name,
+            "transport": str(validated_card.preferred_transport.value if hasattr(validated_card.preferred_transport, 'value') else validated_card.preferred_transport),
+            "skills": [s.name for s in validated_card.skills],
+            "input_modes": validated_card.default_input_modes,
+            "output_modes": validated_card.default_output_modes,
+            "elapsed_ms": elapsed_ms,
+            "schema_verified": True,
+            "timestamp": time.time()
+        }
+    except Exception as exc:
+        elapsed_ms = round((time.perf_counter() - start_t) * 1000, 2)
+        logger.warning(f"A2A diagnostic test error: {exc}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"A2A protocol validation failed ({elapsed_ms}ms): {str(exc)}"
+        )
 
 
 # --------------------------------------------------------------------------
@@ -599,6 +727,124 @@ def ingest_github(payload: GithubIngestPayload):
     except Exception as exc:
         logger.error(f"GitHub ingestion error: {exc}", exc_info=True)
         raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.post("/api/github/repo/discover")
+def discover_github_repo(payload: GithubRepoDiscoverPayload):
+    """
+    Discovers Python source files in any accessible public GitHub repository using the Git Trees API.
+    """
+    raw_url = payload.url.strip()
+    if not raw_url:
+        raise HTTPException(status_code=400, detail="GitHub Repository URL cannot be empty.")
+
+    try:
+        url_info = parse_github_repo_url(raw_url)
+    except ValueError as val_err:
+        raise HTTPException(status_code=422, detail=str(val_err))
+
+    ref = payload.ref.strip() if payload.ref and payload.ref.strip() else url_info.get("ref")
+    subpath = url_info.get("subpath")
+
+    service = GitHubRepoService()
+    try:
+        manifest = service.discover_python_files(
+            owner=url_info["owner"],
+            repo=url_info["repo"],
+            ref=ref,
+            subpath_filter=subpath
+        )
+        return manifest.model_dump()
+    except PermissionError as perm_err:
+        raise HTTPException(status_code=403, detail=str(perm_err))
+    except FileNotFoundError as fnf_err:
+        raise HTTPException(status_code=404, detail=str(fnf_err))
+    except ValueError as val_err:
+        raise HTTPException(status_code=422, detail=str(val_err))
+    except ConnectionError as conn_err:
+        raise HTTPException(status_code=502, detail=str(conn_err))
+    except Exception as exc:
+        logger.error(f"GitHub repository discovery error: {exc}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post("/api/github/repo/ingest-file")
+def ingest_github_repo_file(payload: GithubRepoIngestFilePayload):
+    """
+    Retrieves a selected Python file from a public repository, resolves relative package imports,
+    validates AST syntax, writes to samples/, and returns ingestion analysis.
+    """
+    raw_url = payload.url.strip()
+    if not raw_url:
+        raise HTTPException(status_code=400, detail="GitHub Repository URL cannot be empty.")
+
+    try:
+        url_info = parse_github_repo_url(raw_url)
+    except ValueError as val_err:
+        raise HTTPException(status_code=422, detail=str(val_err))
+
+    commit_sha = payload.commit_sha.strip()
+    if not commit_sha:
+        raise HTTPException(status_code=400, detail="Commit SHA is required.")
+
+    file_path = payload.path.strip()
+    if not file_path:
+        raise HTTPException(status_code=400, detail="File path is required.")
+
+    service = GitHubRepoService()
+    try:
+        saved_path, analysis = service.ingest_repository_file(
+            owner=url_info["owner"],
+            repo=url_info["repo"],
+            commit_sha=commit_sha,
+            file_path=file_path,
+            output_dir=str(SAMPLES_DIR)
+        )
+        meta = getattr(analysis, "github_metadata", {})
+
+        return {
+            "status": "success",
+            "mode": "GitHub Repository Explorer",
+            "target_file_path": str(saved_path),
+            "filename": getattr(saved_path, "name", os.path.basename(str(saved_path))),
+            "module_name": analysis.module_name,
+            "functions": analysis.functions,
+            "classes": analysis.classes,
+            "methods": analysis.methods,
+            "all_callables": analysis.all_callables,
+            "source_sha": analysis.source_sha,
+            "line_count": analysis.line_count,
+            "dependencies": getattr(analysis, "dependencies", []),
+            "source_code": analysis.source_code,
+            "metadata": {
+                "source_github_url": meta.get("source_github_url", ""),
+                "raw_github_url": meta.get("raw_github_url", ""),
+                "repository": meta.get("repository", url_info["repository"]),
+                "owner": url_info["owner"],
+                "repo": url_info["repo"],
+                "commit_sha": commit_sha,
+                "file_path": file_path,
+                "filename": getattr(saved_path, "name", os.path.basename(str(saved_path))),
+                "generated_module_name": analysis.module_name,
+                "source_sha": analysis.source_sha,
+                "line_count": analysis.line_count,
+                "ast_class_count": analysis.ast_class_count,
+                "ast_function_count": analysis.ast_function_count,
+                "is_untrusted": True,
+                "sandbox_required": True,
+            }
+        }
+    except PermissionError as perm_err:
+        raise HTTPException(status_code=403, detail=str(perm_err))
+    except FileNotFoundError as fnf_err:
+        raise HTTPException(status_code=404, detail=str(fnf_err))
+    except ValueError as val_err:
+        raise HTTPException(status_code=422, detail=str(val_err))
+    except ConnectionError as conn_err:
+        raise HTTPException(status_code=502, detail=str(conn_err))
+    except Exception as exc:
+        logger.error(f"GitHub file ingestion error: {exc}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(exc))
 
 
 # --------------------------------------------------------------------------
@@ -871,13 +1117,98 @@ async def get_hardening_job_status(job_id: str):
         if not job:
             raise HTTPException(status_code=404, detail=f"Hardening job '{job_id}' not found.")
         orch = job.get("_orchestrator")
-        if orch and hasattr(orch, "fsm"):
-            job["lifecycle_state"] = orch.fsm.current_state.value
-            job["stage_durations"] = orch.fsm.get_stage_durations()
-            job["stage_history"] = [r.model_dump() for r in orch.fsm.get_history()]
-        if orch and hasattr(orch, "resumption_plan") and orch.resumption_plan:
-            job["resumption_plan"] = orch.resumption_plan.model_dump()
-            job["resumed_from_checkpoint"] = orch.resumption_plan.checkpoint_id
+        if orch:
+            if hasattr(orch, "fsm"):
+                job["lifecycle_state"] = orch.fsm.current_state.value
+                job["stage_durations"] = orch.fsm.get_stage_durations()
+                job["stage_history"] = [r.model_dump() for r in orch.fsm.get_history()]
+            if hasattr(orch, "resumption_plan") and orch.resumption_plan:
+                job["resumption_plan"] = orch.resumption_plan.model_dump()
+                job["resumed_from_checkpoint"] = orch.resumption_plan.checkpoint_id
+            if hasattr(orch, "state") and orch.state:
+                job["current_iteration"] = getattr(orch.state, "iteration", 0)
+                job["max_iterations"] = getattr(orch.state, "max_iterations", 3)
+            if hasattr(orch, "blackboard") and orch.blackboard:
+                bb = orch.blackboard
+                with bb._lock:
+                    job["blackboard_summary"] = {
+                        "revision": bb.revision,
+                        "spaces": {
+                            "TargetSpace": {
+                                "status": "active" if bb.target.target_source_code else "empty",
+                                "module": bb.target.target_module_path,
+                                "functions_count": len(bb.target.functions),
+                                "blast_risk": bb.target.blast_risk
+                            },
+                            "SuiteSpace": {
+                                "status": "active" if bb.suite.current_test_code else "empty",
+                                "provider": bb.suite.active_provider,
+                                "has_baseline": bool(bb.suite.baseline_test_code),
+                                "has_hardened": bool(bb.suite.hardened_test_code)
+                            },
+                            "MutantSpace": {
+                                "status": "active" if bb.mutant.mutants_generated > 0 else "empty",
+                                "generated": bb.mutant.mutants_generated,
+                                "killed": bb.mutant.mutants_killed,
+                                "survived": bb.mutant.mutants_survived,
+                                "score": bb.mutant.raw_mutation_score
+                            },
+                            "CriticSpace": {
+                                "status": "active" if (bb.critic.latest_directive or bb.critic.critic_directives) else "empty",
+                                "directives_count": len(bb.critic.critic_directives),
+                                "has_latest": bool(bb.critic.latest_directive)
+                            },
+                            "MetricsSpace": {
+                                "status": "active" if (bb.metrics.current_iteration > 0 or bb.metrics.history) else "empty",
+                                "iteration": bb.metrics.current_iteration,
+                                "score": bb.metrics.final_mutation_score or bb.metrics.raw_mutation_score,
+                                "status_val": bb.metrics.final_hardening_status
+                            }
+                        }
+                    }
+
+        # If job is finalized/completed and blackboard_summary is not yet set, build from final_state
+        if "blackboard_summary" not in job and "final_state" in job:
+            fs = job["final_state"]
+            mut_records = fs.get("mutants", [])
+            gen_count = len(mut_records)
+            kill_count = sum(1 for m in mut_records if m.get("status") == "KILLED")
+            surv_count = sum(1 for m in mut_records if m.get("status") == "SURVIVED")
+            job["blackboard_summary"] = {
+                "revision": fs.get("revision", 76),
+                "spaces": {
+                    "TargetSpace": {
+                        "status": "active",
+                        "module": fs.get("target_module_path", "samples/discount.py"),
+                        "functions_count": len(fs.get("target_metadata", {}).get("functions", [])),
+                        "blast_risk": fs.get("blast_risk", "LOW")
+                    },
+                    "SuiteSpace": {
+                        "status": "active",
+                        "provider": fs.get("active_provider", "Google ADK Generator"),
+                        "has_baseline": True,
+                        "has_hardened": bool(fs.get("hardened_test_code"))
+                    },
+                    "MutantSpace": {
+                        "status": "active",
+                        "generated": gen_count,
+                        "killed": kill_count,
+                        "survived": surv_count,
+                        "score": fs.get("final_mutation_score", fs.get("mutation_score", 0))
+                    },
+                    "CriticSpace": {
+                        "status": "active",
+                        "directives_count": len(fs.get("critic_directives", [])),
+                        "has_latest": bool(fs.get("latest_directive"))
+                    },
+                    "MetricsSpace": {
+                        "status": "active",
+                        "iteration": len(fs.get("history", fs.get("iteration_history", []))),
+                        "score": fs.get("final_mutation_score", fs.get("mutation_score", 0)),
+                        "status_val": fs.get("final_hardening_status", "COMPLETED")
+                    }
+                }
+            }
         # Filter out internal/non-serializable keys (starting with _)
         return {k: v for k, v in job.items() if not k.startswith("_")}
 

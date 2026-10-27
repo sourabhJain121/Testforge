@@ -1,0 +1,29 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.18, pytest-9.1.1, pluggy-1.7.0 -- /Users/sourabh/TestForge/.venv-release/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/sourabh/TestForge
+plugins: cov-7.1.0, anyio-4.15.1, platformdirs-4.13.5
+collecting ... collected 9 items
+
+tests/test_teacher_review_improvements.py::TestMCPDiagnosticAction::test_mcp_list_directory_success PASSED [ 11%]
+tests/test_teacher_review_improvements.py::TestMCPDiagnosticAction::test_mcp_get_file_info_success PASSED [ 22%]
+tests/test_teacher_review_improvements.py::TestMCPDiagnosticAction::test_mcp_path_traversal_rejected PASSED [ 33%]
+tests/test_teacher_review_improvements.py::TestMCPDiagnosticAction::test_mcp_sensitive_file_rejected PASSED [ 44%]
+tests/test_teacher_review_improvements.py::TestMCPDiagnosticAction::test_mcp_disallowed_tool_rejected PASSED [ 55%]
+tests/test_teacher_review_improvements.py::TestA2ADiagnosticAction::test_a2a_local_verification_success PASSED [ 66%]
+tests/test_teacher_review_improvements.py::TestA2ADiagnosticAction::test_a2a_remote_ssrf_rejected PASSED [ 77%]
+tests/test_teacher_review_improvements.py::TestA2ADiagnosticAction::test_a2a_external_domain_rejected PASSED [ 88%]
+tests/test_teacher_review_improvements.py::TestJobStatusEnrichment::test_blackboard_summary_in_completed_job PASSED [100%]
+
+=============================== warnings summary ===============================
+.venv-release/lib/python3.13/site-packages/starlette/testclient.py:45
+  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/starlette/testclient.py:45: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+.venv-release/lib/python3.13/site-packages/google/cloud/aiplatform/models.py:52
+  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/google/cloud/aiplatform/models.py:52: FutureWarning: Support for google-cloud-storage < 3.0.0 will be removed in a future version of google-cloud-aiplatform. Please upgrade to google-cloud-storage >= 3.0.0.
+    from google.cloud.aiplatform.utils import gcs_utils
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 9 passed, 2 warnings in 4.61s =========================
+EXIT_CODE=0
