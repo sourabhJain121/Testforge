@@ -86,6 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
     },
   };
   window.__testforge_state = state;
+  window.state = state;
 
   // =========================================================================
   // DOM Elements Cache
@@ -344,6 +345,8 @@ document.addEventListener('DOMContentLoaded', () => {
     restoreTargetRev: document.getElementById('restore-target-rev'),
     restoreTargetTime: document.getElementById('restore-target-time'),
   };
+  window.__testforge_dom = dom;
+  window.dom = dom;
 
   // =========================================================================
   // Toast Notification System
@@ -1894,45 +1897,76 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ROW 1: Baseline Execution
     const baseline = finalState.baseline_run || {};
-    dom.kpiBaseGen.textContent = baseline.tests_generated || (finalState.test_suite ? finalState.test_suite.length : 0);
-    dom.kpiBaseExec.textContent = baseline.tests_executed || 0;
-    dom.kpiBasePass.textContent = baseline.tests_passed || 0;
-    dom.kpiBaseFail.textContent = baseline.tests_failed || 0;
-    const basePassed = baseline.tests_failed === 0 && baseline.tests_passed > 0;
-    dom.kpiBaseVerdict.textContent = basePassed ? '🟢 ALL PASSED' : (baseline.tests_failed > 0 ? '🔴 HAS FAILURES' : '⚪ NONE');
+    const baseGen = baseline.tests_generated != null
+      ? baseline.tests_generated
+      : (finalState.baseline_tests_generated != null ? finalState.baseline_tests_generated : (finalState.test_suite ? finalState.test_suite.length : 0));
+    const baseExec = baseline.tests_executed != null
+      ? baseline.tests_executed
+      : (finalState.baseline_tests_executed != null ? finalState.baseline_tests_executed : 0);
+    const basePass = baseline.tests_passed != null
+      ? baseline.tests_passed
+      : (finalState.baseline_tests_passed != null ? finalState.baseline_tests_passed : 0);
+    const baseFail = baseline.tests_failed != null
+      ? baseline.tests_failed
+      : (finalState.baseline_tests_failed != null ? finalState.baseline_tests_failed : 0);
+
+    dom.kpiBaseGen.textContent = baseGen;
+    dom.kpiBaseExec.textContent = baseExec;
+    dom.kpiBasePass.textContent = basePass;
+    dom.kpiBaseFail.textContent = baseFail;
+    const basePassed = finalState.baseline_passed === true || (baseline.passed === true) || (baseFail === 0 && basePass > 0);
+    dom.kpiBaseVerdict.textContent = basePassed ? '🟢 ALL PASSED' : (baseFail > 0 ? '🔴 HAS FAILURES' : '⚪ NONE');
 
     // ROW 2: Mutation & Coverage
-    const lastIter = finalState.iteration_history && finalState.iteration_history.length > 0
-      ? finalState.iteration_history[finalState.iteration_history.length - 1]
-      : null;
+    const iterList = finalState.history || finalState.iteration_history || [];
+    const lastIter = iterList.length > 0 ? iterList[iterList.length - 1] : null;
 
-    const totalLines = state.activeTarget.lineCount || 1;
-    const covPct = lastIter ? (lastIter.line_coverage || 0) : (finalState.baseline_coverage || 0);
-    const linesCovered = Math.round((covPct / 100) * totalLines);
+    const totalLines = state.activeTarget.lineCount || finalState.num_statements || 1;
+    const covPct = lastIter
+      ? (lastIter.line_coverage_pct != null ? lastIter.line_coverage_pct : (lastIter.line_coverage || 0))
+      : (finalState.baseline_line_coverage != null ? finalState.baseline_line_coverage : (finalState.baseline_coverage || 0));
+    const linesCovered = finalState.lines_covered != null
+      ? finalState.lines_covered
+      : Math.round((covPct / 100) * totalLines);
 
-    dom.kpiLinesCov.textContent = `${linesCovered} / ${totalLines}`;
+    dom.kpiLinesCov.textContent = `${linesCovered} / ${finalState.num_statements || totalLines}`;
     dom.kpiCovPct.textContent = `${covPct.toFixed(1)}%`;
 
-    const mutGen = finalState.mutants ? finalState.mutants.length : 0;
-    const mutKill = lastIter ? lastIter.mutants_killed : 0;
-    const mutSurv = lastIter ? lastIter.mutants_survived : 0;
+    const mutGen = finalState.mutants_generated != null
+      ? finalState.mutants_generated
+      : (finalState.mutants ? finalState.mutants.length : 0);
+    const mutKill = lastIter
+      ? (lastIter.killed_mutants != null ? lastIter.killed_mutants : (lastIter.mutants_killed != null ? lastIter.mutants_killed : 0))
+      : (finalState.mutants_killed != null ? finalState.mutants_killed : 0);
+    const mutSurv = lastIter
+      ? (lastIter.survived_mutants != null ? lastIter.survived_mutants : (lastIter.mutants_survived != null ? lastIter.mutants_survived : 0))
+      : (finalState.mutants_survived != null ? finalState.mutants_survived : 0);
+    const mutExec = finalState.mutants_executed != null ? finalState.mutants_executed : mutGen;
+    const mutErr = finalState.mutation_execution_errors != null
+      ? finalState.mutation_execution_errors
+      : (lastIter ? (lastIter.execution_errors || 0) : 0);
 
     dom.kpiMutGen.textContent = mutGen;
-    dom.kpiMutExec.textContent = mutGen;
+    dom.kpiMutExec.textContent = mutExec;
     dom.kpiMutKill.textContent = mutKill;
     dom.kpiMutSurv.textContent = mutSurv;
-    dom.kpiMutErr.textContent = '0';
+    dom.kpiMutErr.textContent = mutErr;
 
     // ROW 3: Final Status
-    const finalScore = finalState.mutation_score != null ? finalState.mutation_score : (lastIter ? lastIter.mutation_score : 0);
+    const finalScore = finalState.final_mutation_score != null
+      ? finalState.final_mutation_score
+      : (finalState.mutation_score != null
+        ? finalState.mutation_score
+        : (lastIter ? (lastIter.mutation_score != null ? lastIter.mutation_score : (lastIter.raw_mutation_score || 0)) : 0));
     dom.kpiMutScore.textContent = `${finalScore.toFixed(1)}%`;
-    dom.kpiCyclesDone.textContent = `${finalState.current_iteration || (finalState.iteration_history ? finalState.iteration_history.length : 1)} / ${state.settings.maxIterations}`;
-    dom.kpiFinalStatus.textContent = statusOverride || finalState.hardening_status || 'HARDENED';
+    dom.kpiCyclesDone.textContent = `${finalState.current_iteration || finalState.reflection_iterations_performed || iterList.length || 1} / ${state.settings.maxIterations}`;
+    const reportedStatus = statusOverride || finalState.final_hardening_status || finalState.hardening_status || 'HARDENED';
+    dom.kpiFinalStatus.textContent = reportedStatus;
 
     if (!statusOverride) {
       // Hardening Verdict Banner
       dom.hardeningVerdictBanner.classList.remove('hidden');
-      const isSuccess = finalScore >= state.settings.targetMutationScore || finalState.hardening_status === 'TARGET_ACHIEVED';
+      const isSuccess = finalScore >= state.settings.targetMutationScore || reportedStatus === 'TARGET_ACHIEVED';
       dom.hardeningVerdictBanner.className = `verdict-banner ${isSuccess ? 'success' : 'warning'}`;
       dom.hardeningVerdictBanner.innerHTML = `
         <div class="verdict-content">
@@ -1946,7 +1980,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Render History Table
-    renderHistoryTable(finalState.iteration_history || []);
+    renderHistoryTable(iterList);
 
     // Render Mutants Table
     state.hardening.mutants = finalState.mutants || [];
@@ -1971,13 +2005,18 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.historyTableBody.innerHTML = '';
     iterations.forEach(it => {
       const tr = document.createElement('tr');
+      const killed = it.killed_mutants != null ? it.killed_mutants : (it.mutants_killed != null ? it.mutants_killed : 0);
+      const survived = it.survived_mutants != null ? it.survived_mutants : (it.mutants_survived != null ? it.mutants_survived : 0);
+      const total = it.total_mutants != null ? it.total_mutants : (killed + survived);
+      const score = it.mutation_score != null ? it.mutation_score : (it.raw_mutation_score != null ? it.raw_mutation_score : 0);
+      const cov = it.line_coverage_pct != null ? it.line_coverage_pct : (it.line_coverage != null ? it.line_coverage : 0);
       tr.innerHTML = `
         <td><strong class="text-cyan">Cycle ${it.iteration}</strong></td>
-        <td>${it.total_mutants}</td>
-        <td><span class="text-green font-semibold">${it.mutants_killed}</span></td>
-        <td><span class="text-red font-semibold">${it.mutants_survived}</span></td>
-        <td><span class="badge ${it.mutation_score >= 80 ? 'badge-green' : 'badge-amber'}">${it.mutation_score.toFixed(1)}%</span></td>
-        <td>${(it.line_coverage || 0).toFixed(1)}%</td>
+        <td>${total}</td>
+        <td><span class="text-green font-semibold">${killed}</span></td>
+        <td><span class="text-red font-semibold">${survived}</span></td>
+        <td><span class="badge ${score >= 80 ? 'badge-green' : 'badge-amber'}">${score.toFixed(1)}%</span></td>
+        <td>${cov.toFixed(1)}%</td>
         <td>${it.duration_seconds ? `${it.duration_seconds.toFixed(2)}s` : '-'}</td>
       `;
       dom.historyTableBody.appendChild(tr);

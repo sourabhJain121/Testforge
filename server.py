@@ -761,6 +761,18 @@ def _run_orchestration_job(job_id: str, payload: HardeningRunPayload):
 
         # Serialize Pydantic models
         state_dict = final_state.model_dump() if hasattr(final_state, "model_dump") else final_state.dict()
+        # Bidirectional alias mapping for frontend API compatibility
+        state_dict["mutation_score"] = getattr(final_state, "final_mutation_score", 0.0)
+        state_dict["hardening_status"] = getattr(final_state, "final_hardening_status", "UNKNOWN")
+        state_dict["iteration_history"] = state_dict.get("history", [])
+        state_dict["baseline_coverage"] = getattr(final_state, "baseline_line_coverage", 0.0)
+        state_dict["baseline_run"] = {
+            "tests_generated": getattr(final_state, "baseline_tests_generated", 0),
+            "tests_executed": getattr(final_state, "baseline_tests_executed", 0),
+            "tests_passed": getattr(final_state, "baseline_tests_passed", 0),
+            "tests_failed": getattr(final_state, "baseline_tests_failed", 0),
+            "passed": getattr(final_state, "baseline_passed", False),
+        }
 
         with JOB_LOCK:
             if job_id in JOBS:

@@ -1,0 +1,29 @@
+M  .gitignore
+ M benchmark_results.json
+ M benchmark_results.md
+ M test_hardened.py
+ M testforge/agents.py
+ M testforge/blackboard.py
+ M testforge/corpus/runner.py
+ M testforge/llm_client.py
+ M testforge/mutator.py
+ M testforge/orchestrator.py
+ M testforge/sandbox.py
+ M testforge/state.py
+D  testforge_trace.jsonl
+D  trace_reflected.jsonl
+D  trace_zeroshot.jsonl
+?? qa_artifacts/autonomous_e2e_acceptance_20261027_004800/
+?? qa_artifacts/final_evidence_audit_20261027_003200/
+?? qa_artifacts/phase2_finalization_20261026_141500/
+?? qa_artifacts/phase4_m1_adversarial_review_20261026_113400/
+?? qa_artifacts/phase4_m1_implementation_20261026_112600/
+?? qa_artifacts/phase4_m1_plan_20261026_103600/
+?? qa_artifacts/phase4_m1_verification_20261026_112800/
+?? qa_artifacts/phase4_m2_acceptance_audit_20261026_123000/
+?? qa_artifacts/phase4_m2_semantic_guidance_20261026_121500/
+?? qa_artifacts/phase4_m3_benchmark_validity_20261026_125000/
+?? qa_artifacts/phase5_m1_agentic_diagnosis_20261026_132000/
+?? qa_artifacts/post_push_integrity_verification_20261026_102200/
+?? testforge/guidance.py
+?? tests/test_mutation_guided_repair.py

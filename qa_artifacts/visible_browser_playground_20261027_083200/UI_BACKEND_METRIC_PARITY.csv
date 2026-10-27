@@ -1,0 +1,31 @@
+job_id,file,metric_field,frontend_dom_value,backend_authoritative_value,verdict
+7ece683e,discount.py,mutation_score,63.2%,63.2%,MATCH
+7ece683e,discount.py,mutants_killed,12,12,MATCH
+7ece683e,discount.py,mutants_survived,7,7,MATCH
+7ece683e,discount.py,mutants_generated,19,19,MATCH
+7ece683e,discount.py,baseline_verdict,🟢 ALL PASSED,🟢 ALL PASSED,MATCH
+7ece683e,discount.py,final_status,TARGET_SCORE_UNREACHED,TARGET_SCORE_UNREACHED,MATCH
+c72bfc10,banking.py,mutation_score,52.2%,52.2%,MATCH
+c72bfc10,banking.py,mutants_killed,12,12,MATCH
+c72bfc10,banking.py,mutants_survived,11,11,MATCH
+c72bfc10,banking.py,mutants_generated,23,23,MATCH
+c72bfc10,banking.py,baseline_verdict,🟢 ALL PASSED,🟢 ALL PASSED,MATCH
+c72bfc10,banking.py,final_status,TARGET_SCORE_UNREACHED,TARGET_SCORE_UNREACHED,MATCH
+2d7e1089,inventory_pricing.py,mutation_score,46.0%,46.0%,MATCH
+2d7e1089,inventory_pricing.py,mutants_killed,17,17,MATCH
+2d7e1089,inventory_pricing.py,mutants_survived,20,20,MATCH
+2d7e1089,inventory_pricing.py,mutants_generated,37,37,MATCH
+2d7e1089,inventory_pricing.py,baseline_verdict,🟢 ALL PASSED,🟢 ALL PASSED,MATCH
+2d7e1089,inventory_pricing.py,final_status,TARGET_SCORE_UNREACHED,TARGET_SCORE_UNREACHED,MATCH
+6abda83d,state_machine.py,mutation_score,21.1%,21.1%,MATCH
+6abda83d,state_machine.py,mutants_killed,12,12,MATCH
+6abda83d,state_machine.py,mutants_survived,45,45,MATCH
+6abda83d,state_machine.py,mutants_generated,57,57,MATCH
+6abda83d,state_machine.py,baseline_verdict,🟢 ALL PASSED,🟢 ALL PASSED,MATCH
+6abda83d,state_machine.py,final_status,TARGET_SCORE_UNREACHED,TARGET_SCORE_UNREACHED,MATCH
+bf3e4392,rate_limiter.py,mutation_score,42.1%,42.1%,MATCH
+bf3e4392,rate_limiter.py,mutants_killed,16,16,MATCH
+bf3e4392,rate_limiter.py,mutants_survived,22,22,MATCH
+bf3e4392,rate_limiter.py,mutants_generated,38,38,MATCH
+bf3e4392,rate_limiter.py,baseline_verdict,🟢 ALL PASSED,🟢 ALL PASSED,MATCH
+bf3e4392,rate_limiter.py,final_status,TARGET_SCORE_UNREACHED,TARGET_SCORE_UNREACHED,MATCH

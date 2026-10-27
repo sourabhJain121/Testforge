@@ -1,0 +1,27 @@
+Route_Path,HTTP_Method,Handler_Function,Request_Model,Response_Model,Description,Auth_Required,Verification_Status
+/readyz,GET,readyz,None,JSONResponse,Readiness probe verifying AST mutator Blackboard sandbox storage and SQLite,No,VERIFIED PASS
+/api/ready,GET,readyz,None,JSONResponse,Alias for readiness probe,No,VERIFIED PASS
+/api/status,GET,get_system_status,None,dict,Hardware profile providers online status and supported models,No,VERIFIED PASS
+/api/mcp/status,GET,get_mcp_status,None,dict,Read-only status of registered FastMCP servers and tool schemas,No,VERIFIED PASS
+/.well-known/agent.json,GET,get_a2a_agent_card,None,dict,Official A2A AgentCard discovery endpoint,No,VERIFIED PASS
+/.well-known/agent-card.json,GET,get_a2a_agent_card,None,dict,Alias for A2A AgentCard discovery endpoint,No,VERIFIED PASS
+/api/config/keys,POST,update_api_keys,KeyConfigPayload,dict,Dynamically binds Gemini / OpenRouter API keys in memory,No,VERIFIED PASS
+/api/samples,GET,list_workspace_samples,None,dict,Lists available Python samples in samples/ directory,No,VERIFIED PASS
+/api/ingest/sample,POST,ingest_sample,SampleIngestPayload,dict,Mode A: Ingests workspace sample file and extracts AST metadata,No,VERIFIED PASS
+/api/ingest/upload,POST,ingest_upload,UploadFile,dict,Mode A: Uploads custom Python file to samples/uploaded_*.py,No,VERIFIED PASS
+/api/ingest/synthesize,POST,synthesize_module,SynthesisPayload,dict,Mode B: Natural language Python module synthesis via TargetManagerAgent,No,VERIFIED PASS
+/api/ingest/github,POST,ingest_github,GithubIngestPayload,dict,Mode C: Ingests public Python file from GitHub repository with URL normalization,No,VERIFIED PASS
+/api/analysis/blast-radius,POST,analyze_blast_radius,BlastRadiusPayload,dict,Builds static AST call graph nodes links and architectural risk,No,VERIFIED PASS
+/api/analysis/git-diff,POST,analyze_git_diff,GitDiffPayload,dict,Inspects git working tree for modified lines in target file,No,VERIFIED PASS
+/api/harden/start,POST,start_hardening_job,HardeningRunPayload,dict,Initiates asynchronous autonomous test hardening job,No,VERIFIED PASS
+/api/harden/status/{job_id},GET,get_hardening_job_status,None,dict,Polls status metrics mutants stage history and hardened test suite,No,VERIFIED PASS
+/api/harden/cancel/{job_id},POST,cancel_hardening_job,None,dict,Cooperatively cancels running or queued hardening job via threading.Event,No,VERIFIED PASS
+/ws/events,WebSocket,websocket_events_endpoint,None,None,Real-time WebSocket event streaming of agent lifecycle events,No,VERIFIED PASS
+/api/ws/status,GET,get_websocket_hub_status,None,dict,Returns health active client count and dropped event metrics for WebSocket hub,No,VERIFIED PASS
+/a2a/task,POST,a2a_task_rpc_endpoint,A2ATaskMessage,A2ATaskMessage,A2A JSON-RPC 2.0 task server supporting tasks/send tasks/get tasks/cancel,No,VERIFIED PASS
+/api/checkpoints/timeline,GET,get_checkpoints_timeline,None,dict,Returns chronological snapshot history from SQLite database,No,VERIFIED PASS
+/api/checkpoints/diff,POST,get_checkpoints_diff,CheckpointDiffPayload,dict,Computes state and mutant record diff between two checkpoints,No,VERIFIED PASS
+/api/benchmarks/latest,GET,get_latest_benchmark_report,None,dict,Retrieves the latest empirical benchmark report,No,VERIFIED PASS
+/api/benchmarks/run,POST,run_benchmarks_job,BenchmarkRunPayload,dict,Triggers background comparative benchmark run,No,VERIFIED PASS
+/static,GET,StaticFiles,None,FileResponse,Serves frontend static assets (HTML CSS JS),No,VERIFIED PASS
+/,GET,index,None,HTMLResponse,Serves the main frontend dashboard at root URL,No,VERIFIED PASS

@@ -487,6 +487,7 @@ class TestForgeState(BaseModel):
     history: List[IterationMetrics] = Field(default_factory=list)
     
     surviving_mutant_diffs: List[str] = Field(default_factory=list)
+    surviving_guidance: List[Dict[str, Any]] = Field(default_factory=list)
     reflection_notes: List[str] = Field(default_factory=list)
     
     terminated: bool = False

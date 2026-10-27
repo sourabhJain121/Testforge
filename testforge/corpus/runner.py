@@ -467,7 +467,8 @@ class CorpusBenchmarkRunner:
         from testforge.sandbox import ParallelSandboxRunner
         from testforge.mutator import ASTMutator
         from testforge.equivalence import calculate_mutation_scores
-        from testforge.agents import TestGeneratorAgent
+        from testforge.agents import TestGeneratorAgent, AdversarialCriticAgent
+        from testforge.guidance import derive_guidance_for_surviving_mutants
         from testforge.logger import TraceLogger
 
         runner = ParallelSandboxRunner(timeout_seconds=5)
@@ -485,10 +486,21 @@ class CorpusBenchmarkRunner:
         status = "SUCCESS"
         err_msg = None
         exec_mode = "OFFLINE_DETERMINISTIC_SYNTHESIS"
+        total_candidates = 0
+        retained_candidates = 0
+        failing_candidates = 0
 
         try:
             if scenario == "baseline":
-                test_code_to_eval = fixture.baseline_test_code
+                raw_code = fixture.baseline_test_code
+                val_base = runner.validate_and_filter_candidate_suite(
+                    candidate_test_code=raw_code,
+                    target_code=fixture.source_code
+                )
+                test_code_to_eval = val_base.retained_test_code if val_base.retained_count > 0 else ""
+                total_candidates = val_base.total_candidates
+                retained_candidates = val_base.retained_count
+                failing_candidates = val_base.rejected_count
                 prompt_variant = "baseline-handwritten-v1"
                 iterations = 0
                 exec_mode = "DETERMINISTIC_BASELINE"
@@ -504,11 +516,17 @@ class CorpusBenchmarkRunner:
                     api_key=os.environ.get("GEMINI_API_KEY") if has_api_key else ""
                 )
                 synth = gen.generate_tests(source_code=fixture.source_code, iteration=0)
-                if synth and synth.strip():
-                    test_code_to_eval = synth
-                else:
-                    test_code_to_eval = fixture.baseline_test_code
+                raw_code = synth if (synth and synth.strip()) else fixture.baseline_test_code
+                if not (synth and synth.strip()):
                     status = "FALLBACK"
+                val_zs = runner.validate_and_filter_candidate_suite(
+                    candidate_test_code=raw_code,
+                    target_code=fixture.source_code
+                )
+                test_code_to_eval = val_zs.retained_test_code if val_zs.retained_count > 0 else ""
+                total_candidates = val_zs.total_candidates
+                retained_candidates = val_zs.retained_count
+                failing_candidates = val_zs.rejected_count
 
                 if has_api_key:
                     tokens = logger.get_total_tokens()
@@ -532,20 +550,80 @@ class CorpusBenchmarkRunner:
 
                 # Iteration 0: Initial pass
                 synth_v0 = gen.generate_tests(source_code=fixture.source_code, iteration=0)
+                val_pass0 = runner.validate_and_filter_candidate_suite(
+                    candidate_test_code=synth_v0,
+                    target_code=fixture.source_code
+                )
+                clean_v0 = val_pass0.retained_test_code if val_pass0.retained_count > 0 else ""
 
                 # Intermediate evaluation in sandbox to find surviving mutants
                 mutants_pass0 = ASTMutator.generate_mutants(fixture.source_code)
-                eval_pass0 = runner.evaluate_mutants_parallel(synth_v0, mutants_pass0)
-                surviving = [m for m in eval_pass0 if m.status == "SURVIVED"]
+                eval_pass0 = runner.evaluate_mutants_parallel(
+                    clean_v0,
+                    mutants_pass0,
+                    baseline_passed=(val_pass0.retained_count > 0)
+                )
+                surviving = [m for m in eval_pass0 if m.status in ("SURVIVED", "POTENTIALLY_EQUIVALENT")]
                 surviving_diffs = [m.unified_diff for m in surviving[:3]] if surviving else None
+                surviving_guidance = derive_guidance_for_surviving_mutants(surviving[:3], target_code=fixture.source_code) if surviving else None
 
-                # Iteration 1: Refined pass targeting surviving mutant diffs
+                # Multi-agent reflection: Adversarial Critic analyzes surviving mutants
+                critic_feedback = None
+                try:
+                    critic = AdversarialCriticAgent(
+                        logger=logger,
+                        api_key=os.environ.get("GEMINI_API_KEY") if has_api_key else ""
+                    )
+                    critic_feedback = critic.analyze_surviving_mutants(
+                        target_code=fixture.source_code,
+                        surviving_mutant_diffs=surviving_diffs or [],
+                        iteration=1,
+                        surviving_mutants=surviving[:3] if surviving else None
+                    )
+                except Exception as c_exc:
+                    if logger:
+                        logger.log_event("CRITIC_INVOCATION_FALLBACK", {"error": str(c_exc)})
+
+                # Iteration 1: Refined pass targeting surviving mutant diffs, critic feedback, semantic guidance, and quarantined test errors
                 synth_v1 = gen.generate_tests(
                     source_code=fixture.source_code,
                     surviving_diffs=surviving_diffs,
-                    iteration=1
+                    critic_feedback=critic_feedback,
+                    iteration=1,
+                    surviving_guidance=surviving_guidance,
+                    quarantined_tests=val_pass0.failing_tests
                 )
-                test_code_to_eval = synth_v1 if (synth_v1 and synth_v1.strip()) else synth_v0
+                val_pass1 = runner.validate_and_filter_candidate_suite(
+                    candidate_test_code=synth_v1,
+                    target_code=fixture.source_code,
+                    existing_test_code=clean_v0
+                )
+
+                # Preserve valid tests: If Pass 1 produced valid tests, use the merged suite.
+                # If Pass 1 produced zero valid tests, preserve the valid Pass 0 suite (clean_v0).
+                if val_pass1.retained_test_code and val_pass1.retained_test_code.strip():
+                    test_code_to_eval = val_pass1.retained_test_code
+                else:
+                    test_code_to_eval = clean_v0
+
+                # Accurately count total candidates generated and valid tests in final suite
+                total_candidates = val_pass0.total_candidates + val_pass1.total_candidates
+                if test_code_to_eval and test_code_to_eval.strip():
+                    import ast as _ast
+                    try:
+                        _tree = _ast.parse(test_code_to_eval)
+                        retained_candidates = sum(
+                            1 for n in _tree.body
+                            if isinstance(n, (_ast.FunctionDef, _ast.AsyncFunctionDef, _ast.ClassDef))
+                            and (getattr(n, "name", "").startswith("test_") or getattr(n, "name", "").endswith("_test") or getattr(n, "name", "").startswith("Test"))
+                        )
+                    except Exception:
+                        import re as _re
+                        retained_candidates = len(_re.findall(r"def\s+(?:test_\w+|\w+_test)\s*\(", test_code_to_eval))
+                else:
+                    retained_candidates = 0
+
+                failing_candidates = max(0, total_candidates - retained_candidates)
 
                 if has_api_key:
                     tokens = logger.get_total_tokens()
@@ -562,38 +640,56 @@ class CorpusBenchmarkRunner:
         except Exception as exc:
             status = "FAILED"
             err_msg = str(exc)
-            test_code_to_eval = fixture.baseline_test_code
+            test_code_to_eval = ""
+            total_candidates = 0
+            retained_candidates = 0
+            failing_candidates = 0
 
-        # Evaluate against clean reference code to verify validity & false positive rate
-        ref_run = runner.run_single(test_code_to_eval, fixture.source_code)
-        collected = ref_run.get("tests_collected", 0)
-        passed_ref = ref_run.get("tests_passed", 0)
-        failed_ref = ref_run.get("tests_failed", 0)
-        if ref_run.get("status") == "TIMEOUT":
-            timeouts += 1
+        # Step B: Determine baseline validity on clean reference code
+        baseline_passed = bool(test_code_to_eval and test_code_to_eval.strip() and retained_candidates > 0)
 
+        # Verification check on clean reference code
+        if baseline_passed:
+            ref_run = runner.run_single(test_code_to_eval, fixture.source_code)
+            if ref_run.get("status") == "TIMEOUT":
+                timeouts += 1
+                baseline_passed = False
+            elif ref_run.get("status") in ("FAIL", "ERROR") or ref_run.get("tests_failed", 0) > 0:
+                baseline_passed = False
+                if ref_run.get("has_exec_error"):
+                    tool_errors += 1
+
+        collected = total_candidates
+        passed_ref = retained_candidates if baseline_passed else 0
+        failed_ref = failing_candidates if baseline_passed else total_candidates
         fp_rate = (failed_ref / collected * 100.0) if collected > 0 else 0.0
 
-        # Evaluate against controlled defect variants
+        # Evaluate against controlled defect variants using clean verified suite only
         detected_defs = []
-        for d_id, defect in fixture.defects.items():
-            d_run = runner.run_single(test_code_to_eval, defect.buggy_source_code)
-            if d_run.get("status") in ("FAIL", "ERROR", "TIMEOUT") or d_run.get("tests_failed", 0) > 0:
-                detected_defs.append(d_id)
-            if d_run.get("status") == "TIMEOUT":
-                timeouts += 1
+        if baseline_passed and test_code_to_eval:
+            for d_id, defect in fixture.defects.items():
+                d_run = runner.run_single(test_code_to_eval, defect.buggy_source_code)
+                if d_run.get("status") in ("FAIL", "ERROR", "TIMEOUT") or d_run.get("tests_failed", 0) > 0:
+                    detected_defs.append(d_id)
+                if d_run.get("status") == "TIMEOUT":
+                    timeouts += 1
 
         survived_defs = [d for d in fixture.defects.keys() if d not in detected_defs]
         det_rate = (len(detected_defs) / len(fixture.defects) * 100.0) if fixture.defects else 100.0
 
-        # Run full AST mutation analysis
+        # Run line coverage on clean reference code
         try:
-            cov_pct, _ = runner.measure_coverage(test_code_to_eval, fixture.source_code)
+            cov_pct, _ = runner.measure_coverage(test_code_to_eval, fixture.source_code) if (baseline_passed and test_code_to_eval) else (0.0, None)
         except Exception:
             cov_pct = 0.0
 
+        # Run full AST mutation analysis with explicit baseline_passed contract
         mutants = ASTMutator.generate_mutants(fixture.source_code)
-        evaluated = runner.evaluate_mutants_parallel(test_code_to_eval, mutants)
+        evaluated = runner.evaluate_mutants_parallel(
+            test_code=test_code_to_eval if baseline_passed else "",
+            mutants=mutants,
+            baseline_passed=baseline_passed
+        )
         scores = calculate_mutation_scores(evaluated)
 
         dur = round(time.perf_counter() - t0, 3)

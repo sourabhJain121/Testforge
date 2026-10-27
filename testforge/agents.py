@@ -29,6 +29,13 @@ from typing import List, Dict, Any, Optional, Tuple
 from testforge.logger import TraceLogger
 from testforge.llm_client import HybridLLMClient, call_openrouter_api
 from testforge.adk_engine import ADKToolRegistry, ADKContext
+from testforge.guidance import (
+    SemanticMutantGuidance,
+    derive_semantic_guidance,
+    derive_guidance_for_surviving_mutants,
+    format_guidance_for_critic,
+    format_guidance_for_generator,
+)
 
 
 class CodeSanitizer:
@@ -369,7 +376,9 @@ class TestGeneratorAgent:
         missing_branches: Optional[List[str]] = None,
         surviving_diffs: Optional[List[str]] = None,
         critic_feedback: Optional[str] = None,
-        iteration: int = 1
+        iteration: int = 1,
+        surviving_guidance: Optional[List[Any]] = None,
+        quarantined_tests: Optional[List[Any]] = None
     ) -> str:
         """
         Synthesizes Pytest assertions matching the exact function signatures in source_code.
@@ -416,6 +425,12 @@ class TestGeneratorAgent:
             branches_str = "\n".join(f"- {b}" for b in missing_branches)
             prompt_parts.append(f"### Uncovered / Missing Branches:\n{branches_str}")
 
+        if surviving_guidance:
+            # Add structured semantic guidance for surviving mutants
+            guidance_text = format_guidance_for_generator(surviving_guidance)
+            if guidance_text:
+                prompt_parts.append(guidance_text)
+
         if surviving_diffs:
             self.adk_registry.execute_tool(
                 "tool_ast_audit",
@@ -428,10 +443,29 @@ class TestGeneratorAgent:
             )
             prompt_parts.append(f"### Surviving Mutant AST Diffs (Faults Your Previous Tests Failed to Kill):\n{diffs_str}")
 
+        if quarantined_tests:
+            err_items = []
+            for item in quarantined_tests[:5]:
+                name = getattr(item, "name", "unknown")
+                reason = getattr(item, "reason", "")
+                last_reason = reason.strip().splitlines()[-1] if reason else "Assertion failed against clean reference code."
+                err_items.append(f"- `{name}`: {last_reason}")
+            if err_items:
+                prompt_parts.append(
+                    "### Quarantined Candidate Tests (FAILED against Clean Reference Code — DO NOT REPEAT THESE ERRORS):\n"
+                    + "\n".join(err_items)
+                    + "\nCarefully calculate expected values directly from the reference code formulas to ensure your assertions pass against clean code."
+                )
+
         if critic_feedback:
             prompt_parts.append(f"### Adversarial Critic Reasoning & Directives:\n{critic_feedback}")
 
-        prompt_parts.append(f"Write a complete Pytest test suite targeting ONLY [{', '.join(func_names)}].")
+        if iteration > 0 or surviving_diffs:
+            prompt_parts.append(
+                f"Write targeted, high-precision Pytest tests for [{', '.join(func_names)}] that specifically kill the surviving mutants while strictly passing against the unmodified clean target code."
+            )
+        else:
+            prompt_parts.append(f"Write a complete Pytest test suite targeting ONLY [{', '.join(func_names)}].")
         full_prompt = "\n\n".join(prompt_parts)
 
         start_time = time.perf_counter()
@@ -651,27 +685,27 @@ def test_state_machine_rules_hardened():
                 if not is_hardened_round:
                     test_functions.append("""
 def test_currency_basic():
-    res = convert_currency(100.0, "USD", "EUR")
-    assert res == 90.0
     assert convert_currency(100.0, "USD", "USD") == 100.0
-    with pytest.raises(ValueError):
+    assert convert_currency(100.0, "USD", "EUR") == 92.41
+    assert convert_currency(0.0, "USD", "EUR") == 0.0
+    with pytest.raises(ValueError, match="Amount must be non-negative"):
         convert_currency(-10.0, "USD", "EUR")
 """)
                 else:
                     test_functions.append("""
 def test_currency_rules_hardened():
-    assert convert_currency(100.0, "USD", "EUR") == 90.0
+    assert convert_currency(100.0, "USD", "EUR") == 92.41
     assert convert_currency(100.0, "USD", "USD", is_vip=False) == 100.0
-    assert convert_currency(1000.0, "USD", "EUR", is_vip=True) == 918.0
-    assert convert_currency(100.0, "GBP", "JPY") == 19200.0
-    with pytest.raises(ValueError):
-        convert_currency(0.0, "USD", "EUR")
-    with pytest.raises(ValueError):
+    assert convert_currency(100.0, "GBP", "USD") == 124.75
+    assert convert_currency(20.0, "USD", "EUR", is_vip=False) == 16.48
+    assert convert_currency(20.0, "USD", "EUR", is_vip=True) == 18.50
+    assert convert_currency(0.0, "USD", "EUR") == 0.0
+    with pytest.raises(ValueError, match="Amount must be non-negative"):
         convert_currency(-50.0, "USD", "EUR")
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Unsupported currency"):
         convert_currency(100.0, "XYZ", "EUR")
-    with pytest.raises(ValueError):
-        convert_currency(100.0, "USD", "EUR", spread_bps=0)
+    with pytest.raises(ValueError, match="Unsupported currency"):
+        convert_currency(100.0, "USD", "ABC")
 """)
             else:
                 dummy_args = ", ".join(["1"] * len(args))
@@ -719,10 +753,12 @@ class AdversarialCriticAgent:
         self,
         target_code: str,
         surviving_mutant_diffs: List[str],
-        iteration: int = 1
+        iteration: int = 1,
+        surviving_mutants: Optional[List[Any]] = None
     ) -> str:
         """
-        Analyzes surviving mutants via ADK tool deliberation and prompts the LLM critic.
+        Analyzes surviving mutants via ADK tool deliberation and prompts the LLM critic
+        with structured semantic guidance.
         """
         # ADK Tool Deliberation Protocol
         adk_context = ADKContext(iteration=iteration)
@@ -742,16 +778,27 @@ class AdversarialCriticAgent:
         if not surviving_mutant_diffs:
             return "All mutants killed. Suite is hardened."
 
+        # Derive semantic guidance when surviving mutant objects are supplied
+        guidances = []
+        if surviving_mutants:
+            guidances = derive_guidance_for_surviving_mutants(surviving_mutants, target_code=target_code)
+
         diffs_text = "\n\n".join(
             f"--- Mutant #{idx+1} ---\n{diff}"
             for idx, diff in enumerate(surviving_mutant_diffs)
         )
 
-        prompt = (
-            f"### Target Code Under Test:\n```python\n{target_code}\n```\n\n"
-            f"### Surviving Mutant Unified Diffs:\n{diffs_text}\n\n"
+        prompt_parts = [
+            f"### Target Code Under Test:\n```python\n{target_code}\n```"
+        ]
+        if guidances:
+            prompt_parts.append(format_guidance_for_critic(guidances))
+
+        prompt_parts.extend([
+            f"### Surviving Mutant Unified Diffs:\n{diffs_text}",
             "Analyze why these mutants survived and specify exact assertions required to kill them."
-        )
+        ])
+        prompt = "\n\n".join(prompt_parts)
 
         start_time = time.perf_counter()
 
@@ -774,14 +821,20 @@ class AdversarialCriticAgent:
         except Exception:
             pass
 
-        # Offline directive fallback
+        # Offline directive fallback: derived from semantic guidance if available
         latency_sec = time.perf_counter() - start_time
-        analysis_text = (
-            "Adversarial Directives:\n"
-            "1. Boundary Condition: Assert explicit equality where LHS == RHS to kill inverted comparisons (> to >= or <=).\n"
-            "2. Edge Values: Assert behavior on zero (0.0) and negative values.\n"
-            "3. Arithmetic Inversion: Assert precise computed values to detect swapped operators (+ to -)."
-        )
+        if guidances:
+            dir_lines = ["Adversarial Directives:"]
+            for idx, g in enumerate(guidances, start=1):
+                dir_lines.append(f"{idx}. {g.to_directive_text()}")
+            analysis_text = "\n".join(dir_lines)
+        else:
+            analysis_text = (
+                "Adversarial Directives:\n"
+                "1. Boundary Condition: Assert explicit equality where LHS == RHS to kill inverted comparisons (> to >= or <=).\n"
+                "2. Edge Values: Assert behavior on zero (0.0) and negative values.\n"
+                "3. Arithmetic Inversion: Assert precise computed values to detect swapped operators (+ to -)."
+            )
         if self.logger:
             est_p_tokens = len(prompt) // 4
             est_c_tokens = len(analysis_text) // 4

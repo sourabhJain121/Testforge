@@ -1,0 +1,6 @@
+idx,filename,job_id,backend_status,dom_final_status,dom_mutation_score,backend_mutation_score,dom_mutants_killed,backend_mutants_killed,dom_mutants_survived,backend_mutants_survived,dom_coverage,parity_status,screenshot
+1,discount.py,7ece683e,TARGET_SCORE_UNREACHED,TARGET_SCORE_UNREACHED,63.2%,63.2%,12,12,7,7,100.0%,MATCH,01_discount_hardening_complete.png
+2,banking.py,c72bfc10,TARGET_SCORE_UNREACHED,TARGET_SCORE_UNREACHED,52.2%,52.2%,12,12,11,11,90.0%,MATCH,02_banking_hardening_complete.png
+3,inventory_pricing.py,2d7e1089,TARGET_SCORE_UNREACHED,TARGET_SCORE_UNREACHED,46.0%,46.0%,17,17,20,20,71.4%,MATCH,03_inventory_pricing_hardening_complete.png
+4,state_machine.py,6abda83d,TARGET_SCORE_UNREACHED,TARGET_SCORE_UNREACHED,21.1%,21.1%,12,12,45,45,64.3%,MATCH,04_state_machine_hardening_complete.png
+5,rate_limiter.py,bf3e4392,TARGET_SCORE_UNREACHED,TARGET_SCORE_UNREACHED,42.1%,42.1%,16,16,22,22,81.8%,MATCH,05_rate_limiter_hardening_complete.png

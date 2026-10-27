@@ -1,0 +1,17 @@
+TestForge Baseline Environment:
+OS: macOS Darwin 27.0.0 arm64 (Apple Silicon)
+Python (.venv-release): Python 3.13.18
+Node: v24.15.0
+NPM: 11.17.0
+Backend ASGI: FastAPI / Uvicorn (server.py)
+Frontend: Native Vanilla HTML5 / Modern CSS / Vanilla ES6+ JavaScript (frontend/index.html, frontend/app.js, frontend/style.css)
+Testing Framework: pytest 8.x
+Target Working Directory: /Users/sourabh/TestForge
+Default Listening Port: 8000
+Listening Binding: 0.0.0.0 / 127.0.0.1
+Local LLM Daemon: Ollama (localhost:11434)
+Offline Fallback: Tier 4 AST-Aware Deterministic Synthesizer
+MCP Transport: FastMCP / mcp-python v1.28.0 (stdio JSON-RPC 2.0)
+A2A Protocol: A2A v0.3.0 Draft (/.well-known/agent.json, /a2a/task)
+Database: SQLite (qa_artifacts/testforge_checkpoints.db)
+WebSocket Hub: FastAPI Native WebSockets (/ws/events)

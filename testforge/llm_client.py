@@ -324,10 +324,14 @@ class HybridLLMClient:
         if self.engine_mode == "openrouter":
             raise RuntimeError("HybridLLMClient: Tier 4 Fallback Engaged - OpenRouter failed in force-openrouter mode.")
 
-        if self.engine_mode in ("auto", "local"):
             tags_url = self.local_url.replace("/api/generate", "/api/tags") if "/api/generate" in self.local_url else "http://localhost:11434/api/tags"
             if is_ollama_running(tags_url, timeout=0.8):
-                candidate_models = [self.local_model, "qwen2.5:7b", "codellama:7b"]
+                ollama_timeout = float(os.environ.get("TESTFORGE_OLLAMA_TIMEOUT", "60.0"))
+                candidate_models = [self.local_model]
+                for extra_model in ["qwen2.5-coder:7b", "codellama:7b"]:
+                    if extra_model not in candidate_models:
+                        candidate_models.append(extra_model)
+
                 for model_candidate in candidate_models:
                     try:
                         payload = {
@@ -343,7 +347,7 @@ class HybridLLMClient:
                             headers={"Content-Type": "application/json"}
                         )
                         start_t = time.perf_counter()
-                        with urllib.request.urlopen(req, timeout=30) as resp:
+                        with urllib.request.urlopen(req, timeout=ollama_timeout) as resp:
                             data = json.loads(resp.read().decode("utf-8"))
                         latency = time.perf_counter() - start_t
                         raw_text = data.get("response", "")
@@ -380,8 +384,16 @@ class HybridLLMClient:
                         return raw_text
 
                     except Exception as ollama_exc:
-                        # Model might not be installed or Ollama not running
-                        pass
+                        is_timeout = (
+                            isinstance(ollama_exc, TimeoutError) or
+                            "timed out" in str(ollama_exc).lower()
+                        )
+                        if is_timeout:
+                            print(f"[!] Local Ollama model {model_candidate} timed out after {ollama_timeout}s. Skipping redundant local retries.")
+                            break
+                        else:
+                            print(f"[!] Local Ollama model {model_candidate} error: {ollama_exc}. Trying next candidate...")
+                            continue
 
         # ======================================================================
         # TIER 4: QUATERNARY AST DETERMINISTIC RULE SYNTHESIZER

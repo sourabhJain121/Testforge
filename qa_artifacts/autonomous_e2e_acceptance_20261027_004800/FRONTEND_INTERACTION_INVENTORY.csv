@@ -1,0 +1,75 @@
+Control_ID,HTML_Tag,Visible_Label_or_Placeholder,AppJS_Handler_Reference,Associated_API_Endpoint,Verification_Status
+btn-a2a-card,button,🤖 A2A Card,Referenced in app.js (btn-a2a-card),/.well-known/agent.json (GET),Pending UI verification
+btn-mcp-status,button,🔌 MCP Tools (4),Referenced in app.js (btn-mcp-status),/api/mcp/tools (GET),Pending UI verification
+btn-toggle-settings,button,⚙️ Settings,Referenced in app.js (btn-toggle-settings),Local state / localStorage / API options,Pending UI verification
+btn-close-settings,button,&times;,Referenced in app.js (btn-close-settings),Local state / localStorage / API options,Pending UI verification
+engine-mode-select,select,engine-mode-select,Referenced in app.js (engine-mode-select),N/A,Pending UI verification
+model-name-select,select,model-name-select,Referenced in app.js (model-name-select),N/A,Pending UI verification
+slider-iterations,input,slider-iterations,Referenced in app.js (slider-iterations),N/A,Pending UI verification
+slider-mutation-score,input,slider-mutation-score,Referenced in app.js (slider-mutation-score),N/A,Pending UI verification
+input-gemini-key,input,AIzaSy...,Referenced in app.js (input-gemini-key),N/A,Pending UI verification
+input-openrouter-key,input,sk-or-v1-...,Referenced in app.js (input-openrouter-key),N/A,Pending UI verification
+btn-cancel-settings,button,Cancel,Referenced in app.js (btn-cancel-settings),/api/cancel (POST),Pending UI verification
+btn-save-settings,button,Save Configuration,Referenced in app.js (btn-save-settings),Local state / localStorage / API options,Pending UI verification
+btn-close-a2a-modal,button,&times;,Referenced in app.js (btn-close-a2a-modal),/.well-known/agent.json (GET),Pending UI verification
+btn-copy-a2a-json,button,📋 Copy JSON,Referenced in app.js (btn-copy-a2a-json),/.well-known/agent.json (GET),Pending UI verification
+btn-close-a2a-footer,button,Close,Referenced in app.js (btn-close-a2a-footer),/.well-known/agent.json (GET),Pending UI verification
+btn-close-mcp-modal,button,&times;,Referenced in app.js (btn-close-mcp-modal),/api/mcp/tools (GET),Pending UI verification
+btn-copy-mcp-json,button,📋 Copy JSON,Referenced in app.js (btn-copy-mcp-json),/api/mcp/tools (GET),Pending UI verification
+btn-close-mcp-footer,button,Close,Referenced in app.js (btn-close-mcp-footer),/api/mcp/tools (GET),Pending UI verification
+btn-scroll-to-hardening,button,⚡ Run Hardening Pipeline,Referenced in app.js (btn-scroll-to-hardening),/api/harden (POST),Pending UI verification
+nav-mode-a,button,📁 Mode A: Workspace & Upload,None / DOM query,N/A,Pending UI verification
+nav-mode-b,button,✨ Mode B: AI Synthesis,None / DOM query,N/A,Pending UI verification
+nav-mode-c,button,🌐 Mode C: GitHub Direct Import,None / DOM query,N/A,Pending UI verification
+nav-blast,button,💥 Blast Radius & Call Graph,None / DOM query,/api/blast-radius,Pending UI verification
+nav-hardening,button,🔥 Hardening Lab & Results,None / DOM query,/api/harden (POST),Pending UI verification
+nav-wiretap,button,🤖 Multi-Agent Wiretap,None / DOM query,N/A,Pending UI verification
+nav-telemetry,button,📊 Observability Trace,None / DOM query,N/A,Pending UI verification
+nav-benchmark,button,⚡ Benchmarks & Ablation,None / DOM query,"/api/benchmark/run (POST), /api/benchmark/results",Pending UI verification
+nav-checkpoints,button,💾 Checkpoint Timeline & Diff,None / DOM query,N/A,Pending UI verification
+radio-source-sample,input,radio-source-sample,Referenced in app.js (radio-source-sample),N/A,Pending UI verification
+radio-source-upload,input,radio-source-upload,Referenced in app.js (radio-source-upload),N/A,Pending UI verification
+sample-file-select,select,sample-file-select,Referenced in app.js (sample-file-select),N/A,Pending UI verification
+btn-load-sample,button,Load Sample,Referenced in app.js (btn-load-sample),N/A,Pending UI verification
+file-upload-input,input,file-upload-input,Referenced in app.js (file-upload-input),N/A,Pending UI verification
+btn-submit-upload,button,Ingest Uploaded File,Referenced in app.js (btn-submit-upload),N/A,Pending UI verification
+toggle-git-diff,input,toggle-git-diff,Referenced in app.js (toggle-git-diff),N/A,Pending UI verification
+btn-copy-mode-a-code,button,📋 Copy,Referenced in app.js (btn-copy-mode-a-code),N/A,Pending UI verification
+synth-prompt-input,textarea,"e.g. Implement a high-performance order book matching engine with limit orders, bid/ask spread checks, and partial fills.",Referenced in app.js (synth-prompt-input),N/A,Pending UI verification
+btn-synthesize-module,button,🚀 Synthesize Module,Referenced in app.js (btn-synthesize-module),N/A,Pending UI verification
+btn-copy-synth-code,button,📋 Copy,Referenced in app.js (btn-copy-synth-code),N/A,Pending UI verification
+github-url-input,input,https://github.com/psf/requests/blob/main/src/requests/models.py,Referenced in app.js (github-url-input),N/A,Pending UI verification
+btn-fetch-github,button,⬇️ Fetch & Ingest,Referenced in app.js (btn-fetch-github),N/A,Pending UI verification
+btn-copy-mode-c-code,button,📋 Copy,Referenced in app.js (btn-copy-mode-c-code),N/A,Pending UI verification
+btn-activate-mode-c,button,🎯 Target Confirmed for Hardening,Referenced in app.js (btn-activate-mode-c),N/A,Pending UI verification
+blast-func-select,select,blast-func-select,Referenced in app.js (blast-func-select),/api/blast-radius,Pending UI verification
+btn-run-hardening,button,⚡ Run TestForge Autonomous Hardening,Referenced in app.js (btn-run-hardening),/api/harden (POST),Pending UI verification
+btn-cancel-hardening,button,🛑 Cancel Hardening,Referenced in app.js (btn-cancel-hardening),/api/harden (POST),Pending UI verification
+btn-copy-hardened-suite,button,📋 Copy Suite,Referenced in app.js (btn-copy-hardened-suite),/api/harden (POST),Pending UI verification
+btn-download-hardened-suite,button,💾 Download,Referenced in app.js (btn-download-hardened-suite),/api/harden (POST),Pending UI verification
+btn-refresh-wiretap,button,🔄 Refresh Wiretap,Referenced in app.js (btn-refresh-wiretap),N/A,Pending UI verification
+btn-refresh-telemetry,button,🔄 Refresh Telemetry,Referenced in app.js (btn-refresh-telemetry),N/A,Pending UI verification
+btn-run-benchmark,button,🚀 Run Benchmark,Referenced in app.js (btn-run-benchmark),/api/harden (POST),Pending UI verification
+btn-refresh-benchmark,button,🔄 Refresh Results,Referenced in app.js (btn-refresh-benchmark),"/api/benchmark/run (POST), /api/benchmark/results",Pending UI verification
+bench-target-select,select,bench-target-select,Referenced in app.js (bench-target-select),N/A,Pending UI verification
+bench-repetitions,select,bench-repetitions,Referenced in app.js (bench-repetitions),N/A,Pending UI verification
+bench-sc-baseline,input,bench-sc-baseline,Referenced in app.js (bench-sc-baseline),N/A,Pending UI verification
+bench-sc-zeroshot,input,bench-sc-zeroshot,Referenced in app.js (bench-sc-zeroshot),N/A,Pending UI verification
+bench-sc-refl,input,bench-sc-refl,Referenced in app.js (bench-sc-refl),N/A,Pending UI verification
+btn-bench-md-rendered,button,📑 Formatted,Referenced in app.js (btn-bench-md-rendered),N/A,Pending UI verification
+btn-bench-md-raw,button,💻 Raw Markdown,Referenced in app.js (btn-bench-md-raw),N/A,Pending UI verification
+btn-refresh-checkpoints,button,🔄 Refresh Checkpoints,Referenced in app.js (btn-refresh-checkpoints),N/A,Pending UI verification
+btn-trigger-diff-modal,button,⚖️ Compare Selected Checkpoints,Referenced in app.js (btn-trigger-diff-modal),N/A,Pending UI verification
+cp-stage-filter,select,cp-stage-filter,Referenced in app.js (cp-stage-filter),N/A,Pending UI verification
+cp-status-filter,select,cp-status-filter,Referenced in app.js (cp-status-filter),"/readyz, /api/status",Pending UI verification
+cp-job-filter,input,e.g. job_123 or leave blank...,Referenced in app.js (cp-job-filter),N/A,Pending UI verification
+cp-sort-order,select,cp-sort-order,Referenced in app.js (cp-sort-order),N/A,Pending UI verification
+btn-swap-diff-selection,button,Swap A ⇄ B,Referenced in app.js (btn-swap-diff-selection),N/A,Pending UI verification
+btn-clear-diff-selection,button,Clear Selection,Referenced in app.js (btn-clear-diff-selection),N/A,Pending UI verification
+btn-subtab-detail,button,🔍 Structured Inspector,Referenced in app.js (btn-subtab-detail),N/A,Pending UI verification
+btn-subtab-diff,button,⚖️ Deterministic Diff,Referenced in app.js (btn-subtab-diff),N/A,Pending UI verification
+btn-subtab-json,button,💻 Raw Snapshot JSON,Referenced in app.js (btn-subtab-json),N/A,Pending UI verification
+btn-copy-checkpoint-json,button,📋 Copy JSON,Referenced in app.js (btn-copy-checkpoint-json),N/A,Pending UI verification
+btn-close-restore-modal,button,&times;,Referenced in app.js (btn-close-restore-modal),N/A,Pending UI verification
+btn-cancel-restore,button,Cancel,Referenced in app.js (btn-cancel-restore),/api/cancel (POST),Pending UI verification
+btn-confirm-restore,button,Confirm & Restore Snapshot,Referenced in app.js (btn-confirm-restore),N/A,Pending UI verification

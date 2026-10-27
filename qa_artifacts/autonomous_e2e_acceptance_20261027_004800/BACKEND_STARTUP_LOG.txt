@@ -1,0 +1,19 @@
+=== TestForge Backend Startup Log ===
+Date: 2026-10-27 00:52:30 IST
+Command: .venv-release/bin/python -m uvicorn server:app --host 127.0.0.1 --port 8000
+Process PID: 17886
+Environment: macOS Apple Silicon (Darwin 24.6.0 arm64), Python 3.13.2
+
+[2026-10-27 00:52:30,399] INFO in testforge.server: WebSocket event hub initialized on server startup.
+INFO:     Started server process [17886]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+
+Listening Address: http://127.0.0.1:8000
+Subsystems Operational:
+- ast_mutator: operational
+- blackboard: operational
+- sandbox_storage: operational
+- sqlite_persistence: operational
+- websocket_hub: operational

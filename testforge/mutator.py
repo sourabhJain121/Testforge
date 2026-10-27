@@ -27,6 +27,11 @@ from testforge.equivalence import (
     EquivalentMutantAnalyzer,
     EquivalenceClassification
 )
+from testforge.guidance import (
+    SemanticMutantGuidance,
+    derive_semantic_guidance,
+    derive_guidance_for_surviving_mutants,
+)
 
 
 class MutationTransformer(ast.NodeTransformer):

@@ -1,0 +1,8 @@
+Regression_Test_ID,Target_Component,Pytest_Module_or_Script,Description_and_Assertions,Pre_Fix_Result,Post_Fix_Result,Regression_Status
+REG-001,Server Boot & Readiness,server.py / readyz probe,Tests GET /readyz returns HTTP 200 with all subsystems operational,Socket Timeout / Hang,HTTP 200 in 2.1ms,PASS
+REG-002,MCP Tool Status,tests/test_mcp.py,Tests GET /api/mcp/status returns 4 tools over stdio JSON-RPC,404 on /tools,HTTP 200 with FastMCP schema,PASS
+REG-003,Cooperative Cancellation,tests/test_cancellation.py,Tests POST /api/harden/cancel/{id} halts worker and sets CANCELLED,Untracked,CANCELLED state confirmed,PASS
+REG-004,AST Security Guardrail,tests/test_security.py,Tests rejection of os.system and subprocess calls in candidate code,Potential execution,AST Security Exception / FAILED,PASS
+REG-005,Clean Reference Pass@1,tests/test_corpus_eval.py,Tests quarantine of false-positive tests on unmutated clean code,False mutant kills,Zero false positives observed,PASS
+REG-006,SQLite Checkpoint Rollback,tests/test_checkpoint_resumption.py,Tests atomic rollback on invalid partition update and snapshot diffing,Schema corruption risk,Monotonic revisions preserved,PASS
+REG-007,Dual Agent Orchestration,tests/test_agentic_pipeline.py,Tests inter-agent handoff between Google ADK and CrewAI Critic,Framework conflict,Clean handoff via Blackboard,PASS

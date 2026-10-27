@@ -1,0 +1,8 @@
+Timestamp,HTTP_Method,URL,Expected_Status,Actual_Status,Error_Type,Resolution
+2026-10-27 08:34:45,GET,http://127.0.0.1:8000/readyz,200,200,NONE,Healthy
+2026-10-27 08:34:45,GET,http://127.0.0.1:8000/,200,200,NONE,Healthy
+2026-10-27 08:34:45,GET,http://127.0.0.1:8000/static/app.js,200,200,NONE,Healthy
+2026-10-27 08:34:45,GET,http://127.0.0.1:8000/static/style.css,200,200,NONE,Healthy
+2026-10-27 08:34:45,GET,http://127.0.0.1:8000/api/status,200,200,NONE,Healthy
+2026-10-27 08:34:45,GET,http://127.0.0.1:8000/api/mcp/status,200,200,NONE,Healthy
+2026-10-27 08:34:45,GET,http://127.0.0.1:8000/.well-known/agent.json,200,200,NONE,Healthy

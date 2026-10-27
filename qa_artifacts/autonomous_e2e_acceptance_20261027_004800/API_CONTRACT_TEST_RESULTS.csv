@@ -1,0 +1,22 @@
+Route_Path,HTTP_Method,Request_Payload_Summary,Expected_Status,Actual_Status,Response_Type,Verdict,Notes
+/,GET,None,200,200,HTML/Text,PASS,Returned HTTP 200 as expected
+/readyz,GET,None,200,200,JSON,PASS,Returned HTTP 200 as expected
+/api/status,GET,None,200,200,JSON,PASS,Returned HTTP 200 as expected
+/api/samples,GET,None,200,200,JSON,PASS,Returned HTTP 200 as expected
+/.well-known/agent.json,GET,None,200,200,JSON,PASS,Returned HTTP 200 as expected
+/api/mcp/status,GET,None,200,200,JSON,PASS,Returned HTTP 200 as expected
+/api/benchmark/results,GET,None,200,200,JSON,PASS,Returned HTTP 200 as expected
+/api/benchmark/markdown,GET,None,200,200,HTML/Text,PASS,Returned HTTP 200 as expected
+/api/telemetry,GET,None,200,200,JSON,PASS,Returned HTTP 200 as expected
+/api/checkpoints,GET,None,200,200,JSON,PASS,Returned HTTP 200 as expected
+/health,GET,None,404,404,JSON Error,PASS,Returned HTTP 404 as expected
+/api/unknown-route,GET,None,404,404,JSON Error,PASS,Returned HTTP 404 as expected
+/api/analysis/blast-radius,POST,{'source_code': 'def foo(): return 1'},200,200,JSON,PASS,Returned HTTP 200 as expected
+/api/analysis/blast-radius,POST,{'source_code': ''},400,400,JSON Error,PASS,Returned HTTP 400 as expected
+/api/analysis/blast-radius,POST,None,422,422,JSON Error,PASS,Returned HTTP 422 as expected
+/api/analysis/git-diff,POST,{'target_file_path': 'samples/discount.py'},200,200,JSON,PASS,Returned HTTP 200 as expected
+/api/analysis/git-diff,POST,{'target_file_path': ''},400,400,JSON Error,PASS,Returned HTTP 400 as expected
+/api/harden/start,POST,"{'target_file_path': 'samples/discount.py', 'target_source_c",200,200,JSON,PASS,Returned HTTP 200 as expected
+/api/harden/start,POST,"{'target_file_path': '', 'target_source_code': ''}",400,400,JSON Error,PASS,Returned HTTP 400 as expected
+/api/harden/status/invalid_id_9999,GET,None,404,404,JSON Error,PASS,Returned HTTP 404 as expected
+/api/harden/cancel/invalid_id_9999,POST,None,404,404,JSON Error,PASS,Returned HTTP 404 as expected

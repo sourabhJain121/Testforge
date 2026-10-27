@@ -1,0 +1,46 @@
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	modified:   .gitignore
+	deleted:    testforge_trace.jsonl
+	deleted:    trace_reflected.jsonl
+	deleted:    trace_zeroshot.jsonl
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   benchmark_results.json
+	modified:   benchmark_results.md
+	modified:   frontend/app.js
+	modified:   server.py
+	modified:   test_hardened.py
+	modified:   testforge/agents.py
+	modified:   testforge/blackboard.py
+	modified:   testforge/corpus/runner.py
+	modified:   testforge/llm_client.py
+	modified:   testforge/mutator.py
+	modified:   testforge/orchestrator.py
+	modified:   testforge/sandbox.py
+	modified:   testforge/state.py
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	qa_artifacts/autonomous_e2e_acceptance_20261027_004800/
+	qa_artifacts/final_evidence_audit_20261027_003200/
+	qa_artifacts/phase2_finalization_20261026_141500/
+	qa_artifacts/phase4_m1_adversarial_review_20261026_113400/
+	qa_artifacts/phase4_m1_implementation_20261026_112600/
+	qa_artifacts/phase4_m1_plan_20261026_103600/
+	qa_artifacts/phase4_m1_verification_20261026_112800/
+	qa_artifacts/phase4_m2_acceptance_audit_20261026_123000/
+	qa_artifacts/phase4_m2_semantic_guidance_20261026_121500/
+	qa_artifacts/phase4_m3_benchmark_validity_20261026_125000/
+	qa_artifacts/phase5_m1_agentic_diagnosis_20261026_132000/
+	qa_artifacts/post_push_integrity_verification_20261026_102200/
+	qa_artifacts/visible_browser_playground_20261027_083200/
+	scratch/
+	testforge/guidance.py
+	tests/test_mutation_guided_repair.py
+

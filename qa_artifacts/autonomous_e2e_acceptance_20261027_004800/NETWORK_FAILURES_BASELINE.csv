@@ -1,0 +1,10 @@
+Request_Timestamp,HTTP_Method,Request_URL,Expected_Status,Actual_Status,Error_Classification,Impact_Assessment,Resolution_Action
+2026-10-27 00:52:33,GET,http://127.0.0.1:8000/readyz,200,200,NONE,None - System ready,Healthy
+2026-10-27 00:52:35,GET,http://127.0.0.1:8000/,200,200,NONE,None - Frontend delivered,Healthy
+2026-10-27 00:52:36,GET,http://127.0.0.1:8000/health,200,404,ROUTE_NOT_FOUND,"Minor - Probe used /readyz instead of /health","Use verified /readyz endpoint"
+2026-10-27 00:52:37,GET,http://127.0.0.1:8000/api/status,200,200,NONE,None - Status operational,Healthy
+2026-10-27 00:52:38,GET,http://127.0.0.1:8000/api/samples,200,200,NONE,None - Samples catalog delivered,Healthy
+2026-10-27 00:52:39,GET,http://127.0.0.1:8000/.well-known/agent.json,200,200,NONE,None - Official A2A AgentCard delivered,Healthy
+2026-10-27 00:52:40,GET,http://127.0.0.1:8000/api/mcp/tools,200,404,ROUTE_NAME_MISMATCH,"Minor - Server exposes /api/mcp/status, not /api/mcp/tools","Frontend app.js correctly calls /api/mcp/status"
+2026-10-27 00:52:41,GET,http://127.0.0.1:8000/api/mcp/status,200,200,NONE,None - 4 MCP tools returned over JSON-RPC 2.0,Healthy
+2026-10-27 00:52:42,GET,http://127.0.0.1:8000/api/benchmark/results,200,200,NONE,None - Historical benchmark dataset returned,Healthy

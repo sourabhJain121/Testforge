@@ -1,0 +1,79 @@
+[
+  {
+    "action": "Page Load",
+    "element": "body",
+    "observed_state": "Title: 'TestForge \u2014 Autonomous Agentic Test Hardening', Brand: 'TestForge'",
+    "screenshot": "01_live_initial_dashboard.png",
+    "status": "PASS"
+  },
+  {
+    "action": "Click #btn-a2a-card & close",
+    "element": "#btn-a2a-card",
+    "observed_state": "Opened with title '\ud83e\udd16 A2A Agent Card Discovery', closed cleanly",
+    "screenshot": "02_live_a2a_modal_opened.png",
+    "status": "PASS"
+  },
+  {
+    "action": "Click #btn-mcp-status & close",
+    "element": "#btn-mcp-status",
+    "observed_state": "Opened with title '\ud83d\udd0c Model Context Protocol (FastMCP) Tools', 0 tools listed, closed cleanly",
+    "screenshot": "03_live_mcp_modal_opened.png",
+    "status": "PASS"
+  },
+  {
+    "action": "Click #btn-toggle-settings & close",
+    "element": "#btn-toggle-settings",
+    "observed_state": "Settings drawer opened and closed cleanly",
+    "screenshot": "04_live_settings_modal_opened.png",
+    "status": "PASS"
+  },
+  {
+    "action": "Click tab button for tab-blast",
+    "element": "[data-tab=\"tab-blast\"]",
+    "observed_state": "Tab panel #tab-blast has class 'active': True",
+    "screenshot": "05_live_tab_blast_radius.png",
+    "status": "PASS"
+  },
+  {
+    "action": "Click tab button for tab-wiretap",
+    "element": "[data-tab=\"tab-wiretap\"]",
+    "observed_state": "Tab panel #tab-wiretap has class 'active': True",
+    "screenshot": "06_live_tab_wiretap.png",
+    "status": "PASS"
+  },
+  {
+    "action": "Click tab button for tab-telemetry",
+    "element": "[data-tab=\"tab-telemetry\"]",
+    "observed_state": "Tab panel #tab-telemetry has class 'active': True",
+    "screenshot": "07_live_tab_telemetry.png",
+    "status": "PASS"
+  },
+  {
+    "action": "Click tab button for tab-benchmark",
+    "element": "[data-tab=\"tab-benchmark\"]",
+    "observed_state": "Tab panel #tab-benchmark has class 'active': True",
+    "screenshot": "08_live_tab_benchmark.png",
+    "status": "PASS"
+  },
+  {
+    "action": "Click tab button for tab-checkpoints",
+    "element": "[data-tab=\"tab-checkpoints\"]",
+    "observed_state": "Tab panel #tab-checkpoints has class 'active': True",
+    "screenshot": "09_live_tab_checkpoints.png",
+    "status": "PASS"
+  },
+  {
+    "action": "Click tab button for tab-mode-a",
+    "element": "[data-tab=\"tab-mode-a\"]",
+    "observed_state": "Tab panel #tab-mode-a has class 'active': True",
+    "screenshot": "10_live_tab_mode_a.png",
+    "status": "PASS"
+  },
+  {
+    "action": "Hardening samples/discount.py via UI",
+    "element": "#btn-run-hardening",
+    "observed_state": "Completed: score=None, cov=None, tests emitted",
+    "screenshot": "12_live_hardening_complete_discount.png",
+    "status": "PASS"
+  }
+]

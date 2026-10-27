@@ -1,0 +1,18 @@
+UI_Component_or_View,UI_Element_ID,Trigger_Action,HTTP_Method,Backend_API_Route,Backend_Handler_Function,Associated_Subsystem,Observable_State_Transition,Contract_Verification_Status
+Mode A: File Ingestion,#sample-file-select,Select sample file,POST,/api/ingest/sample,ingest_sample,TargetManagerAgent,Editor populates with sample Python source code,VERIFIED PASS
+Mode A: Custom Upload,#file-upload-input,File drop / select,POST,/api/ingest/upload,upload_target_file,TargetManagerAgent,Ingested file metadata & hash rendered,VERIFIED PASS
+Mode B: AI Synthesis,#btn-synthesize,Click synthesize,POST,/api/ingest/synthesize,synthesize_target_code,TargetManagerAgent / LLMClient,Generated target code loaded into editor,VERIFIED PASS
+Mode C: GitHub Import,#btn-fetch-github,Click fetch repo,POST,/api/ingest/github,ingest_github_file,GitHub MCP / REST,Repo tree / target file fetched & staged,VERIFIED PASS
+Blast Radius: AST Graph,#btn-analyze-blast,Click analyze,POST,/api/analysis/blast-radius,analyze_blast_radius,BlastRadiusAnalyzer,Nodes & edges rendered in SVG call graph,VERIFIED PASS
+Blast Radius: Git Diff,#btn-inspect-diff,Click inspect diff,POST,/api/analysis/git-diff,analyze_git_diff,GitDiffInspector,Changed lines highlighted in diff viewer,VERIFIED PASS
+Hardening Lab: Run,#btn-run-hardening,Click run,POST,/api/harden/start,start_hardening_job,TestForgeOrchestrator,IDLE -> QUEUED -> RUNNING -> COMPLETED,VERIFIED PASS
+Hardening Lab: Status Polling,#progress-bar,Interval poll,GET,/api/harden/status/{job_id},get_hardening_job_status,Server Job Store,Progress % & stage name update dynamically,VERIFIED PASS
+Hardening Lab: Cancel,#btn-cancel-hardening,Click cancel,POST,/api/harden/cancel/{job_id},cancel_hardening_job,TestForgeOrchestrator,RUNNING -> CANCELLING -> CANCELLED,VERIFIED PASS
+Multi-Agent Wiretap,#wiretap-stream,WebSocket / Poll,GET / WS,/api/wiretap & /ws,get_wiretap_messages / WS Hub,CallbackRegistry / Wiretap,Live handoff message bubbles appended,VERIFIED PASS
+Observability Trace,#nav-telemetry,Tab select,GET,/api/telemetry/spans,get_telemetry_spans,TraceLogger / OpenTelemetry,Span timeline & step duration table populated,VERIFIED PASS
+Benchmarks & Ablation,#nav-benchmark,Tab select,GET,/api/benchmark/results,get_benchmark_results,BenchmarkRunner,3-way ablation table (HW vs ZS vs Agentic) rendered,VERIFIED PASS
+Checkpoint Timeline,#nav-checkpoints,Tab select,GET,/api/checkpoints,list_checkpoints,SQLiteBlackboardStorage,Monotonic snapshot cards rendered in sidebar,VERIFIED PASS
+Checkpoint Restore,#btn-confirm-restore,Confirm modal,POST,/api/checkpoints/{id}/restore,restore_checkpoint_state,SQLiteBlackboardStorage,Isolated Blackboard restored to revision point,VERIFIED PASS
+Header: A2A Card,#btn-a2a-card,Click header pill,GET,/.well-known/agent.json,get_agent_card,A2A Protocol Engine,Modal opens with official AgentCard v0.3.0 JSON,VERIFIED PASS
+Header: MCP Tools,#btn-mcp-status,Click header pill,GET,/api/mcp/status,get_mcp_status,FastMCP Client / Server,Modal opens displaying 4 registered tools & health,VERIFIED PASS
+Header: Settings,#btn-toggle-settings,Click header gear,GET / POST,/api/config/keys,update_key_config,Config Manager,Settings drawer toggles with provider options,VERIFIED PASS

@@ -4,20 +4,9 @@ sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 import pytest
-from samples.github_requests_status_codes import *
+from samples.discount import discount
 
-
-def test_generic__init():
-    try:
-        res = _init()
-        assert res is not None
-    except Exception:
-        pass
-
-
-def test_generic_doc():
-    try:
-        res = doc(1)
-        assert res is not None
-    except Exception:
-        pass
+def test_discount_nominal():
+    assert discount(1) is not None
+    assert discount(0) is not None
+    assert discount(-1) is not None

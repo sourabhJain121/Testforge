@@ -1,0 +1,6 @@
+job_id,source_file,duration_seconds,mutants_generated,mutants_killed,mutants_survived,raw_mutation_score,dom_rendered_score,baseline_passed,baseline_verdict,cycles_completed
+7ece683e,discount.py,14.33,19,12,7,63.16%,63.2%,1,🟢 ALL PASSED,3 / 3
+c72bfc10,banking.py,15.05,23,12,11,52.17%,52.2%,1,🟢 ALL PASSED,3 / 3
+2d7e1089,inventory_pricing.py,20.63,37,17,20,45.95%,46.0%,1,🟢 ALL PASSED,3 / 3
+6abda83d,state_machine.py,33.96,57,12,45,21.05%,21.1%,1,🟢 ALL PASSED,3 / 3
+bf3e4392,rate_limiter.py,21.29,38,16,22,42.11%,42.1%,1,🟢 ALL PASSED,3 / 3

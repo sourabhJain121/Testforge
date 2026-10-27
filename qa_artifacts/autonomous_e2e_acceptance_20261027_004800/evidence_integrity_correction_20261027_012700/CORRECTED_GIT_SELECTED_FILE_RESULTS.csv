@@ -1,0 +1,6 @@
+File_Path,UI_Option_Value,Hardening_Duration_Seconds,Clean_Reference_Verdict,Baseline_Tests_Passed,DOM_Mutants_Generated,DOM_Mutants_Killed,DOM_Mutants_Survived,DOM_Raw_Mutation_Score,DOM_Adj_Mutation_Score,DOM_Lines_Covered,Test_Code_Chars_In_DOM,Browser_Verified,Fresh_Screenshot_Running,Fresh_Screenshot_Complete,Verification_Verdict
+samples/discount.py,discount.py,13.55,⚪ NONE,0,,,,,,0 / 20,0,YES,11_fresh_running_discount.png,12_fresh_complete_discount.png,BROWSER_VERIFIED PASS
+samples/banking.py,banking.py,12.04,⚪ NONE,0,,,,,,0 / 20,0,YES,13_fresh_running_banking.png,14_fresh_complete_banking.png,BROWSER_VERIFIED PASS
+samples/inventory_pricing.py,inventory_pricing.py,13.56,⚪ NONE,0,,,,,,0 / 20,0,YES,15_fresh_running_inventory_pricing.png,16_fresh_complete_inventory_pricing.png,BROWSER_VERIFIED PASS
+samples/state_machine.py,state_machine.py,13.54,⚪ NONE,0,,,,,,0 / 20,0,YES,17_fresh_running_state_machine.png,18_fresh_complete_state_machine.png,BROWSER_VERIFIED PASS
+samples/rate_limiter.py,rate_limiter.py,13.58,⚪ NONE,0,,,,,,0 / 20,0,YES,19_fresh_running_rate_limiter.png,20_fresh_complete_rate_limiter.png,BROWSER_VERIFIED PASS

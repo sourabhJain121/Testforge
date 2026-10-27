@@ -1,0 +1,3 @@
+scenario,action,job_id,frontend_status,backend_status,handled_gracefully
+Graceful Cancellation,Clicked #btn-cancel-hardening during active execution,1bd95ca1,CANCELLED,CANCELLED,YES
+Empty Target Guard,Validation check before pipeline execution,N/A,BLOCKED,BLOCKED,YES

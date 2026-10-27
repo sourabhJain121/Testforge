@@ -4,6 +4,7 @@
 venv/
 __pycache__/
 *.pyc
+.pytest_cache/
 .DS_Store
 .idea/
 .vscode/
@@ -12,4 +13,7 @@ node_modules/
 *.db
 *.db-wal
 *.db-shm
+testforge_trace.jsonl
 trace_*.jsonl
+scratch/
+

@@ -35,6 +35,7 @@ from testforge.state import (
 )
 from testforge.accel import hw_profile
 from testforge.mutator import ASTMutator
+from testforge.guidance import derive_guidance_for_surviving_mutants
 from testforge.sandbox import ParallelSandboxRunner
 from testforge.logger import TraceLogger
 from testforge.agents import TestGeneratorAgent, AdversarialCriticAgent
@@ -1092,29 +1093,42 @@ class TestForgeOrchestrator:
                     except Exception as exc:
                         console.print(f"  [dim]ADK hardening failover: {exc}[/dim]")
 
+                surviving_mutants_list = [m for m in self.state.mutants if m.status in ("SURVIVED", "POTENTIALLY_EQUIVALENT")]
                 if not hardened_tests:
                     hardened_tests = self.generator.generate_tests(
                         source_code=self.state.target_source_code,
                         surviving_diffs=self.state.surviving_mutant_diffs,
                         critic_feedback=critic_directive,
-                        iteration=iteration
+                        iteration=iteration,
+                        surviving_guidance=self.blackboard.get_critic_space().semantic_guidance
                     )
                     provider_used = self.generator.active_provider
 
-                # Verify hardened tests still pass on clean target
-                self._sync_lifecycle(TaskLifecycleState.EXECUTING, metadata={"iteration": iteration, "step": "clean_target_check"})
-                clean_check = self.sandbox.run_single(hardened_tests, self.state.target_source_code)
-                if clean_check["status"] == "PASS" and clean_check.get("tests_passed", 0) > 0:
-                    self.state.current_test_code = hardened_tests
+                # Granular Candidate Test Validation: validate tests individually so one broken test doesn't discard all
+                self._sync_lifecycle(TaskLifecycleState.EXECUTING, metadata={"iteration": iteration, "step": "granular_test_validation"})
+                validation_res = self.sandbox.validate_and_filter_candidate_suite(
+                    candidate_test_code=hardened_tests,
+                    target_code=self.state.target_source_code,
+                    existing_test_code=self.state.current_test_code,
+                    surviving_mutants=surviving_mutants_list
+                )
+
+                if validation_res.retained_count > 0 and validation_res.retained_test_code:
+                    self.state.current_test_code = validation_res.retained_test_code
                     self.state.active_provider = provider_used
                     self.blackboard.update_suite_space(
                         current_test_code=self.state.current_test_code,
                         hardened_test_code=self.state.current_test_code,
                         active_provider=self.state.active_provider
                     )
-                    console.print("  [green]• Hardened tests verified against clean code.[/green]")
+                    if validation_res.mutants_killed:
+                        console.print(f"  [green]• Semantic Guidance: Candidate tests confirmed to kill {len(validation_res.mutants_killed)} surviving mutant(s).[/green]")
+                    if validation_res.quarantined_count > 0:
+                        console.print(f"  [green]• Granular Validation: Retained {validation_res.retained_count} valid test(s); quarantined {validation_res.quarantined_count} invalid/failing test(s).[/green]")
+                    else:
+                        console.print(f"  [green]• Hardened tests verified against clean code ({validation_res.retained_count} passed).[/green]")
                 else:
-                    console.print("  [yellow]• Hardened assertions broke clean code. Retaining previous working test suite.[/yellow]")
+                    console.print(f"  [yellow]• All candidate tests broke clean code or failed validation ({validation_res.quarantined_count} quarantined). Retaining previous working test suite.[/yellow]")
 
                 # Inter-agent Handoff: TestGenerator -> SubprocessSandbox
                 self.logger.log_event("AGENT_HANDOFF", {
@@ -1350,20 +1364,29 @@ class TestForgeOrchestrator:
                 except Exception as exc:
                     console.print(f"  [dim]CrewAI critic failover: {exc}[/dim]")
 
+            surviving_mutant_objs = [m for m in evaluated_mutants if m.status in ("SURVIVED", "POTENTIALLY_EQUIVALENT")]
+            guidances = derive_guidance_for_surviving_mutants(surviving_mutant_objs, target_code=self.state.target_source_code)
+            guidance_dicts = [g.dict() for g in guidances]
+            self.state.surviving_guidance = guidance_dicts
+
             if not critic_directive:
                 critic_directive = self.critic.analyze_surviving_mutants(
                     target_code=self.state.target_source_code,
                     surviving_mutant_diffs=surviving_diffs,
-                    iteration=iteration
+                    iteration=iteration,
+                    surviving_mutants=surviving_mutant_objs
                 )
 
             console.print(f"  [dim]Critic Directive: {critic_directive[:140]}...[/dim]\n")
 
             survived_list = [m.mutant_id for m in evaluated_mutants if m.status == "SURVIVED"]
+            mechanisms = {g.mutant_id: g.behavioral_distinction for g in guidances}
             self.blackboard.update_critic_space(
                 latest_directive=critic_directive,
                 critic_directives=self.blackboard.get_critic_space().critic_directives + [critic_directive],
-                reflection_notes=self.blackboard.get_critic_space().reflection_notes + [f"Iteration {iteration}: {len(survived_list)} surviving mutants"]
+                reflection_notes=self.blackboard.get_critic_space().reflection_notes + [f"Iteration {iteration}: {len(survived_list)} surviving mutants"],
+                failure_mechanisms=mechanisms,
+                semantic_guidance=guidance_dicts
             )
 
             self.logger.log_event("AGENT_HANDOFF", {
