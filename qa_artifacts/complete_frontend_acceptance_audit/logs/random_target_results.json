@@ -1,0 +1,29 @@
+{
+  "target_file": "/Users/sourabh/TestForge/qa_artifacts/complete_frontend_acceptance_audit/random_python_target/logistics_engine.py",
+  "classes_extracted": [
+    "ShippingTier",
+    "WarehouseInventory"
+  ],
+  "functions_extracted": [
+    "calculate_item_discount",
+    "estimate_freight_cost",
+    "calculate_customs_duty",
+    "validate_tracking_number",
+    "compute_sla_deadline_hours",
+    "process_bulk_order"
+  ],
+  "class_methods_extracted": {
+    "ShippingTier": [],
+    "WarehouseInventory": [
+      "__init__",
+      "get_available_stock",
+      "reserve_stock",
+      "release_stock",
+      "restock_needed"
+    ]
+  },
+  "mutants_generated_count": 258,
+  "pytest_return_code": 0,
+  "test_count": 26,
+  "status": "PASS"
+}

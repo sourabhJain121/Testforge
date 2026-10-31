@@ -253,11 +253,17 @@ python -m uvicorn server:app --host 127.0.0.1 --port 8000
 
 ---
 
-### B. Launch Streamlit Data-Science Lab
+### B. Single Official Web Cockpit Startup (FastAPI + HTML5/CSS3/JS)
 ```bash
-streamlit run app.py
+./start_testforge.sh
 ```
-Provides an alternative analytical dashboard with collapsible code inspectors, live Graphviz DAG call graphs, and mutation audit tables.
+Or directly via uvicorn:
+```bash
+.venv-release/bin/python -m uvicorn server:app --host 127.0.0.1 --port 8000
+```
+Open **`http://127.0.0.1:8000/`** in your browser. This serves the unified, production-ready TestForge Cockpit featuring real-time WebSockets, FastMCP tools, A2A agent discovery card, AST call graphs, and SQLite checkpoint diffing.
+
+*(Note: `app.py` is preserved strictly as an archived legacy prototype and is excluded from normal execution).*
 
 ---
 

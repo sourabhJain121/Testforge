@@ -1,0 +1,317 @@
+[
+  {
+    "id": "EC-01",
+    "filename": "01_empty.py",
+    "description": "Empty file (0 bytes)",
+    "expect_error": false,
+    "http_status": 200,
+    "response": {
+      "status": "success",
+      "has_syntax_error": false,
+      "error": "",
+      "mode": "Mode A (Uploaded)",
+      "target_file_path": "/Users/sourabh/TestForge/samples/uploaded_01_empty.py",
+      "module_name": "samples.uploaded_01_empty",
+      "functions": [],
+      "classes": [],
+      "methods": {},
+      "all_callables": [],
+      "source_sha": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "line_count": 0,
+      "dependencies": [],
+      "source_code": ""
+    },
+    "server_healthy": true,
+    "outcome_detail": "Ingested cleanly (HTTP 200). Extracted 0 functions, 0 classes.",
+    "status": "PASS"
+  },
+  {
+    "id": "EC-02",
+    "filename": "02_comments_only.py",
+    "description": "File with only comments and docstrings",
+    "expect_error": false,
+    "http_status": 200,
+    "response": {
+      "status": "success",
+      "has_syntax_error": false,
+      "error": "",
+      "mode": "Mode A (Uploaded)",
+      "target_file_path": "/Users/sourabh/TestForge/samples/uploaded_02_comments_only.py",
+      "module_name": "samples.uploaded_02_comments_only",
+      "functions": [],
+      "classes": [],
+      "methods": {},
+      "all_callables": [],
+      "source_sha": "22bf65a8440c6e1f5885e3a9be07acd84d2ff746da51f24a1e8d3a1ceb50ae28",
+      "line_count": 7,
+      "dependencies": [],
+      "source_code": "\"\"\"\nModule docstring: Pure documentation file with no executable symbols.\nAuthor: QA Edge Case Generator\n\"\"\"\n# Inline comment explaining nothing\n# Another line comment\n# TODO: Implement later\n"
+    },
+    "server_healthy": true,
+    "outcome_detail": "Ingested cleanly (HTTP 200). Extracted 0 functions, 0 classes.",
+    "status": "PASS"
+  },
+  {
+    "id": "EC-03",
+    "filename": "03_single_simple_function.py",
+    "description": "Single simple function (square)",
+    "expect_error": false,
+    "http_status": 200,
+    "response": {
+      "status": "success",
+      "has_syntax_error": false,
+      "error": "",
+      "mode": "Mode A (Uploaded)",
+      "target_file_path": "/Users/sourabh/TestForge/samples/uploaded_03_single_simple_function.py",
+      "module_name": "samples.uploaded_03_single_simple_function",
+      "functions": [
+        "square"
+      ],
+      "classes": [],
+      "methods": {},
+      "all_callables": [
+        "square"
+      ],
+      "source_sha": "19506000717b72670b1bf31cad336b46cbf96721eaa176faa2b1d1a79e2f257c",
+      "line_count": 3,
+      "dependencies": [],
+      "source_code": "def square(x: int) -> int:\n    \"\"\"Return the square of an integer.\"\"\"\n    return x * x\n"
+    },
+    "server_healthy": true,
+    "outcome_detail": "Ingested cleanly (HTTP 200). Extracted 1 functions, 0 classes.",
+    "status": "PASS"
+  },
+  {
+    "id": "EC-04",
+    "filename": "04_multiple_functions.py",
+    "description": "Multiple independent arithmetic functions",
+    "expect_error": false,
+    "http_status": 200,
+    "response": {
+      "status": "success",
+      "has_syntax_error": false,
+      "error": "",
+      "mode": "Mode A (Uploaded)",
+      "target_file_path": "/Users/sourabh/TestForge/samples/uploaded_04_multiple_functions.py",
+      "module_name": "samples.uploaded_04_multiple_functions",
+      "functions": [
+        "add",
+        "subtract",
+        "multiply",
+        "divide"
+      ],
+      "classes": [],
+      "methods": {},
+      "all_callables": [
+        "add",
+        "subtract",
+        "multiply",
+        "divide"
+      ],
+      "source_sha": "eb2cd07bc31453b3693db5702d1700ebd2d16015c3aaf12d24fe2f366bca1133",
+      "line_count": 13,
+      "dependencies": [],
+      "source_code": "def add(a: float, b: float) -> float:\n    return a + b\n\ndef subtract(a: float, b: float) -> float:\n    return a - b\n\ndef multiply(a: float, b: float) -> float:\n    return a * b\n\ndef divide(a: float, b: float) -> float:\n    if b == 0:\n        raise ZeroDivisionError(\"division by zero\")\n    return a / b\n"
+    },
+    "server_healthy": true,
+    "outcome_detail": "Ingested cleanly (HTTP 200). Extracted 4 functions, 0 classes.",
+    "status": "PASS"
+  },
+  {
+    "id": "EC-05",
+    "filename": "05_class_methods.py",
+    "description": "Class with methods, properties, inheritance",
+    "expect_error": false,
+    "http_status": 200,
+    "response": {
+      "status": "success",
+      "has_syntax_error": false,
+      "error": "",
+      "mode": "Mode A (Uploaded)",
+      "target_file_path": "/Users/sourabh/TestForge/samples/uploaded_05_class_methods.py",
+      "module_name": "samples.uploaded_05_class_methods",
+      "functions": [],
+      "classes": [
+        "BaseEntity",
+        "BankAccount"
+      ],
+      "methods": {
+        "BaseEntity": [
+          "__init__",
+          "id"
+        ],
+        "BankAccount": [
+          "__init__",
+          "deposit",
+          "withdraw"
+        ]
+      },
+      "all_callables": [
+        "BaseEntity.__init__",
+        "BaseEntity.id",
+        "BankAccount.__init__",
+        "BankAccount.deposit",
+        "BankAccount.withdraw"
+      ],
+      "source_sha": "9d5f4eca102b9e321d5fdc9a43b4a1435d902a92324c930e1266fbb5a616ddb7",
+      "line_count": 26,
+      "dependencies": [],
+      "source_code": "class BaseEntity:\n    def __init__(self, entity_id: str):\n        self._id = entity_id\n\n    @property\n    def id(self) -> str:\n        return self._id\n\nclass BankAccount(BaseEntity):\n    def __init__(self, entity_id: str, balance: float = 0.0):\n        super().__init__(entity_id)\n        self.balance = balance\n\n    def deposit(self, amount: float) -> float:\n        if amount <= 0:\n            raise ValueError(\"Deposit must be positive\")\n        self.balance += amount\n        return self.balance\n\n    def withdraw(self, amount: float) -> float:\n        if amount <= 0:\n            raise ValueError(\"Withdrawal must be positive\")\n        if amount > self.balance:\n            raise ValueError(\"Insufficient funds\")\n        self.balance -= amount\n        return self.balance\n"
+    },
+    "server_healthy": true,
+    "outcome_detail": "Ingested cleanly (HTTP 200). Extracted 0 functions, 2 classes.",
+    "status": "PASS"
+  },
+  {
+    "id": "EC-06",
+    "filename": "06_complex_typing.py",
+    "description": "Complex type hints (Dict, List, Union, Callable)",
+    "expect_error": false,
+    "http_status": 200,
+    "response": {
+      "status": "success",
+      "has_syntax_error": false,
+      "error": "",
+      "mode": "Mode A (Uploaded)",
+      "target_file_path": "/Users/sourabh/TestForge/samples/uploaded_06_complex_typing.py",
+      "module_name": "samples.uploaded_06_complex_typing",
+      "functions": [
+        "transform_records"
+      ],
+      "classes": [],
+      "methods": {},
+      "all_callables": [
+        "transform_records"
+      ],
+      "source_sha": "84a386648e0750f33fce1f8530b59a3b007f96d0bd4234c5f2df2dae698df705",
+      "line_count": 14,
+      "dependencies": [
+        "typing"
+      ],
+      "source_code": "from typing import Dict, List, Optional, Union, Tuple, Any, Callable\n\ndef transform_records(\n    records: List[Dict[str, Union[str, int, float]]],\n    predicate: Optional[Callable[[Dict[str, Any]], bool]] = None,\n) -> Tuple[List[Dict[str, Any]], int]:\n    result = []\n    dropped = 0\n    for r in records:\n        if predicate is None or predicate(r):\n            result.append(dict(r))\n        else:\n            dropped += 1\n    return result, dropped\n"
+    },
+    "server_healthy": true,
+    "outcome_detail": "Ingested cleanly (HTTP 200). Extracted 1 functions, 0 classes.",
+    "status": "PASS"
+  },
+  {
+    "id": "EC-07",
+    "filename": "07_nested_closures.py",
+    "description": "Deeply nested functions & closures",
+    "expect_error": false,
+    "http_status": 200,
+    "response": {
+      "status": "success",
+      "has_syntax_error": false,
+      "error": "",
+      "mode": "Mode A (Uploaded)",
+      "target_file_path": "/Users/sourabh/TestForge/samples/uploaded_07_nested_closures.py",
+      "module_name": "samples.uploaded_07_nested_closures",
+      "functions": [
+        "make_multiplier"
+      ],
+      "classes": [],
+      "methods": {},
+      "all_callables": [
+        "make_multiplier"
+      ],
+      "source_sha": "ab77b0ab0545529504245342f0fd165f8078199b52ee70d70c9102d59a7906b6",
+      "line_count": 9,
+      "dependencies": [],
+      "source_code": "def make_multiplier(factor: float):\n    \"\"\"Outer enclosing function.\"\"\"\n    def intermediate(offset: float):\n        \"\"\"Intermediate closure.\"\"\"\n        def inner(value: float) -> float:\n            \"\"\"Innermost function.\"\"\"\n            return (value + offset) * factor\n        return inner\n    return intermediate\n"
+    },
+    "server_healthy": true,
+    "outcome_detail": "Ingested cleanly (HTTP 200). Extracted 1 functions, 0 classes.",
+    "status": "PASS"
+  },
+  {
+    "id": "EC-08",
+    "filename": "08_syntax_error.py",
+    "description": "Deliberate syntax error (unclosed parens/colons)",
+    "expect_error": true,
+    "http_status": 200,
+    "response": {
+      "status": "syntax_error",
+      "has_syntax_error": true,
+      "error": "SyntaxError on line 1: invalid syntax",
+      "mode": "Mode A (Uploaded)",
+      "target_file_path": "/Users/sourabh/TestForge/samples/uploaded_08_syntax_error.py",
+      "module_name": "samples.uploaded_08_syntax_error",
+      "functions": [],
+      "classes": [],
+      "methods": {},
+      "all_callables": [],
+      "source_sha": "c03cc14fb027777f97441a07aff1fd29ae88cb59a81600a01c8b4ec7b47aea2f",
+      "line_count": 2,
+      "dependencies": [],
+      "source_code": "def broken_function(:\n    print(\"This is unparseable syntax\"\n"
+    },
+    "server_healthy": true,
+    "outcome_detail": "Correctly caught syntax error with HTTP 200: SyntaxError on line 1: invalid syntax",
+    "status": "PASS"
+  },
+  {
+    "id": "EC-09",
+    "filename": "09_exception_raising.py",
+    "description": "Functions raising specific domain exceptions",
+    "expect_error": false,
+    "http_status": 200,
+    "response": {
+      "status": "success",
+      "has_syntax_error": false,
+      "error": "",
+      "mode": "Mode A (Uploaded)",
+      "target_file_path": "/Users/sourabh/TestForge/samples/uploaded_09_exception_raising.py",
+      "module_name": "samples.uploaded_09_exception_raising",
+      "functions": [
+        "validate_user_age"
+      ],
+      "classes": [
+        "CustomDomainError"
+      ],
+      "methods": {
+        "CustomDomainError": []
+      },
+      "all_callables": [
+        "validate_user_age"
+      ],
+      "source_sha": "66c3a8d7a12ed9cdf37af6ed556991e2d076c99a731cf894ec37a96dc19d5847",
+      "line_count": 11,
+      "dependencies": [],
+      "source_code": "class CustomDomainError(Exception):\n    pass\n\ndef validate_user_age(age: int) -> bool:\n    if not isinstance(age, int):\n        raise TypeError(\"Age must be an integer\")\n    if age < 0:\n        raise ValueError(\"Age cannot be negative\")\n    if age > 150:\n        raise CustomDomainError(\"Age exceeds biological plausibility limit\")\n    return age >= 18\n"
+    },
+    "server_healthy": true,
+    "outcome_detail": "Ingested cleanly (HTTP 200). Extracted 1 functions, 1 classes.",
+    "status": "PASS"
+  },
+  {
+    "id": "EC-10",
+    "filename": "10_heavy_branching.py",
+    "description": "High cyclomatic complexity / heavy branching",
+    "expect_error": false,
+    "http_status": 200,
+    "response": {
+      "status": "success",
+      "has_syntax_error": false,
+      "error": "",
+      "mode": "Mode A (Uploaded)",
+      "target_file_path": "/Users/sourabh/TestForge/samples/uploaded_10_heavy_branching.py",
+      "module_name": "samples.uploaded_10_heavy_branching",
+      "functions": [
+        "classify_tax_bracket"
+      ],
+      "classes": [],
+      "methods": {},
+      "all_callables": [
+        "classify_tax_bracket"
+      ],
+      "source_sha": "4ac126d82691adfb43bcaa3e8654d47ed33a31e0319e8f1119536cfe77f1abc8",
+      "line_count": 34,
+      "dependencies": [],
+      "source_code": "def classify_tax_bracket(income: float, filing_status: str, has_dependents: bool, is_senior: bool) -> float:\n    if income < 0:\n        return 0.0\n    rate = 0.10\n    if filing_status == \"single\":\n        if income > 100000:\n            rate = 0.32\n        elif income > 50000:\n            rate = 0.22\n        elif income > 20000:\n            rate = 0.12\n    elif filing_status == \"married_joint\":\n        if income > 200000:\n            rate = 0.32\n        elif income > 100000:\n            rate = 0.22\n        elif income > 40000:\n            rate = 0.12\n    elif filing_status == \"head_of_household\":\n        if income > 150000:\n            rate = 0.32\n        elif income > 75000:\n            rate = 0.22\n        elif income > 30000:\n            rate = 0.12\n    else:\n        rate = 0.25\n\n    if has_dependents and rate > 0.12:\n        rate -= 0.02\n    if is_senior and rate > 0.10:\n        rate -= 0.01\n\n    return round(rate, 2)\n"
+    },
+    "server_healthy": true,
+    "outcome_detail": "Ingested cleanly (HTTP 200). Extracted 1 functions, 0 classes.",
+    "status": "PASS"
+  }
+]

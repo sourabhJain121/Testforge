@@ -1,0 +1,182 @@
+[
+  {
+    "method": "GET",
+    "path": "/",
+    "description": "Root HTML Dashboard",
+    "expected_status": 200,
+    "actual_status": 200,
+    "latency_ms": 11.1,
+    "error": "",
+    "status": "PASS"
+  },
+  {
+    "method": "GET",
+    "path": "/healthz",
+    "description": "Health Probe",
+    "expected_status": 200,
+    "actual_status": 200,
+    "latency_ms": 0.65,
+    "error": "",
+    "status": "PASS"
+  },
+  {
+    "method": "GET",
+    "path": "/readyz",
+    "description": "Readiness Probe",
+    "expected_status": 200,
+    "actual_status": 200,
+    "latency_ms": 3.03,
+    "error": "",
+    "status": "PASS"
+  },
+  {
+    "method": "GET",
+    "path": "/api/ready",
+    "description": "API Ready Probe",
+    "expected_status": 200,
+    "actual_status": 200,
+    "latency_ms": 1.26,
+    "error": "",
+    "status": "PASS"
+  },
+  {
+    "method": "GET",
+    "path": "/api/status",
+    "description": "System Status & Hardware Metrics",
+    "expected_status": 200,
+    "actual_status": 200,
+    "latency_ms": 13.36,
+    "error": "",
+    "status": "PASS"
+  },
+  {
+    "method": "GET",
+    "path": "/api/samples",
+    "description": "Workspace Sample Inventory",
+    "expected_status": 200,
+    "actual_status": 200,
+    "latency_ms": 0.63,
+    "error": "",
+    "status": "PASS"
+  },
+  {
+    "method": "GET",
+    "path": "/api/mcp/status",
+    "description": "FastMCP Tools Status",
+    "expected_status": 200,
+    "actual_status": 200,
+    "latency_ms": 0.46,
+    "error": "",
+    "status": "PASS"
+  },
+  {
+    "method": "GET",
+    "path": "/.well-known/agent-card.json",
+    "description": "A2A Agent Card Standard JSON",
+    "expected_status": 200,
+    "actual_status": 200,
+    "latency_ms": 0.51,
+    "error": "",
+    "status": "PASS"
+  },
+  {
+    "method": "GET",
+    "path": "/.well-known/agent.json",
+    "description": "A2A Agent Discovery Alias",
+    "expected_status": 200,
+    "actual_status": 200,
+    "latency_ms": 0.47,
+    "error": "",
+    "status": "PASS"
+  },
+  {
+    "method": "GET",
+    "path": "/api/checkpoints",
+    "description": "SQLite Checkpoints Timeline",
+    "expected_status": 200,
+    "actual_status": 200,
+    "latency_ms": 3.15,
+    "error": "",
+    "status": "PASS"
+  },
+  {
+    "method": "GET",
+    "path": "/api/telemetry",
+    "description": "Live Telemetry Events",
+    "expected_status": 200,
+    "actual_status": 200,
+    "latency_ms": 10.15,
+    "error": "",
+    "status": "PASS"
+  },
+  {
+    "method": "GET",
+    "path": "/api/wiretap",
+    "description": "Multi-Agent Wiretap Events",
+    "expected_status": 200,
+    "actual_status": 200,
+    "latency_ms": 4.56,
+    "error": "",
+    "status": "PASS"
+  },
+  {
+    "method": "GET",
+    "path": "/api/benchmark/results",
+    "description": "Benchmark Ablation Results JSON",
+    "expected_status": 200,
+    "actual_status": 200,
+    "latency_ms": 0.92,
+    "error": "",
+    "status": "PASS"
+  },
+  {
+    "method": "GET",
+    "path": "/api/benchmark/markdown",
+    "description": "Benchmark Ablation Markdown Report",
+    "expected_status": 200,
+    "actual_status": 200,
+    "latency_ms": 0.94,
+    "error": "",
+    "status": "PASS"
+  },
+  {
+    "method": "GET",
+    "path": "/api/ws/status",
+    "description": "WebSocket Hub Status",
+    "expected_status": 200,
+    "actual_status": 200,
+    "latency_ms": 0.53,
+    "error": "",
+    "status": "PASS"
+  },
+  {
+    "method": "GET",
+    "path": "/docs",
+    "description": "Swagger UI Documentation",
+    "expected_status": 200,
+    "actual_status": 200,
+    "latency_ms": 0.43,
+    "error": "",
+    "status": "PASS"
+  },
+  {
+    "method": "GET",
+    "path": "/redoc",
+    "description": "ReDoc Documentation",
+    "expected_status": 200,
+    "actual_status": 200,
+    "latency_ms": 0.35,
+    "error": "",
+    "status": "PASS"
+  },
+  {
+    "method": "GET",
+    "path": "/openapi.json",
+    "description": "OpenAPI v3 JSON Schema",
+    "expected_status": 200,
+    "actual_status": 200,
+    "latency_ms": 0.76,
+    "error": "",
+    "status": "PASS"
+  }
+]

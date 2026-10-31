@@ -1,0 +1,59 @@
+{
+  "Workflow_A": {
+    "name": "Built-in Sample Hardening (discount.py)",
+    "ingest_status": 200,
+    "module": "samples.discount",
+    "functions": [
+      "calculate_discount"
+    ],
+    "blast_status": 200,
+    "status": "PASS"
+  },
+  "Workflow_B": {
+    "name": "Custom Python Module Upload (logistics_engine.py)",
+    "module": "samples.uploaded_logistics_engine",
+    "classes": [
+      "ShippingTier",
+      "WarehouseInventory"
+    ],
+    "functions": [
+      "calculate_item_discount",
+      "estimate_freight_cost",
+      "calculate_customs_duty",
+      "validate_tracking_number",
+      "compute_sla_deadline_hours",
+      "process_bulk_order"
+    ],
+    "status": "PASS"
+  },
+  "Workflow_C": {
+    "name": "Cancellation / Abort Workflow",
+    "job_id": "e71d3e0f",
+    "cancel_status_code": 200,
+    "job_final_stage": null,
+    "status": "PASS"
+  },
+  "Workflow_D": {
+    "name": "GitHub Ingestion Security & Validation",
+    "ssrf_metadata_blocked": true,
+    "localhost_blocked": true,
+    "prompt_injection_blocked": true,
+    "status": "PASS"
+  },
+  "Workflow_E": {
+    "name": "FastMCP & A2A Inter-Agent Protocol",
+    "mcp_tools_count": 4,
+    "mcp_test_success": null,
+    "a2a_card_name": "testforge-agent-system",
+    "a2a_test_success": null,
+    "status": "FAIL"
+  },
+  "Workflow_F": {
+    "name": "Observability Trace & State Persistence",
+    "telemetry_events": 0,
+    "wiretap_events": 0,
+    "checkpoints_count": 50,
+    "diff_endpoint_status": 200,
+    "status": "PASS"
+  }
+}

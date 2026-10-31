@@ -62,6 +62,9 @@ class TargetSpace(BaseModel):
     source_sha: str = ""
     line_count: int = 0
     dependencies: List[str] = Field(default_factory=list)
+    is_untrusted: bool = True
+    provenance: str = "ingestion"
+    injection_findings: List[Dict[str, Any]] = Field(default_factory=list)
 
 
 class MutantSpace(BaseModel):
@@ -95,6 +98,7 @@ class SuiteSpace(BaseModel):
     """Partition containing candidate, baseline, and hardened Pytest test suites."""
     test_module_path: str = "test_target.py"
     current_test_code: str = ""
+    candidate_test_code: str = ""
     baseline_test_code: str = ""
     hardened_test_code: str = ""
     active_provider: str = "Google GenAI Live"
@@ -184,7 +188,7 @@ class BlackboardSubscription:
 def _extract_safe_change_metadata(partition: str, updates: Dict[str, Any]) -> Dict[str, Any]:
     meta: Dict[str, Any] = {"fields_modified": sorted(list(updates.keys()))}
     for k, v in updates.items():
-        if k in ("target_source_code", "current_test_code", "baseline_test_code", "hardened_test_code"):
+        if k in ("target_source_code", "current_test_code", "baseline_test_code", "hardened_test_code", "candidate_test_code"):
             meta[f"{k}_len"] = len(v) if isinstance(v, str) else 0
         elif k in ("mutants", "history", "critic_directives", "surviving_mutant_diffs", "functions", "classes"):
             meta[f"{k}_count"] = len(v) if isinstance(v, (list, dict, set)) else 0
@@ -296,6 +300,19 @@ class Blackboard:
         with self._lock:
             return self._metrics.model_copy(deep=True)
 
+    def get_isolated_target_code(self, provenance: str = "target_space") -> str:
+        """Returns the target source code safely wrapped in untrusted data delimiters."""
+        from testforge.prompt_guard import wrap_untrusted_content, inspect_source_for_indirect_injections
+        with self._lock:
+            code = self._target.target_source_code
+            scan = inspect_source_for_indirect_injections(code)
+            safe_code = scan.defused_text if scan.has_injection else code
+            return wrap_untrusted_content(
+                safe_code,
+                content_type="source_code",
+                provenance=provenance
+            )
+
     @property
     def target(self) -> TargetSpace:
         return self.get_target_space()
@@ -381,6 +398,42 @@ class Blackboard:
             # 1. Fetch current partition
             current_partition = getattr(self, f"_{partition_name}")
             merged_dict = current_partition.model_dump()
+
+            # Prompt-injection defense: scan and defuse untrusted inputs across partitions
+            if partition_name == "target":
+                target_code = update_dict.get("target_source_code") or update_dict.get("source_code")
+                if target_code:
+                    update_dict["target_source_code"] = target_code
+                    if "source_code" in update_dict and "source_code" not in TargetSpace.model_fields:
+                        del update_dict["source_code"]
+                    from testforge.prompt_guard import inspect_source_for_indirect_injections
+                    scan_res = inspect_source_for_indirect_injections(target_code)
+                    if scan_res.has_injection:
+                        update_dict["injection_findings"] = [f.model_dump() for f in scan_res.findings]
+                        if self._callback_registry:
+                            self._callback_registry.dispatch(LifecycleEvent(
+                                event_type=EventType.ERROR,
+                                emitter="Blackboard[TargetSpace]",
+                                payload={"error_type": "PromptInjectionDetected", "findings": [f.model_dump() for f in scan_res.findings]}
+                            ))
+            elif partition_name == "critic":
+                from testforge.prompt_guard import sanitize_critic_directive
+                if "critic_directive" in update_dict and "latest_directive" not in update_dict:
+                    update_dict["latest_directive"] = update_dict.pop("critic_directive")
+                if "latest_directive" in update_dict and update_dict["latest_directive"]:
+                    is_clean, clean_d, _ = sanitize_critic_directive(update_dict["latest_directive"])
+                    update_dict["latest_directive"] = clean_d
+                    if "critic_directives" not in update_dict:
+                        existing = list(merged_dict.get("critic_directives", []))
+                        existing.append(clean_d)
+                        update_dict["critic_directives"] = existing
+                if "critic_directives" in update_dict and isinstance(update_dict["critic_directives"], list):
+                    sanitized_dirs = []
+                    for d in update_dict["critic_directives"]:
+                        is_clean, clean_d, _ = sanitize_critic_directive(d)
+                        sanitized_dirs.append(clean_d if not is_clean else d)
+                    update_dict["critic_directives"] = sanitized_dirs
+
             merged_dict.update(update_dict)
 
             # 2. Validate merged dictionary (atomic fail-closed check)

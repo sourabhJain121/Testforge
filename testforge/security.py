@@ -92,7 +92,7 @@ _PROMPT_INJECTION_PATTERNS = [
     (
         "INJ_SYSTEM_OVERRIDE",
         re.compile(
-            r"(?i)\b(?:ignore|disregard|forget|override|bypass)\s+(?:all\s+|the\s+)*(?:(?:previous|prior|above|system|developer)\s+)*(?:instructions|prompts|rules|constraints|directives)\b"
+            r"(?i)\b(?:ignore|disregard|forget|override|bypass)\s+(?:all\s+|the\s+)*(?:(?:previous|prior|above|system|developer|safety)\s+)*(?:instructions|prompts|rules|constraints|directives)\b"
         ),
         SecurityRiskLevel.CRITICAL,
         "Attempt to override or ignore system/developer instructions.",
@@ -144,6 +144,38 @@ _PROMPT_INJECTION_PATTERNS = [
         ),
         SecurityRiskLevel.HIGH,
         "Attempt to embed unauthorized prompt override instructions in source or comments.",
+    ),
+    (
+        "INJ_SHELL_EXECUTION",
+        re.compile(
+            r"(?i)\b(?:execute|run|spawn)\s+(?:a\s+)?(?:arbitrary\s+)?(?:shell\s+command|bash\s+script|system\s+command|cmd\.exe|powershell|sh\s+-c)\b|\b(?:rm\s+-rf\s+/|(?:curl|wget)\s+(?:-\S+\s+)*https?://\S+\s*\|\s*(?:bash|sh))\b"
+        ),
+        SecurityRiskLevel.CRITICAL,
+        "Attempt to instruct the model to execute arbitrary shell or OS commands.",
+    ),
+    (
+        "INJ_ENV_LEAK",
+        re.compile(
+            r"(?i)\b(?:reveal|print|dump|leak|expose|show|log)\s+(?:all\s+)?(?:os\.environ|env\s*(?:ironment)?\s*variables?|process\.env|secret\s*keys?)\b"
+        ),
+        SecurityRiskLevel.CRITICAL,
+        "Attempt to instruct the model to disclose environment variables or system secrets.",
+    ),
+    (
+        "INJ_MARKDOWN_DIRECTIVE",
+        re.compile(
+            r"(?i)(?:<!--\s*(?:system|developer|admin|override)\s*instruction\b|\[\s*developer\s+instruction\s*\]|\[\s*system\s+directive\s*\])"
+        ),
+        SecurityRiskLevel.HIGH,
+        "Attempt to inject hidden markdown directives or comments to hijack agent persona.",
+    ),
+    (
+        "INJ_TOOL_HIJACK",
+        re.compile(
+            r"(?i)\b(?:invoke|trigger|call|execute)\s+(?:the\s+)?(?:unauthorized\s+)?(?:tool|function)\s+(?:to\s+run|with)\s+(?:bash|sh|cmd|curl|exec|eval|os\.)\b"
+        ),
+        SecurityRiskLevel.HIGH,
+        "Attempt to hijack tool calling protocol for unauthorized command execution.",
     ),
     (
         "INJ_TOXIC_ABUSIVE",

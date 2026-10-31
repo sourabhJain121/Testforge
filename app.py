@@ -1,5 +1,14 @@
 """
-app.py - TestForge Interactive Streamlit Web Interface.
+app.py - TestForge Legacy Streamlit Interface (ARCHIVED / HISTORICAL REFERENCE).
+
+NOTE: Streamlit has been permanently disabled from normal project execution.
+The official, production-ready, supported interface for TestForge is the
+FastAPI HTML/CSS/JavaScript Dashboard served from `server.py` at:
+    http://127.0.0.1:8000/
+
+This file is preserved strictly for historical audit compliance, evaluation
+verification, and legacy prototype reference. Do not launch this file during
+normal production operation.
 
 Authors: Sourabh & Shreshth
 Course: CSE3101 - Agentic AI
@@ -36,6 +45,7 @@ st.set_page_config(
 
 st.title("⚡ TestForge: Autonomous Agentic Test Hardening")
 st.caption("CSE3101: Agentic AI — Authors: Sourabh & Shreshth | Apple Silicon Hardware Optimized")
+st.info("🌟 **Primary Evaluation Interface:** TestForge's modern enterprise dashboard is running on port 8000: [http://127.0.0.1:8000](http://127.0.0.1:8000) (includes FastMCP tools, A2A discovery card, and SQLite checkpoint diffing).")
 
 # Sidebar Configuration
 with st.sidebar:

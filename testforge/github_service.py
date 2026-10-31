@@ -36,6 +36,15 @@ from pydantic import BaseModel, Field
 
 from testforge.security import redact_sensitive_data
 from testforge.ingestion import IngestionAnalysis, TargetManagerAgent
+from testforge.network_security import (
+    ALLOWED_GITHUB_HOSTS,
+    DEFAULT_MAX_SOURCE_SIZE_BYTES,
+    validate_url_hostname,
+    build_safe_opener,
+    bounded_read,
+    SSRFSecurityError,
+    PayloadTooLargeError,
+)
 
 logger = logging.getLogger("testforge.github_service")
 
@@ -262,11 +271,9 @@ class GitHubRepoService:
         """
         Executes a GET request strictly constrained to api.github.com or raw.githubusercontent.com.
         Redacts credentials from logs and handles rate-limits and error codes.
+        Protected by SafeGitHubRedirectHandler and bounded chunked streaming.
         """
-        parsed = urllib.parse.urlparse(url)
-        allowed_hosts = {"api.github.com", "raw.githubusercontent.com"}
-        if (parsed.hostname or "").lower() not in allowed_hosts or parsed.scheme.lower() != "https":
-            raise ValueError(f"Security Violation: Target host '{parsed.hostname}' is not an authorized GitHub endpoint.")
+        validate_url_hostname(url, allowed_hosts={"api.github.com", "raw.githubusercontent.com"})
 
         req = urllib.request.Request(url)
         req.add_header("User-Agent", "TestForge-Agentic-Ingestion/1.0")
@@ -276,10 +283,11 @@ class GitHubRepoService:
             req.add_header("Authorization", f"Bearer {self.token}")
 
         headers_dict: Dict[str, str] = {}
+        opener = build_safe_opener(allowed_hosts={"api.github.com", "raw.githubusercontent.com", "objects.githubusercontent.com"})
         try:
-            with urllib.request.urlopen(req, timeout=self.timeout) as resp:
+            with opener.open(req, timeout=self.timeout) as resp:
                 headers_dict = {k.lower(): v for k, v in resp.headers.items()}
-                data_bytes = resp.read()
+                data_bytes = bounded_read(resp, max_bytes=self.max_total_bytes)
                 data_str = data_bytes.decode("utf-8", errors="replace")
                 parsed_json = json.loads(data_str)
                 return parsed_json, headers_dict
@@ -525,7 +533,13 @@ class GitHubRepoService:
             encoding = data.get("encoding", "")
             if encoding == "base64" and encoded:
                 decoded_bytes = base64.b64decode(encoded)
+                if len(decoded_bytes) > self.max_file_size_bytes:
+                    raise PayloadTooLargeError(
+                        f"Decoded file size ({len(decoded_bytes)} bytes) exceeds maximum allowable limit of {self.max_file_size_bytes} bytes."
+                    )
                 content = decoded_bytes.decode("utf-8", errors="replace")
+        except PayloadTooLargeError:
+            raise
         except Exception as contents_err:
             logger.warning(
                 f"Contents API failed for {clean_path} ({contents_err}); attempting raw fallback."
@@ -535,15 +549,19 @@ class GitHubRepoService:
         # Fallback to raw.githubusercontent.com if Contents API failed
         if content is None:
             raw_url = f"https://raw.githubusercontent.com/{owner}/{repo}/{commit_sha}/{clean_path}"
+            validate_url_hostname(raw_url)
             req = urllib.request.Request(raw_url)
             req.add_header("User-Agent", "TestForge-Agentic-Ingestion/1.0")
             if self.token:
                 req.add_header("Authorization", f"Bearer {self.token}")
 
+            opener = build_safe_opener()
             try:
-                with urllib.request.urlopen(req, timeout=self.timeout) as resp:
-                    data_bytes = resp.read()
+                with opener.open(req, timeout=self.timeout) as resp:
+                    data_bytes = bounded_read(resp, max_bytes=self.max_file_size_bytes)
                     content = data_bytes.decode("utf-8", errors="replace")
+            except (PayloadTooLargeError, SSRFSecurityError):
+                raise
             except Exception as raw_err:
                 raise RuntimeError(
                     f"Failed to fetch content for file '{clean_path}' from repository '{owner}/{repo}' at SHA '{commit_sha}': {raw_err}"

@@ -1,0 +1,2 @@
+CONFIG_A = 100
+CONFIG_B = 200

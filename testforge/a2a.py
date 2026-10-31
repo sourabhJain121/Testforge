@@ -599,12 +599,18 @@ class A2ABroker:
                 logger.error(f"Generated test code failed AST validation/security inspection: {err}")
                 return
 
-            # Atomically update Blackboard SuiteSpace
-            self._blackboard.update_suite_space(
-                current_test_code=sanitized_code,
-                active_provider="Google ADK Generator",
-            )
-            logger.info("Synchronized validated Google ADK test code to Blackboard SuiteSpace.")
+            existing_current = self._blackboard.get_suite_space().current_test_code
+            updates = {
+                "candidate_test_code": sanitized_code,
+                "active_provider": "Google ADK Generator",
+            }
+            # Only populate current_test_code if no accepted suite exists yet (initial baseline).
+            # If an accepted suite already exists, it must NOT be overwritten until validated.
+            if not existing_current or not existing_current.strip():
+                updates["current_test_code"] = sanitized_code
+
+            self._blackboard.update_suite_space(**updates)
+            logger.info("Synchronized candidate Google ADK test code to Blackboard SuiteSpace.")
         except Exception as exc:
             logger.error(f"Unexpected error synchronizing generator output to Blackboard: {exc}", exc_info=True)
 

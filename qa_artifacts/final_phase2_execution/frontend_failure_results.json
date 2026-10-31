@@ -1,0 +1,58 @@
+[
+  {
+    "scenario": "Empty Python File Upload",
+    "endpoint": "/api/ingest/upload",
+    "http_status": 200,
+    "observed_behavior": "Clean 200 with line_count=0, callables_count=0, status=success",
+    "pass_fail": "PASS"
+  },
+  {
+    "scenario": "Invalid Python Syntax Upload",
+    "endpoint": "/api/ingest/upload",
+    "http_status": 200,
+    "observed_behavior": "HTTP 200 with has_syntax_error=True and error detail: 'SyntaxError on line 1: invalid syntax'",
+    "pass_fail": "PASS"
+  },
+  {
+    "scenario": "Valid Python File With Zero Functions",
+    "endpoint": "/api/ingest/upload",
+    "http_status": 200,
+    "observed_behavior": "HTTP 200 with empty functions list, 0 classes, line_count=2, no server error",
+    "pass_fail": "PASS"
+  },
+  {
+    "scenario": "Unsupported / Binary File Ingestion (.exe)",
+    "endpoint": "/api/ingest/upload",
+    "http_status": 400,
+    "observed_behavior": "HTTP 400 Bad Request with security rejection: {\"detail\":\"Only Python source files (.py) are supported.\"}",
+    "pass_fail": "PASS"
+  },
+  {
+    "scenario": "Malformed Payload (Negative Timeout)",
+    "endpoint": "/api/harden/start",
+    "http_status": 422,
+    "observed_behavior": "HTTP 422 Unprocessable Entity with Pydantic field constraint error",
+    "pass_fail": "PASS"
+  },
+  {
+    "scenario": "Cancellation of Non-Existent Job",
+    "endpoint": "/api/harden/cancel/{job_id}",
+    "http_status": 404,
+    "observed_behavior": "HTTP 404 with RFC-compliant error message: Hardening job 'nonexistent-job-xyz' not found.",
+    "pass_fail": "PASS"
+  },
+  {
+    "scenario": "Active Hardening Job Cancellation",
+    "endpoint": "/api/harden/cancel/{job_id}",
+    "http_status": 200,
+    "observed_behavior": "Job 7807226f acknowledged cancel, polled status 'CANCELLED', zero false success states",
+    "pass_fail": "PASS"
+  },
+  {
+    "scenario": "WebSocket Event Channel Inspection",
+    "endpoint": "/api/ws/status",
+    "http_status": 200,
+    "observed_behavior": "HTTP 200 with active status: {'active_clients': 2, 'total_events_broadcast': 14, 'dropped_events_count': 0, 'max_queue_size_per_client': 100}",
+    "pass_fail": "PASS"
+  }
+]

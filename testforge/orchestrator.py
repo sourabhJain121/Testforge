@@ -49,6 +49,7 @@ from testforge.callbacks import (
 from testforge.blackboard import Blackboard
 from testforge.equivalence import calculate_mutation_scores
 from testforge.security import redact_sensitive_data
+from testforge.prompt_guard import wrap_untrusted_content
 from testforge.mcp_client import ToolSelectionDecision, MCPToolResult
 from testforge.persistence import (
     SQLiteBlackboardStorage,
@@ -940,7 +941,8 @@ class TestForgeOrchestrator:
                 self._sync_lifecycle(TaskLifecycleState.PLANNING, metadata={"step": "baseline_repair_planning"})
                 console.print("[yellow][Self-Repair] Re-prompting TestGeneratorAgent to fix syntax/runtime error...[/yellow]")
                 err_msg = baseline_exec.get("stderr") or baseline_exec.get("stdout") or "Tests did not pass cleanly."
-                repair_prompt = f"The following tests failed against clean code:\n{err_msg}\nPlease produce corrected, working Pytest tests."
+                safe_err_msg = wrap_untrusted_content(err_msg, content_type="test_error", provenance="sandbox")
+                repair_prompt = f"The following tests failed against clean code:\n{safe_err_msg}\nPlease produce corrected, working Pytest tests."
                 self._sync_lifecycle(TaskLifecycleState.GENERATING_TESTS, metadata={"step": "baseline_repair_generation"})
                 self.state.current_test_code = self.generator.generate_tests(
                     source_code=self.state.target_source_code,
@@ -1119,6 +1121,7 @@ class TestForgeOrchestrator:
                     self.blackboard.update_suite_space(
                         current_test_code=self.state.current_test_code,
                         hardened_test_code=self.state.current_test_code,
+                        candidate_test_code="",
                         active_provider=self.state.active_provider
                     )
                     if validation_res.mutants_killed:
@@ -1129,6 +1132,11 @@ class TestForgeOrchestrator:
                         console.print(f"  [green]• Hardened tests verified against clean code ({validation_res.retained_count} passed).[/green]")
                 else:
                     console.print(f"  [yellow]• All candidate tests broke clean code or failed validation ({validation_res.quarantined_count} quarantined). Retaining previous working test suite.[/yellow]")
+                    # Explicitly ensure the accepted working suite is preserved in Blackboard SuiteSpace
+                    self.blackboard.update_suite_space(
+                        current_test_code=self.state.current_test_code,
+                        candidate_test_code="",
+                    )
 
                 # Inter-agent Handoff: TestGenerator -> SubprocessSandbox
                 self.logger.log_event("AGENT_HANDOFF", {

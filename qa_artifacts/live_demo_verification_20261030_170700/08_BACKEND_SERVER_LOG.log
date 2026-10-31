@@ -1,0 +1,828 @@
+/Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/google/cloud/aiplatform/models.py:52: FutureWarning: Support for google-cloud-storage < 3.0.0 will be removed in a future version of google-cloud-aiplatform. Please upgrade to google-cloud-storage >= 3.0.0.
+  from google.cloud.aiplatform.utils import gcs_utils
+INFO:     Started server process [21532]
+INFO:     Waiting for application startup.
+[2026-10-30 12:40:05,836] INFO in testforge.server: WebSocket event hub initialized on server startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:54418 - "WebSocket /ws/events" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:54419 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54421 - "POST /api/ingest/upload HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54422 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54423 - "POST /api/ingest/upload HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54424 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54425 - "POST /api/ingest/upload HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54426 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54427 - "POST /api/ingest/upload HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54428 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54429 - "POST /api/ingest/upload HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54430 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54431 - "POST /api/ingest/upload HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54432 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54433 - "POST /api/ingest/upload HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54434 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54435 - "POST /api/ingest/upload HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54436 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54437 - "POST /api/ingest/upload HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54438 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54439 - "POST /api/ingest/upload HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54440 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53213 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53213 - "GET /static/style.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60403 - "GET /static/app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60403 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60403 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53213 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53213 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50560 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50633 - "WebSocket /ws/events" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:60403 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53213 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53213 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55096 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55100 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55100 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55100 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55101 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55101 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55103 - "WebSocket /ws/events" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:55104 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55100 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55101 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55118 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55127 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55127 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55128 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55128 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55127 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55127 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55130 - "WebSocket /ws/events" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:55131 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55128 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55127 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55127 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55127 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55127 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55127 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55128 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55128 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55131 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55133 - "WebSocket /ws/events" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:55127 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55131 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55131 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55131 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55127 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55135 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55135 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55135 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55131 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55136 - "WebSocket /ws/events" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:55137 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55139 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55137 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55140 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55141 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55137 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55137 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55139 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55143 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55137 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55137 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55144 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55145 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55147 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55144 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55144 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55137 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55149 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55149 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55149 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55149 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55144 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55144 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55144 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55144 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55153 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55153 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55144 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55144 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55154 - "WebSocket /ws/events" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:55155 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55156 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55156 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55158 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55158 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55158 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55159 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55158 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55161 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55161 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55159 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55162 - "WebSocket /ws/events" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:55158 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55161 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55161 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55161 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55161 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55158 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55161 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55161 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55159 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55165 - "WebSocket /ws/events" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:55159 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55158 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55159 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55159 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55167 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55168 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55168 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55159 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55169 - "WebSocket /ws/events" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:55170 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55170 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55159 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55170 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55172 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55172 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55173 - "WebSocket /ws/events" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:55159 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55159 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55170 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55159 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55159 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55175 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55176 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55177 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55159 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55179 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55159 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55180 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55181 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55181 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55181 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55180 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55159 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55179 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55179 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55179 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55159 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55159 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55179 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55179 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55184 - "WebSocket /ws/events" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:55181 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55180 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55180 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55185 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55187 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55185 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55180 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55185 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55189 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55190 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55180 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55189 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55189 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55180 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55180 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55185 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55192 - "WebSocket /ws/events" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:55189 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55180 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55202 - "GET /api/checkpoints?limit=100&offset=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55203 - "POST /api/analysis/blast-radius HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55222 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55222 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55222 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55223 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55225 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55225 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55222 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55226 - "WebSocket /ws/events" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:55223 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55223 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55225 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55223 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55223 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55223 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55223 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55222 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55229 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55229 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55229 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55230 - "WebSocket /ws/events" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:55231 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55229 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55233 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55233 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55229 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55233 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55234 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55233 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55236 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55237 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55233 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55239 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55233 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55240 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55241 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55239 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55242 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55239 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55243 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55246 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55239 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55247 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55248 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55247 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55247 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55239 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55246 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55250 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55246 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55246 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55246 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55239 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55247 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55247 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55247 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55247 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55239 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55239 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55247 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55247 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55255 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55256 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55257 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55256 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55256 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55256 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55257 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55255 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55257 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55257 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55257 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55256 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55256 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55257 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55247 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55257 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55257 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55256 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55262 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55257 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55262 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55256 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55256 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55262 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55262 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55264 - "WebSocket /ws/events" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:55265 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55256 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55262 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55262 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55262 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55262 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55262 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55256 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55256 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55265 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55267 - "WebSocket /ws/events" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:55265 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55262 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55265 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55265 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55269 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55270 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55270 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55265 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55271 - "WebSocket /ws/events" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:55265 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55265 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55273 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55265 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55274 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55274 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55273 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55275 - "WebSocket /ws/events" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:55265 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55274 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55279 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55279 - "GET /api/benchmark/results HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55279 - "GET /api/benchmark/markdown HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55279 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55279 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55305 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55332 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65207 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65207 - "GET /static/style.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60091 - "GET /static/app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60091 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60091 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65207 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65207 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54561 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52439 - "WebSocket /ws/events" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:54561 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60091 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65207 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65207 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65207 - "POST /api/a2a/test HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65207 - "GET /api/mcp/status HTTP/1.1" 200 OK
+/Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/pydantic_settings/sources/utils.py:51: IncompleteFieldDefinitionWarning: Field 'lifespan' has an incomplete definition: its annotation contains an unresolved forward reference, so settings sources may fail to correctly resolve its value. Call `model_rebuild()` on the model where the field is defined, once all the referenced types are defined.
+  warnings.warn(  # noqa: B028  (called from many sources at differing depths, so no stacklevel is correct)
+[2026-10-30 13:34:10,506] INFO in testforge.mcp_client: Connected to MCP server: filesystem-mcp
+[10/30/26 13:34:10] INFO     Processing request of type            server.py:733
+                             ListToolsRequest                                   
+                    INFO     Processing request of type            server.py:733
+                             CallToolRequest                                    
+INFO:     127.0.0.1:65207 - "POST /api/mcp/test HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65207 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65207 - "POST /api/analysis/blast-radius HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65207 - "GET /api/checkpoints?limit=100&offset=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65207 - "GET /api/checkpoints?limit=100&offset=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55433 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57168 - "WebSocket /ws/events" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:57169 - "WebSocket /ws/events" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:57198 - "WebSocket /ws/events" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:57199 - "WebSocket /ws/events" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:58732 - "HEAD / HTTP/1.1" 405 Method Not Allowed
+INFO:     127.0.0.1:58733 - "HEAD /style.css HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58734 - "HEAD /app.js HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58735 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58745 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58746 - "GET /static/style.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58747 - "GET /static/app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58764 - "WebSocket /ws/events" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:58794 - "POST /api/ingest/upload HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58799 - "POST /api/ingest/upload HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58806 - "POST /api/ingest/upload HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58807 - "POST /api/ingest/upload HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58808 - "POST /api/analysis/blast-radius HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58811 - "POST /api/analysis/blast-radius HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:58815 - "POST /api/analysis/blast-radius HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58820 - "POST /api/analysis/blast-radius HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58830 - "POST /api/ingest/upload HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58831 - "POST /api/ingest/upload HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58832 - "POST /api/analysis/blast-radius HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58705 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58705 - "GET /static/style.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53602 - "GET /static/app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53602 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53602 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58705 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58705 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54894 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53502 - "WebSocket /ws/events" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:54894 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53602 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58705 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58705 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58705 - "POST /api/a2a/test HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58705 - "GET /api/mcp/status HTTP/1.1" 200 OK
+/Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/pydantic_settings/sources/utils.py:51: IncompleteFieldDefinitionWarning: Field 'lifespan' has an incomplete definition: its annotation contains an unresolved forward reference, so settings sources may fail to correctly resolve its value. Call `model_rebuild()` on the model where the field is defined, once all the referenced types are defined.
+  warnings.warn(  # noqa: B028  (called from many sources at differing depths, so no stacklevel is correct)
+[2026-10-30 15:38:35,281] INFO in testforge.mcp_client: Connected to MCP server: filesystem-mcp
+[10/30/26 15:38:35] INFO     Processing request of type            server.py:733
+                             ListToolsRequest                                   
+                    INFO     Processing request of type            server.py:733
+                             CallToolRequest                                    
+INFO:     127.0.0.1:58705 - "POST /api/mcp/test HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62788 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62788 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62788 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57038 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57038 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58031 - "WebSocket /ws/events" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:56391 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62788 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57038 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57038 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57038 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57038 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62788 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62788 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53077 - "WebSocket /ws/events" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:62788 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56391 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57038 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57038 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57038 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57038 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56391 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56391 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61000 - "WebSocket /ws/events" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:56391 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62788 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57038 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58935 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58956 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58966 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59009 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59010 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59044 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59045 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59059 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59060 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59110 - "POST /api/harden/cancel/nonexistent-1234 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59111 - "POST /api/ingest/file HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59112 - "POST /api/ingest/file HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59118 - "POST /api/ingest/upload HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59119 - "POST /api/ingest/upload HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59120 - "POST /api/harden/cancel/dummy-job-123 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59793 - "GET /api/health HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59800 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60711 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60759 - "POST /api/ingest/upload HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60760 - "POST /api/ingest/upload HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60761 - "POST /api/ingest/upload HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60762 - "POST /api/ingest/upload HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:60763 - "POST /api/harden/start HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:60764 - "POST /api/harden/cancel/nonexistent-job-xyz HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60765 - "POST /api/harden/start HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:60780 - "POST /api/ingest/upload HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60781 - "POST /api/ingest/upload HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60782 - "POST /api/ingest/upload HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60783 - "POST /api/ingest/upload HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:60784 - "POST /api/harden/start HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:60785 - "POST /api/harden/cancel/nonexistent-job-xyz HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60786 - "POST /api/harden/start HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60787 - "POST /api/harden/cancel/263c9d3e HTTP/1.1" 200 OK
+[2026-10-30 16:18:58,606] INFO in testforge.a2a: Registered A2A agent handler: 'agent:google-adk:generator' (actions=None)
+[2026-10-30 16:18:58,606] INFO in testforge.a2a: Registered A2A agent handler: 'agent:crewai:critic' (actions=None)
+🛑 HARDENING CANCELLED: Hardening job cancelled by user request.
+
+[2026-10-30 16:18:58,617] INFO in testforge.persistence: Checkpoint 'chk_f589997c5bb8' successfully saved (stage='CANCELLED', rev=5, job_id='263c9d3e')
+INFO:     127.0.0.1:60788 - "GET /api/harden/status/263c9d3e HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60796 - "POST /api/ingest/upload HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60797 - "POST /api/ingest/upload HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60798 - "POST /api/ingest/upload HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60799 - "POST /api/ingest/upload HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:60800 - "POST /api/harden/start HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:60801 - "POST /api/harden/cancel/nonexistent-job-xyz HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60802 - "POST /api/harden/start HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60803 - "POST /api/harden/cancel/7807226f HTTP/1.1" 200 OK
+[2026-10-30 16:19:09,846] INFO in testforge.a2a: Registered A2A agent handler: 'agent:google-adk:generator' (actions=None)
+[2026-10-30 16:19:09,846] INFO in testforge.a2a: Registered A2A agent handler: 'agent:crewai:critic' (actions=None)
+🛑 HARDENING CANCELLED: Hardening job cancelled by user request.
+
+[2026-10-30 16:19:09,849] INFO in testforge.persistence: Checkpoint 'chk_43d65034e1ff' successfully saved (stage='CANCELLED', rev=5, job_id='7807226f')
+INFO:     127.0.0.1:60804 - "GET /api/harden/status/7807226f HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60805 - "GET /api/ws/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62882 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62889 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62892 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63322 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63323 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55580 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55580 - "GET /static/style.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52341 - "GET /static/app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52341 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52341 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55580 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55580 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52870 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58942 - "WebSocket /ws/events" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:52870 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52341 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55580 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63374 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63838 - "POST /api/ingest/upload HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63499 - "GET /healthz HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63500 - "GET /.well-known/agent-card.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55548 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55548 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55548 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55548 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55548 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63222 - "WebSocket /ws/events" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:55548 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55548 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "POST /api/ingest/upload HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "POST /api/analysis/blast-radius HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "POST /api/harden/start HTTP/1.1" 200 OK
+[2026-10-30 17:11:17,747] INFO in testforge.a2a: Registered A2A agent handler: 'agent:google-adk:generator' (actions=None)
+[2026-10-30 17:11:17,747] INFO in testforge.a2a: Registered A2A agent handler: 'agent:crewai:critic' (actions=None)
+==========================================================
+       TESTFORGE: AUTONOMOUS TEST HARDENING ENGINE        
+Hardware: Apple Silicon M-Series | Cores: 10 | Workers: 8
+Foundation Model: Google GenAI Live (gemini-3.6-flash)
+==========================================================
+
+🔧 Invoking MCP Tool: get_file_info (Target file path provided; verifying file 
+metadata and provenance via MCP.)
+/Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/pydantic_settings/sources/utils.py:51: IncompleteFieldDefinitionWarning: Field 'lifespan' has an incomplete definition: its annotation contains an unresolved forward reference, so settings sources may fail to correctly resolve its value. Call `model_rebuild()` on the model where the field is defined, once all the referenced types are defined.
+  warnings.warn(  # noqa: B028  (called from many sources at differing depths, so no stacklevel is correct)
+[2026-10-30 17:11:18,168] INFO in testforge.mcp_client: Connected to MCP server: filesystem-mcp
+[10/30/26 17:11:18] INFO     Processing request of type            server.py:733
+                             ListToolsRequest                                   
+                    INFO     Processing request of type            server.py:733
+                             CallToolRequest                                    
+[2026-10-30 17:11:18,185] INFO in testforge.persistence: Checkpoint 'chk_dbca8b4dab06' successfully saved (stage='INITIAL_INGESTION', rev=8, job_id='eaaa0e89')
+[Step 1/6] Synthesizing initial candidate test suite...
+[2026-10-30 17:11:18,195] INFO in testforge.adk_generator: Running Google ADK Generator (Iteration 0)...
+[2026-10-30 17:11:18,199] INFO in testforge.a2a: Synchronized validated Google ADK test code to Blackboard SuiteSpace.
+[2026-10-30 17:11:18,201] INFO in testforge.persistence: Checkpoint 'chk_58bbcb9ffd38' successfully saved (stage='BASELINE_SYNTHESIS', rev=14, job_id='eaaa0e89')
+[Step 2/6] Sandbox validating test suite against clean target (pass@1 check)...
+[!] Initial generated tests failed against clean code:
+============================= test session starts ==============================
+platform darwin -- Python 3.13.18, pytest-9.1.1, pluggy-1.7.0 -- 
+/Users/sourabh/TestForge/.venv-release/bin/python
+rootdir: /var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_9cns26u5
+plugins: cov-7.1.0, anyio-4.15.1, platformdirs-4.13.5
+collecting ... collected 1 item
+
+../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_b
+ox_9cns26u5/test_target.py::test_calculate_item_discount_nominal FAILED [100%]
+
+=================================== FAILURES ===================================
+_____________________ test_calculate_item_discount_nominal _____________________
+
+    def test_calculate_item_discount_nominal():
+>       assert calculate_item_discount() is not None
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: calculate_item_discount() missing 2 required positional 
+arguments: 'unit_price' and 'quantity'
+
+/var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_box_9cns26u5/test_tar
+get.py:5: TypeError
+=========================== short test summary info ============================
+FAILED 
+../../../../../../../var/folders/7x/5s5hr55523q990nl8mnvy9040000gn/T/testforge_b
+ox_9cns26u5/test_target.py::test_calculate_item_discount_nominal
+============================== 1 failed in 0.02s ===============================
+
+[Self-Repair] Re-prompting TestGeneratorAgent to fix syntax/runtime error...
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+[2026-10-30 17:11:19,509] INFO in httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent "HTTP/1.1 429 Too Many Requests"
+
+[!] Gemini quota exhausted. Switching to secondary provider...
+[!] HybridLLMClient Tier 3 engaged: HybridLLMClient: Tier 4 Fallback Engaged - All configured live LLM providers failed or offline.. Activating deterministic AST rule synthesizer...
+[✓] Candidate test suite passed on clean code (11/11 tests passed).
+[✓] Baseline Line Coverage: 32.6% (43/132 lines covered)
+
+[2026-10-30 17:11:20,067] INFO in testforge.persistence: Checkpoint 'chk_91f73e114939' successfully saved (stage='BASELINE_VALIDATED', rev=25, job_id='eaaa0e89')
+▶ Iteration 1 of 3 (Target Score: 85.0%)
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+  • AST Mutator injected 258 deterministic faults.
+  • Parallel Sandbox evaluating mutants across 8 CPU workers...
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+[2026-10-30 17:11:32,619] INFO in testforge.persistence: Checkpoint 'chk_3921cdba2556' successfully saved (stage='REFLECTION_ITERATION_1', rev=34, job_id='eaaa0e89')
+                  Iteration 1 Benchmark (M2 AST & Equivalence)                  
+┏━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━┓
+┃  Total  ┃        ┃          ┃         ┃       ┃   Raw    ┃   Adj   ┃         ┃
+┃ Mutants ┃ Killed ┃ Survived ┃ Timeou… ┃ Equiv ┃  Score   ┃  Score  ┃ Elapsed ┃
+┡━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━┩
+│   258   │   0    │   258    │    0    │   0   │   0.0%   │  0.0%   │ 11.88s  │
+└─────────┴────────┴──────────┴─────────┴───────┴──────────┴─────────┴─────────┘
+  • Adversarial Critic analyzing 258 surviving mutant(s)...
+[2026-10-30 17:11:32,811] INFO in testforge.crew_critic: Executing CrewAI Crew for 258 surviving mutant(s)...
+[2026-10-30 17:11:32,986] INFO in testforge.a2a: Synchronized validated CrewAI critique to Blackboard CriticSpace.
+  Critic Directive: Adversarial analysis of 517 surviving mutant(s): The test 
+suite lacked strict boundary and equality assertions, allowing mutated operators
+t...
+
+▶ Iteration 2 of 3 (Target Score: 85.0%)
+  • Hardening test assertions based on Critic reasoning...
+[2026-10-30 17:11:33,180] INFO in testforge.adk_generator: Running Google ADK Generator (Iteration 2)...
+[2026-10-30 17:11:33,234] INFO in testforge.a2a: Synchronized validated Google ADK test code to Blackboard SuiteSpace.
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50316 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50316 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50316 - "GET /api/checkpoints?limit=100&offset=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+  • All candidate tests broke clean code or failed validation (1 quarantined). 
+Retaining previous working test suite.
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63553 - "POST /api/ingest/upload HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:63554 - "POST /api/harden/start HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+[2026-10-30 17:12:30,597] INFO in httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent "HTTP/1.1 429 Too Many Requests"
+
+[!] Gemini quota exhausted. Switching to secondary provider...
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+  • AST Mutator injected 258 deterministic faults.
+  • Parallel Sandbox evaluating mutants across 8 CPU workers...
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63575 - "GET /api/checkpoints HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63608 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+[2026-10-30 17:12:47,988] INFO in testforge.persistence: Checkpoint 'chk_c79af66a72cc' successfully saved (stage='REFLECTION_ITERATION_2', rev=53, job_id='eaaa0e89')
+                  Iteration 2 Benchmark (M2 AST & Equivalence)                  
+┏━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━┓
+┃  Total  ┃        ┃          ┃         ┃       ┃   Raw    ┃   Adj   ┃         ┃
+┃ Mutants ┃ Killed ┃ Survived ┃ Timeou… ┃ Equiv ┃  Score   ┃  Score  ┃ Elapsed ┃
+┡━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━┩
+│   258   │   0    │   258    │    0    │   0   │   0.0%   │  0.0%   │ 74.28s  │
+└─────────┴────────┴──────────┴─────────┴───────┴──────────┴─────────┴─────────┘
+  • Adversarial Critic analyzing 258 surviving mutant(s)...
+[2026-10-30 17:12:48,183] INFO in testforge.crew_critic: Executing CrewAI Crew for 258 surviving mutant(s)...
+[2026-10-30 17:12:48,352] INFO in testforge.a2a: Synchronized validated CrewAI critique to Blackboard CriticSpace.
+  Critic Directive: Adversarial analysis of 517 surviving mutant(s): The test 
+suite lacked strict boundary and equality assertions, allowing mutated operators
+t...
+
+▶ Iteration 3 of 3 (Target Score: 85.0%)
+  • Hardening test assertions based on Critic reasoning...
+[2026-10-30 17:12:48,550] INFO in testforge.adk_generator: Running Google ADK Generator (Iteration 3)...
+[2026-10-30 17:12:48,606] INFO in testforge.a2a: Synchronized validated Google ADK test code to Blackboard SuiteSpace.
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+[*] Successfully executed via Local Ollama (qwen2.5-coder:7b).
+INFO:     127.0.0.1:63555 - "POST /api/ingest/synthesize HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63629 - "POST /api/harden/cancel/job_nonexistent_99999 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63630 - "POST /api/harden/start HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63637 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63649 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+  • All candidate tests broke clean code or failed validation (1 quarantined). 
+Retaining previous working test suite.
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+  • AST Mutator injected 258 deterministic faults.
+  • Parallel Sandbox evaluating mutants across 8 CPU workers...
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63675 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+[2026-10-30 17:13:58,260] INFO in testforge.persistence: Checkpoint 'chk_460bb1a04fb6' successfully saved (stage='REFLECTION_ITERATION_3', rev=72, job_id='eaaa0e89')
+                  Iteration 3 Benchmark (M2 AST & Equivalence)                  
+┏━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━┓
+┃  Total  ┃        ┃          ┃         ┃       ┃   Raw    ┃   Adj   ┃         ┃
+┃ Mutants ┃ Killed ┃ Survived ┃ Timeou… ┃ Equiv ┃  Score   ┃  Score  ┃ Elapsed ┃
+┡━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━┩
+│   258   │   0    │   258    │    0    │   0   │   0.0%   │  0.0%   │ 69.18s  │
+└─────────┴────────┴──────────┴─────────┴───────┴──────────┴─────────┴─────────┘
+⚠ TERMINATED: Maximum allowed reflection iterations reached.
+
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+[2026-10-30 17:13:58,948] INFO in testforge.persistence: Checkpoint 'chk_325953cc296f' successfully saved (stage='FINALIZED', rev=76, job_id='eaaa0e89')
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63677 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51570 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52516 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63684 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57583 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57583 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57583 - "GET /api/mcp/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57583 - "GET /api/samples HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57583 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49358 - "WebSocket /ws/events" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:58827 - "GET /api/hardened-code HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62531 - "GET /api/wiretap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57583 - "GET /api/telemetry HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57583 - "GET /api/checkpoints?limit=100&offset=0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56151 - "POST /api/ingest/sample HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63739 - "GET /api/checkpoints HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63826 - "GET /api/checkpoints HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59546 - "GET /api/harden/status/eaaa0e89 HTTP/1.1" 200 OK

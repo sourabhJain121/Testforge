@@ -27,6 +27,7 @@ from testforge.blast_analyzer import BlastRadiusAnalyzer
 from testforge.git_diff import GitDiffInspector
 from testforge.sandbox import SubprocessSandbox
 from testforge.logger import TraceLogger
+from testforge.prompt_guard import verify_tool_call_safety
 
 
 class ToolDefinition(BaseModel):
@@ -189,6 +190,13 @@ class ADKToolRegistry:
         if tool_name not in self._handlers:
             err = f"Unknown tool: '{tool_name}'. Available: {list(self.tools.keys())}"
             res = ToolCallResult(tool_name=tool_name, success=False, output=None, error=err, latency_sec=0.0)
+            self._log_tool_call(tool_name, arguments, res, context)
+            return res
+
+        # Validate tool call safety against prompt injection attacks
+        is_safe, sec_err = verify_tool_call_safety(tool_name, arguments, set(self.tools.keys()))
+        if not is_safe:
+            res = ToolCallResult(tool_name=tool_name, success=False, output=None, error=sec_err, latency_sec=0.0)
             self._log_tool_call(tool_name, arguments, res, context)
             return res
 

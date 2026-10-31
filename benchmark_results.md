@@ -1,6 +1,6 @@
 # TestForge Benchmark & Ablation Study Report
 - **Target File:** `samples/discount.py`
-- **Timestamp:** 2026-10-27 15:59:51
+- **Timestamp:** 2026-10-31 14:37:31
 - **Repetitions per Scenario:** 1
 - **Hardware Platform:** arm64 (Darwin, 10 cores, 16.0GB RAM)
 
@@ -8,7 +8,7 @@
 
 | Scenario | Runs | Mean Latency (s) | StdDev (s) | Mean Mutation Score | Line Coverage | Total Tokens | Est. Cost (USD) |
 |---|---|---|---|---|---|---|---|
-| **baseline** | 1/1 | 1.17s | ±0.00s | 0.0% | 10.0% | 0 | $0.00000 |
+| **baseline** | 1/1 | 1.23s | ±0.00s | 0.0% | 10.0% | 0 | $0.00000 |
 
 ## Metric Integrity Disclosure
 > [!NOTE]

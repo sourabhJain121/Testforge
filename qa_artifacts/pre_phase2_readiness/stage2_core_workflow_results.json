@@ -1,0 +1,60 @@
+{
+  "timestamp": 1793354867.221131,
+  "stages": {
+    "ingestion": {
+      "status": "PASS",
+      "latency_ms": 23.44,
+      "module_name": "samples.uploaded_logistics_engine",
+      "classes": [
+        "ShippingTier",
+        "WarehouseInventory"
+      ],
+      "functions": [
+        "calculate_item_discount",
+        "estimate_freight_cost",
+        "calculate_customs_duty",
+        "validate_tracking_number",
+        "compute_sla_deadline_hours",
+        "process_bulk_order"
+      ],
+      "callables_count": 11,
+      "line_count": 240
+    },
+    "syntax_validation": {
+      "status": "PASS",
+      "error_caught": "SyntaxError on line 1: invalid syntax",
+      "has_syntax_error": true
+    },
+    "blast_radius": {
+      "status": "PASS",
+      "target_function": "estimate_freight_cost",
+      "upstream_callers_count": 1,
+      "downstream_callees_count": 3,
+      "risk_category": "LOW",
+      "graph_nodes": 30
+    },
+    "mutation_generation": {
+      "status": "PASS",
+      "duration_ms": 2237.23,
+      "total_mutants": 258,
+      "mutation_types": {
+        "CONST_VAL": 88,
+        "COND_INV": 31,
+        "LOGICAL_CONN": 10,
+        "RETURN_VAL": 17,
+        "ARITH_OP": 17,
+        "COMP_OP": 31,
+        "BOUNDARY_SWAP": 20,
+        "OFF_BY_ONE": 36,
+        "MATH_FUNC": 8
+      }
+    },
+    "test_execution": {
+      "status": "PASS",
+      "passed_tests": 26,
+      "failed_tests": 0,
+      "duration_ms": 242.86,
+      "exit_code": 0
+    }
+  }
+}

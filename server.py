@@ -626,8 +626,13 @@ async def ingest_upload(file: UploadFile = File(...)):
     supervisor = TargetManagerAgent()
     analysis = supervisor.ingest_file(str(dest_path))
 
+    has_syntax_error = getattr(analysis, "has_syntax_error", False)
+    error_msg = getattr(analysis, "error_msg", None)
+
     return {
-        "status": "success",
+        "status": "syntax_error" if has_syntax_error else "success",
+        "has_syntax_error": has_syntax_error,
+        "error": error_msg,
         "mode": "Mode A (Uploaded)",
         "target_file_path": str(dest_path),
         "module_name": analysis.module_name,

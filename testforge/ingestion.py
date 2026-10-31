@@ -27,6 +27,15 @@ import urllib.parse
 import logging
 from typing import List, Dict, Any, Optional, Tuple
 from testforge.logger import TraceLogger
+from testforge.network_security import (
+    ALLOWED_GITHUB_HOSTS,
+    DEFAULT_MAX_SOURCE_SIZE_BYTES,
+    validate_url_hostname,
+    build_safe_opener,
+    bounded_read,
+    SSRFSecurityError,
+    PayloadTooLargeError,
+)
 
 logger = logging.getLogger("testforge.ingestion")
 
@@ -172,11 +181,20 @@ def normalize_github_url(url: str) -> str:
     return meta["normalized_url"]
 
 
-def fetch_github_source_with_meta(github_url: str, output_dir: str = "samples") -> Tuple[Path, Dict[str, Any]]:
+def fetch_github_source_with_meta(
+    github_url: str,
+    output_dir: str = "samples",
+    max_file_size_bytes: int = DEFAULT_MAX_SOURCE_SIZE_BYTES
+) -> Tuple[Path, Dict[str, Any]]:
     """
     Fetches raw Python source code from a GitHub URL, resolves relative package imports
     for standalone sandbox execution, validates AST syntax, saves into `samples/github_<repo>_<filename>.py`,
     and returns (Path, metadata_dict).
+
+    Enforces:
+      - SSRF redirect protection via SafeGitHubRedirectHandler
+      - Bounded source downloads up to max_file_size_bytes
+      - Zero partial file retention on error
 
     Supports:
       - Standard GitHub blob URLs (e.g., https://github.com/psf/requests/blob/main/src/requests/models.py)
@@ -195,19 +213,25 @@ def fetch_github_source_with_meta(github_url: str, output_dir: str = "samples") 
     clean_repo = re.sub(r"[^\w\-]", "_", repo)
     clean_filename = re.sub(r"[^\w\-\.]", "_", filename)
 
-    # Download source content from raw_url (guaranteed to contain only the resolved URL)
+    # Validate destination host against SSRF policy
+    validate_url_hostname(raw_url)
+
+    # Download source content with safe opener and bounded read
     req = urllib.request.Request(
         raw_url,
         headers={"User-Agent": "TestForge/1.0 (Autonomous Systems Ingestion)"}
     )
+    opener = build_safe_opener()
     try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            content_bytes = resp.read()
+        with opener.open(req, timeout=15) as resp:
+            content_bytes = bounded_read(resp, max_bytes=max_file_size_bytes)
             content = content_bytes.decode("utf-8", errors="replace")
     except urllib.error.HTTPError as http_err:
         raise RuntimeError(
             f"Failed to fetch GitHub file from {raw_url} (HTTP {http_err.code}: {http_err.reason})"
         ) from http_err
+    except (SSRFSecurityError, PayloadTooLargeError):
+        raise
     except Exception as exc:
         raise RuntimeError(f"Network error fetching GitHub file: {exc}") from exc
 
@@ -227,7 +251,7 @@ def fetch_github_source_with_meta(github_url: str, output_dir: str = "samples") 
     except Exception as exc:
         raise ValueError(f"Failed to parse AST of fetched file: {exc}") from exc
 
-    # Save into target path
+    # Save into target path (only after bounded read and AST validation succeed)
     out_dir = Path(output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     target_path = out_dir / f"github_{clean_repo}_{clean_filename}"
@@ -443,12 +467,21 @@ class TargetManagerAgent:
     # --------------------------------------------------------------------------
     # Mode C: Direct GitHub URL Ingestion
     # --------------------------------------------------------------------------
-    def ingest_github(self, github_url: str, output_dir: str = "samples") -> Tuple[Path, IngestionAnalysis]:
+    def ingest_github(
+        self,
+        github_url: str,
+        output_dir: str = "samples",
+        max_file_size_bytes: int = DEFAULT_MAX_SOURCE_SIZE_BYTES
+    ) -> Tuple[Path, IngestionAnalysis]:
         """
         Ingests and validates an arbitrary Python source file directly from a public GitHub URL.
         Returns the saved file path and complete IngestionAnalysis with robust GitHub metadata.
         """
-        saved_path, meta = fetch_github_source_with_meta(github_url, output_dir=output_dir)
+        saved_path, meta = fetch_github_source_with_meta(
+            github_url,
+            output_dir=output_dir,
+            max_file_size_bytes=max_file_size_bytes
+        )
         analysis = self.ingest_file(str(saved_path))
         meta["ast_function_count"] = analysis.ast_function_count
         meta["ast_class_count"] = analysis.ast_class_count

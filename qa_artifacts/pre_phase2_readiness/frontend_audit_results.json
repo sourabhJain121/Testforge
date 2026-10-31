@@ -1,0 +1,192 @@
+[
+  {
+    "control_id": "CTL-01",
+    "name": "Desktop Landing Page",
+    "selector": "body",
+    "type": "View",
+    "action": "Navigate to :8000",
+    "result": "Dashboard rendered with header, tabs, and workspace",
+    "status": "PASS",
+    "screenshot": "01_desktop_landing.png"
+  },
+  {
+    "control_id": "CTL-02",
+    "name": "A2A AgentCard Modal & Diagnostic Action",
+    "selector": "#btn-a2a-card",
+    "type": "Modal/Button",
+    "action": "Click A2A Card -> Run Test -> Close",
+    "result": "Rendered valid AgentCard (v0.3.0) and returned 200 OK test response",
+    "status": "PASS",
+    "screenshot": "02_a2a_card_modal.png"
+  },
+  {
+    "control_id": "CTL-03",
+    "name": "FastMCP Tools Modal & Stdio Tool Execution",
+    "selector": "#btn-mcp-status",
+    "type": "Modal/Button",
+    "action": "Click MCP Tools -> Run Tool Test -> Close",
+    "result": "Rendered 4 FastMCP registered tools and executed list_directory",
+    "status": "PASS",
+    "screenshot": "03_fastmcp_tools_modal.png"
+  },
+  {
+    "control_id": "CTL-04",
+    "name": "System Settings Drawer",
+    "selector": "#btn-toggle-settings",
+    "type": "Modal/Drawer",
+    "action": "Click Settings -> Cancel",
+    "result": "Displayed engine modes, model selectors, and reflection sliders",
+    "status": "PASS",
+    "screenshot": "04_settings_drawer.png"
+  },
+  {
+    "control_id": "CTL-05",
+    "name": "Mode A Tab",
+    "selector": "#nav-mode-a",
+    "type": "Navigation Tab",
+    "action": "Click tab",
+    "result": "Mode A Tab panel rendered active",
+    "status": "PASS",
+    "screenshot": "05_tab_mode_a.png"
+  },
+  {
+    "control_id": "CTL-06",
+    "name": "Mode B Tab",
+    "selector": "#nav-mode-b",
+    "type": "Navigation Tab",
+    "action": "Click tab",
+    "result": "Mode B Tab panel rendered active",
+    "status": "PASS",
+    "screenshot": "06_tab_mode_b.png"
+  },
+  {
+    "control_id": "CTL-07",
+    "name": "Mode C Tab",
+    "selector": "#nav-mode-c",
+    "type": "Navigation Tab",
+    "action": "Click tab",
+    "result": "Mode C Tab panel rendered active",
+    "status": "PASS",
+    "screenshot": "07_tab_mode_c.png"
+  },
+  {
+    "control_id": "CTL-08",
+    "name": "Blast Radius Tab",
+    "selector": "#nav-blast",
+    "type": "Navigation Tab",
+    "action": "Click tab",
+    "result": "Blast Radius Tab panel rendered active",
+    "status": "PASS",
+    "screenshot": "08_tab_blast.png"
+  },
+  {
+    "control_id": "CTL-09",
+    "name": "Hardening Lab Tab",
+    "selector": "#nav-hardening",
+    "type": "Navigation Tab",
+    "action": "Click tab",
+    "result": "Hardening Lab Tab panel rendered active",
+    "status": "PASS",
+    "screenshot": "09_tab_hardening.png"
+  },
+  {
+    "control_id": "CTL-10",
+    "name": "Wiretap Tab",
+    "selector": "#nav-wiretap",
+    "type": "Navigation Tab",
+    "action": "Click tab",
+    "result": "Wiretap Tab panel rendered active",
+    "status": "PASS",
+    "screenshot": "10_tab_wiretap.png"
+  },
+  {
+    "control_id": "CTL-11",
+    "name": "Telemetry Tab",
+    "selector": "#nav-telemetry",
+    "type": "Navigation Tab",
+    "action": "Click tab",
+    "result": "Telemetry Tab panel rendered active",
+    "status": "PASS",
+    "screenshot": "11_tab_telemetry.png"
+  },
+  {
+    "control_id": "CTL-12",
+    "name": "Benchmarks Tab",
+    "selector": "#nav-benchmark",
+    "type": "Navigation Tab",
+    "action": "Click tab",
+    "result": "Benchmarks Tab panel rendered active",
+    "status": "PASS",
+    "screenshot": "12_tab_benchmark.png"
+  },
+  {
+    "control_id": "CTL-13",
+    "name": "Checkpoints Tab",
+    "selector": "#nav-checkpoints",
+    "type": "Navigation Tab",
+    "action": "Click tab",
+    "result": "Checkpoints Tab panel rendered active",
+    "status": "PASS",
+    "screenshot": "13_tab_checkpoints.png"
+  },
+  {
+    "control_id": "CTL-14",
+    "name": "Workspace Sample Loader",
+    "selector": "#btn-load-sample",
+    "type": "Button/Select",
+    "action": "Select banking.py -> Load Sample",
+    "result": "Loaded banking.py AST, extracted functions and source code",
+    "status": "PASS",
+    "screenshot": "14_banking_sample_loaded.png"
+  },
+  {
+    "control_id": "CTL-15",
+    "name": "Checkpoint Deterministic Diff Inspector",
+    "selector": "#btn-subtab-diff",
+    "type": "Subtab",
+    "action": "Click Deterministic Diff subtab",
+    "result": "Displayed side-by-side AST and state diff",
+    "status": "PASS",
+    "screenshot": "15_checkpoint_diff_view.png"
+  },
+  {
+    "control_id": "CTL-16",
+    "name": "Network Port Isolation Audit",
+    "selector": "network",
+    "type": "Security Check",
+    "action": "Inspect network requests",
+    "result": "Zero requests to port 8501 detected",
+    "status": "PASS",
+    "screenshot": "None"
+  },
+  {
+    "control_id": "CTL-VP-LAPTOP",
+    "name": "Responsive Laptop (1280x800)",
+    "selector": "window",
+    "type": "Viewport",
+    "action": "Set 1280x800",
+    "result": "Layout fluidly adapts without horizontal overflow or clipping",
+    "status": "PASS",
+    "screenshot": "16_responsive_laptop_1280x800.png"
+  },
+  {
+    "control_id": "CTL-VP-TABLET",
+    "name": "Responsive Tablet (768x1024)",
+    "selector": "window",
+    "type": "Viewport",
+    "action": "Set 768x1024",
+    "result": "Layout fluidly adapts without horizontal overflow or clipping",
+    "status": "PASS",
+    "screenshot": "17_responsive_tablet_768x1024.png"
+  },
+  {
+    "control_id": "CTL-VP-MOBILE",
+    "name": "Responsive Mobile (390x844)",
+    "selector": "window",
+    "type": "Viewport",
+    "action": "Set 390x844",
+    "result": "Layout fluidly adapts without horizontal overflow or clipping",
+    "status": "PASS",
+    "screenshot": "18_responsive_mobile_390x844.png"
+  }
+]

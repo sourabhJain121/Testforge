@@ -25,6 +25,16 @@ from typing import List, Dict, Any, Optional, Tuple
 from mcp.server.fastmcp import FastMCP
 
 from testforge.security import redact_sensitive_data
+from testforge.network_security import (
+    ALLOWED_GITHUB_HOSTS,
+    DEFAULT_MAX_SOURCE_SIZE_BYTES,
+    DEFAULT_MAX_REDIRECTS,
+    validate_url_hostname,
+    build_safe_opener,
+    bounded_read,
+    SSRFSecurityError,
+    PayloadTooLargeError,
+)
 
 # Blocked sensitive filename patterns
 FORBIDDEN_NAME_PATTERNS = {
@@ -32,6 +42,8 @@ FORBIDDEN_NAME_PATTERNS = {
     "id_rsa", "id_dsa", "id_ecdsa", "id_ed25519"
 }
 FORBIDDEN_EXTENSIONS = {".pem", ".key", ".pfx", ".p12"}
+
+DEFAULT_MAX_TOTAL_BYTES: int = 10 * 1024 * 1024  # 10 MB default limit for GitHub API JSON payloads
 
 
 def _is_path_safe(requested_path: str, root_dir: Path) -> Tuple[bool, Path, Optional[str]]:
@@ -160,21 +172,39 @@ def create_filesystem_server(permitted_root: str | Path) -> FastMCP:
     return server
 
 
-def create_github_server(github_token: Optional[str] = None) -> FastMCP:
+def create_github_server(
+    github_token: Optional[str] = None,
+    max_file_size_bytes: int = DEFAULT_MAX_SOURCE_SIZE_BYTES,
+    max_total_bytes: int = DEFAULT_MAX_TOTAL_BYTES,
+    opener: Optional[urllib.request.OpenerDirector] = None,
+) -> FastMCP:
     """Creates a FastMCP server exposing read-only GitHub repository tools."""
     token = github_token or os.environ.get("GITHUB_PERSONAL_ACCESS_TOKEN") or os.environ.get("GITHUB_TOKEN")
     server = FastMCP("testforge-github")
+    safe_opener = opener if opener is not None else build_safe_opener(
+        allowed_hosts={"api.github.com", "raw.githubusercontent.com", "objects.githubusercontent.com"}
+    )
 
-    def _make_github_request(url: str) -> Dict[str, Any]:
+    def _make_github_request(url: str, max_bytes: int = max_total_bytes) -> Dict[str, Any]:
+        """
+        Executes a GET request strictly constrained to authorized GitHub API endpoints.
+        Enforces SSRF redirect protection, hostname validation, and bounded streaming.
+        """
+        # Validate initial target host against SSRF policy
+        validate_url_hostname(url, allowed_hosts={"api.github.com", "raw.githubusercontent.com"})
+
         req = urllib.request.Request(url)
         req.add_header("User-Agent", "TestForge-Agentic-MCP/1.0")
         req.add_header("Accept", "application/vnd.github.v3+json")
         if token:
             req.add_header("Authorization", f"Bearer {token}")
         try:
-            with urllib.request.urlopen(req, timeout=10.0) as resp:
-                data = resp.read().decode("utf-8")
-                return json.loads(data)
+            with safe_opener.open(req, timeout=10.0) as resp:
+                data_bytes = bounded_read(resp, max_bytes=max_bytes)
+                data_str = data_bytes.decode("utf-8", errors="replace")
+                return json.loads(data_str)
+        except (SSRFSecurityError, PayloadTooLargeError):
+            raise
         except urllib.error.HTTPError as e:
             if e.code == 401 or e.code == 403:
                 rate_limit_reset = e.headers.get("X-RateLimit-Reset", "unknown")
@@ -195,7 +225,7 @@ def create_github_server(github_token: Optional[str] = None) -> FastMCP:
         Retrieves public repository metadata (name, description, default_branch, stargazers_count).
         """
         url = f"https://api.github.com/repos/{urllib.parse.quote(owner)}/{urllib.parse.quote(repo)}"
-        data = _make_github_request(url)
+        data = _make_github_request(url, max_bytes=max_total_bytes)
         return {
             "full_name": data.get("full_name"),
             "description": data.get("description"),
@@ -210,12 +240,22 @@ def create_github_server(github_token: Optional[str] = None) -> FastMCP:
         """
         Retrieves file contents from a repository.
         Returns decoded text, size, and SHA.
+        Bounded by max_file_size_bytes to prevent memory exhaustion.
         """
         url = f"https://api.github.com/repos/{urllib.parse.quote(owner)}/{urllib.parse.quote(repo)}/contents/{urllib.parse.quote(path)}?ref={urllib.parse.quote(ref)}"
-        data = _make_github_request(url)
+        data = _make_github_request(url, max_bytes=max_total_bytes)
         content_b64 = data.get("content", "")
+        # Protect against memory inflation: verify base64 length before decoding
+        if len(content_b64) > int(max_file_size_bytes * 1.4) + 1024:
+            raise PayloadTooLargeError(
+                f"Base64 encoded content size ({len(content_b64)} chars) exceeds maximum allowable limit for {max_file_size_bytes} bytes."
+            )
         import base64
         decoded_bytes = base64.b64decode(content_b64)
+        if len(decoded_bytes) > max_file_size_bytes:
+            raise PayloadTooLargeError(
+                f"Decoded file size ({len(decoded_bytes)} bytes) exceeds maximum allowable limit of {max_file_size_bytes} bytes."
+            )
         return {
             "name": data.get("name"),
             "path": data.get("path"),
@@ -230,7 +270,7 @@ def create_github_server(github_token: Optional[str] = None) -> FastMCP:
         Searches GitHub repositories by query string.
         """
         url = f"https://api.github.com/search/repositories?q={urllib.parse.quote(query)}&per_page={max(1, min(limit, 10))}"
-        data = _make_github_request(url)
+        data = _make_github_request(url, max_bytes=max_total_bytes)
         items = data.get("items", [])
         return [
             {
@@ -250,7 +290,7 @@ def create_github_server(github_token: Optional[str] = None) -> FastMCP:
         """
         rec_flag = "1" if recursive else "0"
         url = f"https://api.github.com/repos/{urllib.parse.quote(owner)}/{urllib.parse.quote(repo)}/git/trees/{urllib.parse.quote(ref)}?recursive={rec_flag}"
-        data = _make_github_request(url)
+        data = _make_github_request(url, max_bytes=max_total_bytes)
         return {
             "sha": data.get("sha"),
             "truncated": data.get("truncated", False),

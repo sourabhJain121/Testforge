@@ -1,0 +1,90 @@
+[
+  {
+    "target": "FastAPI Dashboard (:8000)",
+    "device": "desktop",
+    "width": 1440,
+    "height": 900,
+    "description": "Desktop Monitor (1440x900)",
+    "screenshot_viewport": "resp_fastapi_desktop_1440x900.png",
+    "screenshot_full": "resp_fastapi_desktop_1440x900_full.png",
+    "layout_status": "PASS",
+    "notes": "Header adapts gracefully, glassmorphism containers fluidly scale, no clipping"
+  },
+  {
+    "target": "FastAPI Dashboard (:8000)",
+    "device": "laptop",
+    "width": 1280,
+    "height": 800,
+    "description": "Standard Laptop (1280x800)",
+    "screenshot_viewport": "resp_fastapi_laptop_1280x800.png",
+    "screenshot_full": "resp_fastapi_laptop_1280x800_full.png",
+    "layout_status": "PASS",
+    "notes": "Header adapts gracefully, glassmorphism containers fluidly scale, no clipping"
+  },
+  {
+    "target": "FastAPI Dashboard (:8000)",
+    "device": "tablet",
+    "width": 768,
+    "height": 1024,
+    "description": "Tablet Portrait (768x1024)",
+    "screenshot_viewport": "resp_fastapi_tablet_768x1024.png",
+    "screenshot_full": "resp_fastapi_tablet_768x1024_full.png",
+    "layout_status": "PASS",
+    "notes": "Header adapts gracefully, glassmorphism containers fluidly scale, no clipping"
+  },
+  {
+    "target": "FastAPI Dashboard (:8000)",
+    "device": "mobile",
+    "width": 390,
+    "height": 844,
+    "description": "Mobile Smartphone (390x844)",
+    "screenshot_viewport": "resp_fastapi_mobile_390x844.png",
+    "screenshot_full": "resp_fastapi_mobile_390x844_full.png",
+    "layout_status": "PASS",
+    "notes": "Header adapts gracefully, glassmorphism containers fluidly scale, no clipping"
+  },
+  {
+    "target": "Streamlit Workbench (:8501)",
+    "device": "desktop",
+    "width": 1440,
+    "height": 900,
+    "description": "Desktop Monitor (1440x900)",
+    "screenshot_viewport": "resp_streamlit_desktop_1440x900.png",
+    "screenshot_full": "resp_streamlit_desktop_1440x900_full.png",
+    "layout_status": "PASS",
+    "notes": "Sidebar auto-collapses on tablet/mobile, tabs wrap properly, main action button fluid"
+  },
+  {
+    "target": "Streamlit Workbench (:8501)",
+    "device": "laptop",
+    "width": 1280,
+    "height": 800,
+    "description": "Standard Laptop (1280x800)",
+    "screenshot_viewport": "resp_streamlit_laptop_1280x800.png",
+    "screenshot_full": "resp_streamlit_laptop_1280x800_full.png",
+    "layout_status": "PASS",
+    "notes": "Sidebar auto-collapses on tablet/mobile, tabs wrap properly, main action button fluid"
+  },
+  {
+    "target": "Streamlit Workbench (:8501)",
+    "device": "tablet",
+    "width": 768,
+    "height": 1024,
+    "description": "Tablet Portrait (768x1024)",
+    "screenshot_viewport": "resp_streamlit_tablet_768x1024.png",
+    "screenshot_full": "resp_streamlit_tablet_768x1024_full.png",
+    "layout_status": "PASS",
+    "notes": "Sidebar auto-collapses on tablet/mobile, tabs wrap properly, main action button fluid"
+  },
+  {
+    "target": "Streamlit Workbench (:8501)",
+    "device": "mobile",
+    "width": 390,
+    "height": 844,
+    "description": "Mobile Smartphone (390x844)",
+    "screenshot_viewport": "resp_streamlit_mobile_390x844.png",
+    "screenshot_full": "resp_streamlit_mobile_390x844_full.png",
+    "layout_status": "PASS",
+    "notes": "Sidebar auto-collapses on tablet/mobile, tabs wrap properly, main action button fluid"
+  }
+]

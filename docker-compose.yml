@@ -22,6 +22,8 @@ services:
       - testforge-net
 
   dashboard:
+    profiles:
+      - legacy-streamlit
     build:
       context: .
       dockerfile: Dockerfile

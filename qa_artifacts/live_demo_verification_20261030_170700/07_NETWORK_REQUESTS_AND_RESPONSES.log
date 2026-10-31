@@ -1,0 +1,73 @@
+[
+  {
+    "endpoint": "/healthz",
+    "status": 200,
+    "response": {
+      "status": "healthy",
+      "service": "testforge-backend",
+      "version": "2.0.0",
+      "timestamp": 1793360465.4982169
+    }
+  },
+  {
+    "endpoint": "/.well-known/agent-card.json",
+    "status": 200,
+    "response": {
+      "capabilities": {
+        "pushNotifications": false,
+        "streaming": false
+      },
+      "defaultInputModes": [
+        "text",
+        "json"
+      ],
+      "defaultOutputModes": [
+        "text",
+        "json"
+      ],
+      "description": "Autonomous Agentic Unit Test Hardening System powered by Google ADK and CrewAI.",
+      "name": "testforge-agent-system",
+      "preferredTransport": "JSONRPC",
+      "protocolVersion": "0.3.0",
+      "provider": {
+        "organization": "TestForge Autonomous Systems",
+        "url": "https://github.com/sourabhJain121/Testforge"
+      },
+      "skills": [
+        {
+          "description": "Generates syntactically valid Python unit tests targeting surviving mutants using Google ADK.",
+          "id": "unit-test-generation",
+          "name": "Unit Test Generation",
+          "tags": [
+            "testing",
+            "adk",
+            "generation",
+            "python"
+          ]
+        },
+        {
+          "description": "Performs adversarial critique of test suites and surviving mutation diffs using CrewAI.",
+          "id": "mutation-critique",
+          "name": "Mutation Critique",
+          "tags": [
+            "critique",
+            "crewai",
+            "mutation-testing"
+          ]
+        },
+        {
+          "description": "Executes a complete generator-critic hardening cycle updating the typed Blackboard.",
+          "id": "hardening-workflow",
+          "name": "Hardening Workflow",
+          "tags": [
+            "hardening",
+            "workflow",
+            "blackboard"
+          ]
+        }
+      ],
+      "url": "http://127.0.0.1:8000/",
+      "version": "1.0.0"
+    }
+  }
+]

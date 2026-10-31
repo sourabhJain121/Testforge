@@ -1,0 +1,87 @@
+{
+  "target_name": "discount",
+  "target_path": "/Users/sourabh/TestForge/samples/discount.py",
+  "lines_of_code": 20,
+  "discovered_callables": [
+    {
+      "name": "calculate_discount",
+      "scope": "module",
+      "parent_class": null,
+      "method_type": null,
+      "eligible": true,
+      "reason": null
+    }
+  ],
+  "classes": [],
+  "synthesis_metrics_r1": {
+    "total_tests": 11,
+    "meaningful_assertions": 11,
+    "invariant_assertions": 0,
+    "boundary_tests": 9,
+    "negative_tests": 0,
+    "covered_callables": [
+      "calculate_discount"
+    ],
+    "skipped_callables": []
+  },
+  "synthesis_metrics_r2": {
+    "total_tests": 13,
+    "meaningful_assertions": 13,
+    "invariant_assertions": 0,
+    "boundary_tests": 9,
+    "negative_tests": 0,
+    "covered_callables": [
+      "calculate_discount"
+    ],
+    "skipped_callables": [],
+    "mutants_targeted": [
+      "MUT_DIFF_1",
+      "MUT_DIFF_2"
+    ]
+  },
+  "mutation_round1": {
+    "generated": 19,
+    "killed": 17,
+    "survived": 2,
+    "timeout": 0,
+    "score": 89.47
+  },
+  "mutation_round2": {
+    "generated": 19,
+    "killed": 17,
+    "survived": 2,
+    "timeout": 0,
+    "score": 89.47
+  },
+  "orchestrator_final": {
+    "iterations_executed": 1,
+    "mutants_generated": 19,
+    "mutants_killed": 17,
+    "mutants_survived": 2,
+    "final_mutation_score": 89.47,
+    "tests_passed": 11,
+    "total_tests": 11
+  },
+  "provenance": {
+    "candidate_sha256": "eaa41e0b1e28e872af445fd7060fad6171d9975373d7b9666fba62c3b086098c",
+    "validated_sha256": "eaa41e0b1e28e872af445fd7060fad6171d9975373d7b9666fba62c3b086098c",
+    "matches_candidate": true,
+    "refined_candidate_sha256": "3e39c636c7fda490bd27c2caac849a36bdcbe2d4d431d176964cd0c41fb34124",
+    "refined_validated_sha256": "3e39c636c7fda490bd27c2caac849a36bdcbe2d4d431d176964cd0c41fb34124",
+    "matches_refined": true
+  },
+  "surviving_mutants_r2_summary": [
+    {
+      "id": "MUT_BOUNDARY_SWAP_003",
+      "operator": "BOUNDARY_SWAP",
+      "line": 9,
+      "diff": "--- target.py (original)\n+++ target.py (mutant_3)\n@@ -6,15 +6,12 @@\n     \"\"\"\n\n     Calculates final price after applying volume and membership discounts.\n\n     \"\"\"\n\n-    if price <= 0.0:\n\n+    if price < 0.0:\n\n         return 0.0\n\n-\n\n     discount_rate = 0.0\n\n     if quantity >= 5:\n\n-        discount_rate = discount_rate + 0.10\n\n-\n\n+        discount_rate = discount_rate + 0.1\n\n     if is_member:\n\n-        discount_rate = discount_rate + 0.10\n\n-\n\n+        discount_rate = discount_rate + 0.1\n\n     final_price = price * (1.0 - discount_rate)\n\n-    return round(final_price, 2)\n\n+    return round(final_price, 2)"
+    },
+    {
+      "id": "MUT_MATH_FUNC_018",
+      "operator": "MATH_FUNC",
+      "line": 20,
+      "diff": "--- target.py (original)\n+++ target.py (mutant_18)\n@@ -8,13 +8,10 @@\n     \"\"\"\n\n     if price <= 0.0:\n\n         return 0.0\n\n-\n\n     discount_rate = 0.0\n\n     if quantity >= 5:\n\n-        discount_rate = discount_rate + 0.10\n\n-\n\n+        discount_rate = discount_rate + 0.1\n\n     if is_member:\n\n-        discount_rate = discount_rate + 0.10\n\n-\n\n+        discount_rate = discount_rate + 0.1\n\n     final_price = price * (1.0 - discount_rate)\n\n-    return round(final_price, 2)\n\n+    return round(final_price, 1)"
+    }
+  ]
+}

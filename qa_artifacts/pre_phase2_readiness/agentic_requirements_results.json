@@ -1,0 +1,92 @@
+{
+  "blackboard": {
+    "status": "VERIFIED",
+    "implementation": "testforge/blackboard.py (Blackboard)",
+    "partitions": [
+      "target",
+      "mutant",
+      "critic",
+      "suite",
+      "metrics"
+    ]
+  },
+  "mcp": {
+    "status": "VERIFIED",
+    "implementation": "testforge/mcp_server.py & testforge/mcp_client.py",
+    "total_tools": 4,
+    "servers": [
+      "testforge-filesystem",
+      "testforge-github"
+    ]
+  },
+  "pydantic": {
+    "status": "VERIFIED",
+    "models": [
+      "IngestionAnalysis",
+      "MutantRecord",
+      "HardeningRunPayload",
+      "AgentCard",
+      "CheckpointRecord"
+    ]
+  },
+  "design_patterns": {
+    "status": "VERIFIED",
+    "patterns": [
+      "Blackboard Pattern (shared partitioned state with subscription callbacks)",
+      "Supervisor-Worker Pattern (TargetManagerAgent supervising ingestion & analysis)",
+      "Critic-Reflector Pattern (CrewAICriticAgent analyzing surviving mutants)",
+      "4-Tier Fallback Chain (Gemini -> OpenRouter -> Ollama -> Deterministic Synthesizer)"
+    ]
+  },
+  "callbacks": {
+    "status": "VERIFIED",
+    "implementation": "testforge/callbacks.py (CallbackRegistry, EventType, LifecycleEvent)"
+  },
+  "a2a": {
+    "status": "VERIFIED",
+    "implementation": "testforge/a2a_protocol.py & testforge/a2a.py",
+    "card_endpoint": "/.well-known/agent-card.json",
+    "protocol_version": "0.3.0"
+  },
+  "crewai_adk": {
+    "status": "VERIFIED",
+    "crewai_version": "1.15.28",
+    "modules": [
+      "testforge/crew_critic.py",
+      "testforge/adk_generator.py",
+      "testforge/adk_engine.py"
+    ]
+  },
+  "security": {
+    "status": "VERIFIED",
+    "implementation": "testforge/prompt_guard.py & testforge/network_security.py",
+    "defenses": [
+      "SSRF IP Blocking",
+      "Hostname Allowlist",
+      "Indirect Prompt Injection Scanner",
+      "5MB Download Bounds"
+    ]
+  },
+  "observability": {
+    "status": "VERIFIED",
+    "trace_file": "testforge_trace.jsonl",
+    "total_traces": 33389,
+    "event_types": [
+      "LIFECYCLE_STATE_CHANGE",
+      "AGENT_HANDOFF",
+      "LLM_INFERENCE_TELEMETRY",
+      "MUTATION_EVALUATION"
+    ]
+  },
+  "benchmarking": {
+    "status": "VERIFIED",
+    "scenarios": [
+      "baseline"
+    ],
+    "report_file": "benchmark_results.json"
+  },
+  "cloud_deployment": {
+    "status": "PARTIALLY VERIFIED",
+    "reason": "Container definitions, multi-stage Dockerfile, and health probes are 100% verified, but no live public URL deployment is claimed per academic evaluation guidelines."
+  }
+}
