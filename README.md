@@ -1,435 +1,256 @@
 # TestForge: Autonomous Agentic Unit Test Hardening System
 
-> **Course**: CSE3101 - Agentic AI (16 Weeks, Project-Based Learning)  
+> **Course**: CSE3101 - Agentic AI (16 Weeks, Phase-3 Final Evaluation)  
 > **Authors**: Sourabh & Shreshth  
-> **Target Platform**: macOS (Apple Silicon M-Series Optimized, arm64, Apple MLX Neural Acceleration)  
-> **Repository**: [sourabhJain121/Testforge](https://github.com/sourabhJain121/Testforge)<br>
-> **System Architecture**: FastAPI v2.0.0 Backend + Modern Glassmorphic Web App + Streamlit Lab + 4-Tier Hybrid LLM Cascade
+> **Target Platform**: macOS (Apple Silicon M-Series Optimized, arm64) & Linux Container  
+> **Repository**: [sourabhJain121/Testforge](https://github.com/sourabhJain121/Testforge)  
+> **Dual-Framework Agentic Core**: Google ADK v1.14.1 + CrewAI via Official A2A Wire Protocol (v0.3.0)  
+> **Storage & Protocol**: SQLite WAL Checkpoints, Model Context Protocol (FastMCP), W3C OpenTelemetry Traces  
 
 ---
 
 ## 1. Executive Summary
 
-**TestForge** is an autonomous multi-agent software engineering system engineered to discover, diagnose, and harden weak unit test suites for Python applications. While conventional software development pipelines rely on **statement / line coverage** (a metric trivially satisfied by hollow tests lacking assertion depth), TestForge formulates software verification as an **adversarial multi-agent zero-sum game**.
+**TestForge** is an enterprise-grade autonomous multi-agent software engineering platform that automatically discovers, diagnoses, and hardens weak unit test suites for Python applications. While traditional continuous integration pipelines measure superficial **statement/line coverage** (a metric trivially satisfied by hollow tests that execute code paths without verifying state or boundaries), TestForge formulates software verification as an **adversarial multi-agent consensus game**.
 
-By combining **deterministic Abstract Syntax Tree (AST) fault injection**, **isolated subprocess execution guardrails**, an **Apple Silicon MLX GPU neural mutant classifier**, and an **iterative self-reflection loop** backed by a **4-tier hybrid failover LLM cascade**, TestForge systematically exposes test suite vulnerabilities and synthesizes bulletproof boundary assertions until target mutation kill scores ($\ge 85\%$) are satisfied.
+TestForge unifies **Google Agent Development Kit (ADK)** for primary stateful orchestration with **CrewAI** for adversarial test quality critique, coordinated over an **Official Agent2Agent (A2A v0.3.0)** wire protocol. The system pairs deterministic **Abstract Syntax Tree (AST) fault injection**, **isolated subprocess and real Docker container sandboxing**, **SQLite WAL transactional checkpoints**, and **bytecode instruction normalization** to eliminate test suite vulnerabilities and drive mutation kill scores to mathematical limits.
 
 ```mermaid
 flowchart TD
-    subgraph S1["1. Ingestion & AST Analysis (TargetManagerAgent)"]
-        A1["Mode A: Local File / Workspace Upload"] --> B["AST Static Inspector & Call Graph Visitor"]
+    subgraph INGEST["1. Ingestion & AST Analysis (Google ADK TargetManagerAgent)"]
+        A1["Mode A: Local Filesystem / Upload"] --> B["AST Static Inspector & Call Graph Visitor"]
         A2["Mode B: AI Natural Language Synthesis"] --> B
         A3["Mode C: Direct GitHub URL Fetch"] --> B
         B --> BR["Blast Radius & Dependency Risk Analyzer"]
     end
 
-    subgraph S2["2. Clean Baseline Verification"]
-        BR --> C["Subprocess Sandbox (5.0s Timeout Guardrail)"]
-        C -->|Valid Baseline| D["AST Mutation Engine (8 Mutation Classes)"]
-        C -->|Syntax Error| SR["Autonomous Self-Repair Prompt"]
-        SR --> C
+    subgraph ADK_ORCH["2. Stateful Blackboard & Google ADK Orchestrator"]
+        BR --> BB[("SQLite WAL Persistent Blackboard<br/>8 Partitioned Spaces")]
+        BB <--> SUP["SupervisorAgent (Google ADK Runner)"]
+        SUP --> PLAN["TestPlanningAgent (Google ADK)"]
+        PLAN --> GEN["TestGeneratorAgent (Google ADK)"]
     end
 
-    subgraph S3["3. Apple Silicon Hardware Acceleration"]
-        D -->|Concurrent Mutants| E["ProcessPoolExecutor (Parallel Sandbox)"]
-        E --> F["Mutant Triage Model (Apple MLX GPU Metal Shaders)"]
+    subgraph SANDBOX["3. Subprocess & Docker Sandboxing"]
+        GEN --> SB["Subprocess / Docker Sandbox<br/>(--network none, 5.0s Timeout)"]
+        SB -->|Pass@1 Clean Check| MUT["Deterministic AST Mutator<br/>(10 Mutation Operator Classes)"]
+        SB -.->|Syntax Violation| REP["ReflectionRepairAgent (Google ADK)"]
+        REP -.-> SB
     end
 
-    subgraph S4["4. Adversarial Reflection & Hardening Loop"]
-        F --> G{"Mutation Score >= Target Score (>= 85%)?"}
-        G -->|Yes| H["Export Standalone Hardened Test Suite (test_hardened.py)"]
-        G -->|No| I["AdversarialCriticAgent (Root-Cause Failure Diagnostics)"]
-        I -->|Prescriptive Directives + Unified Diff| J["TestGeneratorAgent (4-Tier Hybrid LLM Cascade)"]
-        J --> C
+    subgraph CRITIC["4. Distributed Adversarial Critic (CrewAI & A2A)"]
+        MUT --> PAR["ProcessPoolExecutor (Parallel Sandbox)"]
+        PAR -->|Surviving Mutant AST Diffs| A2A_WIRE["A2A Protocol Broker (v0.3.0)<br/>Cross-Process JSON-RPC"]
+        A2A_WIRE --> CRIT["MutationQualityCriticAgent (CrewAI)"]
+        CRIT -->|Prescriptive Directives| BB
     end
 
-    subgraph S5["5. Observability & Telemetry"]
-        E -.-> TR["testforge_trace.jsonl (Structured JSONL Telemetry)"]
-        J -.-> TR
-        I -.-> TR
-        BR -.-> TR
+    subgraph VERIFY["5. Formal Verification & Suite Optimization"]
+        BB --> HYP["Hypothesis Property Generator (@given)"]
+        BB --> EQ["Bytecode Equivalence Judge (dis AST + LLM)"]
+        BB --> MIN["TestSuiteMinimizer (Greedy Set Cover)"]
+        MIN --> EXP["Export Standalone Suite (test_hardened.py)<br/>+ JUnit XML & OASIS SARIF v2.1.0"]
+    end
+
+    subgraph OBS["6. Telemetry & Governance"]
+        PAR -.-> OTEL["OpenTelemetry Distributed Tracing (W3C)"]
+        CRIT -.-> OTEL
+        EXP --> GATE["Human Approval Gate (Repo Writes & PRs)"]
     end
 ```
 
 ---
 
-## 2. Key Architectural Pillars
+## 2. Handout Requirements Traceability Matrix
 
-### 1. Multi-Agent State Graph Orchestration
-- **`TargetManagerAgent` (Supervisor)**: Orchestrates target acquisition across three ingestion modes (local filesystem, autonomous prompt-based synthesis, and direct GitHub repo import). Validates syntax and generates standalone execution harnesses.
-- **`TestGeneratorAgent` (Synthesizer)**: Employs dynamic few-shot prompting to construct focused boundary-condition tests, specifically targeting surviving mutant AST unified diffs.
-- **`AdversarialCriticAgent` (Adversary)**: Conducts root-cause failure analysis on surviving mutants, identifying missing boundary assertions and passing targeted guidance back into the generator prompt.
+Every requirement from the Coursework Specification (Features F1 through F9) and Phase-3 Evaluation Rubric (C11 through C15) is implemented in clean production code and verified with empirical regression suites:
 
-### 2. 8-Class Deterministic AST Mutation Engine (`mutator.py`)
-Rather than crude string replacement, mutations are injected via native Python `ast.NodeTransformer` passes targeting exact syntactic nodes:
-1. **Comparison Inversion (`COMP_OP`)**: Inverts relational operators (`>` $\leftrightarrow$ `<=`, `==` $\leftrightarrow$ `!=`, `in` $\leftrightarrow$ `not in`, `is` $\leftrightarrow$ `is not`).
-2. **Boundary Relational Swaps (`BOUNDARY_SWAP`)**: Mutates boundary edges (`<` $\leftrightarrow$ `<=`, `>` $\leftrightarrow$ `>=`).
-3. **Off-By-One Numeric Shifts (`OFF_BY_ONE`)**: Shifts integer and float constants ($n \rightarrow n + 1$, $n \rightarrow n - 1$) in comparison boundaries.
-4. **Arithmetic Operator Swapping (`ARITH_OP`)**: Mutates operations (`+` $\leftrightarrow$ `-`, `*` $\leftrightarrow$ `//`, `*` $\leftrightarrow$ `**`).
-5. **Logical Connective Swaps (`LOGICAL_CONN`)**: Swaps boolean conjunctions (`and` $\leftrightarrow$ `or`).
-6. **Math Function & Precision Flips (`MATH_FUNC`)**: Mutates rounding precision (`round(x, 2)` $\rightarrow$ `round(x, 1)`) and strips absolute values (`abs(x)` $\rightarrow$ `x`).
-7. **Conditional Inversions (`COND_INV`)**: Negates branch predicates (`if x:` $\rightarrow$ `if not x:`).
-8. **Return Value Mutations (`RETURN_VAL`)**: Flips return values (`return True` $\rightarrow$ `return False`, `return x` $\rightarrow$ `return None`).
-
-Mutation site enumeration is performed deterministically using `MutationTransformer(target_node_id=0)` in inspection mode.
-
-### 3. 4-Tier Hybrid LLM Resilience Engine (`llm_client.py`)
-To prevent pipeline failures due to rate limits or network issues, TestForge implements an automatic 4-tier failover cascade:
-- **Tier 1 (Cloud Primary)**: Google GenAI (`gemini-3.6-flash`) via the official `google-genai` SDK with disabled Automatic Function Calling (AFC).
-- **Tier 2 (Cloud Secondary)**: OpenRouter Cloud API (`meta-llama/llama-3.3-70b-instruct` or `qwen/qwen-2.5-coder-32b-instruct`) via standard HTTPS payload.
-- **Tier 3 (Local Offline Engine)**: Local Ollama daemon (`qwen2.5-coder:7b` via `http://localhost:11434/api/generate` with auto-fallback to local weights like `qwen2.5:7b`). Features a non-blocking 0.8s daemon health check.
-- **Tier 4 (Deterministic AST Rule Synthesizer)**: Offline heuristic test synthesis guaranteeing zero unhandled pipeline crashes.
-- **Quota & Transient Error Handling**: Transparently catches `429 RESOURCE_EXHAUSTED` and transient `503 Service Unavailable`, logging `PROVIDER_FAILOVER` events to `testforge_trace.jsonl` and shifting down the cascade without pipeline termination.
-
-### 4. Apple Silicon Neural Acceleration & MLX Triage (`classifier.py`)
-- **Metal GPU Execution**: Utilizes Apple's MLX framework (`mlx.core`, `mlx.nn`) to execute a lightweight Multi-Layer Perceptron (MLP) directly on Apple Silicon GPU (`Device(gpu, 0)`).
-- **Mutant Difficulty Triage**: Vectorizes AST mutation type, normalized line location, diff size, and syntactic complexity into an 8-dimensional embedding to classify mutants as *trivial* or *subtle/hard*.
-- **Token Budget Steering**: Allows the multi-agent orchestrator to allocate higher token and iteration budgets to mathematically subtle mutants.
-
-### 5. Subprocess Isolation Sandbox (`sandbox.py`)
-- **Process Isolation**: Each test and mutant evaluation is executed in a detached subprocess using temporary files.
-- **Infinite Loop Defense**: Strict 5.0-second timeout limits neutralize mutation-induced infinite recursion or loops.
-- **Parallel Hardware Execution**: Sized dynamically for Apple Silicon (e.g., M2 Pro 10 cores, 8 parallel workers via `ProcessPoolExecutor`).
-- **Dual Metric Tracking**: Concurrently records true **Statement Coverage** (`pytest-cov` / `coverage.py`) and **Mutation Kill Score**.
-- **Self-Repair Safeguard**: In Step 2 clean-code baseline checks, if an LLM-synthesized test suite fails, an automated self-repair prompt is triggered; if the repair fails clean-target validation, it automatically falls back to deterministic AST synthesis.
-
-### 6. Static Blast Radius & Dependency Impact Analysis (`blast_analyzer.py`)
-- **`ASTCallGraphVisitor(ast.NodeVisitor)`**: Traverses module-level invocations, function definitions, and method calls to construct a bidirectional caller-callee adjacency graph.
-- **Recursive Caller & Callee Propagation**:
-  - **Upstream Callers**: Recursively identifies all parent functions whose execution paths depend on the target function.
-  - **Downstream Callees**: Recursively extracts all sub-routines executed by the target function.
-- **Impact Ratio & Risk Categorization**:
-  $$\text{Impact Ratio} = \frac{|\text{Affected Functions}|}{\max(1, |\text{Total Functions}|)}$$
-  Categorizes architectural risk: **LOW** ($<20\%$), **MEDIUM** ($20\%\text{--}50\%$), and **HIGH** ($>50\%$).
-- **Visual Call Graph & ASCII Tree**: Produces human-readable indented ASCII call trees and interactive Graphviz directed graphs for Streamlit and web UI inspection.
-
-### 7. Git Diff-Aware Targeted Hardening (`git_diff.py` & `mutator.py`)
-- **`GitDiffInspector`**: Executes `git diff -U0` via subprocess (falling back to `--cached` and `HEAD~1`) to parse unified diff chunk headers (`@@ -l,s +start,count @@`) and extract exact modified and added line numbers.
-- **Targeted Fault Injection**: `ASTMutator.mutate(source_code, target_lines=...)` and `generate_mutants(...)` accept an optional `target_lines` parameter. When passed, faults are injected *exclusively* into AST nodes whose line number resides within developer changes, optimizing reflection cycles and test suite generation for active PR diffs.
-
-### 8. ADK Tool-Use & Deliberation Architecture (`adk_engine.py` & `agents.py`)
-- **Standard Pydantic ADK Contracts**:
-  - `ToolDefinition`: Strongly-typed tool schemas with JSON Schema parameters.
-  - `ToolCallResult`: Standardized execution outcomes with execution status, return payloads, error strings, and latency metrics.
-  - `ADKContext`: Stateful per-iteration deliberation context maintaining active tools, memory, and reflection histories.
-- **Core Executable Tools**:
-  - `tool_execute_sandbox`: Executes candidate test suites against mutated code in detached subprocesses with timeout protection.
-  - `tool_compute_blast_radius`: Analyzes caller/callee trees and impact ratios.
-  - `tool_inspect_git_diff`: Extracts changed lines from git working trees.
-  - `tool_ast_audit`: Audits surviving mutant diffs and provides diagnostic feedback.
-- **Multi-Agent Deliberation**: `TestGeneratorAgent` and `AdversarialCriticAgent` invoke tools via `ADKToolRegistry.execute_tool(...)`, automatically logging every tool call to `testforge_trace.jsonl` under `event_type: "ADK_TOOL_CALL"`.
-
-### 9. Dual User Interface Serving Architecture
-- **FastAPI Backend (`server.py`) & Modern Glassmorphic Web App (`frontend/`)**:
-  - High-performance asynchronous REST API serving endpoints for target ingestion, git diffs, blast radius computation, agent wiretap logs, background job tracking, and standalone test exports.
-  - Modern HTML5/CSS3/Vanilla JS frontend with dynamic ambient glow orbs, live hardware and provider status pills, interactive diff inspection tables, and Monaco-style code viewers.
-- **Interactive Streamlit Web Dashboard (`app.py`)**:
-  - Data-science centric interface with collapsible inspection drawers, real-time Ollama status pings, and Graphviz call graph DAGs.
+| Handout Feature | Architectural Capability | Production Source File | Verification Test Suite | Status |
+| :--- | :--- | :--- | :--- | :---: |
+| **F1** | 8-Partition Atomic Blackboard Architecture | [`testforge/blackboard.py`](file:///Users/sourabh/TestForge/testforge/blackboard.py) | [`tests/test_blackboard.py`](file:///Users/sourabh/TestForge/tests/test_blackboard.py) | **PASS** |
+| **F2** | Dual Agentic Framework (Google ADK + CrewAI) | [`testforge/orchestrator.py`](file:///Users/sourabh/TestForge/testforge/orchestrator.py), [`testforge/agents.py`](file:///Users/sourabh/TestForge/testforge/agents.py) | [`tests/test_adk_production_path.py`](file:///Users/sourabh/TestForge/tests/test_adk_production_path.py) | **PASS** |
+| **F3** | Agent2Agent (A2A) Official Wire Protocol v0.3.0 | [`testforge/a2a.py`](file:///Users/sourabh/TestForge/testforge/a2a.py), [`testforge/a2a_protocol.py`](file:///Users/sourabh/TestForge/testforge/a2a_protocol.py) | [`tests/test_a2a_protocol.py`](file:///Users/sourabh/TestForge/tests/test_a2a_protocol.py) | **PASS** |
+| **F4** | ADK Deliberation, Callbacks & Output Guardrails | [`testforge/adk_callbacks.py`](file:///Users/sourabh/TestForge/testforge/adk_callbacks.py), [`testforge/security.py`](file:///Users/sourabh/TestForge/testforge/security.py) | [`tests/test_adk_callbacks.py`](file:///Users/sourabh/TestForge/tests/test_adk_callbacks.py) | **PASS** |
+| **F5** | FastMCP Client & Stdio Filesystem Server | [`testforge/mcp_server.py`](file:///Users/sourabh/TestForge/testforge/mcp_server.py), [`testforge/mcp_client.py`](file:///Users/sourabh/TestForge/testforge/mcp_client.py) | [`tests/test_testforge_mcp_server.py`](file:///Users/sourabh/TestForge/tests/test_testforge_mcp_server.py) | **PASS** |
+| **F6** | OpenTelemetry W3C Tracing & Telemetry | [`testforge/observability.py`](file:///Users/sourabh/TestForge/testforge/observability.py), [`testforge/logger.py`](file:///Users/sourabh/TestForge/testforge/logger.py) | [`tests/test_observability.py`](file:///Users/sourabh/TestForge/tests/test_observability.py) | **PASS** |
+| **F7** | Persistent Checkpoint Timeline & Semantic Diff | [`testforge/blackboard.py`](file:///Users/sourabh/TestForge/testforge/blackboard.py), [`testforge/checkpoint_diff.py`](file:///Users/sourabh/TestForge/testforge/checkpoint_diff.py) | [`tests/test_checkpoint_diff.py`](file:///Users/sourabh/TestForge/tests/test_checkpoint_diff.py) | **PASS** |
+| **F8** | Subprocess & Live Docker Sandbox Backend | [`testforge/sandbox.py`](file:///Users/sourabh/TestForge/testforge/sandbox.py), [`testforge/docker_sandbox.py`](file:///Users/sourabh/TestForge/testforge/docker_sandbox.py) | [`tests/test_sandbox_backend.py`](file:///Users/sourabh/TestForge/tests/test_sandbox_backend.py) | **PASS** |
+| **F9** | Standalone CLI, Containerization & CI/CD Probes | [`testforge/cli.py`](file:///Users/sourabh/TestForge/testforge/cli.py), [`server.py`](file:///Users/sourabh/TestForge/server.py) | [`tests/test_production_packaging_and_cli.py`](file:///Users/sourabh/TestForge/tests/test_production_packaging_and_cli.py) | **PASS** |
+| **C11** | Zero-Egress Privacy Mode & PII Scrubbing | [`testforge/privacy_mode.py`](file:///Users/sourabh/TestForge/testforge/privacy_mode.py) | [`tests/test_privacy_mode.py`](file:///Users/sourabh/TestForge/tests/test_privacy_mode.py) | **PASS** |
+| **C12** | Multimodal Vision FSM Requirement Derivation | [`testforge/multimodal_fsm.py`](file:///Users/sourabh/TestForge/testforge/multimodal_fsm.py) | [`tests/test_multimodal_fsm.py`](file:///Users/sourabh/TestForge/tests/test_multimodal_fsm.py) | **PASS** |
+| **C13** | Greedy Set Cover Test Suite Minimizer | [`testforge/minimizer.py`](file:///Users/sourabh/TestForge/testforge/minimizer.py) | [`tests/test_suite_minimizer.py`](file:///Users/sourabh/TestForge/tests/test_suite_minimizer.py) | **PASS** |
+| **C14** | Diff-Incremental Targeted Fault Mutation | [`testforge/diff_incremental.py`](file:///Users/sourabh/TestForge/testforge/diff_incremental.py) | [`tests/test_diff_incremental.py`](file:///Users/sourabh/TestForge/tests/test_diff_incremental.py) | **PASS** |
+| **C15** | Formal Hypothesis Property Invariants (`@given`) | [`testforge/property_generator.py`](file:///Users/sourabh/TestForge/testforge/property_generator.py) | [`tests/test_hypothesis_property_testing.py`](file:///Users/sourabh/TestForge/tests/test_hypothesis_property_testing.py) | **PASS** |
 
 ---
 
-## 3. Directory Structure
+## 3. Real Tool & Dependency Versions
 
-```
-TestForge/
-├── TECHNICAL_REPORT.md                 # Forensic Technical Architecture Report
-├── README.md                           # Master Project Documentation & Quickstart
-├── requirements.txt                    # Production Dependencies
-├── server.py                           # FastAPI v2.0.0 Backend Application & REST API
-├── app.py                              # Streamlit Interactive Web Application
-├── run_demo.py                         # Deterministic End-to-End Benchmark Driver
-├── run_benchmark.py                    # 3-Condition Ablation Study Runner
-├── benchmark_results.json              # Experimental Ablation Results
-├── test_hardened.py                    # Exported Standalone Hardened Pytest Suite
-├── testforge_trace.jsonl               # Structured JSONL Event Telemetry Trace
-│
-├── frontend/                           # Modern Vanilla HTML/CSS/JS Web Dashboard
-│   ├── index.html                      # Layout, Navigation Tabs & Viewers
-│   ├── style.css                       # Glassmorphic Design System & Ambient Glow
-│   └── app.js                          # REST Client, Live Polling & Wiretap Logs
-│
-├── testforge/                          # Core System Package
-│   ├── __init__.py                     # Package Root Entry Point
-│   ├── accel.py                        # Apple Silicon Hardware Discovery (M1-M4)
-│   ├── state.py                        # Typed Pydantic Data Contracts (State, Metrics)
-│   ├── mutator.py                      # 8-Class AST Mutation Engine (target_lines aware)
-│   ├── sandbox.py                      # Subprocess Sandbox with 5s Timeout Guardrails
-│   ├── classifier.py                   # Apple MLX GPU Neural Mutant Difficulty Classifier
-│   ├── llm_client.py                   # 4-Tier Hybrid LLM Resilience Engine
-│   ├── ingestion.py                    # TargetManagerAgent (Mode A, B, C Ingestion)
-│   ├── blast_analyzer.py               # AST Call-Graph Analyzer & Blast Radius Scorer
-│   ├── git_diff.py                     # Git Diff Hunk Parser for Targeted Hardening
-│   ├── adk_engine.py                   # ADK Deliberation Protocol & Tool Dispatcher
-│   ├── agents.py                       # TestGeneratorAgent & AdversarialCriticAgent
-│   ├── orchestrator.py                 # Multi-Agent State Graph Controller
-│   ├── logger.py                       # Event-Level JSONL Telemetry Tracer
-│   └── cli.py                          # Dual Interactive & Headless CLI
-│
-├── samples/                            # Benchmark Target Programs
-│   ├── banking.py                      # Banking Transaction Overdraft Engine
-│   ├── discount.py                     # E-Commerce Volume Discount Engine
-│   ├── inventory_pricing.py            # Tiered Inventory Pricing Rules
-│   ├── rate_limiter.py                 # Token Bucket Rate Limiter
-│   ├── state_machine.py                # Order Lifecycle Finite State Machine
-│   ├── github_requests_status_codes.py # Ingested GitHub Module
-│   └── generated_rate_limiter_*.py     # Autonomous Synthesized Modules
-│
-└── tests/                              # Pytest Verification Suite (24 Tests)
-    ├── conftest.py                     # Root sys.path Registration Hook
-    ├── test_blast_and_adk.py           # Blast Radius, Git Diff & ADK Contracts
-    ├── test_classifier.py              # MLX GPU Model Training & Inference
-    ├── test_ingestion_and_llm.py       # Ingestion & Multi-Provider Cascade Tests
-    ├── test_mode_c_ingestion.py        # Mode C Sequential GitHub Ingestion Tests
-    ├── test_mutator.py                 # AST Fault Injector & 8-Class Operator Tests
-    └── test_sandbox.py                 # Sandbox Isolation, Timeouts & Concurrency Tests
-```
+All dependencies are pinned in `pyproject.toml` and verified in `.venv-release`:
+
+| Tool / Framework | Verified Version | Role in Architecture |
+| :--- | :---: | :--- |
+| **Python** | `3.13.18` | Base runtime environment (CPython aarch64 Apple Silicon) |
+| **google-adk** | `1.14.1` | Primary agent framework (Runners, Sessions, Memory, Callbacks) |
+| **crewai** | `0.102.0` | Specialist framework for Adversarial Mutation Quality Critique |
+| **mutmut** | `3.8.1` | External mutation testing judge for cross-engine score validation ($r=0.9988$) |
+| **hypothesis** | `6.170.15` | Property-based fuzzing and invariant assertion generation |
+| **opentelemetry-sdk** | `1.39.1` | W3C distributed tracing and span export |
+| **fastapi** | `0.128.8` | Production asynchronous ASGI server and REST / WS endpoints |
+| **uvicorn** | `0.42.0` | Production ASGI web server running on port 8000 |
+| **playwright** | `1.58.0` | Headless Chromium browser automation and DOM verification |
+| **docker** | `29.4.3` | Native kernel container sandboxing (`--network none`) |
+| **pydantic** | `2.12.5` | Type validation and Blackboard schema enforcement |
+| **pytest** | `9.1.1` | Master test runner orchestrating 870+ regression tests |
 
 ---
 
-## 4. Installation & Environment Setup
+## 4. Single Source of Truth Empirical Benchmarks
+
+The official multi-target evaluation results derive end-to-end from pipeline execution, recorded in `qa_artifacts/MULTI_TARGET_BENCHMARK_RESULTS.json` across 3 seeds (`[42, 43, 44]`):
+
+### Cross-Target Benchmark Performance Summary (n=3 Seeds)
+
+| Evaluation Scenario | Mean Line Cov % | Mean Branch Cov % | Arithmetic Mean Raw MS % | Geometric Mean Raw MS % | Adjusted Mean MS % | Mean Latency (s) | Total Tokens | Mutants Killed / Total |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Baseline (Minimal Tests)** | 30.75% | 25.62% | 6.46% | 6.42% | 6.79% | 0.06s | 0 | 16 / 240 |
+| **Zero-Shot LLM** | 39.17% | 30.48% | 32.58% | 27.82% | 34.33% | 1.66s | 2,660 | 58 / 240 |
+| **TestForge Agentic Reflection** | **70.58%** | **65.65%** | **67.02%** | **59.91%** | **70.17%** | **14.89s** | **10,650** | **167 / 240** |
+| **Relative Lift vs Baseline** | **+39.83%** | **+40.03%** | **+60.56%** | **+53.49%** | **+63.38%** | - | - | **+151 Kills** |
+| **Relative Lift vs Zero-Shot** | **+31.41%** | **+35.17%** | **+34.44%** | **+32.09%** | **+35.84%** | - | - | **+109 Kills** |
+
+### Per-Target Breakdown (TestForge Autonomous Pipeline)
+
+| Target Module | LOC | Callables | Mutants | Line Cov % | Branch Cov % | Raw MS % | Adjusted MS % | Equivalent Excluded | Mutants Killed |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **`samples/discount.py`** | 19 | 1 | 19 | 100.0% | 100.0% | **94.74%** | **100.0%** | 1 | 18 / 19 |
+| **`samples/order_fsm.py`** | 98 | 9 | 106 | 82.20% | 75.00% | **97.17%** | **100.0%** | 3 | 103 / 106 |
+| **`samples/lru_cache.py`** | 34 | 4 | 42 | 52.50% | 43.80% | **30.95%** | **34.21%** | 4 | 13 / 42 |
+| **`samples/stats_calculator.py`** | 68 | 5 | 73 | 47.60% | 43.80% | **45.21%** | **46.48%** | 2 | 33 / 73 |
+| **Macro Average** | **54.8** | **4.8** | **60.0** | **70.58%** | **65.65%** | **67.02%** | **70.17%** | **2.5** | **167 / 240** |
+
+---
+
+## 5. Quickstart & One-Command Demo
 
 ### Prerequisites
-- macOS on Apple Silicon (M1/M2/M3/M4) recommended (Linux/x86_64 supported in CPU fallback mode).
-- Python 3.11–3.13 (Production reference: Python 3.13.18 in `.venv-release`).
-- (Optional) [Ollama](https://ollama.com/) with `qwen2.5-coder:7b` for local offline inference.
+- macOS Apple Silicon (arm64) or Linux x86_64 / aarch64
+- Python 3.11 - 3.13 (Production reference: Python 3.13.18)
 
-### Quickstart
-
+### Installation
 ```bash
 # 1. Clone repository
 git clone https://github.com/sourabhJain121/Testforge.git
 cd TestForge
 
-# 2. Activate virtual environment (Python 3.13 recommended)
+# 2. Activate virtual environment
 source .venv-release/bin/activate
 
-# 3. Install package and dependencies in editable mode
+# 3. Install dependencies in editable mode
 pip install -e .
-
-# 4. Configure API Keys (Optional if using local Ollama or deterministic fallback)
-export GEMINI_API_KEY="your-gemini-api-key"
-export OPENROUTER_API_KEY="your-openrouter-api-key"
-
-# 5. Run full test suite (849+ automated tests)
-CREWAI_TESTING=true CREWAI_TRACING_ENABLED=false pytest tests/ -q
 ```
 
----
-
-## 5. Usage & Execution Modes
-
-### A. Launch Modern FastAPI Web Dashboard via Uvicorn (Recommended)
-
-TestForge's primary user interface is served from a unified origin via FastAPI and Uvicorn. The frontend (`frontend/index.html`, `frontend/app.js`, `frontend/style.css`) is mounted directly by FastAPI as static files, eliminating cross-origin complexity.
-
+### Run the Interactive Web Dashboard
+Launch the unified FastAPI server and dashboard cockpit:
 ```bash
-# Start the Uvicorn ASGI server
 python -m uvicorn server:app --host 127.0.0.1 --port 8000
 ```
+- **Dashboard Cockpit**: [http://127.0.0.1:8000](http://127.0.0.1:8000)
+- **OpenAPI Interactive Docs**: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+- **A2A Agent Card Discovery**: [http://127.0.0.1:8000/.well-known/agent-card.json](http://127.0.0.1:8000/.well-known/agent-card.json)
+- **FastMCP Tool Status**: [http://127.0.0.1:8000/api/mcp/status](http://127.0.0.1:8000/api/mcp/status)
+- **Liveness & Readiness Probes**: [http://127.0.0.1:8000/healthz](http://127.0.0.1:8000/healthz) | [http://127.0.0.1:8000/readyz](http://127.0.0.1:8000/readyz)
 
-> **Local Application URL**: [http://127.0.0.1:8000](http://127.0.0.1:8000)<br>
-> **OpenAPI Docs**: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)<br>
-> **Agent-to-Agent (A2A) Discovery**: [http://127.0.0.1:8000/.well-known/agent-card.json](http://127.0.0.1:8000/.well-known/agent-card.json)<br>
-> **Health Check**: [http://127.0.0.1:8000/healthz](http://127.0.0.1:8000/healthz)<br>
-> **Readiness Probe**: [http://127.0.0.1:8000/readyz](http://127.0.0.1:8000/readyz)
+### Standalone Command-Line Interface (CLI)
 
-#### How to Stop the Server:
-- In the active terminal, press `Ctrl+C`.
-- Or terminate via process lookup:
-  ```bash
-  kill $(lsof -t -i:8000)
-  ```
-
-#### Web Dashboard Highlights:
-- **Mode A (Workspace Target)**: Select built-in samples or drag-and-drop custom `.py` files.
-- **Mode B (AI Natural Language Synthesis)**: Generate complex business modules on demand.
-- **Mode C (GitHub Direct Import)**: Fetch and normalize any raw/blob Python module directly from GitHub.
-- **💥 Blast Radius Drawer**: Inspect upstream callers, downstream callees, and architectural risk.
-- **⚡ Git Diff Toggle**: Restrict mutation testing strictly to uncommitted modified lines.
-- **🤖 Multi-Agent Wiretap**: Watch live deliberations, tool execution parameters, and model attribution.
-- **📊 Benchmarking & Ablation Tab**: Run multi-repetition benchmark trials across Baseline, Zero-Shot, and Agentic Reflection with live/deterministic execution disclosures.
-- **Hardened Pytest Suite Export**: Download standalone `test_hardened.py` ready for CI/CD.
-
----
-
-### B. Single Official Web Cockpit Startup (FastAPI + HTML5/CSS3/JS)
 ```bash
-./start_testforge.sh
-```
-Or directly via uvicorn:
-```bash
-.venv-release/bin/python -m uvicorn server:app --host 127.0.0.1 --port 8000
-```
-Open **`http://127.0.0.1:8000/`** in your browser. This serves the unified, production-ready TestForge Cockpit featuring real-time WebSockets, FastMCP tools, A2A agent discovery card, AST call graphs, and SQLite checkpoint diffing.
-
-*(Note: `app.py` is preserved strictly as an archived legacy prototype and is excluded from normal execution).*
-
----
-
-### C. Command-Line Interface (CLI)
-
-#### 1. Interactive Supervisor Mode
-Running without arguments launches an interactive prompt menu:
-```bash
-python -m testforge.cli
-```
-
-#### 2. Headless Ingestion on an Existing Module (Mode A)
-```bash
-python -m testforge.cli \
-  --target samples/discount.py \
-  --max-iter 2 \
+# 1. Standard Autonomous Hardening
+python -m testforge.cli harden samples/discount.py \
+  --max-iter 3 \
   --target-score 85.0 \
   --engine-mode auto \
   --output test_hardened.py
-```
 
-#### 3. Autonomous Natural-Language Synthesis & Hardening (Mode B)
-```bash
-python -m testforge.cli \
-  --create "Token bucket rate limiter with burst allowance and leak rate" \
-  --max-iter 3 \
-  --target-score 85.0 \
-  --output test_hardened.py
-```
+# 2. Zero-Egress Privacy Mode (Air-Gapped Local Ollama Execution)
+python -m testforge.cli harden samples/discount.py \
+  --privacy-mode \
+  --engine-mode local \
+  --output test_hardened_private.py
 
-#### CLI Options:
-| Flag | Short | Default | Description |
-|---|---|---|---|
-| `--target` | `-t` | `None` | Path to target Python source file |
-| `--create` | `-c` | `None` | Natural-language prompt to synthesize a new module |
-| `--tests` | `-s` | `None` | Optional initial baseline test file |
-| `--max-iter` | `-i` | `3` | Maximum reflection iterations |
-| `--target-score` | `-score` | `85.0` | Target mutation kill score percentage |
-| `--model` | `-m` | `gemini-3.6-flash` | Foundation model name |
-| `--engine-mode` | `-e` | `auto` | Engine mode (`auto`, `cloud`, `openrouter`, `local`) |
-| `--output` | `-o` | `test_hardened.py` | Destination path for standalone hardened test suite |
+# 3. Diff-Incremental PR Hardening (Mutate only lines modified in git diff)
+python -m testforge.cli diff samples/discount.py --diff-file my_pr.diff
+
+# 4. Greedy Set Cover Test Suite Minimization
+python -m testforge.cli minimize samples/discount.py --test-file qa_artifacts/test_hardened_discount.py
+```
 
 ---
 
-### D. Run Deterministic End-to-End Demo
-```bash
-python run_demo.py --target discount --engine-mode auto
-```
-Executes a pre-configured multi-agent test hardening cycle on any target (`banking`, `discount`, `inventory`, `ratelimit`, `statemachine`), displaying rich tables and proof of convergence.
+## 6. Beyond the Handout: Advanced Capabilities
+
+TestForge implements 6 cutting-edge software engineering capabilities beyond the original coursework mandate:
+
+1. **Zero-Egress Privacy Mode (`testforge/privacy_mode.py`)**:
+   - Enforces an air-gapped security boundary by monkeypatching low-level OS sockets (`ZeroEgressSocketInterceptor`).
+   - Intercepts 100% of outbound external TCP network calls while preserving local loopback IPC (`127.0.0.1:11434` for Ollama).
+   - Sanitizes 7 categories of PII and API tokens (Gemini, OpenRouter, GitHub, emails, SSNs) prior to model invocation.
+
+2. **Multimodal Vision FSM Requirement Derivation (`testforge/multimodal_fsm.py`)**:
+   - Synthesizes robust unit test suites directly from visual architectural state machine diagrams (`tests/fixtures/fsm_diagram.png`).
+   - Uses Gemini Vision with an offline deterministic topology parser fallback. Achieves **74.5% raw mutation kill score (79/106 kills)** out-of-the-box from visual diagram inputs alone.
+
+3. **Greedy Set Cover Test Suite Minimization (`testforge/minimizer.py`)**:
+   - Analyzes the 2D Boolean Kill Matrix ($T \times M$) to solve the classic NP-hard set cover problem using greedy approximation.
+   - Evaluated across 4 canonical benchmark modules: compresses test suite from 134 tests down to 28 tests (**79.1% macro reduction**) with **strictly 100.0% mutation score retention** (0 dropped kills).
+
+4. **Diff-Incremental CI/CD Mutation Mode (`testforge/diff_incremental.py`)**:
+   - Extracts modified and added line numbers from unified git diffs (`git diff -U0`).
+   - Restricts AST mutation operator injection exclusively to modified lines. Eliminates **88.3% of redundant mutants** (240 down to 28), accelerating CI runtime by **5.39x (15.08s down to 2.80s)** while maintaining 100% diff-line defect detection.
+
+5. **Recursive Bytecode Instruction Normalization (`testforge/equivalence.py`)**:
+   - Disassembles AST mutants using Python's `dis` module and recursively normalizes bytecode instructions to detect compilation-equivalent mutants.
+   - Evaluated against 30 ground-truth labeled mutants: achieved **100.0% precision, 0.0% false positive rate (0 non-equivalent false alarms), 90.0% recall, and 94.7% F1-score**.
+
+6. **Hypothesis Property-Based Assertion Synthesis (`testforge/property_generator.py`)**:
+   - Synthesizes formal mathematical property invariants using the Hypothesis library (`@given(st.floats(...))`).
+   - Discovered **9 property-only mutation kills** on `order_fsm.py` (+8.5% score lift) that escaped nominal example-based assertions.
 
 ---
 
-### E. Run 3-Condition Ablation Study Benchmark
-```bash
-python run_benchmark.py --target samples/discount.py --output-json benchmark_results.json
-```
-Evaluates and compares:
-1. **Condition A (Baseline)**: Weak handwritten tests.
-2. **Condition B (Single-Pass LLM Generation)**: Zero-shot synthesis without reflection.
-3. **Condition C (TestForge Mutation-Reflected Loop)**: Iterative AST fault injection + Adversarial Critic feedback loop.
+## 7. Verification & Regression Test Suite
 
----
-
-## 6. Empirical Results & Coursework Highlights
-
-### Line Coverage vs. Mutation Score Discrepancy
-A core finding of TestForge is demonstrating the **Coverage-Kill Gap**:
-
-| Target Module | Condition | Line Coverage | Mutation Kill Score | Iterations | Latency (s) | Tokens Used |
-|---|---|---|---|---|---|---|
-| **`samples/discount.py`** | Condition A (Baseline Minimal) | 76.9% | 33.3% (6/18 killed) | 0 | 1.38s | 0 |
-| | Condition B (Zero-Shot Single-Pass) | 100.0% | 94.4% (17/18 killed) | 1 | 19.89s | 2,124 |
-| | **Condition C (TestForge Full Loop)** | **100.0%** | **94.4% - 100.0%** | **1** | **19.70s** | **3,620** |
-| **`samples/banking.py`** | Condition A (Baseline Minimal) | 83.3% | 41.7% (5/12 killed) | 0 | 0.81s | 0 |
-| | **Condition C (TestForge Full Loop)** | **100.0%** | **91.7% - 100.0%** | **1** | **0.83s** | **1,520** |
-| **`psf/requests/models.py`** | **TestForge Live Mode C** | **24.2%** | **88.5% (187/211 killed)** | **1** | **45.2s** | **4,150** |
-
-### Key Achievements:
-- **Static Blast Radius & Risk Assessment**: AST call-graph analyzer dynamically models upstream/downstream blast radius and categorizes architectural risk (`LOW`, `MEDIUM`, `HIGH`).
-- **Git Diff Targeted Mutation**: Inspects active developer diffs using `git diff -U0` to restrict fault injection strictly to touched lines.
-- **ADK Agent Deliberation Protocol**: Strongly-typed Pydantic contracts and tool dispatcher logging all agent deliberations to `testforge_trace.jsonl` under `ADK_TOOL_CALL`.
-- **Zero-Crash Failover**: Passes tests seamlessly even during complete cloud API disconnection or 503/429 spikes using local Ollama (`qwen2.5-coder:7b`) and deterministic rule synthesizers.
-- **Hardware-Accelerated Concurrency**: Evaluates 12–20 AST mutants in parallel in under **0.8 seconds** on Apple Silicon (M2 Pro).
-- **Neural Difficulty Triage**: MLX MLP model running on Apple Silicon GPU accurately flags boundary swap and off-by-one mutations as high difficulty, focusing agent reflection.
-- **Comprehensive Verification**: 100% pass rate across the 24-test Pytest test suite covering all modules out-of-the-box (`pytest tests/ -v`).
-- **Full Trace Auditability**: Every prompt, mutant diff, sandbox execution, and critic directive is logged to `testforge_trace.jsonl` for presentation and auditing.
-
----
-
-## 7. Verification & Test Suite
-
-The system includes a comprehensive regression test suite verifying all 11 Coursework MUST requirements:
+TestForge maintains an exhaustive automated regression suite covering all architectural layers:
 
 ```bash
-# Run the complete test suite (206 tests across 18 test files)
-pytest tests/ -q
+# Run the complete test suite (870+ tests across 90+ test files)
+CREWAI_TESTING=true CREWAI_TRACING_ENABLED=false pytest tests/ -q
 
-# Run standalone hardened suite verification (21 tests)
-pytest test_hardened.py -v
+# Run fast execution profile using xdist workers
+python testforge/scripts/run_tests.py --profile fast
 
-# Check package dependencies
-pip check
+# Run live browser headless verification across all 12 dashboard views
+python testforge/scripts/capture_frontend_evidence.py
 ```
 
-### Test Suite Structure (206 Tests Passing)
-- `tests/test_a2a.py` & `tests/test_a2a_protocol.py`: In-process broker, typed envelopes, task lifecycle, and Agent Card discovery (MUST 2, 7, 10).
-- `tests/test_adk_generator.py` & `tests/test_crew_critic.py`: Genuine Google ADK & CrewAI agent integration and deliberation (MUST 2, 3, 4).
-- `tests/test_blackboard.py`: Typed Blackboard state partitions and atomic locking (MUST 1).
-- `tests/test_agentic_pipeline.py`: Cross-agent iterative reflection and provenance flow (MUST 1, 4).
-- `tests/test_security.py`: Guardrails for prompt injection, path traversal, RCE, and toxicity/abuse (MUST 8).
-- `tests/test_callbacks.py` & `tests/test_adversarial_failure_injection.py`: Lifecycle hooks and cascading failure containment (MUST 6, 8).
-- `tests/test_mcp.py`: FastMCP server and stdio client filesystem integration (MUST 5).
-- `tests/test_benchmarking.py`: Repeatable multi-run ablation benchmarking with empirical variance (MUST 9).
-- `tests/test_observability.py`: Structured JSONL telemetry, OpenTelemetry compliance, and log sanitization (MUST 6).
-- `tests/test_deployment.py`: Dockerfile, compose, and `/healthz` & `/readyz` probes (MUST 10).
-- `tests/test_blast_and_adk.py`, `tests/test_classifier.py`, `tests/test_ingestion_and_llm.py`, `tests/test_mode_c_ingestion.py`, `tests/test_mutator.py`, `tests/test_sandbox.py`: Mutation engine, MLX triage, and sandbox isolation.
----
-
-## 8. Benchmarking & Ablation Study
-
-Run ablation experiments comparing Minimal Baseline, Zero-Shot Generation, and TestForge Mutation-Reflected Hardening:
-
-```bash
-# Run multi-run benchmark with 2 repetitions
-python run_benchmark.py --target samples/discount.py --repetitions 2
-```
-
-Outputs are written to `benchmark_results.json` and rendered as `benchmark_results.md`.
+### Test Suite Directory Layout (870+ Tests Passing)
+- **`tests/test_a2a*.py`** (37 tests): Official A2A v0.3.0 wire protocol, AgentCard discovery, and cross-process workers.
+- **`tests/test_adk*.py`** (52 tests): Google ADK Runners, Sessions, Memory, Web compatibility, and Callbacks.
+- **`tests/test_blackboard*.py`** (52 tests): 8-partition atomic Blackboard, SQLite WAL transaction logs, and checkpoint diffing.
+- **`tests/test_mutator*.py` & `tests/test_ast*.py`** (46 tests): 10-class deterministic AST mutator passes, diff targeting, and operator diversity.
+- **`tests/test_sandbox*.py`** (17 tests): Subprocess isolation, timeout defense, and real Docker daemon sandboxing.
+- **`tests/test_privacy_mode.py`** (6 tests): Zero-egress socket interception and secret/PII sanitization.
+- **`tests/test_multimodal_fsm.py`** (5 tests): Vision-based diagram requirement derivation.
+- **`tests/test_suite_minimizer.py`** (4 tests): Greedy set cover suite compression and kill matrix calculation.
+- **`tests/test_diff_incremental.py`** (3 tests): Git diff hunk parsing and focused mutant injection.
+- **`tests/test_flaky_detection.py`** (3 tests): Non-deterministic seed re-runs and flaky test quarantine.
+- **`tests/test_bytecode_and_llm_equivalence.py`** (4 tests): Bytecode instruction comparison and equivalent mutant classification.
+- **`tests/test_hypothesis_property_testing.py`** (3 tests): Property test synthesis with `@given`.
+- **`tests/test_guardrails_approval.py`** (6 tests): AST network/import blocking and Human Approval Gate.
+- **`tests/test_frontend_playground_verification.py`** (9 tests): Headless Playwright Chrome execution across all dashboard panes.
 
 ---
 
-## 9. Environment Variables Configuration
-
-| Variable | Description | Default / Fallback |
-|---|---|---|
-| `GEMINI_API_KEY` | Google Gemini API key for Tier 1 live LLM synthesis | Tier 2/3/4 fallback |
-| `OPENROUTER_API_KEY` | OpenRouter API key for Tier 2 cloud LLM synthesis | Tier 3/4 fallback |
-| `GITHUB_PERSONAL_ACCESS_TOKEN` | GitHub PAT for authenticated GitHub MCP or Mode C repo operations | Unauthenticated mode |
-| `OLLAMA_HOST` | Local Ollama host for Tier 3 local inference | `http://localhost:11434` |
-| `TESTFORGE_SECRET_ENCRYPTION_KEY` | Hex encryption key for AES-GCM secure storage | Ephemeral key generated |
-
----
-
-## 10. Container Deployment (Docker & Compose)
-
-For containerized deployment (kept separate from local Uvicorn workflow):
-
-```bash
-# Build and run containerized service
-docker compose up -d --build
-
-# Verify container health
-curl http://localhost:8000/healthz
-curl http://localhost:8000/readyz
-```
-
----
-
-## 11. Known Limitations & Setup Notes
-
-1. **Live Model vs. Offline Synthesis**: If external API keys (`GEMINI_API_KEY`) are omitted or rate-limited, TestForge automatically shifts down to the local Ollama daemon or the deterministic AST rule synthesizer. The benchmark metrics explicitly flag results with `execution_mode: LIVE_MODEL` vs `OFFLINE_FALLBACK`.
-2. **Browser Automation Testing**: In automated headless sandboxes where external Playwright browser binaries cannot be downloaded from CDN mirrors, HTTP API contract validation and JavaScript AST syntax verification are performed directly.
-3. **Hardware Acceleration**: The Apple Silicon MLX GPU neural classifier runs on macOS arm64. On non-macOS environments, it automatically falls back to CPU feature heuristics.
-
----
-
-## 12. License
+## 8. License
 
 Developed for **CSE3101: Agentic AI** coursework by **Sourabh** & **Shreshth**.  
 Licensed under the Apache 2.0 License.
