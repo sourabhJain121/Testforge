@@ -31,19 +31,21 @@ Features:
 """
 
 from __future__ import annotations
-import io
-import re
+
 import ast
-import tokenize
+import io
 import logging
-from typing import List, Dict, Any, Optional, Tuple, Set
+import re
+import tokenize
+from typing import Any, Dict, List, Optional, Set, Tuple
+
 from pydantic import BaseModel, Field
 
 from testforge.security import (
+    RuleFinding,
     SecurityGuardrail,
     SecurityPolicy,
     SecurityRiskLevel,
-    RuleFinding,
 )
 
 logger = logging.getLogger("testforge.prompt_guard")

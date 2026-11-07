@@ -16,8 +16,9 @@ Features:
 """
 
 from __future__ import annotations
+
 import ast
-from typing import Dict, Set, List, Any, Optional
+from typing import Any, Dict, Optional, Set
 
 
 class ASTCallGraphVisitor(ast.NodeVisitor):

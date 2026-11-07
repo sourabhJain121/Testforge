@@ -6,9 +6,8 @@ Course: CSE3101 - Agentic AI
 """
 
 import time
-import json
 import xml.etree.ElementTree as ET
-from typing import Dict, Any, List, Optional
+from typing import Any, Dict
 
 
 def generate_junit_xml(job_id: str, job_record: Dict[str, Any]) -> str:

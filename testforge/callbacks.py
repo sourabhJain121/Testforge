@@ -18,11 +18,13 @@ Features:
 """
 
 from __future__ import annotations
+
+import logging
 import time
 import uuid
-import logging
 from enum import Enum
-from typing import Dict, Any, Optional, List, Callable, Set, Union
+from typing import Any, Callable, Dict, List, Optional, Set, Union
+
 from pydantic import BaseModel, Field
 
 from testforge.security import redact_sensitive_data

@@ -7,16 +7,16 @@ and historical mutant memory with persistent storage and zero hard external depe
 """
 
 from __future__ import annotations
-import os
-import re
-import math
+
+import collections
 import json
+import logging
+import math
+import pathlib
+import re
 import time
 import uuid
-import pathlib
-import logging
-import collections
-from typing import List, Dict, Any, Optional, Set
+from typing import Any, Dict, List, Optional, Set
 
 logger = logging.getLogger("testforge.rag.vector_store")
 

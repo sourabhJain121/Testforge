@@ -16,25 +16,26 @@ Features:
 """
 
 from __future__ import annotations
-import os
-import re
+
 import ast
 import hashlib
-from pathlib import Path
-import urllib.request
+import logging
+import os
+import re
 import urllib.error
 import urllib.parse
-import logging
-from typing import List, Dict, Any, Optional, Tuple
+import urllib.request
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+
 from testforge.logger import TraceLogger
 from testforge.network_security import (
-    ALLOWED_GITHUB_HOSTS,
     DEFAULT_MAX_SOURCE_SIZE_BYTES,
-    validate_url_hostname,
-    build_safe_opener,
-    bounded_read,
-    SSRFSecurityError,
     PayloadTooLargeError,
+    SSRFSecurityError,
+    bounded_read,
+    build_safe_opener,
+    validate_url_hostname,
 )
 
 logger = logging.getLogger("testforge.ingestion")

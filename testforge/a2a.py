@@ -18,23 +18,26 @@ Architecture:
 """
 
 from __future__ import annotations
+
 import copy
-import time
-import uuid
 import logging
 import threading
+import time
+import uuid
+from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import TimeoutError as FuturesTimeoutError
 from enum import Enum
-from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
-from typing import Dict, Any, Optional, List, Callable, Set, Union, Literal
+from typing import Any, Callable, Dict, List, Literal, Optional, Set, Union
+
 from pydantic import BaseModel, Field, ValidationError, model_validator
 
-from testforge.security import SecurityGuardrail, redact_sensitive_data
 from testforge.callbacks import (
     CallbackRegistry,
-    LifecycleEvent,
     EventType,
+    LifecycleEvent,
     _scrub_value,
 )
+from testforge.security import SecurityGuardrail, redact_sensitive_data
 
 logger = logging.getLogger("testforge.a2a")
 

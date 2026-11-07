@@ -16,8 +16,10 @@ Guarantees:
 """
 
 from __future__ import annotations
-from typing import Dict, Any, List, Optional, Tuple, Union
+
 from enum import Enum
+from typing import Any, Dict, List, Optional
+
 from pydantic import BaseModel, Field
 
 
@@ -120,10 +122,10 @@ class DeterministicDiffInspector:
         Executes a deterministic diff between two snapshot dictionaries or structures.
         """
         differences: List[DiffItem] = []
-        
+
         # Traverse recursively
         self._diff_recursive(base_data, target_data, path="", differences=differences)
-        
+
         # Sort differences deterministically by path
         differences.sort(key=lambda d: d.path)
 
@@ -250,7 +252,7 @@ class DeterministicDiffInspector:
         if isinstance(base_val, dict) and isinstance(target_val, dict):
             # Deterministic sorted union of keys
             all_keys = sorted(set(base_val.keys()) | set(target_val.keys()))
-            
+
             # Check empty vs populated dict
             if not base_val and not target_val:
                 if self.include_unchanged and path:

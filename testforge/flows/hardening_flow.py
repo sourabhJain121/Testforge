@@ -7,10 +7,12 @@ and @router decorators governed by a typed Pydantic HardeningFlowState.
 """
 
 from __future__ import annotations
+
+import logging
 import os
 import uuid
-import logging
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional
+
 from pydantic import BaseModel, Field
 
 # Ensure CrewAI interactive prompts and telemetry are disabled
@@ -19,9 +21,10 @@ os.environ["OTEL_SDK_DISABLED"] = "true"
 os.environ["CREWAI_TESTING"] = "true"
 os.environ["CREWAI_TRACING_ENABLED"] = "false"
 
-from crewai.flow.flow import Flow, start, listen, router
-from testforge.crew_critic import CriticCrew, MutationQualityCriticAgent
+from crewai.flow.flow import Flow, listen, router, start
+
 from testforge.a2a import CriticDirectivePayload
+from testforge.crew_critic import CriticCrew, MutationQualityCriticAgent
 
 logger = logging.getLogger("testforge.flows.hardening_flow")
 

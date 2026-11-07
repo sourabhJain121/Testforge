@@ -7,24 +7,22 @@ Milestone: Phase 2 Milestone 2.1 (GAP-04)
 """
 
 from __future__ import annotations
-import os
+
 import csv
 import json
 import time
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
-from testforge.corpus.models import (
-    CorpusFixture,
-    DefectVariant,
-    DefectDetectionReport,
-    FixtureEvaluationResult,
-    compute_sha256,
-)
-from testforge.corpus.fixtures.state_machine import FIXTURE as FIXTURE_SM
-from testforge.corpus.fixtures.rate_limiter import FIXTURE as FIXTURE_RL
-from testforge.corpus.fixtures.inventory_pricing import FIXTURE as FIXTURE_IP
 from testforge.corpus.fixtures.banking import FIXTURE as FIXTURE_BK
 from testforge.corpus.fixtures.currency_converter import FIXTURE as FIXTURE_CC
+from testforge.corpus.fixtures.inventory_pricing import FIXTURE as FIXTURE_IP
+from testforge.corpus.fixtures.rate_limiter import FIXTURE as FIXTURE_RL
+from testforge.corpus.fixtures.state_machine import FIXTURE as FIXTURE_SM
+from testforge.corpus.models import (
+    CorpusFixture,
+    DefectDetectionReport,
+    FixtureEvaluationResult,
+)
 
 CORPUS_REGISTRY: Dict[str, CorpusFixture] = {
     FIXTURE_SM.fixture_id: FIXTURE_SM,
@@ -57,9 +55,9 @@ def evaluate_fixture(
       3. Verifies that unrelated tests are not incorrectly attributed.
       4. Executes AST mutation pipeline, separating killed, surviving, invalid, and equivalent mutants.
     """
-    from testforge.sandbox import ParallelSandboxRunner
-    from testforge.mutator import ASTMutator
     from testforge.equivalence import calculate_mutation_scores
+    from testforge.mutator import ASTMutator
+    from testforge.sandbox import ParallelSandboxRunner
 
     runner = sandbox or ParallelSandboxRunner(timeout_seconds=5)
     t0 = time.perf_counter()

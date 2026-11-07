@@ -29,49 +29,48 @@ Features:
 """
 
 from __future__ import annotations
+
 import os
 
 # Suppress OpenTelemetry detachment crashes across thread and async generator boundaries
 os.environ.setdefault("OTEL_PYTHON_CONTEXT", "contextvars_context")
 os.environ.setdefault("OTEL_SDK_DISABLED", "true")
 
-import re
 import ast
-import json
-import time
 import asyncio
-import logging
 import concurrent.futures
-from typing import List, Dict, Any, Optional, Union, AsyncGenerator
-from pydantic import BaseModel, Field, model_validator
+import json
+import logging
+import re
+from typing import Any, AsyncGenerator, Dict, List, Optional, Set, Tuple, Union
 
 from google.adk.agents.llm_agent import LlmAgent
-from google.adk.runners import Runner
-from google.adk.sessions.in_memory_session_service import InMemorySessionService
 from google.adk.models.base_llm import BaseLlm
 from google.adk.models.llm_request import LlmRequest
 from google.adk.models.llm_response import LlmResponse
+from google.adk.runners import Runner
+from google.adk.sessions.in_memory_session_service import InMemorySessionService
 from google.genai import types
+from pydantic import BaseModel, Field
 
 from testforge.a2a import (
+    A2ABroker,
+    A2AErrorPayload,
     A2AMessage,
     A2APerformative,
-    A2ABroker,
-    CriticDirectivePayload,
-    A2AErrorPayload,
-    GeneratedTestPayload,
     A2ATestGenerationRequestPayload,
+    CriticDirectivePayload,
+    GeneratedTestPayload,
 )
-from testforge.agents import CodeSanitizer, extract_function_signatures, build_nominal_arguments
-from testforge.security import SecurityGuardrail, redact_sensitive_data
-from testforge.callbacks import CallbackRegistry, LifecycleEvent, EventType, _scrub_value
+from testforge.agents import CodeSanitizer
 from testforge.llm_client import HybridLLMClient
 from testforge.prompt_guard import (
-    wrap_untrusted_content,
+    get_defensive_system_instruction,
     inspect_source_for_indirect_injections,
     sanitize_critic_directive,
-    get_defensive_system_instruction,
+    wrap_untrusted_content,
 )
+from testforge.security import redact_sensitive_data
 
 logger = logging.getLogger("testforge.adk_generator")
 
@@ -330,7 +329,7 @@ class ADKModelBridge(BaseLlm):
           4. Filters out conflicting or non-deterministic assertions, producing a robust consensus test suite.
           5. Logs telemetry: candidate_count, valid_candidates, consensus_assertions_retained.
         """
-        from testforge.intelligent_generator import ReferenceExecutor, IntelligentASTSynthesizer
+        from testforge.intelligent_generator import IntelligentASTSynthesizer, ReferenceExecutor
 
         ref_executor = ReferenceExecutor(target_code)
         candidates: List[str] = []

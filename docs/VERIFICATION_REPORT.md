@@ -187,5 +187,32 @@
   * 54 state dictionary and audit trail mutants survived due to unexercised multi-state paths.
   * Added regression test fixtures in [`qa_artifacts/test_hardened_order_fsm.py`](file:///Users/sourabh/TestForge/qa_artifacts/test_hardened_order_fsm.py) exercising complete order lifecycle (`CREATED` -> `PENDING_PAYMENT` -> `PAID` -> `PROCESSING` -> `SHIPPED` -> `DELIVERED` -> `COMPLETED`, `RETURNED` -> `REFUNDED`), killing 23 additional mutants (kills increased from 51 to 74).
 
+---
+
+## Task 6: Codebase Hygiene & Linter Verification
+
+### 1. Architectural Modularity & Duplication Audit
+* Evaluated symbol overlap between [`testforge/a2a.py`](file:///Users/sourabh/TestForge/testforge/a2a.py) and [`testforge/a2a_protocol.py`](file:///Users/sourabh/TestForge/testforge/a2a_protocol.py).
+* Confirmed 0 duplicate class definitions:
+  * `a2a.py`: In-process message broker and typed FIPA performative envelopes.
+  * `a2a_protocol.py`: Official `a2a-sdk` (v0.3.26) protocol adapter and external discovery agent card.
+* Audited all 54 modules in `testforge/`: confirmed all modules (including `agents.py` and AST utilities) maintain active callers and zero dead modules exist.
+
+### 2. Artifact & Database Exclusion
+* Updated [`.gitignore`](file:///Users/sourabh/TestForge/.gitignore) to explicitly ignore `*.db`, `*.db-wal`, `*.db-shm`, and `qa_artifacts/*.db*`.
+* Confirmed via `git ls-files` that zero database or binary WAL files are tracked in the repository.
+
+### 3. Static Analysis & Linter Verification (`ruff`)
+* Configured `[tool.ruff]` in [`pyproject.toml`](file:///Users/sourabh/TestForge/pyproject.toml) targeting Python 3.13.
+* Fixed unresolved import names across modules (DEF-009):
+  * Added `Union` to `typing` in [`testforge/agents.py`](file:///Users/sourabh/TestForge/testforge/agents.py).
+  * Added `Any` to `typing` in [`testforge/corpus/manager.py`](file:///Users/sourabh/TestForge/testforge/corpus/manager.py).
+  * Added `Tuple` to `typing` in [`testforge/crew_critic.py`](file:///Users/sourabh/TestForge/testforge/crew_critic.py).
+  * Initialized `logger` in [`testforge/orchestrator.py`](file:///Users/sourabh/TestForge/testforge/orchestrator.py).
+  * Split multiple statements on one line in [`testforge/intelligent_generator.py`](file:///Users/sourabh/TestForge/testforge/intelligent_generator.py).
+* Verified clean linter run: `ruff check testforge/` reports **All checks passed! (0 errors)**.
+* Fixed path traversal defect in [`testforge/sandbox.py`](file:///Users/sourabh/TestForge/testforge/sandbox.py) (`_populate_target_aliases`) where target alias parent resolution did not restrict `..` sequences (DEF-010). All 18 adversarial tests in `tests/test_adversarial_failure_injection.py` pass cleanly.
+
+
 
 

@@ -23,47 +23,42 @@ Responsibilities:
 """
 
 from __future__ import annotations
+
 import os
 
 # Suppress OpenTelemetry detachment crashes across thread and async generator boundaries
 os.environ.setdefault("OTEL_PYTHON_CONTEXT", "contextvars_context")
 os.environ.setdefault("OTEL_SDK_DISABLED", "true")
 
-import re
-import ast
-import json
-import time
-import uuid
-import hashlib
-import logging
 import asyncio
 import concurrent.futures
-from enum import Enum
-from typing import List, Dict, Any, Optional, Union, Set, Tuple, AsyncGenerator
+import json
+import logging
+import re
+import time
+from typing import Any, AsyncGenerator, Dict, List, Optional, Set, Tuple, Union
 
 from google.adk.agents.llm_agent import LlmAgent
-from google.adk.runners import Runner
-from google.adk.sessions.in_memory_session_service import InMemorySessionService
 from google.adk.models.base_llm import BaseLlm
 from google.adk.models.llm_request import LlmRequest
 from google.adk.models.llm_response import LlmResponse
+from google.adk.runners import Runner
+from google.adk.sessions.in_memory_session_service import InMemorySessionService
 from google.genai import types
 
 from testforge.a2a import (
+    A2AErrorPayload,
     A2AMessage,
     A2APerformative,
-    WorkflowStage,
     SupervisorAction,
     SupervisorDecisionPayload,
-    WorkflowTransitionRecord,
-    A2AErrorPayload,
+    WorkflowStage,
 )
 from testforge.blackboard import Blackboard
-from testforge.callbacks import CallbackRegistry, LifecycleEvent, EventType
-from testforge.logger import TraceLogger
+from testforge.callbacks import CallbackRegistry, EventType, LifecycleEvent
 from testforge.llm_client import HybridLLMClient
+from testforge.logger import TraceLogger
 from testforge.prompt_guard import (
-    wrap_untrusted_content,
     get_defensive_system_instruction,
 )
 

@@ -19,19 +19,13 @@ Implements 10 deterministic, syntax-aware AST mutation categories:
 """
 
 from __future__ import annotations
+
 import ast
 import difflib
-from typing import List, Dict, Type, Optional, Set, Tuple
+from typing import Dict, List, Optional, Set, Tuple, Type
+
+from testforge.equivalence import EquivalenceClassification, EquivalentMutantAnalyzer
 from testforge.state import MutantRecord
-from testforge.equivalence import (
-    EquivalentMutantAnalyzer,
-    EquivalenceClassification
-)
-from testforge.guidance import (
-    SemanticMutantGuidance,
-    derive_semantic_guidance,
-    derive_guidance_for_surviving_mutants,
-)
 
 
 class MutationTransformer(ast.NodeTransformer):

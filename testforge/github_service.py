@@ -19,32 +19,31 @@ Security & Architecture:
 """
 
 from __future__ import annotations
-import os
-import re
+
 import ast
-import json
 import base64
 import hashlib
+import json
 import logging
-import urllib.request
+import os
+import re
 import urllib.error
 import urllib.parse
+import urllib.request
 from pathlib import Path
-from typing import List, Dict, Any, Optional, Tuple, Set
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 from pydantic import BaseModel, Field
 
-from testforge.security import redact_sensitive_data
 from testforge.ingestion import IngestionAnalysis, TargetManagerAgent
 from testforge.network_security import (
-    ALLOWED_GITHUB_HOSTS,
-    DEFAULT_MAX_SOURCE_SIZE_BYTES,
-    validate_url_hostname,
-    build_safe_opener,
-    bounded_read,
-    SSRFSecurityError,
     PayloadTooLargeError,
+    SSRFSecurityError,
+    bounded_read,
+    build_safe_opener,
+    validate_url_hostname,
 )
+from testforge.security import redact_sensitive_data
 
 logger = logging.getLogger("testforge.github_service")
 

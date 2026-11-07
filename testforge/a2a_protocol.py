@@ -31,58 +31,54 @@ Architecture:
 """
 
 from __future__ import annotations
-import ast
-import json
-import uuid
-import time
-import logging
-from typing import Dict, Any, Optional, List, Union, Tuple
-from datetime import datetime, timezone
 
+import json
+import logging
+import time
+import uuid
+from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional, Tuple
+
+import httpx
+from a2a.client import A2ACardResolver, ClientConfig, ClientFactory
+from a2a.server.agent_execution import AgentExecutor, RequestContext
+from a2a.server.apps import A2AStarletteApplication
+from a2a.server.events import EventQueue
+from a2a.server.request_handlers import DefaultRequestHandler
+from a2a.server.tasks import InMemoryTaskStore
 from a2a.types import (
-    AgentCard,
     AgentCapabilities,
-    AgentSkill,
+    AgentCard,
     AgentProvider,
-    Message,
-    Role,
-    TextPart,
-    DataPart,
-    Part,
+    AgentSkill,
     Artifact,
+    DataPart,
+    Message,
+    Part,
+    Role,
     Task,
+    TaskArtifactUpdateEvent,
     TaskState,
     TaskStatus,
     TaskStatusUpdateEvent,
-    TaskArtifactUpdateEvent,
+    TextPart,
     TransportProtocol,
 )
-from a2a.server.apps import A2AStarletteApplication
-from a2a.server.request_handlers import DefaultRequestHandler
-from a2a.server.tasks import InMemoryTaskStore
-from a2a.server.agent_execution import AgentExecutor, RequestContext
-from a2a.server.events import EventQueue
-from a2a.client import ClientFactory, ClientConfig, A2ACardResolver
-import httpx
 from starlette.applications import Starlette
-from starlette.responses import JSONResponse, RedirectResponse
+from starlette.responses import JSONResponse
 
 from testforge.a2a import (
+    A2ABroker,
     A2AMessage,
     A2APerformative,
-    A2ABroker,
-    GeneratedTestPayload,
-    CriticDirectivePayload,
-    A2AErrorPayload,
 )
 from testforge.agents import CodeSanitizer
-from testforge.security import SecurityGuardrail, redact_sensitive_data
 from testforge.callbacks import (
     CallbackRegistry,
-    LifecycleEvent,
     EventType,
-    _scrub_value,
+    LifecycleEvent,
 )
+from testforge.security import SecurityGuardrail
 
 logger = logging.getLogger("testforge.a2a_protocol")
 

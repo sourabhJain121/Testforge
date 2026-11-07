@@ -13,27 +13,26 @@ Provides standard Model Context Protocol (MCP) servers using the official FastMC
 """
 
 from __future__ import annotations
+
+import hashlib
+import json
 import os
 import sys
-import json
-import hashlib
-import urllib.request
 import urllib.error
 import urllib.parse
+import urllib.request
 from pathlib import Path
-from typing import List, Dict, Any, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
+
 from mcp.server.fastmcp import FastMCP
 
-from testforge.security import redact_sensitive_data
 from testforge.network_security import (
-    ALLOWED_GITHUB_HOSTS,
     DEFAULT_MAX_SOURCE_SIZE_BYTES,
-    DEFAULT_MAX_REDIRECTS,
-    validate_url_hostname,
-    build_safe_opener,
-    bounded_read,
-    SSRFSecurityError,
     PayloadTooLargeError,
+    SSRFSecurityError,
+    bounded_read,
+    build_safe_opener,
+    validate_url_hostname,
 )
 
 # Blocked sensitive filename patterns
@@ -52,31 +51,31 @@ def _is_path_safe(requested_path: str, root_dir: Path) -> Tuple[bool, Path, Opti
     Rejects directory traversal, symlink escapes, and sensitive files.
     """
     root_resolved = root_dir.resolve()
-    
+
     # Handle absolute vs relative
     candidate = Path(requested_path)
     if candidate.is_absolute():
         resolved = candidate.resolve()
     else:
         resolved = (root_resolved / candidate).resolve()
-        
+
     # Check root confinement
     if resolved != root_resolved and root_resolved not in resolved.parents:
         return False, resolved, f"Security Violation: Path '{requested_path}' escapes permitted root '{root_dir}'"
-        
+
     # Check sensitive files
     name_lower = resolved.name.lower()
     if name_lower in FORBIDDEN_NAME_PATTERNS or name_lower.startswith(".env"):
         return False, resolved, f"Security Violation: Access to sensitive file '{resolved.name}' is strictly forbidden"
-        
+
     if resolved.suffix.lower() in FORBIDDEN_EXTENSIONS:
         return False, resolved, f"Security Violation: Access to credential file extension '{resolved.suffix}' is forbidden"
-        
+
     # Check .git config/credentials
     parts = [p.lower() for p in resolved.parts]
     if ".git" in parts and ("config" in parts or "credentials" in parts):
         return False, resolved, "Security Violation: Access to VCS configuration/credentials is forbidden"
-        
+
     return True, resolved, None
 
 
@@ -94,12 +93,12 @@ def create_filesystem_server(permitted_root: str | Path) -> FastMCP:
         is_safe, resolved, err = _is_path_safe(path, root_path)
         if not is_safe:
             raise PermissionError(err)
-            
+
         if not resolved.exists():
             raise FileNotFoundError(f"File not found: '{path}'")
         if not resolved.is_file():
             raise IsADirectoryError(f"Target is a directory, not a file: '{path}'")
-            
+
         with open(resolved, "r", encoding="utf-8", errors="replace") as f:
             return f.read()
 
@@ -112,12 +111,12 @@ def create_filesystem_server(permitted_root: str | Path) -> FastMCP:
         is_safe, resolved, err = _is_path_safe(path, root_path)
         if not is_safe:
             raise PermissionError(err)
-            
+
         if not resolved.exists():
             raise FileNotFoundError(f"Directory not found: '{path}'")
         if not resolved.is_dir():
             raise NotADirectoryError(f"Target is not a directory: '{path}'")
-            
+
         entries = []
         for item in sorted(resolved.iterdir()):
             # Filter out sensitive files from listing
@@ -143,15 +142,15 @@ def create_filesystem_server(permitted_root: str | Path) -> FastMCP:
         is_safe, resolved, err = _is_path_safe(path, root_path)
         if not is_safe:
             raise PermissionError(err)
-            
+
         if not resolved.exists():
             raise FileNotFoundError(f"Path not found: '{path}'")
-            
+
         stat = resolved.stat()
         is_file = resolved.is_file()
         line_count = 0
         sha256 = ""
-        
+
         if is_file:
             hasher = hashlib.sha256()
             with open(resolved, "rb") as f:
@@ -159,7 +158,7 @@ def create_filesystem_server(permitted_root: str | Path) -> FastMCP:
                     hasher.update(chunk)
                     line_count += chunk.count(b"\n")
             sha256 = hasher.hexdigest()
-            
+
         return {
             "path": str(resolved.relative_to(root_path)),
             "is_file": is_file,

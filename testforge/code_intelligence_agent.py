@@ -28,38 +28,38 @@ Features:
 """
 
 from __future__ import annotations
-import os
+
 import ast
-import json
-import time
-import hashlib
-import logging
 import asyncio
 import concurrent.futures
-from typing import List, Dict, Any, Optional, Union, Set, AsyncGenerator
+import hashlib
+import json
+import logging
+import os
+import time
+from typing import Any, AsyncGenerator, Dict, List, Optional, Set, Union
 
 from google.adk.agents.llm_agent import LlmAgent
-from google.adk.runners import Runner
-from google.adk.sessions.in_memory_session_service import InMemorySessionService
 from google.adk.models.base_llm import BaseLlm
 from google.adk.models.llm_request import LlmRequest
 from google.adk.models.llm_response import LlmResponse
+from google.adk.runners import Runner
+from google.adk.sessions.in_memory_session_service import InMemorySessionService
 from google.genai import types
 
 from testforge.a2a import (
+    A2AErrorPayload,
     A2AMessage,
     A2APerformative,
-    A2ABroker,
     CodeIntelligencePayload,
-    A2AErrorPayload,
 )
 from testforge.agents import extract_function_signatures
-from testforge.blast_analyzer import BlastRadiusAnalyzer
 from testforge.blackboard import Blackboard
-from testforge.callbacks import CallbackRegistry, LifecycleEvent, EventType
-from testforge.logger import TraceLogger
+from testforge.blast_analyzer import BlastRadiusAnalyzer
+from testforge.callbacks import CallbackRegistry, EventType, LifecycleEvent
 from testforge.llm_client import HybridLLMClient
-from testforge.prompt_guard import wrap_untrusted_content, get_defensive_system_instruction
+from testforge.logger import TraceLogger
+from testforge.prompt_guard import get_defensive_system_instruction
 
 logger = logging.getLogger("testforge.code_intelligence_agent")
 

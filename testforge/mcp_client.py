@@ -14,20 +14,21 @@ Features:
 """
 
 from __future__ import annotations
+
+import asyncio
+import logging
 import os
 import sys
-import time
-import asyncio
 import threading
-import logging
+import time
 from pathlib import Path
-from typing import Dict, Any, Optional, List, Union, Set
+from typing import Any, Dict, List, Optional, Set, Union
 
 from pydantic import BaseModel, Field
 
 try:
-    from mcp.client.stdio import stdio_client, StdioServerParameters
     from mcp.client.session import ClientSession
+    from mcp.client.stdio import StdioServerParameters, stdio_client
     try:
         from mcp.shared.exceptions import McpError
     except ImportError:
@@ -43,16 +44,13 @@ except ImportError:
     class McpError(Exception):  # type: ignore
         pass
 
-from testforge.security import redact_sensitive_data
 from testforge.callbacks import (
     CallbackRegistry,
-    LifecycleEvent,
     EventType,
-    ToolStartPayload,
-    ToolCompletePayload,
-    ErrorPayload
+    LifecycleEvent,
 )
-from testforge.mcp_server import FORBIDDEN_NAME_PATTERNS, FORBIDDEN_EXTENSIONS
+from testforge.mcp_server import FORBIDDEN_EXTENSIONS, FORBIDDEN_NAME_PATTERNS
+from testforge.security import redact_sensitive_data
 
 logger = logging.getLogger("testforge.mcp_client")
 
@@ -74,7 +72,8 @@ BLOCKED_DESTRUCTIVE_TOOLS = {
 }
 
 
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import ValidationError
+
 
 class ReadTextFileInput(BaseModel):
     path: str = Field(..., min_length=1, description="Path to the file to read")
@@ -494,7 +493,7 @@ class MCPClientManager:
         except RuntimeError:
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
-            
+
         if loop.is_running():
             import concurrent.futures
             with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
@@ -511,7 +510,7 @@ class MCPClientManager:
         except RuntimeError:
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
-            
+
         if loop.is_running():
             import concurrent.futures
             with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:

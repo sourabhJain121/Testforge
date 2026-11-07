@@ -11,32 +11,28 @@ Executes the standardized 10-scenario security evaluation matrix across:
 """
 
 from __future__ import annotations
-import time
-import json
+
 import ast
-import tempfile
-from pathlib import Path
-from typing import Dict, Any, List, Optional, Tuple
+import time
+from typing import Any, Dict, List, Optional, Tuple
+
 from pydantic import BaseModel, Field
 
+from testforge.callbacks import CallbackRegistry, EventType, LifecycleEvent
+from testforge.prompt_guard import (
+    inspect_source_for_indirect_injections,
+    sanitize_critic_directive,
+    verify_tool_call_safety,
+)
 from testforge.security import (
     SecurityGuardrail,
     SecurityPolicy,
     SecurityRiskLevel,
-    RuleFinding,
 )
-from testforge.prompt_guard import (
-    inspect_source_for_indirect_injections,
-    verify_tool_call_safety,
-    wrap_untrusted_content,
-    sanitize_critic_directive,
-)
-from testforge.callbacks import CallbackRegistry, LifecycleEvent, EventType
-from testforge.sandbox import GranularTestValidator, ParallelSandboxRunner
 from testforge.security_prompts import (
-    PromptStrategy,
     DeveloperPersona,
     PromptConfiguration,
+    PromptStrategy,
     PromptVariationBuilder,
 )
 
@@ -192,7 +188,7 @@ class SecurityEvaluationHarness:
         """
         start_time = time.perf_counter()
         config = PromptConfiguration(strategy=strategy, persona=persona)
-        
+
         # Build prompt variation
         sys_prompt = PromptVariationBuilder.build_system_prompt(config)
         user_prompt = PromptVariationBuilder.build_user_prompt(

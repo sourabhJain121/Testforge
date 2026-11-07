@@ -5,18 +5,18 @@ Authors: Sourabh & Shreshth
 Course: CSE3101 - Agentic AI
 """
 
+import argparse
+import json
 import os
 import sys
-import json
-import argparse
-from typing import Optional, Tuple, List, Dict, Any
+from typing import List, Optional, Tuple
+
 from rich.console import Console
 from rich.prompt import Prompt
-from rich.table import Table
 
-from testforge.orchestrator import TestForgeOrchestrator
-from testforge.ingestion import TargetManagerAgent
 from testforge.export import generate_junit_xml, generate_sarif_report
+from testforge.ingestion import TargetManagerAgent
+from testforge.orchestrator import TestForgeOrchestrator
 
 console = Console()
 
@@ -115,7 +115,7 @@ def export_job_report(job_id: str, report_format: str, output_path: Optional[str
 def cmd_harden(args: argparse.Namespace) -> int:
     """Executes headless test hardening via CLI."""
     target_path = args.target_path
-    console.print(f"\n[bold cyan]⚡ TestForge Autonomous Hardener[/bold cyan]")
+    console.print("\n[bold cyan]⚡ TestForge Autonomous Hardener[/bold cyan]")
     console.print(f"  Target: [bold]{target_path}[/bold]")
     console.print(f"  Target Score: [bold]{args.target_score}%[/bold] | Max Iterations: [bold]{args.max_iterations}[/bold]")
 
@@ -236,7 +236,7 @@ def handle_benchmark_command(args: argparse.Namespace) -> int:
     out_dir = os.path.dirname(args.output) or "qa_artifacts"
     os.makedirs(out_dir, exist_ok=True)
 
-    console.print(f"\n[bold cyan]⚡ TestForge Empirical Benchmark Runner[/bold cyan]")
+    console.print("\n[bold cyan]⚡ TestForge Empirical Benchmark Runner[/bold cyan]")
     console.print(f"  Targets: {resolved_targets}")
     console.print(f"  Scenarios: {scenarios}")
     console.print(f"  Fast Heuristic Mode: {args.fast}")
@@ -265,7 +265,7 @@ def handle_benchmark_command(args: argparse.Namespace) -> int:
 
 def handle_export_command(args: argparse.Namespace) -> int:
     """Exports JUnit XML or SARIF from SQLite checkpoints without web server."""
-    console.print(f"\n[bold cyan]⚡ TestForge Report Exporter[/bold cyan]")
+    console.print("\n[bold cyan]⚡ TestForge Report Exporter[/bold cyan]")
     console.print(f"  Job ID: [bold]{args.job_id}[/bold] | Format: [bold]{args.format.upper()}[/bold]")
 
     try:

@@ -25,60 +25,54 @@ Responsibilities:
 """
 
 from __future__ import annotations
+
 import os
 
 # Suppress OpenTelemetry detachment crashes across thread and async generator boundaries
 os.environ.setdefault("OTEL_PYTHON_CONTEXT", "contextvars_context")
 os.environ.setdefault("OTEL_SDK_DISABLED", "true")
 
-import re
-import ast
-import json
-import time
-import uuid
-import hashlib
-import logging
 import asyncio
 import concurrent.futures
-from typing import List, Dict, Any, Optional, Union, Set, Tuple, AsyncGenerator
-from pydantic import BaseModel, Field
+import hashlib
+import json
+import logging
+import re
+import time
+import uuid
+from typing import Any, AsyncGenerator, Dict, List, Optional, Set, Tuple, Union
 
 from google.adk.agents.llm_agent import LlmAgent
-from google.adk.runners import Runner
-from google.adk.sessions.in_memory_session_service import InMemorySessionService
 from google.adk.models.base_llm import BaseLlm
 from google.adk.models.llm_request import LlmRequest
 from google.adk.models.llm_response import LlmResponse
+from google.adk.runners import Runner
+from google.adk.sessions.in_memory_session_service import InMemorySessionService
 from google.genai import types
+from pydantic import BaseModel, Field
 
 from testforge.a2a import (
+    A2AErrorPayload,
     A2AMessage,
     A2APerformative,
-    RepairRequestPayload,
+    MutationQualityCriticPayload,
     RepairDirectivePayload,
     RepairResultPayload,
-    ReflectionDecisionPayload,
-    MutationQualityCriticPayload,
-    CriticDirectivePayload,
-    TestPlanPayload,
-    TestExecutionPayload,
-    A2AErrorPayload,
-)
-from testforge.blackboard import Blackboard
-from testforge.callbacks import CallbackRegistry, LifecycleEvent, EventType
-from testforge.logger import TraceLogger
-from testforge.llm_client import HybridLLMClient
-from testforge.security import redact_sensitive_data
-from testforge.prompt_guard import (
-    wrap_untrusted_content,
-    inspect_source_for_indirect_injections,
-    sanitize_critic_directive,
-    get_defensive_system_instruction,
 )
 from testforge.adk_generator import GoogleADKTestGenerator
+from testforge.blackboard import Blackboard
+from testforge.callbacks import CallbackRegistry, EventType, LifecycleEvent
+from testforge.crew_critic import MutationQualityCriticAgent
 from testforge.execution_agent import TestExecutionAgent
-from testforge.crew_critic import MutationQualityCriticAgent, TestQualityAnalyzer
+from testforge.llm_client import HybridLLMClient
+from testforge.logger import TraceLogger
+from testforge.prompt_guard import (
+    get_defensive_system_instruction,
+    inspect_source_for_indirect_injections,
+    wrap_untrusted_content,
+)
 from testforge.sandbox import ParallelSandboxRunner
+from testforge.security import redact_sensitive_data
 
 logger = logging.getLogger("testforge.reflection_agent")
 
@@ -483,7 +477,7 @@ class ReflectionRepairAgent:
             f"Failing Tests to Quarantine: {failing_tests or []}",
         ]
         if directives:
-            prompt_sections.append(f"Critic Directives:\n" + "\n".join(f"- {d}" for d in directives))
+            prompt_sections.append("Critic Directives:\n" + "\n".join(f"- {d}" for d in directives))
         if surviving_diffs:
             diffs_text = "\n\n".join(f"--- Mutant #{i+1} ---\n{d}" for i, d in enumerate(surviving_diffs))
             wrapped_diffs = wrap_untrusted_content(diffs_text, content_type="unified_diffs", provenance="mutation_engine")

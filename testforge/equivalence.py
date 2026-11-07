@@ -16,10 +16,12 @@ Provides:
 """
 
 from __future__ import annotations
+
 import ast
 import re
 from enum import Enum
-from typing import Dict, Any, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set
+
 from pydantic import BaseModel, Field
 
 from testforge.state import MutantRecord
@@ -428,7 +430,7 @@ def calculate_mutation_scores(mutants: List[MutantRecord]) -> Dict[str, Any]:
     timed_out = sum(1 for m in mutants if m.status == "TIMEOUT")
     errors = sum(1 for m in mutants if m.status == "ERROR")
     invalid = sum(1 for m in mutants if m.status == "INVALID" or not m.is_valid_syntax)
-    
+
     # Equivalence counts
     equivalent = sum(
         1 for m in mutants

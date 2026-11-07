@@ -7,11 +7,12 @@ that killed them, enabling instant, cross-iteration recall and repair accelerati
 """
 
 from __future__ import annotations
-import logging
-from typing import List, Dict, Any, Optional
 
-from testforge.rag.vector_store import TestForgeVectorStore
+import logging
+from typing import Any, Dict, List, Optional
+
 from testforge.rag.knowledge_retriever import AgenticKnowledgeRetriever, RetrievalResult
+from testforge.rag.vector_store import TestForgeVectorStore
 
 logger = logging.getLogger("testforge.rag.mutant_memory")
 

@@ -7,10 +7,11 @@ and adk_after_model_callback (AST syntax verification of generated test code).
 """
 
 from __future__ import annotations
-import re
+
 import ast
 import logging
-from typing import Any, Optional, Tuple, Union
+import re
+from typing import Any, Optional, Tuple
 
 logger = logging.getLogger("testforge.adk_callbacks")
 

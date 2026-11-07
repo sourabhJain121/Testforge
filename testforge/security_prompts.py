@@ -20,14 +20,15 @@ Features:
 """
 
 from __future__ import annotations
+
 from enum import Enum
-from typing import Dict, Any, List, Optional
+from typing import Any, Dict, List, Optional
+
 from pydantic import BaseModel, Field
 
 from testforge.prompt_guard import (
     DEFENSIVE_SYSTEM_PREAMBLE,
     wrap_untrusted_content,
-    get_defensive_system_instruction,
 )
 
 

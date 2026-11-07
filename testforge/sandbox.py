@@ -13,22 +13,23 @@ Features:
 """
 
 from __future__ import annotations
-import os
-import sys
-import json
-import time
-import re
+
 import ast
-import tempfile
+import json
+import os
+import re
 import subprocess
-import signal
-from dataclasses import dataclass, field
+import sys
+import tempfile
+import time
 from abc import ABC, abstractmethod
 from concurrent.futures import ProcessPoolExecutor, as_completed
-from typing import Dict, Any, Tuple, List, Optional, Set
+from dataclasses import dataclass, field
+from typing import Any, Dict, List, Optional, Set, Tuple
+
 from testforge.accel import hw_profile
+from testforge.equivalence import EquivalenceClassification, EquivalentMutantAnalyzer
 from testforge.state import MutantRecord
-from testforge.equivalence import EquivalentMutantAnalyzer, EquivalenceClassification
 
 
 def parse_pytest_output(stdout: str, stderr: str, exit_code: int) -> Dict[str, Any]:
@@ -265,12 +266,17 @@ def _populate_target_aliases(tmpdir: str, code: str, target_file_path: Optional[
                 f.write(code)
         parent_dir = os.path.dirname(target_file_path)
         if parent_dir and not os.path.isabs(parent_dir):
-            target_sub = os.path.join(tmpdir, parent_dir)
-            os.makedirs(target_sub, exist_ok=True)
-            with open(os.path.join(target_sub, "__init__.py"), "w", encoding="utf-8") as f:
-                pass
-            with open(os.path.join(target_sub, base_name), "w", encoding="utf-8") as f:
-                f.write(code)
+            clean_parent = os.path.normpath(parent_dir)
+            if not clean_parent.startswith("..") and not os.path.isabs(clean_parent):
+                target_sub = os.path.join(tmpdir, clean_parent)
+                try:
+                    os.makedirs(target_sub, exist_ok=True)
+                    with open(os.path.join(target_sub, "__init__.py"), "w", encoding="utf-8") as f:
+                        pass
+                    with open(os.path.join(target_sub, base_name), "w", encoding="utf-8") as f:
+                        f.write(code)
+                except Exception:
+                    pass
 
 
 def is_docker_available() -> bool:
@@ -800,7 +806,7 @@ class ParallelSandboxRunner:
                 "missing_branches_count": 0,
                 "missing_branches": [],
                 "executed_branches": [],
-                "raw_output": res.stdout or res.stderr
+                "raw_output": res_stdout or res_stderr
             }
 
             if os.path.exists(cov_json_path):

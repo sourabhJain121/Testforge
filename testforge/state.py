@@ -5,11 +5,13 @@ Authors: Sourabh & Shreshth
 """
 
 from __future__ import annotations
+
+import threading
 import time
 import uuid
-import threading
 from enum import Enum
-from typing import List, Dict, Optional, Literal, Any, Set, Union
+from typing import Any, Dict, List, Literal, Optional, Set, Union
+
 from pydantic import BaseModel, Field
 
 
@@ -320,7 +322,7 @@ class TaskLifecycleFSM:
             # Lifecycle callback dispatch
             if self._callbacks is not None:
                 try:
-                    from testforge.callbacks import LifecycleEvent, EventType
+                    from testforge.callbacks import EventType, LifecycleEvent
                     self._callbacks.dispatch(LifecycleEvent(
                         event_type=EventType.STATE_CHANGE,
                         emitter="TaskLifecycleFSM",
@@ -457,11 +459,11 @@ class TestForgeState(BaseModel):
     test_module_path: str = "test_target.py"
     target_source_code: str = ""
     current_test_code: str = ""
-    
+
     current_iteration: int = 0
     max_iterations: int = 3
     target_mutation_score: float = 85.0
-    
+
     baseline_line_coverage: float = 0.0
     lines_covered: int = 0
     num_statements: int = 0
@@ -491,11 +493,11 @@ class TestForgeState(BaseModel):
 
     mutants: List[MutantRecord] = Field(default_factory=list)
     history: List[IterationMetrics] = Field(default_factory=list)
-    
+
     surviving_mutant_diffs: List[str] = Field(default_factory=list)
     surviving_guidance: List[Dict[str, Any]] = Field(default_factory=list)
     reflection_notes: List[str] = Field(default_factory=list)
-    
+
     terminated: bool = False
     termination_reason: str = ""
     hardware_info: Dict[str, Any] = Field(default_factory=dict)

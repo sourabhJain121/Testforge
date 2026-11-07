@@ -15,18 +15,20 @@ Records comprehensive metrics across:
 """
 
 from __future__ import annotations
-import os
+
 import csv
 import json
-import uuid
-import time
 import math
-from typing import Dict, Any, List, Optional
+import os
+import time
+import uuid
+from typing import Dict, List, Optional
+
 from pydantic import BaseModel, Field
 
-from testforge.corpus.models import CorpusFixture
-from testforge.corpus.manager import get_corpus_fixtures
 from testforge.benchmarking import PRICING_TABLE_PER_MILLION
+from testforge.corpus.manager import get_corpus_fixtures
+from testforge.corpus.models import CorpusFixture
 
 
 class StrategyRunRecord(BaseModel):
@@ -229,7 +231,7 @@ class CorpusBenchmarkRunner:
     ) -> CorpusBenchmarkReport:
         target_scenarios = scenarios or ["baseline", "zeroshot", "agentic_reflection"]
         all_fixtures = get_corpus_fixtures()
-        
+
         # Support pilot mode with configurable max_cases
         if max_cases and max_cases > 0:
             fixture_keys = list(all_fixtures.keys())[:max_cases]
@@ -464,12 +466,12 @@ class CorpusBenchmarkRunner:
             return self._execute_fast_single_run(fixture, scenario, run_id, rep_index)
 
         t0 = time.perf_counter()
-        from testforge.sandbox import ParallelSandboxRunner
-        from testforge.mutator import ASTMutator
+        from testforge.agents import AdversarialCriticAgent, TestGeneratorAgent
         from testforge.equivalence import calculate_mutation_scores
-        from testforge.agents import TestGeneratorAgent, AdversarialCriticAgent
         from testforge.guidance import derive_guidance_for_surviving_mutants
         from testforge.logger import TraceLogger
+        from testforge.mutator import ASTMutator
+        from testforge.sandbox import ParallelSandboxRunner
 
         runner = ParallelSandboxRunner(timeout_seconds=5)
         test_code_to_eval = ""

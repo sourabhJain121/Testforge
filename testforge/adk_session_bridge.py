@@ -10,8 +10,9 @@ using standardized scoped prefixes:
 """
 
 from __future__ import annotations
+
 import logging
-from typing import Any, Optional, Dict
+from typing import Any, Optional
 
 from google.adk.sessions.in_memory_session_service import InMemorySessionService
 from google.adk.sessions.session import Session

@@ -16,13 +16,13 @@ Guarantees:
 """
 
 from __future__ import annotations
-import os
-import re
+
 import ipaddress
 import logging
-import urllib.request
+import re
 import urllib.parse
-from typing import Set, Optional, Tuple, Any
+import urllib.request
+from typing import Any, Optional, Set, Tuple
 
 logger = logging.getLogger("testforge.network_security")
 
@@ -74,7 +74,7 @@ def is_ip_address(host: str) -> Tuple[bool, Optional[str]]:
     Returns (is_ip, reason).
     """
     clean_host = host.strip("[]")
-    
+
     # 1. Standard IPv4 or IPv6 via ipaddress module
     try:
         ip = ipaddress.ip_address(clean_host)

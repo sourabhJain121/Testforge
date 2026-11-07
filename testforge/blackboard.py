@@ -18,30 +18,27 @@ Capabilities:
 """
 
 from __future__ import annotations
-import copy
-import time
-import json
-import uuid
-import threading
-import logging
-from typing import Dict, Any, Optional, List, Callable, Set, Union, Literal
-from pathlib import Path
-from pydantic import BaseModel, Field, ValidationError
 
-from testforge.state import MutantRecord, IterationMetrics, TestForgeState
-from testforge.security import redact_sensitive_data
-from testforge.callbacks import CallbackRegistry, LifecycleEvent, EventType
+import json
+import logging
+import threading
+import time
+import uuid
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Literal, Optional, Set, Union
+
+from pydantic import BaseModel, Field
+
+from testforge.callbacks import CallbackRegistry, EventType, LifecycleEvent
 from testforge.persistence import (
-    SQLiteBlackboardStorage,
-    CheckpointMetadata,
-    CheckpointRecord,
-    CheckpointSummary,
     CheckpointError,
-    CheckpointNotFoundError,
-    IncompatibleSchemaError,
+    CheckpointSummary,
     CorruptedSnapshotError,
     PersistenceWriteError,
+    SQLiteBlackboardStorage,
 )
+from testforge.security import redact_sensitive_data
+from testforge.state import IterationMetrics, MutantRecord, TestForgeState
 
 logger = logging.getLogger("testforge.blackboard")
 
@@ -470,7 +467,7 @@ class Blackboard:
 
     def get_isolated_target_code(self, provenance: str = "target_space") -> str:
         """Returns the target source code safely wrapped in untrusted data delimiters."""
-        from testforge.prompt_guard import wrap_untrusted_content, inspect_source_for_indirect_injections
+        from testforge.prompt_guard import inspect_source_for_indirect_injections, wrap_untrusted_content
         with self._lock:
             code = self._target.target_source_code
             scan = inspect_source_for_indirect_injections(code)

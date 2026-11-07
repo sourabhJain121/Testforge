@@ -21,16 +21,16 @@ Features:
 """
 
 from __future__ import annotations
+
+import ast
+import hashlib
+import json
+import logging
 import os
 import re
-import ast
-import json
 import time
 import uuid
-import hashlib
-import logging
-from typing import List, Dict, Any, Optional, Union
-from pydantic import BaseModel, Field
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 # Ensure CrewAI interactive prompts and telemetry are disabled
 os.environ["CREWAI_TELEMETRY_OPT_OUT"] = "true"
@@ -39,9 +39,9 @@ os.environ["CREWAI_TESTING"] = "true"
 os.environ["CREWAI_TRACING_ENABLED"] = "false"
 
 try:
-    from crewai import Agent, Task, Crew, Process
-    from crewai.tools import tool
+    from crewai import Agent, Crew, Process, Task
     from crewai.llms.base_llm import BaseLLM
+    from crewai.tools import tool
     HAS_CREWAI = True
 except ImportError:
     HAS_CREWAI = False
@@ -59,20 +59,20 @@ except ImportError:
         pass
 
 from testforge.a2a import (
+    A2AErrorPayload,
     A2AMessage,
     A2APerformative,
     CriticDirectivePayload,
     MutationQualityCriticPayload,
-    A2AErrorPayload,
 )
-from testforge.security import redact_sensitive_data
 from testforge.llm_client import HybridLLMClient
 from testforge.prompt_guard import (
-    wrap_untrusted_content,
+    get_defensive_system_instruction,
     inspect_source_for_indirect_injections,
     sanitize_critic_directive,
-    get_defensive_system_instruction,
+    wrap_untrusted_content,
 )
+from testforge.security import redact_sensitive_data
 
 logger = logging.getLogger("testforge.crew_critic")
 
@@ -188,7 +188,7 @@ class TestQualityAnalyzer:
                             "line_number": line_no,
                             "severity": "HIGH",
                             "description": f"Function '{fn.name}' contains tautological 'assert not False'.",
-                            "recommendation": f"Replace 'assert not False' with meaningful assertion on output state."
+                            "recommendation": "Replace 'assert not False' with meaningful assertion on output state."
                         })
                         continue
 
@@ -218,7 +218,7 @@ class TestQualityAnalyzer:
                                 "line_number": line_no,
                                 "severity": "MEDIUM",
                                 "description": f"Function '{fn.name}' asserts 'is not None', which fails to verify computed value correctness.",
-                                "recommendation": f"Replace 'assert ... is not None' with exact value or type/boundary assertion."
+                                "recommendation": "Replace 'assert ... is not None' with exact value or type/boundary assertion."
                             })
 
                 # Weak assertion: assert bool(...)

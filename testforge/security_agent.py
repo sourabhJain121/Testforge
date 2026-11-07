@@ -33,48 +33,44 @@ Features:
 """
 
 from __future__ import annotations
-import os
-import ast
-import json
-import time
-import uuid
-import logging
+
 import asyncio
 import concurrent.futures
-from typing import List, Dict, Any, Optional, Union, AsyncGenerator
+import json
+import logging
+import os
+import time
+import uuid
+from typing import Any, AsyncGenerator, Dict, List, Optional, Union
 
 from google.adk.agents.llm_agent import LlmAgent
-from google.adk.runners import Runner
-from google.adk.sessions.in_memory_session_service import InMemorySessionService
 from google.adk.models.base_llm import BaseLlm
 from google.adk.models.llm_request import LlmRequest
 from google.adk.models.llm_response import LlmResponse
+from google.adk.runners import Runner
+from google.adk.sessions.in_memory_session_service import InMemorySessionService
 from google.genai import types
 
 from testforge.a2a import (
+    A2AErrorPayload,
     A2AMessage,
     A2APerformative,
-    A2ABroker,
     SecurityEvaluationPayload,
-    A2AErrorPayload,
+)
+from testforge.blackboard import Blackboard
+from testforge.callbacks import CallbackRegistry, EventType, LifecycleEvent
+from testforge.llm_client import HybridLLMClient
+from testforge.logger import TraceLogger
+from testforge.prompt_guard import (
+    get_defensive_system_instruction,
+    inspect_source_for_indirect_injections,
 )
 from testforge.security import (
     SecurityGuardrail,
     SecurityRiskLevel,
     SecuritySeverity,
     redact_sensitive_data,
-    ASTSecurityResult,
-    InputSecurityResult,
 )
-from testforge.prompt_guard import (
-    inspect_source_for_indirect_injections,
-    wrap_untrusted_content,
-    get_defensive_system_instruction,
-)
-from testforge.blackboard import Blackboard
-from testforge.callbacks import CallbackRegistry, LifecycleEvent, EventType
-from testforge.logger import TraceLogger
-from testforge.llm_client import HybridLLMClient
 
 logger = logging.getLogger("testforge.security_agent")
 

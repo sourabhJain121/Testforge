@@ -16,56 +16,51 @@ Agent State Graph:
 """
 
 from __future__ import annotations
+
+import json
+import logging
 import os
 import re
 import time
 import uuid
-import json
-from typing import Optional, List, Dict, Any
+from typing import Any, Dict, List, Optional
+
+logger = logging.getLogger("testforge.orchestrator")
+
 from rich.console import Console
 from rich.table import Table
 
-from testforge.state import (
-    TestForgeState,
-    IterationMetrics,
-    TaskLifecycleState,
-    TaskLifecycleFSM,
-    InvalidStateTransitionError,
-    StageRecord,
-)
+from testforge.a2a import WorkflowStage
 from testforge.accel import hw_profile
-from testforge.mutator import ASTMutator
-from testforge.guidance import derive_guidance_for_surviving_mutants
-from testforge.sandbox import ParallelSandboxRunner
-from testforge.logger import TraceLogger
-from testforge.agents import TestGeneratorAgent, AdversarialCriticAgent
+from testforge.agents import AdversarialCriticAgent, TestGeneratorAgent
+from testforge.blackboard import Blackboard
 from testforge.callbacks import (
     CallbackRegistry,
-    default_callback_registry,
-    LifecycleEvent,
     EventType,
+    LifecycleEvent,
     TraceLoggerCallbackAdapter,
+    default_callback_registry,
 )
-from testforge.blackboard import Blackboard
 from testforge.equivalence import calculate_mutation_scores
-from testforge.security import redact_sensitive_data
-from testforge.prompt_guard import wrap_untrusted_content
-from testforge.mcp_client import ToolSelectionDecision, MCPToolResult
+from testforge.guidance import derive_guidance_for_surviving_mutants
+from testforge.logger import TraceLogger
+from testforge.mcp_client import ToolSelectionDecision
+from testforge.mutator import ASTMutator
 from testforge.persistence import (
-    SQLiteBlackboardStorage,
-    CheckpointRecord,
-    ResumptionPlan,
     CheckpointError,
-    CheckpointNotFoundError,
-    IncompatibleSchemaError,
-    CorruptedSnapshotError,
-    IncompleteCheckpointError,
-    InputHashMismatchError,
-    InvalidRecoveryStageError,
-    determine_resumption_plan,
-    compute_source_hash,
+    ResumptionPlan,
+    SQLiteBlackboardStorage,
 )
-from testforge.a2a import WorkflowStage, SupervisorAction
+from testforge.prompt_guard import wrap_untrusted_content
+from testforge.sandbox import ParallelSandboxRunner
+from testforge.security import redact_sensitive_data
+from testforge.state import (
+    InvalidStateTransitionError,
+    IterationMetrics,
+    TaskLifecycleFSM,
+    TaskLifecycleState,
+    TestForgeState,
+)
 
 console = Console()
 
@@ -119,10 +114,11 @@ def format_standalone_test_suite(test_code: str, target_file_path: Optional[str]
 
 
 import threading
-from testforge.llm_client import HybridLLMClient
+
 from testforge.a2a import A2ABroker, A2AMessage, A2APerformative
 from testforge.adk_generator import GoogleADKTestGenerator
-from testforge.crew_critic import CrewAICriticAgent, MutationQualityCriticAgent
+from testforge.crew_critic import MutationQualityCriticAgent
+from testforge.llm_client import HybridLLMClient
 
 
 class HardeningCancelledError(Exception):
@@ -244,8 +240,8 @@ class TestForgeOrchestrator:
             callbacks=self.callbacks,
             logger_instance=self.logger,
         )
-        from testforge.planning_agent import TestPlanningAgent
         from testforge.execution_agent import TestExecutionAgent
+        from testforge.planning_agent import TestPlanningAgent
         self.planning_agent = TestPlanningAgent(
             api_key=api_key,
             blackboard=self.blackboard,
@@ -799,7 +795,7 @@ class TestForgeOrchestrator:
                 self.state.metadata = {}
             self.state.metadata["security_assessment"] = sec_res.model_dump()
         else:
-            console.print(f"[bold cyan]⏩ Restored from checkpoint: Skipping Step 0 security inspection (already validated)[/bold cyan]")
+            console.print("[bold cyan]⏩ Restored from checkpoint: Skipping Step 0 security inspection (already validated)[/bold cyan]")
 
         self.callbacks.dispatch(LifecycleEvent(
             event_type=EventType.OPERATION_START,
@@ -981,8 +977,8 @@ class TestForgeOrchestrator:
             })
 
             # Inter-agent Handoff: TargetManagerAgent -> TestGeneratorAgent
-            from testforge.blast_analyzer import BlastRadiusAnalyzer
             from testforge.agents import extract_function_signatures
+            from testforge.blast_analyzer import BlastRadiusAnalyzer
 
             func_sigs = extract_function_signatures(self.state.target_source_code)
             func_list = [f["name"] for f in func_sigs]
@@ -1028,7 +1024,7 @@ class TestForgeOrchestrator:
                 }
             })
         else:
-            console.print(f"[bold cyan]⏩ Restored from checkpoint: Skipping Ingestion & AST Extraction[/bold cyan]")
+            console.print("[bold cyan]⏩ Restored from checkpoint: Skipping Ingestion & AST Extraction[/bold cyan]")
             if self.fsm.current_state == TaskLifecycleState.RECOVERED:
                 target_state_name = self.resumption_plan.target_lifecycle_state
                 target_state_enum = getattr(TaskLifecycleState, target_state_name, None)
@@ -1142,7 +1138,7 @@ class TestForgeOrchestrator:
                 }
             })
         elif skip_baseline_synth:
-            console.print(f"[bold cyan]⏩ Restored from checkpoint: Skipping Step 1 Candidate Baseline Synthesis[/bold cyan]")
+            console.print("[bold cyan]⏩ Restored from checkpoint: Skipping Step 1 Candidate Baseline Synthesis[/bold cyan]")
             if self.fsm.current_state == TaskLifecycleState.RECOVERED:
                 target_state_name = self.resumption_plan.target_lifecycle_state
                 target_state_enum = getattr(TaskLifecycleState, target_state_name, None)
@@ -1244,7 +1240,7 @@ class TestForgeOrchestrator:
                 if recheck["status"] != "PASS" or recheck.get("tests_passed", 0) == 0:
                     self.check_cancellation_or_timeout()
                     console.print("[yellow][!] Self-repaired tests failed clean target check. Engaging deterministic AST synthesis...[/yellow]")
-                    from testforge.agents import extract_function_signatures, CodeSanitizer
+                    from testforge.agents import CodeSanitizer, extract_function_signatures
                     sigs = extract_function_signatures(self.state.target_source_code)
                     raw_ast_code = self.generator._synthesize_ast_aware_tests(
                         source_code=self.state.target_source_code,
@@ -1423,7 +1419,7 @@ class TestForgeOrchestrator:
                 }
             )
         else:
-            console.print(f"[bold cyan]⏩ Restored from checkpoint: Skipping Step 2 & 3 Sandbox Baseline Validation & Line Coverage[/bold cyan]")
+            console.print("[bold cyan]⏩ Restored from checkpoint: Skipping Step 2 & 3 Sandbox Baseline Validation & Line Coverage[/bold cyan]")
             cov_pct = self.state.baseline_line_coverage or (self.blackboard.metrics.baseline_line_coverage if self.blackboard else 0.0) or 0.0
             if self.fsm.current_state == TaskLifecycleState.RECOVERED:
                 self._sync_lifecycle(TaskLifecycleState.MUTATION_ANALYSIS, metadata={"resumed_from": self.resume_checkpoint_id})
@@ -1447,7 +1443,7 @@ class TestForgeOrchestrator:
                 self._sync_lifecycle(TaskLifecycleState.GENERATING_TESTS, metadata={"iteration": iteration, "step": "hardening_generation"})
                 if hasattr(self, "supervisor") and self.supervisor:
                     self.supervisor.set_agent_executing("ReflectionRepairAgent", True)
-                console.print(f"  [cyan]• Hardening test assertions based on Critic reasoning...[/cyan]")
+                console.print("  [cyan]• Hardening test assertions based on Critic reasoning...[/cyan]")
                 hardened_tests = ""
                 provider_used = self.generator.active_provider
                 if self.engine_mode != "legacy":
@@ -1546,7 +1542,7 @@ class TestForgeOrchestrator:
 
             # CASE 3 / CASE 6: Baseline passes, but no mutants could be generated
             if not mutants:
-                console.print(f"  [yellow]• No AST mutants could be generated from target code.[/yellow]")
+                console.print("  [yellow]• No AST mutants could be generated from target code.[/yellow]")
                 self.state.mutants_generated = 0
                 self.state.mutants_executed = 0
                 self.state.mutants_killed = 0

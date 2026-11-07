@@ -10,18 +10,16 @@ Provides:
 """
 
 from __future__ import annotations
+
 import asyncio
 import json
 import logging
 import time
-from typing import Dict, Any, Optional, Set, Callable
+from typing import Any, Dict, Optional
+
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
-from testforge.callbacks import (
-    CallbackRegistry,
-    LifecycleEvent,
-    default_callback_registry
-)
+from testforge.callbacks import CallbackRegistry, LifecycleEvent, default_callback_registry
 
 logger = logging.getLogger("testforge.websocket_hub")
 

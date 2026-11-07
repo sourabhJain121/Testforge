@@ -17,20 +17,21 @@ Features:
 """
 
 from __future__ import annotations
-import time
-import math
-import json
+
 import argparse
-from typing import Dict, Any, List, Optional
+import json
+import math
+import time
+from typing import Any, Dict, List
+
 from pydantic import BaseModel, Field
 
-from testforge.blackboard import Blackboard
 from testforge.a2a import (
     A2ABroker,
     A2AMessage,
     A2APerformative,
-    CriticDirectivePayload,
 )
+from testforge.blackboard import Blackboard
 
 
 class OperationalBenchmarkResult(BaseModel):

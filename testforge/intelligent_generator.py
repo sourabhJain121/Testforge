@@ -28,13 +28,11 @@ Features:
 """
 
 from __future__ import annotations
+
 import ast
-import inspect
-import math
 import re
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
-
 
 # ==============================================================================
 # 1. Structured Data Models for AST Discovery
@@ -646,7 +644,7 @@ class IntelligentASTSynthesizer:
             nominal_test_lines = [
                 f"def test_{fn_name}_nominal():",
                 f"    result = {fn_name}({nominal_args_str})",
-                f"    assert result is not None  # Invariant assertion",
+                "    assert result is not None  # Invariant assertion",
             ]
             tests.append("\n".join(nominal_test_lines))
             result.invariant_assertions_count += 1
@@ -961,7 +959,7 @@ class IntelligentASTSynthesizer:
                             tail_str = ", ".join(tail_args.split(", ")[1:]) if ", " in tail_args else ""
                             call_str = f"test_val, {tail_str}" if tail_str else "test_val"
                             p_lines.append(f"        res = {fn_name}({call_str})")
-                        p_lines.append(f"        assert res >= 0")
+                        p_lines.append("        assert res >= 0")
                         tests.append("\n".join(p_lines))
                         result.property_tests_count += 1
                         result.meaningful_assertions_count += 1
@@ -972,7 +970,7 @@ class IntelligentASTSynthesizer:
             p0 = sig.pos_args[0]
             ret_t = sig.return_type
             arg_t = sig.arg_types.get(p0)
-            
+
             # Check domain parity compatibility
             type_parity_compatible = True
             if ret_t and arg_t:
@@ -1013,7 +1011,7 @@ class IntelligentASTSynthesizer:
                         f'    """[Property Invariant] Idempotence invariant: fn(fn(x)) == fn(x). property_confidence="{conf}"."""',
                         f"    first = {fn_name}({self._format_call_args(sig, nominal_pos, nominal_kw)})",
                         f"    second = {fn_name}(first)",
-                        f"    assert second == first",
+                        "    assert second == first",
                     ]
                     tests.append("\n".join(i_lines))
                     result.property_tests_count += 1
@@ -1025,11 +1023,12 @@ class IntelligentASTSynthesizer:
             p0 = sig.pos_args[0]
             is_int_domain = sig.arg_types.get(p0) == "int" or (nominal_pos and isinstance(nominal_pos[0], int))
             m_probe_vals = [1, 5, 10, 50, 100] if is_int_domain else [1.0, 5.0, 10.0, 50.0, 100.0]
-            
+
             m_results: List[Union[int, float]] = []
             all_m_ok = True
             for mv in m_probe_vals:
-                pos_m = list(nominal_pos); kw_m = dict(nominal_kw)
+                pos_m = list(nominal_pos)
+                kw_m = dict(nominal_kw)
                 if self._set_param_value(sig, p0, mv, pos_m, kw_m):
                     ok_m, r_m, _ = ref.evaluate_call(fn_name, pos_m, kw_m)
                     if ok_m and isinstance(r_m, (int, float)) and not isinstance(r_m, bool):
@@ -1057,9 +1056,9 @@ class IntelligentASTSynthesizer:
                     m_lines.append(f"    r1 = {fn_name}({c1_str})")
                     m_lines.append(f"    r2 = {fn_name}({c2_str})")
                     if monotonic_increasing:
-                        m_lines.append(f"    assert r1 <= r2")
+                        m_lines.append("    assert r1 <= r2")
                     else:
-                        m_lines.append(f"    assert r1 >= r2")
+                        m_lines.append("    assert r1 >= r2")
                     tests.append("\n".join(m_lines))
                     result.property_tests_count += 1
                     result.meaningful_assertions_count += 1
@@ -1234,7 +1233,7 @@ class IntelligentASTSynthesizer:
                 else:
                     result.skipped_callables.append({
                         "name": f"{c_name}.{m.name}",
-                        "reason": f"Static/class method failed clean pre-flight evaluation"
+                        "reason": "Static/class method failed clean pre-flight evaluation"
                     })
 
         return tests

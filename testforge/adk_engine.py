@@ -19,15 +19,17 @@ Features:
 """
 
 from __future__ import annotations
+
 import time
-from typing import Dict, Any, List, Optional, Callable
+from typing import Any, Callable, Dict, List, Optional
+
 from pydantic import BaseModel, Field
 
 from testforge.blast_analyzer import BlastRadiusAnalyzer
 from testforge.git_diff import GitDiffInspector
-from testforge.sandbox import SubprocessSandbox
 from testforge.logger import TraceLogger
 from testforge.prompt_guard import verify_tool_call_safety
+from testforge.sandbox import SubprocessSandbox
 
 
 class ToolDefinition(BaseModel):

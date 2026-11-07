@@ -18,32 +18,30 @@ Features:
 """
 
 from __future__ import annotations
-import os
-import re
+
 import ast
-import time
 import json
 import logging
-import urllib.request
+import os
+import time
 import urllib.error
-from typing import List, Dict, Any, Optional, Tuple
+import urllib.request
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 logger = logging.getLogger("testforge.agents")
-from testforge.logger import TraceLogger
-from testforge.llm_client import HybridLLMClient, call_openrouter_api
-from testforge.adk_engine import ADKToolRegistry, ADKContext
+from testforge.adk_engine import ADKContext, ADKToolRegistry
 from testforge.guidance import (
-    SemanticMutantGuidance,
-    derive_semantic_guidance,
     derive_guidance_for_surviving_mutants,
     format_guidance_for_critic,
     format_guidance_for_generator,
 )
+from testforge.llm_client import HybridLLMClient, call_openrouter_api
+from testforge.logger import TraceLogger
 from testforge.prompt_guard import (
-    wrap_untrusted_content,
+    get_defensive_system_instruction,
     inspect_source_for_indirect_injections,
     sanitize_critic_directive,
-    get_defensive_system_instruction,
+    wrap_untrusted_content,
 )
 
 
@@ -319,7 +317,7 @@ def call_groq_api(
     with urllib.request.urlopen(req, timeout=30) as resp:
         data = json.loads(resp.read().decode("utf-8"))
     latency = time.perf_counter() - start_time
-    
+
     text = data["choices"][0]["message"]["content"] or ""
     usage = data.get("usage", {})
     tokens = {
@@ -388,8 +386,7 @@ def execute_multi_provider_generation(
     # 1. Primary: Google GenAI (Gemini)
     # --------------------------------------------------------------------------
     if gemini_client and not _gemini_quota_exhausted:
-        from google.genai import types
-        from google.genai import errors
+        from google.genai import errors, types
 
         retry_delays = [2.0, 4.0]
         for attempt in range(1, 3):
@@ -1371,4 +1368,3 @@ class AdversarialCriticAgent:
 
 
 # Export TargetManagerAgent
-from testforge.ingestion import TargetManagerAgent, IngestionAnalysis

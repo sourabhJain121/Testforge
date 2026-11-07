@@ -18,12 +18,14 @@ Features:
 """
 
 from __future__ import annotations
-import os
+
 import json
-import time
 import math
+import os
+import time
 import uuid
-from typing import Dict, Any, List, Optional, Tuple, NamedTuple
+from typing import Any, Dict, List, NamedTuple, Optional, Tuple
+
 from pydantic import BaseModel, Field
 
 from testforge.mutator import ASTMutator
@@ -643,8 +645,8 @@ class BenchmarkRunner:
 
             elif scenario == "zeroshot":
                 from testforge.agents import TestGeneratorAgent
-                from testforge.logger import TraceLogger
                 from testforge.llm_client import HybridLLMClient
+                from testforge.logger import TraceLogger
                 trace_path = os.path.join(self.job_trace_dir, f"trace_bench_zs_{rep_index}.jsonl")
                 if os.path.exists(trace_path):
                     try:
@@ -819,7 +821,7 @@ class BenchmarkRunner:
                     exec_mode = f"LIVE_MODEL ({engine_label})"
                 elif is_live:
                     prov_cat = "Cloud LLM"
-                    engine_label = f"Gemini with Multi-Agent Reflection"
+                    engine_label = "Gemini with Multi-Agent Reflection"
                     cloud_tokens = actual_tokens
                     local_tokens = 0
                     actual_cost = round((actual_prompt / 1_000_000.0 * pricing["prompt"]) + (actual_comp / 1_000_000.0 * pricing["completion"]), 6)

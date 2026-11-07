@@ -6,9 +6,11 @@ Part of Handout Feature F1: Agentic RAG System for TestForge.
 """
 
 from __future__ import annotations
-import re
+
 import logging
-from typing import List, Dict, Any, Optional
+import re
+from typing import Any, Dict, List, Optional
+
 from pydantic import BaseModel, Field
 
 from testforge.rag.vector_store import TestForgeVectorStore

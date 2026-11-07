@@ -10,10 +10,13 @@ Authors: Sourabh & Shreshth
 """
 
 from __future__ import annotations
+
 import os
 import platform
+from typing import Any, Dict
+
 import psutil
-from typing import Dict, Any
+
 
 class HardwareProfile:
     def __init__(self):
@@ -22,7 +25,7 @@ class HardwareProfile:
         self.cpu_count = os.cpu_count() or 4
         self.total_memory_gb = round(psutil.virtual_memory().total / (1024 ** 3), 2)
         self.is_apple_silicon = (self.os_system == "Darwin" and self.machine == "arm64")
-        
+
         # Check MLX availability
         self.has_mlx = False
         try:

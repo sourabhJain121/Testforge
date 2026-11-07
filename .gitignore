@@ -13,6 +13,9 @@ node_modules/
 *.db
 *.db-wal
 *.db-shm
+qa_artifacts/*.db
+qa_artifacts/*.db-wal
+qa_artifacts/*.db-shm
 testforge_trace.jsonl
 trace_*.jsonl
 scratch/

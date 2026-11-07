@@ -18,12 +18,14 @@ Engine Modes:
 """
 
 from __future__ import annotations
+
+import json
 import os
 import time
-import json
-import urllib.request
 import urllib.error
-from typing import Dict, Any, Optional, Tuple, List
+import urllib.request
+from typing import Dict, List, Optional, Tuple
+
 from testforge.logger import TraceLogger
 
 
@@ -158,8 +160,7 @@ class HybridLLMClient:
         )
 
         if should_try_cloud:
-            from google.genai import types
-            from google.genai import errors
+            from google.genai import errors, types
 
             retry_delays = [2.0, 4.0]
             for attempt in range(1, 3):
@@ -186,7 +187,7 @@ class HybridLLMClient:
                         tokens["total_tokens"] = getattr(meta, "total_token_count", 0) or 0
 
                     self.active_provider = f"Cloud Gemini ({self.cloud_model})"
-                    
+
                     # Log telemetry to testforge_trace.jsonl
                     if self.logger:
                         self.logger.log_llm_event(

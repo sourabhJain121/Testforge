@@ -9,9 +9,9 @@ the original program from the mutated version, and confidence annotations.
 """
 
 from __future__ import annotations
-import ast
-import re
-from typing import List, Dict, Optional, Literal, Any, Union
+
+from typing import Any, Dict, List, Literal, Optional, Union
+
 from pydantic import BaseModel, Field
 
 from testforge.state import MutantRecord
