@@ -1361,3 +1361,67 @@ class A2ABroker:
         """Clears message history."""
         with self._lock:
             self._history.clear()
+
+
+# ==============================================================================
+# 5. Protocol Re-Exports (Official Google/LF A2A Interoperability Layer)
+# ==============================================================================
+
+_OFFICIAL_A2A_SYMBOLS = {
+    "build_testforge_agent_card",
+    "create_testforge_a2a_app",
+    "TestForgeA2AClient",
+    "TestForgeA2AExecutor",
+    "OFFICIAL_A2A_PROTOCOL_VERSION",
+    "TESTFORGE_AGENT_NAME",
+    "TESTFORGE_AGENT_VERSION",
+}
+
+
+def __getattr__(name: str) -> Any:
+    """
+    Lazy re-export of official A2A protocol components from testforge.a2a_protocol.
+    Prevents circular import while offering a unified A2A access point.
+    """
+    if name in _OFFICIAL_A2A_SYMBOLS:
+        import testforge.a2a_protocol as proto
+        return getattr(proto, name)
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+
+
+__all__ = [
+    # In-process FIPA-ACL Messaging Primitives
+    "A2APerformative",
+    "A2AMessage",
+    "A2ABroker",
+    "AgentHandlerRegistration",
+    "WorkflowStage",
+    "SupervisorAction",
+    "SupervisorDecisionPayload",
+    "WorkflowTransitionRecord",
+    # Typed Structured Payloads
+    "CriticDirectivePayload",
+    "A2ACritiqueRequestPayload",
+    "A2ACritiqueResponsePayload",
+    "GeneratedTestPayload",
+    "A2ATestGenerationRequestPayload",
+    "A2AErrorPayload",
+    "CodeIntelligencePayload",
+    "TestPlanPayload",
+    "TestExecutionPayload",
+    "SecurityEvaluationPayload",
+    "MutationQualityCriticPayload",
+    "RepairRequestPayload",
+    "RepairDirectivePayload",
+    "RepairResultPayload",
+    "ReflectionDecisionPayload",
+    # Official A2A Protocol Re-exports
+    "build_testforge_agent_card",
+    "create_testforge_a2a_app",
+    "TestForgeA2AClient",
+    "TestForgeA2AExecutor",
+    "OFFICIAL_A2A_PROTOCOL_VERSION",
+    "TESTFORGE_AGENT_NAME",
+    "TESTFORGE_AGENT_VERSION",
+]
+
