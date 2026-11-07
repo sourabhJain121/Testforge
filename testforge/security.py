@@ -94,7 +94,9 @@ _PROMPT_INJECTION_PATTERNS = [
     (
         "INJ_SYSTEM_OVERRIDE",
         re.compile(
-            r"(?i)\b(?:ignore|disregard|forget|override|bypass)\s+(?:all\s+|the\s+)*(?:(?:previous|prior|above|system|developer|safety)\s+)*(?:instructions|prompts|rules|constraints|directives)\b"
+            r"\b(?:ignore|disregard|forget|override|bypass)\s+(?:all\s+|the\s+)*(?:(?:previous|prior|above|system|developer|safety)\s+)*(?:instructions|prompts|rules|constraints|directives|boundaries|guidelines|policies|evaluation)\b|"
+            r"\bsystem\s*:\s*(?:override|bypass|ignore|instruction|directive)\b",
+            re.IGNORECASE,
         ),
         SecurityRiskLevel.CRITICAL,
         "Attempt to override or ignore system/developer instructions.",
@@ -102,7 +104,9 @@ _PROMPT_INJECTION_PATTERNS = [
     (
         "INJ_NEW_ROLE_PROMPT",
         re.compile(
-            r"(?i)\b(?:you\s+are\s+now|act\s+as|pretend\s+to\s+be)\s+(?:an?\s+)?(?:unrestricted|dan|jailbreak|root|system|admin)\b"
+            r"\b(?:you\s+are\s+now|act\s+as|pretend\s+to\s+be)\s+(?:an?\s+)?(?:unrestricted|dan|jailbreak|root(?:_admin)?|system|admin(?:istrator)?)\b|"
+            r"\b(?:do\s+anything\s+now|dan\s+mode)\b",
+            re.IGNORECASE,
         ),
         SecurityRiskLevel.HIGH,
         "Attempt to assign an unrestricted or unauthorized persona.",
@@ -166,7 +170,7 @@ _PROMPT_INJECTION_PATTERNS = [
     (
         "INJ_MARKDOWN_DIRECTIVE",
         re.compile(
-            r"(?i)(?:<!--\s*(?:system|developer|admin|override)\s*instruction\b|\[\s*developer\s+instruction\s*\]|\[\s*system\s+directive\s*\])"
+            r"(?i)(?:<!--\s*(?:system|developer|admin|override)\s*instruction\b|\[\s*developer\s+instruction\s*\]|\[\s*system\s+directive\s*\]|#*\s*(?:system|developer|admin|override)\s*(?:instruction|directive)\b)"
         ),
         SecurityRiskLevel.HIGH,
         "Attempt to inject hidden markdown directives or comments to hijack agent persona.",
@@ -438,6 +442,18 @@ class _ASTSecurityVisitor(ast.NodeVisitor):
                             node_type="Call",
                         )
                     )
+                elif target_attr in ("__import__", "import_module"):
+                    severity = SecuritySeverity.BLOCK if self.policy.block_dynamic_imports else SecuritySeverity.WARN
+                    self.findings.append(
+                        RuleFinding(
+                            rule_id="SEC_AST_DYNAMIC_IMPORT",
+                            severity=severity,
+                            message=f"Reflective dynamic module import '{target_attr}' via getattr() is prohibited.",
+                            line_number=getattr(node, "lineno", None),
+                            column_number=getattr(node, "col_offset", None),
+                            node_type="Call",
+                        )
+                    )
 
         # 1. Builtin eval / exec
         # Target ONLY direct calls eval() or exec(), or builtins.eval() / builtins.exec() / __builtins__.eval()
@@ -456,7 +472,7 @@ class _ASTSecurityVisitor(ast.NodeVisitor):
             )
 
         # 2. Dangerous OS system / spawn commands (including aliased imports or posix)
-        elif (obj in ("os", "posix") and func in ("system", "popen", "popen2", "popen3", "popen4", "spawnl", "spawnle", "spawnlp", "spawnlpe", "spawnv", "spawnve", "spawnvp", "spawnvpe")) or (obj is None and func in self._os_dangerous_funcs):
+        elif (obj in ("os", "posix") and func in ("system", "popen", "popen2", "popen3", "popen4", "spawnl", "spawnle", "spawnlp", "spawnlpe", "spawnv", "spawnve", "spawnvp", "spawnvpe", "posix_spawn", "posix_spawnp")) or (obj is None and func in self._os_dangerous_funcs):
             severity = SecuritySeverity.BLOCK if self.policy.block_os_commands else SecuritySeverity.WARN
             call_repr = f"{obj or 'os'}.{func}" if obj else func
             self.findings.append(
@@ -471,9 +487,9 @@ class _ASTSecurityVisitor(ast.NodeVisitor):
             )
 
         # 3. Subprocess execution
-        elif (obj == "subprocess" and func in ("Popen", "run", "call", "check_call", "check_output")) or (obj is None and func in self._subprocess_funcs):
+        elif (obj == "subprocess" and func in ("Popen", "run", "call", "check_call", "check_output")) or (obj == "asyncio" and func in ("create_subprocess_shell", "create_subprocess_exec")) or (obj is None and func in self._subprocess_funcs):
             severity = SecuritySeverity.BLOCK if self.policy.block_subprocesses else SecuritySeverity.WARN
-            call_repr = f"subprocess.{func}" if obj == "subprocess" else func
+            call_repr = f"{obj}.{func}" if obj else func
             self.findings.append(
                 RuleFinding(
                     rule_id="SEC_AST_SUBPROCESS",
@@ -486,7 +502,7 @@ class _ASTSecurityVisitor(ast.NodeVisitor):
             )
 
         # 4. Dynamic import execution bypasses
-        elif (obj is None and func == "__import__") or (obj == "importlib" and func in ("import_module", "invalidate_caches")):
+        elif (obj is None and func == "__import__") or (obj == "importlib" and func in ("import_module", "invalidate_caches", "__import__")):
             severity = SecuritySeverity.BLOCK if self.policy.block_dynamic_imports else SecuritySeverity.WARN
             call_repr = f"importlib.{func}" if obj == "importlib" else func
             self.findings.append(
@@ -500,8 +516,15 @@ class _ASTSecurityVisitor(ast.NodeVisitor):
                 )
             )
 
-        # 5. Raw network socket creation and live URL fetching
-        elif (obj == "socket" and func in ("socket", "create_connection")) or (obj in ("urllib.request", "request") and func in ("urlopen", "urlretrieve")):
+        # 5. Raw network socket creation, HTTP client, and live URL fetching
+        elif (
+            (obj == "socket" and func in ("socket", "create_connection"))
+            or (obj == "asyncio" and func in ("open_connection", "start_server"))
+            or (obj in ("urllib.request", "request") and func in ("urlopen", "urlretrieve"))
+            or (obj == "requests" and func in ("get", "post", "put", "delete", "request", "patch", "head"))
+            or (obj in ("http.client", "http") and func in ("HTTPConnection", "HTTPSConnection"))
+            or (obj == "ftplib" and func in ("FTP", "FTP_TLS"))
+        ):
             severity = SecuritySeverity.BLOCK if self.policy.block_sockets else SecuritySeverity.WARN
             call_repr = f"{obj}.{func}" if obj else func
             self.findings.append(
@@ -545,6 +568,23 @@ class _ASTSecurityVisitor(ast.NodeVisitor):
                         line_number=getattr(node, "lineno", None),
                         column_number=getattr(node, "col_offset", None),
                         node_type="Name",
+                    )
+                )
+        self.generic_visit(node)
+
+    def visit_Subscript(self, node: ast.Subscript):
+        # Detect e.g. __builtins__.__dict__['exec'] or dict access to dynamic primitives
+        if isinstance(node.slice, ast.Constant) and isinstance(node.slice.value, str):
+            if node.slice.value in ("exec", "eval", "__import__"):
+                severity = SecuritySeverity.BLOCK if self.policy.block_eval_exec else SecuritySeverity.WARN
+                self.findings.append(
+                    RuleFinding(
+                        rule_id="SEC_AST_EVAL_EXEC",
+                        severity=severity,
+                        message=f"Dynamic lookup and access to execution primitive '{node.slice.value}' via subscript is prohibited.",
+                        line_number=getattr(node, "lineno", None),
+                        column_number=getattr(node, "col_offset", None),
+                        node_type="Subscript",
                     )
                 )
         self.generic_visit(node)

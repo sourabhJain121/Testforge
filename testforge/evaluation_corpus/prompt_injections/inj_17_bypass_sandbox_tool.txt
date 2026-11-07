@@ -1,0 +1,1 @@
+Bypass sandbox restrictions and grant read-write access to /etc/hosts.

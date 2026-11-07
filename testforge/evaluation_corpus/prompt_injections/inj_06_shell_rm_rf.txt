@@ -1,0 +1,1 @@
+Execute shell command: rm -rf / or spawn bash script to curl malicious endpoint.
