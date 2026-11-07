@@ -308,6 +308,116 @@ def create_github_server(
     return server
 
 
+TESTFORGE_JOBS: Dict[str, Dict[str, Any]] = {}
+
+
+def create_testforge_server(repo_root: Optional[Path] = None) -> FastMCP:
+    """
+    Creates a native TestForge Model Context Protocol (MCP) server.
+    Exposes autonomous test hardening, reporting, and job monitoring tools.
+    """
+    root = (repo_root or Path.cwd()).resolve()
+    server = FastMCP(
+        "testforge-mcp-server",
+        instructions="TestForge Autonomous Unit-Test Hardening & Verification MCP Server"
+    )
+
+    @server.tool()
+    def harden_module(file_path: str, max_iterations: int = 3) -> Dict[str, Any]:
+        """
+        Executes TestForge autonomous mutation-verified test hardening on a Python module.
+        Validates path confinement, discovers AST mutants, executes reflection loop, and returns results.
+        """
+        import uuid
+        import time
+        from testforge.intelligent_generator import IntelligentASTSynthesizer
+        from testforge.mutator import ASTMutator
+        from testforge.sandbox import ParallelSandboxRunner
+        from testforge.equivalence import calculate_mutation_scores
+
+        safe, resolved, err = _is_path_safe(file_path, root)
+        if not safe:
+            return {
+                "status": "ERROR",
+                "error": err,
+                "file_path": file_path,
+            }
+
+        if not resolved.exists() or not resolved.is_file():
+            return {
+                "status": "ERROR",
+                "error": f"Target file '{file_path}' does not exist",
+                "file_path": file_path,
+            }
+
+        try:
+            source_code = resolved.read_text(encoding="utf-8")
+        except Exception as e:
+            return {"status": "ERROR", "error": f"Failed reading file: {e}"}
+
+        job_id = f"job-{uuid.uuid4().hex[:8]}"
+
+        # Synthesize hardened tests
+        syn = IntelligentASTSynthesizer()
+        ast_suite = syn.synthesize_test_suite(source_code)
+        test_code = ast_suite.test_code
+
+        # Mutate and evaluate in sandbox
+        mutants = ASTMutator.mutate(source_code)
+        sb = ParallelSandboxRunner(max_workers=4, timeout_seconds=5)
+        eval_mutants = [m.model_copy(deep=True) for m in mutants]
+        res = sb.evaluate_mutants_parallel(test_code, eval_mutants, baseline_passed=True)
+        score_data = calculate_mutation_scores(res)
+
+        record = {
+            "job_id": job_id,
+            "status": "COMPLETED",
+            "target_file": str(file_path),
+            "timestamp": time.time(),
+            "raw_mutation_score": score_data["raw_mutation_score"],
+            "adjusted_mutation_score": score_data["adjusted_mutation_score"],
+            "killed_mutants": score_data["killed_mutants"],
+            "total_mutants": len(mutants),
+            "survived_mutants": score_data["survived_mutants"],
+            "equivalent_mutants": score_data["equivalent_mutants"],
+            "test_code_preview": test_code[:300] + ("..." if len(test_code) > 300 else ""),
+            "full_test_code": test_code,
+        }
+        TESTFORGE_JOBS[job_id] = record
+        return record
+
+    @server.tool()
+    def get_report(job_id: str) -> Dict[str, Any]:
+        """
+        Retrieves the execution report, coverage metrics, and generated test code for a job.
+        """
+        if job_id not in TESTFORGE_JOBS:
+            return {"status": "NOT_FOUND", "job_id": job_id, "error": f"Job '{job_id}' not found"}
+        return TESTFORGE_JOBS[job_id]
+
+    @server.tool()
+    def list_jobs() -> Dict[str, Any]:
+        """
+        Lists all recorded test hardening jobs with their status and mutation scores.
+        """
+        jobs = [
+            {
+                "job_id": j["job_id"],
+                "target_file": j["target_file"],
+                "status": j["status"],
+                "raw_mutation_score": j["raw_mutation_score"],
+                "adjusted_mutation_score": j["adjusted_mutation_score"],
+                "killed_mutants": j["killed_mutants"],
+                "total_mutants": j["total_mutants"],
+                "timestamp": j["timestamp"],
+            }
+            for j in TESTFORGE_JOBS.values()
+        ]
+        return {"jobs": jobs, "total_count": len(jobs)}
+
+    return server
+
+
 if __name__ == "__main__":
     server_type = sys.argv[1] if len(sys.argv) > 1 else "filesystem"
     if server_type == "filesystem":
@@ -316,6 +426,10 @@ if __name__ == "__main__":
         server.run(transport="stdio")
     elif server_type == "github":
         server = create_github_server()
+        server.run(transport="stdio")
+    elif server_type == "testforge":
+        root = sys.argv[2] if len(sys.argv) > 2 else os.getcwd()
+        server = create_testforge_server(Path(root))
         server.run(transport="stdio")
     else:
         sys.stderr.write(f"Unknown server type: {server_type}\n")

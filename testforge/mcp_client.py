@@ -61,7 +61,9 @@ DEFAULT_ALLOWED_TOOLS = {
     "directory_tree", "search_files", "list_allowed_directories",
     # GitHub tools
     "get_file_contents", "get_repository_info", "search_repositories",
-    "get_repository_tree", "get_issue", "get_pull_request", "list_commits"
+    "get_repository_tree", "get_issue", "get_pull_request", "list_commits",
+    # TestForge Native MCP tools
+    "harden_module", "get_report", "list_jobs"
 }
 
 # Explicitly blocked destructive tools
@@ -668,4 +670,26 @@ def create_github_client(
         server_params=params,
         callback_registry=callback_registry,
         server_id="github-mcp"
+    )
+
+
+def create_testforge_client(
+    permitted_root: Optional[Path] = None,
+    callback_registry: Optional[CallbackRegistry] = None
+) -> MCPClientManager:
+    """
+    Creates an MCPClientManager configured for the native TestForge MCP server.
+    """
+    root_path = (permitted_root or Path(__file__).parent.parent).resolve()
+    python_bin = sys.executable
+    params = StdioServerParameters(
+        command=python_bin,
+        args=["-m", "testforge.mcp_server", "testforge", str(root_path)],
+        env={"PYTHONPATH": str(root_path)}
+    )
+    return MCPClientManager(
+        server_params=params,
+        permitted_root=root_path,
+        callback_registry=callback_registry,
+        server_id="testforge-mcp"
     )
