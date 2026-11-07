@@ -1,0 +1,146 @@
+{
+  "exporter": "OpenTelemetry InMemOtelSpanCollector",
+  "tracer_name": "testforge.tracer",
+  "total_spans_collected": 5,
+  "total_supervisor_decisions": 2,
+  "spans": [
+    {
+      "name": "testforge.job.job_otel_discount_01",
+      "trace_id": "05cada35f9950e4359a1c27135f49b85",
+      "span_id": "c30346337dae3525",
+      "status": "OK",
+      "duration_ms": 0.015,
+      "start_time": 1794064054556232000,
+      "end_time": 1794064054556247000,
+      "attributes": {
+        "testforge.job_id": "job_otel_discount_01",
+        "testforge.target_path": "samples/discount.py",
+        "testforge.iterations": 3,
+        "testforge.mutation_score": 100.0,
+        "testforge.total_mutants": 19,
+        "testforge.killed_mutants": 19,
+        "testforge.tokens_consumed": 4250,
+        "testforge.cost_usd": 0.00035,
+        "testforge.duration_ms": 4820.0,
+        "service.name": "testforge-engine",
+        "service.version": "1.0.0"
+      },
+      "events_count": 0
+    },
+    {
+      "name": "testforge.agent.CodeIntelligenceAgent",
+      "trace_id": "5fe1d6571b933a2686871e15bfdbb08e",
+      "span_id": "d66df78f6030677c",
+      "status": "OK",
+      "duration_ms": 0.005,
+      "start_time": 1794064054556283000,
+      "end_time": 1794064054556288000,
+      "attributes": {
+        "testforge.job_id": "job_otel_discount_01",
+        "testforge.agent_name": "CodeIntelligenceAgent",
+        "testforge.iteration": 0,
+        "testforge.duration_ms": 180.0,
+        "testforge.tokens_consumed": 0,
+        "testforge.cost_usd": 0.0,
+        "service.name": "testforge-agent",
+        "testforge.meta.cyclomatic_complexity": 3,
+        "testforge.meta.ast_nodes": 45
+      },
+      "events_count": 0
+    },
+    {
+      "name": "testforge.agent.GoogleADKTestGenerator",
+      "trace_id": "b9109a36e30c73b8377af8a0ae1f9c0c",
+      "span_id": "6a0bc3548561e635",
+      "status": "OK",
+      "duration_ms": 0.004,
+      "start_time": 1794064054556308000,
+      "end_time": 1794064054556312000,
+      "attributes": {
+        "testforge.job_id": "job_otel_discount_01",
+        "testforge.agent_name": "GoogleADKTestGenerator",
+        "testforge.iteration": 1,
+        "testforge.duration_ms": 850.0,
+        "testforge.tokens_consumed": 1450,
+        "testforge.cost_usd": 0.00012,
+        "service.name": "testforge-agent",
+        "testforge.meta.tests_synthesized": 3,
+        "testforge.meta.syntax_valid": true
+      },
+      "events_count": 0
+    },
+    {
+      "name": "testforge.agent.MutationQualityCriticAgent",
+      "trace_id": "2cbe848cf6255279d63399cc55d966a6",
+      "span_id": "c4226e6f1f50cf6f",
+      "status": "OK",
+      "duration_ms": 0.003,
+      "start_time": 1794064054556342000,
+      "end_time": 1794064054556345000,
+      "attributes": {
+        "testforge.job_id": "job_otel_discount_01",
+        "testforge.agent_name": "MutationQualityCriticAgent",
+        "testforge.iteration": 1,
+        "testforge.duration_ms": 920.0,
+        "testforge.tokens_consumed": 1200,
+        "testforge.cost_usd": 0.0001,
+        "service.name": "testforge-agent",
+        "testforge.meta.survivors_analyzed": 13,
+        "testforge.meta.directives_issued": 2
+      },
+      "events_count": 0
+    },
+    {
+      "name": "testforge.agent.ReflectionRepairAgent",
+      "trace_id": "f12815d8081517f65367f3b2a7f2095c",
+      "span_id": "aca4f1eec94ef692",
+      "status": "OK",
+      "duration_ms": 0.002,
+      "start_time": 1794064054556358000,
+      "end_time": 1794064054556360000,
+      "attributes": {
+        "testforge.job_id": "job_otel_discount_01",
+        "testforge.agent_name": "ReflectionRepairAgent",
+        "testforge.iteration": 2,
+        "testforge.duration_ms": 780.0,
+        "testforge.tokens_consumed": 1600,
+        "testforge.cost_usd": 0.00013,
+        "service.name": "testforge-agent",
+        "testforge.meta.patches_synthesized": 2,
+        "testforge.meta.accepted": true
+      },
+      "events_count": 0
+    }
+  ],
+  "supervisor_decision_logs": [
+    {
+      "decision_id": "dec_8c2e35ceb1",
+      "job_id": "job_otel_discount_01",
+      "iteration": 1,
+      "supervisor_agent": "SupervisorAgent",
+      "target_agent": "MutationQualityCriticAgent",
+      "decision_type": "DISPATCH_AGENT",
+      "reasoning": "Initial test pass killed 6/19 mutants (31.6% raw score). Dispatched critic to diagnose 13 survivors.",
+      "metrics_snapshot": {
+        "raw_score": 31.58,
+        "survivors": 13
+      },
+      "timestamp": 1794064054.556322
+    },
+    {
+      "decision_id": "dec_0610c5be52",
+      "job_id": "job_otel_discount_01",
+      "iteration": 2,
+      "supervisor_agent": "SupervisorAgent",
+      "target_agent": "TestForgeOrchestrator",
+      "decision_type": "HALT_CRITERIA_MET",
+      "reasoning": "Adjusted mutation score reached 100.0% (19/19 killed). Target score 85.0% achieved.",
+      "metrics_snapshot": {
+        "adjusted_score": 100.0,
+        "killed": 19,
+        "total": 19
+      },
+      "timestamp": 1794064054.5563672
+    }
+  ]
+}

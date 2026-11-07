@@ -1617,6 +1617,28 @@ async def execute_approved_write_endpoint(request_id: str):
 
 
 # --------------------------------------------------------------------------
+# OpenTelemetry Observability Endpoints (Sub-Task 3.4)
+# --------------------------------------------------------------------------
+
+@app.get("/api/observability/traces")
+async def get_otel_traces(job_id: Optional[str] = None):
+    """Retrieves recorded OpenTelemetry spans and trace hierarchies."""
+    from testforge.observability import TestForgeOtelTracer
+    tracer = TestForgeOtelTracer.get_instance()
+    spans = tracer.get_traces_summary(job_id=job_id)
+    return {"spans": spans, "total_spans": len(spans)}
+
+
+@app.get("/api/observability/supervisor-decisions")
+async def get_supervisor_decisions_endpoint(job_id: Optional[str] = None):
+    """Retrieves recorded Supervisor orchestration decision logs."""
+    from testforge.observability import TestForgeOtelTracer
+    tracer = TestForgeOtelTracer.get_instance()
+    decisions = tracer.get_supervisor_decisions(job_id=job_id)
+    return {"decisions": decisions, "total_decisions": len(decisions)}
+
+
+# --------------------------------------------------------------------------
 # Checkpoint Persistence & Recovery Endpoints
 # --------------------------------------------------------------------------
 
