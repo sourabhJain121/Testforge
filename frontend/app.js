@@ -35,6 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
     },
     hardening: {
       jobId: null,
+      currentJobId: null,
       pollTimer: null,
       status: 'IDLE',
       progress: 0,
@@ -2053,6 +2054,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const jobData = await res.json();
       state.hardening.jobId = jobData.job_id;
+      state.hardening.currentJobId = jobData.job_id;
       state.hardening.status = 'RUNNING';
 
       if (dom.btnCancelHardening) {
@@ -2395,6 +2397,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!statusOverride) {
       state.hardening.status = 'COMPLETED';
     }
+    state.hardening.currentJobId = job.job_id || state.hardening.jobId;
     dom.btnRunHardening.disabled = false;
     dom.btnRunHardening.innerHTML = '<span class="icon">⚡</span> Run TestForge Autonomous Hardening';
 
@@ -2917,7 +2920,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // CI/CD Enterprise Report Export Handlers (GAP-010)
   if (dom.btnDownloadJunit) {
     dom.btnDownloadJunit.addEventListener('click', () => {
-      const jobId = state.hardening.currentJobId;
+      const jobId = state.hardening.currentJobId || state.hardening.jobId;
       if (!jobId) {
         showToast('No active or completed hardening job available to export.', 'warning');
         return;
@@ -2929,7 +2932,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (dom.btnDownloadSarif) {
     dom.btnDownloadSarif.addEventListener('click', () => {
-      const jobId = state.hardening.currentJobId;
+      const jobId = state.hardening.currentJobId || state.hardening.jobId;
       if (!jobId) {
         showToast('No active or completed hardening job available to export.', 'warning');
         return;
