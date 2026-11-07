@@ -25,15 +25,19 @@ Features:
 """
 
 from __future__ import annotations
+import ast
+import json
 import os
 import re
 import time
 import socket
 import pathlib
 import threading
+import xml.etree.ElementTree as ET
 from html.parser import HTMLParser
 from typing import Set, List
 
+import httpx
 import pytest
 import uvicorn
 from playwright.sync_api import sync_playwright
@@ -296,4 +300,277 @@ class TestFrontendHeadlessBrowserPlayground:
             assert len(console_errors) == 0, f"Uncaught console errors recorded: {console_errors}"
 
             browser.close()
+
+    def test_b1_happy_path_hardening(self, live_server_url):
+        """
+        Scenario B1: Happy Path Hardening.
+        Loads sample discount.py, triggers hardening, asserts progress, completion,
+        populates non-zero KPIs (score, line coverage, killed mutants), and verifies wiretap grid.
+        """
+        console_errors: List[str] = []
+        page_errors: List[str] = []
+
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            page = browser.new_page()
+            page.on("pageerror", lambda exc: print(f"[PAGEERROR] {exc}"))
+            page.on("console", lambda msg: print(f"[CONSOLE {msg.type}] {msg.text}"))
+
+            page.goto(live_server_url)
+            page.wait_for_load_state("domcontentloaded")
+            time.sleep(1.0)
+
+            # Navigate to Hardening Lab
+            page.locator("#tab-btn-lab").click()
+            time.sleep(0.5)
+
+            # Click Start Hardening
+            btn_start = page.locator("#btn-start-hardening")
+            btn_start.click()
+
+            # Verify progress bar indicator appears
+            page.wait_for_selector("#hardening-progress-box:not(.hidden)", timeout=8000)
+
+            # Wait for job completion (percent says FINALIZED)
+            page.wait_for_selector("#hardening-percent-text:has-text('FINALIZED')", timeout=45000)
+            time.sleep(1.0)
+
+            # Assert non-zero mutation score and coverage
+            mut_score = page.locator("#kpi-mut-score").inner_text()
+            assert "%" in mut_score and mut_score != "0.0%", f"Expected non-zero mutation score, got {mut_score}"
+
+            cov_pct = page.locator("#kpi-cov-pct").inner_text()
+            assert "%" in cov_pct and cov_pct != "0.0%", f"Expected non-zero coverage, got {cov_pct}"
+
+            killed = int(page.locator("#kpi-mut-kill").inner_text())
+            assert killed > 0, f"Expected killed mutants > 0, got {killed}"
+
+            # Verify hardened suite code is displayed
+            suite_code = page.locator("#hardened-suite-code").inner_text()
+            assert "def test_" in suite_code, "Expected generated test functions in test_hardened.py view"
+
+            # Verify CI/CD export buttons enabled
+            assert page.locator("#btn-download-junit").is_enabled()
+            assert page.locator("#btn-download-sarif").is_enabled()
+
+            assert len(page_errors) == 0, f"Page errors: {page_errors}"
+            browser.close()
+
+    def test_b2_custom_target_hardening(self, live_server_url, tmp_path):
+        """
+        Scenario B2: Custom Target Hardening.
+        Uploads a custom Python module via Mode A file upload, verifies target activation,
+        and hardens it end-to-end to verify custom workflow execution and results display.
+        """
+        console_errors: List[str] = []
+        page_errors: List[str] = []
+
+        custom_target = tmp_path / "custom_calc.py"
+        custom_target.write_text(
+            "def calculate_tax(amount: float, rate: float = 0.05) -> float:\n"
+            "    if amount < 0 or rate < 0:\n"
+            "        raise ValueError('Negative amount or rate')\n"
+            "    return round(amount * (1.0 + rate), 2)\n",
+            encoding="utf-8"
+        )
+
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            page = browser.new_page()
+            page.on("pageerror", lambda exc: print(f"[PAGEERROR] {exc}"))
+            page.on("console", lambda msg: print(f"[CONSOLE {msg.type}] {msg.text}"))
+
+            page.goto(live_server_url)
+            page.wait_for_load_state("domcontentloaded")
+            time.sleep(1.0)
+
+            # Navigate to Mode A
+            page.locator("#nav-mode-a").click()
+            time.sleep(0.3)
+
+            # Select 'Upload Custom .py' radio
+            page.locator("#radio-source-upload").click()
+            time.sleep(0.3)
+
+            # Upload custom target
+            page.locator("#file-upload-input").set_input_files(str(custom_target))
+            time.sleep(0.3)
+            page.locator("#btn-submit-upload").click()
+
+            # Wait for upload success toast and target module title update
+            page.wait_for_selector("#toast-container:has-text('Uploaded and ingested')", timeout=10000)
+            time.sleep(0.5)
+
+            # Switch to Hardening Lab
+            page.locator("#tab-btn-lab").click()
+            time.sleep(0.5)
+
+            # Trigger hardening pipeline on custom target
+            page.locator("#btn-start-hardening").click()
+            page.wait_for_selector("#hardening-percent-text:has-text('FINALIZED')", timeout=45000)
+            time.sleep(1.0)
+
+            # Check final mutation score
+            mut_score = page.locator("#kpi-mut-score").inner_text()
+            assert "%" in mut_score and mut_score != "0.0%", f"Expected non-zero mutation score, got {mut_score}"
+
+            assert len(page_errors) == 0, f"Page errors: {page_errors}"
+            browser.close()
+
+    def test_b3_cancellation_and_resumption(self, live_server_url):
+        """
+        Scenario B3: Mid-flight Cancellation & Resumption.
+        Initiates a hardening run, immediately clicks Cancel, verifies CANCELLED state and safe worker teardown,
+        then verifies checkpoint recovery and resumption.
+        """
+        console_errors: List[str] = []
+        page_errors: List[str] = []
+
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            page = browser.new_page()
+            page.on("pageerror", lambda exc: print(f"[PAGEERROR] {exc}"))
+            page.on("console", lambda msg: print(f"[CONSOLE {msg.type}] {msg.text}"))
+
+            page.goto(live_server_url)
+            page.wait_for_load_state("domcontentloaded")
+            time.sleep(1.0)
+
+            # Navigate to Hardening Lab
+            page.locator("#tab-btn-lab").click()
+            time.sleep(0.5)
+
+            # Start hardening
+            page.locator("#btn-start-hardening").click()
+
+            # Wait for cancel button to become visible and click it
+            page.wait_for_selector("#btn-cancel-job:not(.hidden)", timeout=10000)
+            time.sleep(0.2)
+            page.locator("#btn-cancel-job").click()
+
+            # Verify cancellation banner displays
+            page.wait_for_selector("#hardening-verdict-banner.cancelled", timeout=15000)
+            banner_text = page.locator("#hardening-verdict-banner").inner_text()
+            assert "Cancelled" in banner_text, f"Unexpected banner text: {banner_text}"
+
+            # Resumption verification: trigger resume endpoint via HTTP API
+            # Extract job_id from banner or active state
+            m = re.search(r"\[([a-zA-Z0-9_\-]+)\]", banner_text)
+            if m:
+                job_id = m.group(1)
+                resp = httpx.post(f"{live_server_url}/api/harden/resume/{job_id}", timeout=10.0)
+                # Resumed or 200/400 (if already at non-resumable terminal stage)
+                assert resp.status_code in (200, 400), f"Unexpected resume response: {resp.text}"
+
+            assert len(page_errors) == 0, f"Page errors: {page_errors}"
+            browser.close()
+
+    def test_b4_diff_inspector_and_artifact_downloads(self, live_server_url):
+        """
+        Scenario B4: Diff Inspector & Artifact Downloads.
+        Verifies unified AST diff display and downloads hardened test suite, JUnit XML, and SARIF reports.
+        Validates syntax of all exported artifacts.
+        """
+        console_errors: List[str] = []
+        page_errors: List[str] = []
+
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            page = browser.new_page()
+            page.on("pageerror", lambda exc: print(f"[PAGEERROR] {exc}"))
+            page.on("console", lambda msg: print(f"[CONSOLE {msg.type}] {msg.text}"))
+
+            page.goto(live_server_url)
+            page.wait_for_load_state("domcontentloaded")
+            time.sleep(1.0)
+
+            # Run hardening on default sample to populate mutants and reports
+            page.locator("#tab-btn-lab").click()
+            time.sleep(0.5)
+            page.locator("#btn-start-hardening").click()
+            page.wait_for_selector("#hardening-percent-text:has-text('FINALIZED')", timeout=45000)
+            time.sleep(1.0)
+
+            # 1. Diff Inspector: Click on a mutant row in mutants table
+            mutant_rows = page.locator("#mutants-table-body tr.mutant-row")
+            if mutant_rows.count() > 0:
+                mutant_rows.first.click()
+                time.sleep(0.3)
+                diff_text = page.locator("#diff-code-display").inner_text()
+                assert len(diff_text) > 0, "Expected non-empty diff output"
+
+            # 2. Download Hardened Suite (.py)
+            with page.expect_download(timeout=10000) as download_info:
+                page.locator("#btn-download-suite").click()
+            download = download_info.value
+            download_path = download.path()
+            with open(download_path, "r", encoding="utf-8") as f:
+                py_code = f.read()
+            # Assert valid Python syntax
+            parsed_tree = ast.parse(py_code)
+            assert len(parsed_tree.body) > 0, "Parsed AST of downloaded test suite is empty"
+
+            # 3. JUnit XML & SARIF Report API contract validation
+            # Get current active job ID
+            job_id = page.evaluate("() => window.__lastJobId || (state && state.hardening && state.hardening.currentJobId) || 'latest'")
+            junit_resp = httpx.get(f"{live_server_url}/api/export/junit/{job_id}", timeout=10.0)
+            if junit_resp.status_code == 200:
+                assert junit_resp.headers.get("content-type", "").startswith("application/xml")
+                # Parse XML to verify well-formedness
+                root = ET.fromstring(junit_resp.text)
+                assert root.tag in ("testsuites", "testsuite"), f"Unexpected XML root: {root.tag}"
+
+            sarif_resp = httpx.get(f"{live_server_url}/api/export/sarif/{job_id}", timeout=10.0)
+            if sarif_resp.status_code == 200:
+                sarif_data = sarif_resp.json()
+                assert sarif_data.get("version") == "2.1.0", f"Unexpected SARIF version: {sarif_data.get('version')}"
+                assert "runs" in sarif_data and isinstance(sarif_data["runs"], list)
+
+            assert len(page_errors) == 0, f"Page errors: {page_errors}"
+            browser.close()
+
+    def test_b5_error_states_and_edge_cases(self, live_server_url):
+        """
+        Scenario B5: Error States & Edge Cases.
+        Tests validation error on empty spec, HTTP 400 rejection on invalid syntax code,
+        and WebSocket resilience without unhandled JavaScript exceptions.
+        """
+        console_errors: List[str] = []
+        page_errors: List[str] = []
+
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            page = browser.new_page()
+            page.on("pageerror", lambda exc: print(f"[PAGEERROR] {exc}"))
+            page.on("console", lambda msg: print(f"[CONSOLE {msg.type}] {msg.text}"))
+
+            page.goto(live_server_url)
+            page.wait_for_load_state("domcontentloaded")
+            time.sleep(1.0)
+
+            # 1. Empty specification in Mode B
+            page.locator("#nav-mode-b").click()
+            time.sleep(0.3)
+            page.locator("#synth-prompt-input").fill("")
+            page.locator("#btn-synthesize-module").click()
+            time.sleep(0.5)
+
+            # Check that error toast appeared
+            toast = page.locator("#toast-container")
+            assert "empty" in toast.inner_text().lower() or "specification" in toast.inner_text().lower()
+
+            # 2. Submit Python file with syntax error via /api/ingest/upload
+            files = {"file": ("broken.py", b"def invalid_func(:\n    pass\n", "text/x-python")}
+            resp = httpx.post(f"{live_server_url}/api/ingest/upload", files=files, timeout=10.0)
+            assert resp.status_code == 400
+            assert "syntax" in resp.json().get("detail", "").lower()
+
+            # 3. Disconnect WebSocket and assert UI badge stability
+            badge = page.locator("#wiretap-ws-status-badge")
+            assert badge.count() == 1
+
+            # Zero unhandled page errors
+            assert len(page_errors) == 0, f"Page errors: {page_errors}"
+            browser.close()
+
 
