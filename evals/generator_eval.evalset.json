@@ -1,0 +1,84 @@
+{
+  "eval_set_id": "testforge_generator_eval",
+  "name": "TestForge Generator Agent Evaluation Set",
+  "description": "Trajectory and response-match evaluation cases for GoogleADKTestGenerator",
+  "creation_timestamp": 1794055000.0,
+  "eval_cases": [
+    {
+      "eval_id": "eval_gen_discount",
+      "creation_timestamp": 1794055000.0,
+      "session_input": {
+        "target_module": "samples/discount.py"
+      },
+      "conversation": [
+        {
+          "invocation_id": "inv_gen_discount_1",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Synthesize hardening test suite for calculate_discount targeting boundary conditions"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "def test_discount_boundary():\n    assert calculate_discount(100.0, 10, False) == pytest.approx(90.0)"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_calls": [
+              {
+                "name": "synthesize_ast_suite",
+                "args": {
+                  "target_module": "samples/discount.py"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "eval_id": "eval_gen_order_fsm",
+      "creation_timestamp": 1794055000.0,
+      "session_input": {
+        "target_module": "samples/order_fsm.py"
+      },
+      "conversation": [
+        {
+          "invocation_id": "inv_gen_order_fsm_1",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Synthesize hardening test suite for OrderFSM state machine transitions"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "def test_order_fsm_transition():\n    fsm = OrderFSM('ORD-1', 50.0)\n    fsm.apply_event('PAY')\n    assert fsm.state == 'PAID'"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_calls": [
+              {
+                "name": "synthesize_ast_suite",
+                "args": {
+                  "target_module": "samples/order_fsm.py"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

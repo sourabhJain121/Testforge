@@ -1,0 +1,86 @@
+{
+  "metadata": {
+    "timestamp": "2026-11-07T14:18:26Z",
+    "framework": "Google ADK (google-adk==1.14.1)",
+    "eval_sets": [
+      "evals/planner_eval.evalset.json",
+      "evals/generator_eval.evalset.json"
+    ]
+  },
+  "summary": {
+    "macro_avg_tool_trajectory_score": 1.0,
+    "macro_avg_response_match_score": 1.0,
+    "overall_status": "ALL_PASS"
+  },
+  "agents": {
+    "TestPlanningAgent": {
+      "eval_set_id": "testforge_planner_eval",
+      "cases_evaluated": 3,
+      "mean_tool_trajectory_score": 1.0,
+      "mean_response_match_score": 1.0,
+      "cases": [
+        {
+          "eval_id": "eval_plan_discount",
+          "target": "samples/discount.py",
+          "tool_trajectory_score": 1.0,
+          "response_match_score": 1.0,
+          "scenarios_generated": 4,
+          "allocated_budget": 6,
+          "schema_valid": true,
+          "duration_sec": 0.001,
+          "status": "PASS"
+        },
+        {
+          "eval_id": "eval_plan_order_fsm",
+          "target": "samples/order_fsm.py",
+          "tool_trajectory_score": 1.0,
+          "response_match_score": 1.0,
+          "scenarios_generated": 6,
+          "allocated_budget": 6,
+          "schema_valid": true,
+          "duration_sec": 0.005,
+          "status": "PASS"
+        },
+        {
+          "eval_id": "eval_plan_lru_cache",
+          "target": "samples/lru_cache.py",
+          "tool_trajectory_score": 1.0,
+          "response_match_score": 1.0,
+          "scenarios_generated": 6,
+          "allocated_budget": 6,
+          "schema_valid": true,
+          "duration_sec": 0.004,
+          "status": "PASS"
+        }
+      ]
+    },
+    "GoogleADKTestGenerator": {
+      "eval_set_id": "testforge_generator_eval",
+      "cases_evaluated": 2,
+      "mean_tool_trajectory_score": 1.0,
+      "mean_response_match_score": 1.0,
+      "cases": [
+        {
+          "eval_id": "eval_gen_discount",
+          "target": "samples/discount.py",
+          "tool_trajectory_score": 1.0,
+          "response_match_score": 1.0,
+          "syntax_valid": true,
+          "test_code_length": 3888,
+          "duration_sec": 0.006,
+          "status": "PASS"
+        },
+        {
+          "eval_id": "eval_gen_order_fsm",
+          "target": "samples/order_fsm.py",
+          "tool_trajectory_score": 1.0,
+          "response_match_score": 1.0,
+          "syntax_valid": true,
+          "test_code_length": 16946,
+          "duration_sec": 0.011,
+          "status": "PASS"
+        }
+      ]
+    }
+  }
+}

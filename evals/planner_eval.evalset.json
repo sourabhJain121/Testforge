@@ -1,0 +1,125 @@
+{
+  "eval_set_id": "testforge_planner_eval",
+  "name": "TestForge Planning Agent Evaluation Set",
+  "description": "Trajectory and response-match evaluation cases for TestForge PlanningAgent",
+  "creation_timestamp": 1794055000.0,
+  "eval_cases": [
+    {
+      "eval_id": "eval_plan_discount",
+      "creation_timestamp": 1794055000.0,
+      "session_input": {
+        "target_module": "samples/discount.py",
+        "description": "Calculate discount business logic"
+      },
+      "conversation": [
+        {
+          "invocation_id": "inv_plan_discount_1",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Generate a structured test plan for calculate_discount in samples/discount.py"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "{\"scenarios\": [\"nominal_discount\", \"boundary_quantity\", \"member_flag_true\", \"negative_price_exception\"], \"cyclomatic_complexity\": 4}"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_calls": [
+              {
+                "name": "analyze_ast",
+                "args": {
+                  "target_module": "samples/discount.py"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "eval_id": "eval_plan_order_fsm",
+      "creation_timestamp": 1794055000.0,
+      "session_input": {
+        "target_module": "samples/order_fsm.py",
+        "description": "Order finite state machine transitions"
+      },
+      "conversation": [
+        {
+          "invocation_id": "inv_plan_order_fsm_1",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Generate a structured test plan for OrderFSM state machine transitions"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "{\"scenarios\": [\"created_to_paid\", \"paid_to_shipped\", \"invalid_transition_exception\", \"terminal_state_lock\"], \"cyclomatic_complexity\": 6}"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_calls": [
+              {
+                "name": "analyze_state_transitions",
+                "args": {
+                  "target_module": "samples/order_fsm.py"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "eval_id": "eval_plan_lru_cache",
+      "creation_timestamp": 1794055000.0,
+      "session_input": {
+        "target_module": "samples/lru_cache.py",
+        "description": "LRU cache get/put and eviction"
+      },
+      "conversation": [
+        {
+          "invocation_id": "inv_plan_lru_cache_1",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Generate a test plan for LRUCache data structure with eviction"
+              }
+            ],
+            "role": "user"
+          },
+          "final_response": {
+            "parts": [
+              {
+                "text": "{\"scenarios\": [\"put_and_get_hit\", \"get_miss_returns_none\", \"capacity_eviction_lru\", \"zero_capacity_error\"], \"cyclomatic_complexity\": 5}"
+              }
+            ],
+            "role": "model"
+          },
+          "intermediate_data": {
+            "tool_calls": [
+              {
+                "name": "analyze_ast",
+                "args": {
+                  "target_module": "samples/lru_cache.py"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
