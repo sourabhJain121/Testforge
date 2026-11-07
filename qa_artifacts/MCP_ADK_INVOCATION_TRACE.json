@@ -1,0 +1,64 @@
+{
+  "metadata": {
+    "timestamp": "2026-11-07T14:27:49Z",
+    "permitted_root": "/Users/sourabh/TestForge",
+    "toolset": [
+      "read_text_file",
+      "list_directory",
+      "get_file_info"
+    ],
+    "security_containment_verified": true
+  },
+  "results": {
+    "valid_read_success": true,
+    "valid_listing_success": true,
+    "traversal_attack_blocked": true,
+    "sensitive_file_attack_blocked": true
+  },
+  "traces": [
+    {
+      "timestamp": 1794061669.572499,
+      "tool": "read_text_file",
+      "arguments": {
+        "path": "samples/discount.py"
+      },
+      "success": true,
+      "duration_ms": 336.0,
+      "error": null,
+      "permitted_root": "/Users/sourabh/TestForge"
+    },
+    {
+      "timestamp": 1794061669.579697,
+      "tool": "list_directory",
+      "arguments": {
+        "path": "samples"
+      },
+      "success": true,
+      "duration_ms": 7.17,
+      "error": null,
+      "permitted_root": "/Users/sourabh/TestForge"
+    },
+    {
+      "timestamp": 1794061669.580033,
+      "tool": "read_text_file",
+      "arguments": {
+        "path": "../../etc/passwd"
+      },
+      "success": false,
+      "duration_ms": 0.23,
+      "error": "Security Violation: Path '../../etc/passwd' escapes permitted project root '/Users/sourabh/TestForge'",
+      "permitted_root": "/Users/sourabh/TestForge"
+    },
+    {
+      "timestamp": 1794061669.580145,
+      "tool": "read_text_file",
+      "arguments": {
+        "path": ".env"
+      },
+      "success": false,
+      "duration_ms": 0.11,
+      "error": "Security Violation: Access to sensitive file '.env' is strictly forbidden.",
+      "permitted_root": "/Users/sourabh/TestForge"
+    }
+  ]
+}
