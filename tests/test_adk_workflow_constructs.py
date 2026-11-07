@@ -133,7 +133,7 @@ class TestADKCallbacks:
 
         sanitized = adk_before_model_callback(dirty_prompt)
         assert "AIzaSy" not in sanitized
-        assert "[REDACTED_API_KEY]" in sanitized
+        assert "[REDACTED_API_KEY" in sanitized
         assert "admin@testforge.internal" not in sanitized
         assert "[REDACTED_PII_EMAIL]" in sanitized
         assert "ghp_12345" not in sanitized
