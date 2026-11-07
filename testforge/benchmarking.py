@@ -495,7 +495,8 @@ class BenchmarkRunner:
         t0 = time.perf_counter()
         base_mutants = max(6, min(20, len(self.target_code.splitlines())))
 
-        if scenario == "baseline":
+        norm_sc = scenario.lower()
+        if norm_sc in ("baseline", "developer_starter"):
             killed = max(1, base_mutants // 4)
             score = round((killed / base_mutants) * 100.0, 1)
             cov_pct = 70.0
@@ -508,7 +509,7 @@ class BenchmarkRunner:
             iters = 0
             engine = "Deterministic AST Baseline"
             cat = "Deterministic AST"
-        elif scenario == "zeroshot":
+        elif norm_sc == "zeroshot":
             killed = max(2, int(base_mutants * 0.6))
             score = round((killed / base_mutants) * 100.0, 1)
             cov_pct = 90.0
@@ -521,7 +522,20 @@ class BenchmarkRunner:
             iters = 1
             engine = "Deterministic Mock Fixture (CI)"
             cat = "Mocked LLM"
-        else:  # agentic_reflection
+        elif norm_sc in ("zeroshot_retry", "zero_shot_retry"):
+            killed = max(3, int(base_mutants * 0.75))
+            score = round((killed / base_mutants) * 100.0, 1)
+            cov_pct = 95.0
+            branch_cov_pct = 90.0
+            actual_tokens = 0
+            est_tokens = 1200 + (rep_index * 25)
+            tokens = est_tokens
+            cost = self._estimate_cost(int(tokens * 0.7), int(tokens * 0.3))
+            actual_cost = 0.0
+            iters = 2
+            engine = "Deterministic Mock Fixture (CI Zero-Shot Retry)"
+            cat = "Mocked LLM"
+        else:  # agentic_reflection / full_testforge
             killed = min(base_mutants, int(base_mutants * 0.9))
             score = round((killed / base_mutants) * 100.0, 1)
             cov_pct = 100.0
@@ -929,6 +943,21 @@ def _geometric_mean(values: List[float]) -> float:
     return round(math.exp(log_sum / len(pos_vals)), 2)
 
 
+def compute_raw_unrounded_means(scores: List[Tuple[int, int]]) -> Tuple[float, float]:
+    """
+    Computes (arithmetic_mean, geometric_mean) directly from unrounded raw (killed, total) counts.
+    Ensures mathematical accuracy without early floating-point rounding distortion.
+    """
+    if not scores:
+        return 0.0, 0.0
+    percentages = [(killed / total) * 100.0 for killed, total in scores if total > 0]
+    if not percentages:
+        return 0.0, 0.0
+    am = _arithmetic_mean(percentages)
+    gm = _geometric_mean(percentages)
+    return am, gm
+
+
 def generate_markdown_benchmark_summary(results: Dict[str, Any]) -> str:
     """
     Renders an empirical benchmark evaluation matrix suitable for academic reports
@@ -967,8 +996,8 @@ def generate_markdown_benchmark_summary(results: Dict[str, Any]) -> str:
         "",
         "## 2. Multi-Scenario Empirical Performance Scorecard",
         "",
-        "| Target Module | Scenario | Line Cov (%) | Branch Cov (%) | Raw MS (%) | Adj MS (%) | Latency (s) | Tokens |",
-        "|---|---|---|---|---|---|---|---|",
+        "| Target Module | Scenario | Line Cov (%) | Branch Cov (%) | Raw MS (%) | Adj MS (%) | Killed / Total (Equiv) | Latency (s) | Tokens | Status |",
+        "|---|---|---|---|---|---|---|---|---|---|",
     ])
     for path, t_info in targets.items():
         m_name = t_info.get("module_name", path)
@@ -978,10 +1007,15 @@ def generate_markdown_benchmark_summary(results: Dict[str, Any]) -> str:
             branch_c = f"{sc_data.get('branch_coverage_pct', 0.0):.1f}%"
             raw_m = f"{sc_data.get('raw_mutation_score', 0.0):.1f}%" if sc_data.get("raw_mutation_score") is not None else "N/A"
             adj_m = f"{sc_data.get('adjusted_mutation_score', 0.0):.1f}%" if sc_data.get("adjusted_mutation_score") is not None else "N/A"
+            k = sc_data.get("killed_mutants", "-")
+            tot = sc_data.get("total_mutants", "-")
+            eq = sc_data.get("equivalent_mutants", 0)
+            counts_str = f"{k} / {tot} (eq: {eq})" if k != "-" else "N/A"
             lat = f"{sc_data.get('mean_latency_sec', 0.0):.3f}s"
             tok = f"{sc_data.get('total_tokens', 0):,}"
+            st = sc_data.get("run_status", "PRELIMINARY (n=1)" if results.get("repetitions", 1) == 1 else "COMPLETED")
             lines.append(
-                f"| {m_name} | **{sc_name}** | {line_c} | {branch_c} | {raw_m} | {adj_m} | {lat} | {tok} |"
+                f"| {m_name} | **{sc_name}** | {line_c} | {branch_c} | {raw_m} | {adj_m} | {counts_str} | {lat} | {tok} | {st} |"
             )
 
     lines.extend([
@@ -1018,9 +1052,17 @@ def generate_markdown_benchmark_summary(results: Dict[str, Any]) -> str:
     d_raw_b = f"{gains.get('reflection_vs_baseline_mutation_delta', 0.0):+.1f}%"
     d_raw_z = f"{gains.get('reflection_vs_zeroshot_mutation_delta', 0.0):+.1f}%"
 
+    b_geom_raw = f"{base_sc.get('geometric_mean_raw_mutation_score', 0.0):.1f}%"
+    z_geom_raw = f"{zs_sc.get('geometric_mean_raw_mutation_score', 0.0):.1f}%"
+    r_geom_raw = f"{refl_sc.get('geometric_mean_raw_mutation_score', 0.0):.1f}%"
+
     b_adj = f"{base_sc.get('arithmetic_mean_adj_mutation_score', 0.0):.1f}%"
     z_adj = f"{zs_sc.get('arithmetic_mean_adj_mutation_score', 0.0):.1f}%"
     r_adj = f"{refl_sc.get('arithmetic_mean_adj_mutation_score', 0.0):.1f}%"
+
+    b_geom_adj = f"{base_sc.get('geometric_mean_adj_mutation_score', 0.0):.1f}%"
+    z_geom_adj = f"{zs_sc.get('geometric_mean_adj_mutation_score', 0.0):.1f}%"
+    r_geom_adj = f"{refl_sc.get('geometric_mean_adj_mutation_score', 0.0):.1f}%"
 
     b_lat = f"{base_sc.get('mean_latency_sec', 0.0):.3f}s"
     z_lat = f"{zs_sc.get('mean_latency_sec', 0.0):.3f}s"
@@ -1030,7 +1072,9 @@ def generate_markdown_benchmark_summary(results: Dict[str, Any]) -> str:
     lines.append(f"| **Arithmetic Mean Branch Coverage** | {b_br} | {z_br} | {r_br} | **{d_br_b}** | **{d_br_z}** |")
     lines.append(f"| **Geometric Mean Branch Coverage** | {b_geom_br} | {z_geom_br} | {r_geom_br} | — | — |")
     lines.append(f"| **Arithmetic Mean Raw Mutation Score** | {b_raw} | {z_raw} | {r_raw} | **{d_raw_b}** | **{d_raw_z}** |")
+    lines.append(f"| **Geometric Mean Raw Mutation Score** | {b_geom_raw} | {z_geom_raw} | {r_geom_raw} | — | — |")
     lines.append(f"| **Arithmetic Mean Adjusted Mutation Score** | {b_adj} | {z_adj} | {r_adj} | — | — |")
+    lines.append(f"| **Geometric Mean Adjusted Mutation Score** | {b_geom_adj} | {z_geom_adj} | {r_geom_adj} | — | — |")
     lines.append(f"| **Mean Latency (sec)** | {b_lat} | {z_lat} | {r_lat} | — | — |")
 
     lines.extend([
@@ -1130,7 +1174,13 @@ class MultiTargetBenchmarkRunner:
             scenario_stats: Dict[str, Any] = {}
             for sc in self.scenarios:
                 summary = report.scenario_summaries.get(sc)
+                sc_runs = [r for r in report.runs if r.scenario == sc and r.success]
                 if summary:
+                    killed_cnt = int(sum(r.metrics.measured.get("killed_mutants", 0) for r in sc_runs) / max(1, len(sc_runs))) if sc_runs else 0
+                    total_cnt = int(sum(r.metrics.measured.get("total_mutants", total_mutants) for r in sc_runs) / max(1, len(sc_runs))) if sc_runs else total_mutants
+                    survived_cnt = int(sum(r.metrics.measured.get("survived_mutants", 0) for r in sc_runs) / max(1, len(sc_runs))) if sc_runs else max(0, total_cnt - killed_cnt)
+                    equiv_cnt = int(sum(r.metrics.measured.get("equivalent_mutants", 0) for r in sc_runs) / max(1, len(sc_runs))) if sc_runs else 0
+
                     scenario_stats[sc] = {
                         "runs_completed": summary.runs_completed,
                         "runs_failed": summary.runs_failed,
@@ -1138,14 +1188,23 @@ class MultiTargetBenchmarkRunner:
                         "branch_coverage_pct": summary.mean_branch_coverage,
                         "raw_mutation_score": summary.mean_mutation_score,
                         "adjusted_mutation_score": summary.mean_adjusted_mutation_score,
+                        "killed_mutants": killed_cnt,
+                        "total_mutants": total_cnt,
+                        "survived_mutants": survived_cnt,
+                        "equivalent_mutants": equiv_cnt,
                         "mean_latency_sec": summary.mean_duration_sec,
                         "stddev_latency_sec": summary.stddev_duration_sec,
                         "total_tokens": summary.total_tokens_consumed,
                         "provider_category": summary.provider_category,
                         "execution_engine": summary.execution_engine,
+                        "run_status": "PRELIMINARY (n=1)" if self.repetitions == 1 else f"COMPLETED (n={self.repetitions})",
                     }
                 else:
-                    scenario_stats[sc] = {}
+                    scenario_stats[sc] = {
+                        "runs_completed": 0,
+                        "runs_failed": 0,
+                        "status": "NOT RUN",
+                    }
 
             target_results[target_path] = {
                 "module_path": target_path,
@@ -1191,6 +1250,10 @@ class MultiTargetBenchmarkRunner:
                 target_results[t]["scenarios"][sc].get("total_tokens", 0)
                 for t in target_results
             )
+            total_killed = sum(target_results[t]["scenarios"].get(sc, {}).get("killed_mutants", 0) for t in target_results)
+            total_muts = sum(target_results[t]["scenarios"].get(sc, {}).get("total_mutants", 0) for t in target_results)
+            total_survived = sum(target_results[t]["scenarios"].get(sc, {}).get("survived_mutants", 0) for t in target_results)
+            total_equiv = sum(target_results[t]["scenarios"].get(sc, {}).get("equivalent_mutants", 0) for t in target_results)
 
             cross_target_summary["scenarios"][sc] = {
                 "arithmetic_mean_line_coverage": _arithmetic_mean(line_covs),
@@ -1202,6 +1265,11 @@ class MultiTargetBenchmarkRunner:
                 "geometric_mean_adj_mutation_score": _geometric_mean(adj_ms),
                 "mean_latency_sec": _arithmetic_mean(latencies),
                 "total_tokens_consumed": tokens,
+                "total_killed_mutants": total_killed,
+                "total_mutants": total_muts,
+                "total_survived_mutants": total_survived,
+                "total_equivalent_mutants": total_equiv,
+                "run_status": "PRELIMINARY (n=1)" if self.repetitions == 1 else f"COMPLETED (n={self.repetitions})",
             }
 
         # Relative gains of Agentic Reflection

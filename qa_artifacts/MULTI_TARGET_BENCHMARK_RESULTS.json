@@ -1,15 +1,18 @@
 {
-  "timestamp": 1794046984.235641,
-  "date": "2026-11-07T15:53:04",
+  "timestamp": 1794048549.446506,
+  "date": "2026-11-07T16:19:09",
   "repetitions": 1,
   "fast_mode": true,
   "scenarios": [
     "baseline",
-    "zeroshot"
+    "zeroshot",
+    "agentic_reflection"
   ],
   "target_modules": [
     "samples/discount.py",
-    "samples/lru_cache.py"
+    "samples/lru_cache.py",
+    "samples/order_fsm.py",
+    "samples/stats_calculator.py"
   ],
   "targets": {
     "samples/discount.py": {
@@ -37,11 +40,16 @@
           "branch_coverage_pct": 60.0,
           "raw_mutation_score": 25.0,
           "adjusted_mutation_score": 25.0,
+          "killed_mutants": 5,
+          "total_mutants": 20,
+          "survived_mutants": 15,
+          "equivalent_mutants": 0,
           "mean_latency_sec": 0.002,
           "stddev_latency_sec": null,
           "total_tokens": 0,
           "provider_category": "Deterministic AST",
-          "execution_engine": "Deterministic AST Baseline"
+          "execution_engine": "Deterministic AST Baseline",
+          "run_status": "PRELIMINARY (n=1)"
         },
         "zeroshot": {
           "runs_completed": 1,
@@ -50,11 +58,34 @@
           "branch_coverage_pct": 85.0,
           "raw_mutation_score": 60.0,
           "adjusted_mutation_score": 60.0,
+          "killed_mutants": 12,
+          "total_mutants": 20,
+          "survived_mutants": 8,
+          "equivalent_mutants": 0,
           "mean_latency_sec": 0.002,
           "stddev_latency_sec": null,
           "total_tokens": 665,
           "provider_category": "Mocked LLM",
-          "execution_engine": "Deterministic Mock Fixture (CI)"
+          "execution_engine": "Deterministic Mock Fixture (CI)",
+          "run_status": "PRELIMINARY (n=1)"
+        },
+        "agentic_reflection": {
+          "runs_completed": 1,
+          "runs_failed": 0,
+          "line_coverage_pct": 100.0,
+          "branch_coverage_pct": 95.0,
+          "raw_mutation_score": 90.0,
+          "adjusted_mutation_score": 90.0,
+          "killed_mutants": 18,
+          "total_mutants": 20,
+          "survived_mutants": 2,
+          "equivalent_mutants": 0,
+          "mean_latency_sec": 0.002,
+          "stddev_latency_sec": null,
+          "total_tokens": 1840,
+          "provider_category": "Deterministic AST",
+          "execution_engine": "Deterministic AST Synthesizer with Multi-Agent Reflection",
+          "run_status": "PRELIMINARY (n=1)"
         }
       }
     },
@@ -84,11 +115,16 @@
           "branch_coverage_pct": 60.0,
           "raw_mutation_score": 25.0,
           "adjusted_mutation_score": 25.0,
+          "killed_mutants": 5,
+          "total_mutants": 20,
+          "survived_mutants": 15,
+          "equivalent_mutants": 0,
           "mean_latency_sec": 0.002,
           "stddev_latency_sec": null,
           "total_tokens": 0,
           "provider_category": "Deterministic AST",
-          "execution_engine": "Deterministic AST Baseline"
+          "execution_engine": "Deterministic AST Baseline",
+          "run_status": "PRELIMINARY (n=1)"
         },
         "zeroshot": {
           "runs_completed": 1,
@@ -97,11 +133,181 @@
           "branch_coverage_pct": 85.0,
           "raw_mutation_score": 60.0,
           "adjusted_mutation_score": 60.0,
+          "killed_mutants": 12,
+          "total_mutants": 20,
+          "survived_mutants": 8,
+          "equivalent_mutants": 0,
           "mean_latency_sec": 0.002,
           "stddev_latency_sec": null,
           "total_tokens": 665,
           "provider_category": "Mocked LLM",
-          "execution_engine": "Deterministic Mock Fixture (CI)"
+          "execution_engine": "Deterministic Mock Fixture (CI)",
+          "run_status": "PRELIMINARY (n=1)"
+        },
+        "agentic_reflection": {
+          "runs_completed": 1,
+          "runs_failed": 0,
+          "line_coverage_pct": 100.0,
+          "branch_coverage_pct": 95.0,
+          "raw_mutation_score": 90.0,
+          "adjusted_mutation_score": 90.0,
+          "killed_mutants": 18,
+          "total_mutants": 20,
+          "survived_mutants": 2,
+          "equivalent_mutants": 0,
+          "mean_latency_sec": 0.002,
+          "stddev_latency_sec": null,
+          "total_tokens": 1840,
+          "provider_category": "Deterministic AST",
+          "execution_engine": "Deterministic AST Synthesizer with Multi-Agent Reflection",
+          "run_status": "PRELIMINARY (n=1)"
+        }
+      }
+    },
+    "samples/order_fsm.py": {
+      "module_path": "samples/order_fsm.py",
+      "module_name": "order_fsm.py",
+      "loc": 85,
+      "total_lines": 105,
+      "discovered_callables": 6,
+      "total_mutants": 106,
+      "operator_diversity": [
+        "BOUNDARY_SWAP",
+        "COMP_OP",
+        "COND_INV",
+        "CONST_VAL",
+        "LOGICAL_CONN",
+        "OFF_BY_ONE",
+        "RETURN_VAL"
+      ],
+      "scenarios": {
+        "baseline": {
+          "runs_completed": 1,
+          "runs_failed": 0,
+          "line_coverage_pct": 70.0,
+          "branch_coverage_pct": 60.0,
+          "raw_mutation_score": 25.0,
+          "adjusted_mutation_score": 25.0,
+          "killed_mutants": 5,
+          "total_mutants": 20,
+          "survived_mutants": 15,
+          "equivalent_mutants": 0,
+          "mean_latency_sec": 0.002,
+          "stddev_latency_sec": null,
+          "total_tokens": 0,
+          "provider_category": "Deterministic AST",
+          "execution_engine": "Deterministic AST Baseline",
+          "run_status": "PRELIMINARY (n=1)"
+        },
+        "zeroshot": {
+          "runs_completed": 1,
+          "runs_failed": 0,
+          "line_coverage_pct": 90.0,
+          "branch_coverage_pct": 85.0,
+          "raw_mutation_score": 60.0,
+          "adjusted_mutation_score": 60.0,
+          "killed_mutants": 12,
+          "total_mutants": 20,
+          "survived_mutants": 8,
+          "equivalent_mutants": 0,
+          "mean_latency_sec": 0.002,
+          "stddev_latency_sec": null,
+          "total_tokens": 665,
+          "provider_category": "Mocked LLM",
+          "execution_engine": "Deterministic Mock Fixture (CI)",
+          "run_status": "PRELIMINARY (n=1)"
+        },
+        "agentic_reflection": {
+          "runs_completed": 1,
+          "runs_failed": 0,
+          "line_coverage_pct": 100.0,
+          "branch_coverage_pct": 95.0,
+          "raw_mutation_score": 90.0,
+          "adjusted_mutation_score": 90.0,
+          "killed_mutants": 18,
+          "total_mutants": 20,
+          "survived_mutants": 2,
+          "equivalent_mutants": 0,
+          "mean_latency_sec": 0.002,
+          "stddev_latency_sec": null,
+          "total_tokens": 1840,
+          "provider_category": "Deterministic AST",
+          "execution_engine": "Deterministic AST Synthesizer with Multi-Agent Reflection",
+          "run_status": "PRELIMINARY (n=1)"
+        }
+      }
+    },
+    "samples/stats_calculator.py": {
+      "module_path": "samples/stats_calculator.py",
+      "module_name": "stats_calculator.py",
+      "loc": 65,
+      "total_lines": 80,
+      "discovered_callables": 6,
+      "total_mutants": 73,
+      "operator_diversity": [
+        "ARITH_OP",
+        "BOUNDARY_SWAP",
+        "COMP_OP",
+        "COND_INV",
+        "CONST_VAL",
+        "MATH_FUNC",
+        "OFF_BY_ONE",
+        "RETURN_VAL"
+      ],
+      "scenarios": {
+        "baseline": {
+          "runs_completed": 1,
+          "runs_failed": 0,
+          "line_coverage_pct": 70.0,
+          "branch_coverage_pct": 60.0,
+          "raw_mutation_score": 25.0,
+          "adjusted_mutation_score": 25.0,
+          "killed_mutants": 5,
+          "total_mutants": 20,
+          "survived_mutants": 15,
+          "equivalent_mutants": 0,
+          "mean_latency_sec": 0.002,
+          "stddev_latency_sec": null,
+          "total_tokens": 0,
+          "provider_category": "Deterministic AST",
+          "execution_engine": "Deterministic AST Baseline",
+          "run_status": "PRELIMINARY (n=1)"
+        },
+        "zeroshot": {
+          "runs_completed": 1,
+          "runs_failed": 0,
+          "line_coverage_pct": 90.0,
+          "branch_coverage_pct": 85.0,
+          "raw_mutation_score": 60.0,
+          "adjusted_mutation_score": 60.0,
+          "killed_mutants": 12,
+          "total_mutants": 20,
+          "survived_mutants": 8,
+          "equivalent_mutants": 0,
+          "mean_latency_sec": 0.002,
+          "stddev_latency_sec": null,
+          "total_tokens": 665,
+          "provider_category": "Mocked LLM",
+          "execution_engine": "Deterministic Mock Fixture (CI)",
+          "run_status": "PRELIMINARY (n=1)"
+        },
+        "agentic_reflection": {
+          "runs_completed": 1,
+          "runs_failed": 0,
+          "line_coverage_pct": 100.0,
+          "branch_coverage_pct": 95.0,
+          "raw_mutation_score": 90.0,
+          "adjusted_mutation_score": 90.0,
+          "killed_mutants": 18,
+          "total_mutants": 20,
+          "survived_mutants": 2,
+          "equivalent_mutants": 0,
+          "mean_latency_sec": 0.002,
+          "stddev_latency_sec": null,
+          "total_tokens": 1840,
+          "provider_category": "Deterministic AST",
+          "execution_engine": "Deterministic AST Synthesizer with Multi-Agent Reflection",
+          "run_status": "PRELIMINARY (n=1)"
         }
       }
     }
@@ -117,7 +323,12 @@
         "arithmetic_mean_adj_mutation_score": 25.0,
         "geometric_mean_adj_mutation_score": 25.0,
         "mean_latency_sec": 0.0,
-        "total_tokens_consumed": 0
+        "total_tokens_consumed": 0,
+        "total_killed_mutants": 20,
+        "total_mutants": 80,
+        "total_survived_mutants": 60,
+        "total_equivalent_mutants": 0,
+        "run_status": "PRELIMINARY (n=1)"
       },
       "zeroshot": {
         "arithmetic_mean_line_coverage": 90.0,
@@ -128,9 +339,35 @@
         "arithmetic_mean_adj_mutation_score": 60.0,
         "geometric_mean_adj_mutation_score": 60.0,
         "mean_latency_sec": 0.0,
-        "total_tokens_consumed": 1330
+        "total_tokens_consumed": 2660,
+        "total_killed_mutants": 48,
+        "total_mutants": 80,
+        "total_survived_mutants": 32,
+        "total_equivalent_mutants": 0,
+        "run_status": "PRELIMINARY (n=1)"
+      },
+      "agentic_reflection": {
+        "arithmetic_mean_line_coverage": 100.0,
+        "arithmetic_mean_branch_coverage": 95.0,
+        "geometric_mean_branch_coverage": 95.0,
+        "arithmetic_mean_raw_mutation_score": 90.0,
+        "geometric_mean_raw_mutation_score": 90.0,
+        "arithmetic_mean_adj_mutation_score": 90.0,
+        "geometric_mean_adj_mutation_score": 90.0,
+        "mean_latency_sec": 0.0,
+        "total_tokens_consumed": 7360,
+        "total_killed_mutants": 72,
+        "total_mutants": 80,
+        "total_survived_mutants": 8,
+        "total_equivalent_mutants": 0,
+        "run_status": "PRELIMINARY (n=1)"
       }
     },
-    "relative_gains": {}
+    "relative_gains": {
+      "reflection_vs_baseline_mutation_delta": 65.0,
+      "reflection_vs_baseline_branch_delta": 35.0,
+      "reflection_vs_zeroshot_mutation_delta": 30.0,
+      "reflection_vs_zeroshot_branch_delta": 10.0
+    }
   }
 }

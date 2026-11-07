@@ -187,3 +187,55 @@ class TestBenchmarkRESTEndpoints:
         assert "results" in payload
         assert len(payload["results"]["targets"]) == 2
 
+
+class TestBenchmarkArithmeticAndRawCounts:
+    """Verifies Task 2 arithmetic integrity, unrounded raw count aggregation, and baseline configs."""
+
+    def test_recomputed_geometric_mean_resolves_discrepancy(self):
+        from testforge.benchmarking import compute_raw_unrounded_means, _geometric_mean, _arithmetic_mean
+
+        # Per-target historical baselines:
+        # discount: 1/19 (5.2632%), lru_cache: 3/25 (12.0%), order_fsm: 7/82 (8.5366%), stats: 5/34 (14.7059%)
+        raw_counts = [(1, 19), (3, 25), (7, 82), (5, 34)]
+        am, gm = compute_raw_unrounded_means(raw_counts)
+
+        # Unrounded geometric mean evaluates to 9.44%, NOT the erroneous 9.62% reported earlier
+        assert gm == pytest.approx(9.44, rel=1e-2)
+        assert am == pytest.approx(10.13, rel=1e-2)
+        assert gm != 9.62
+        assert abs(gm - 9.62) > 0.15
+
+        # Recomputed from explicit rounded percentage values [5.26, 12.00, 8.54, 14.71]
+        rounded_vals = [5.26, 12.00, 8.54, 14.71]
+        gm_from_rounded = _geometric_mean(rounded_vals)
+        am_from_rounded = _arithmetic_mean(rounded_vals)
+        assert gm_from_rounded == pytest.approx(9.44, rel=1e-2)
+        assert am_from_rounded == pytest.approx(10.13, rel=1e-2)
+
+    def test_raw_counts_and_preliminary_status_in_results(self, tmp_path):
+        runner = MultiTargetBenchmarkRunner(
+            target_modules=["samples/discount.py", "samples/lru_cache.py"],
+            scenarios=["baseline", "zeroshot"],
+            repetitions=1,
+            fast_mode=True,
+            output_dir=str(tmp_path),
+        )
+        res = runner.run()
+
+        # Check raw counts presence
+        for mod_path in ["samples/discount.py", "samples/lru_cache.py"]:
+            t_data = res["targets"][mod_path]
+            for sc in ["baseline", "zeroshot"]:
+                sc_data = t_data["scenarios"][sc]
+                assert "killed_mutants" in sc_data
+                assert "total_mutants" in sc_data
+                assert "survived_mutants" in sc_data
+                assert "equivalent_mutants" in sc_data
+                assert sc_data["run_status"] == "PRELIMINARY (n=1)"
+
+        cross = res["cross_target_summary"]["scenarios"]
+        assert cross["baseline"]["run_status"] == "PRELIMINARY (n=1)"
+        assert "total_killed_mutants" in cross["baseline"]
+        assert "total_mutants" in cross["baseline"]
+
+

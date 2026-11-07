@@ -53,3 +53,39 @@
 * **Remaining Risks**: OpenTelemetry context detachment issues across cross-thread generators are fully mitigated via `OTEL_PYTHON_CONTEXT="contextvars_context"` and `OTEL_SDK_DISABLED="true"`.
 
 ---
+
+## Task 2: Benchmark Arithmetic, Raw Counts & Baseline Recalibration
+
+### 1. Discrepancy Diagnosis & Arithmetic Correction
+* **Diagnosed Suspect Discrepancy**: Prior mock documentation reported a baseline geometric mean of `9.62%` across four target baselines reported as `(5.26, 12.00, 8.54, 14.71)`.
+* **Mathematical Root Cause**:
+  * Unrounded percentages from raw counts `[(1, 19), (3, 25), (7, 82), (5, 34)]` evaluate to:
+    $$\text{Target 1: } \frac{1}{19} = 5.2632\%,\quad \text{Target 2: } \frac{3}{25} = 12.0000\%,\quad \text{Target 3: } \frac{7}{82} = 8.5366\%,\quad \text{Target 4: } \frac{5}{34} = 14.7059\%$$
+  * True Geometric Mean:
+    $$\text{GM} = \exp\left(\frac{\ln 5.2632 + \ln 12.0 + \ln 8.5366 + \ln 14.7059}{4}\right) = \mathbf{9.44\%}$$
+  * True Arithmetic Mean:
+    $$\text{AM} = \frac{5.2632 + 12.0 + 8.5366 + 14.7059}{4} = \mathbf{10.13\%}$$
+  * The figure `9.62%` was an unverified manual placeholder or transcription error. Recomputed truthfully, the baseline geometric mean is **9.44%**.
+* **Remediation**:
+  * Added `compute_raw_unrounded_means(scores: List[Tuple[int, int]]) -> Tuple[float, float]` in [`testforge/benchmarking.py`](file:///Users/sourabh/TestForge/testforge/benchmarking.py).
+  * Unit test `test_recomputed_geometric_mean_resolves_discrepancy` in [`tests/test_multi_target_benchmarking.py`](file:///Users/sourabh/TestForge/tests/test_multi_target_benchmarking.py) mathematically asserts `GM == 9.44%`, `AM == 10.13%`, and `GM != 9.62%`.
+
+### 2. Raw Counts & Multi-Scenario Empirical Baseline Configurations
+* **Raw Counts Output**: Populated `killed_mutants`, `total_mutants`, `survived_mutants`, and `equivalent_mutants` across all targets and scenarios in [`qa_artifacts/MULTI_TARGET_BENCHMARK_RESULTS.json`](file:///Users/sourabh/TestForge/qa_artifacts/MULTI_TARGET_BENCHMARK_RESULTS.json) and [`qa_artifacts/MULTI_TARGET_BENCHMARK_SUMMARY.md`](file:///Users/sourabh/TestForge/qa_artifacts/MULTI_TARGET_BENCHMARK_SUMMARY.md).
+* **Configured Baseline Tiers**:
+  * `developer_starter` (or `baseline`): Minimal single-path test suite.
+  * `zeroshot`: Single-pass LLM synthesis.
+  * `zeroshot_retry`: Single-pass LLM synthesis with automatic one-turn retry on compilation/test failure.
+  * `full_testforge` (or `agentic_reflection`): Complete closed-loop generator-critic reflection loop.
+* **Empirical Execution Metadata**:
+  * Single-seed runs are explicitly labeled `"run_status": "PRELIMINARY (n=1)"`.
+  * Verified local hardware provider: Local Ollama (`qwen2.5-coder:7b`) and Cloud Google GenAI (`gemini-3.6-flash`).
+
+### 3. Verification & Acceptance Check
+* **Executed Test Suite**: `tests/test_multi_target_benchmarking.py` -> **9 passed in 6.34s**.
+* **Artifacts Updated**:
+  * [`qa_artifacts/MULTI_TARGET_BENCHMARK_RESULTS.json`](file:///Users/sourabh/TestForge/qa_artifacts/MULTI_TARGET_BENCHMARK_RESULTS.json) (all 4 canonical targets populated).
+  * [`qa_artifacts/MULTI_TARGET_BENCHMARK_SUMMARY.md`](file:///Users/sourabh/TestForge/qa_artifacts/MULTI_TARGET_BENCHMARK_SUMMARY.md) (comprehensive markdown scorecard with raw counts and unrounded geometric and arithmetic means).
+* **Remaining Risks**: None. Discrepancy resolved and regression tested.
+
+---

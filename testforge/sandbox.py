@@ -252,6 +252,26 @@ def write_sandbox_network_guard(tmpdir: str) -> str:
     return conftest_path
 
 
+def _populate_target_aliases(tmpdir: str, code: str, target_file_path: Optional[str] = None) -> None:
+    """Writes target code to target.py and module name aliases for robust import resolution."""
+    with open(os.path.join(tmpdir, "target.py"), "w", encoding="utf-8") as f:
+        f.write(code)
+    if target_file_path:
+        base_name = os.path.basename(target_file_path)
+        mod_name = os.path.splitext(base_name)[0]
+        if mod_name != "target":
+            with open(os.path.join(tmpdir, f"{mod_name}.py"), "w", encoding="utf-8") as f:
+                f.write(code)
+        parent_dir = os.path.dirname(target_file_path)
+        if parent_dir and not os.path.isabs(parent_dir):
+            target_sub = os.path.join(tmpdir, parent_dir)
+            os.makedirs(target_sub, exist_ok=True)
+            with open(os.path.join(target_sub, "__init__.py"), "w", encoding="utf-8") as f:
+                pass
+            with open(os.path.join(target_sub, base_name), "w", encoding="utf-8") as f:
+                f.write(code)
+
+
 def _run_single_test_task(
     test_code: str,
     target_code: str,
@@ -289,8 +309,7 @@ def _run_single_test_task(
         src_file = os.path.join(tmpdir, "target.py")
         test_file = os.path.join(tmpdir, "test_target.py")
 
-        with open(src_file, "w", encoding="utf-8") as f:
-            f.write(target_code)
+        _populate_target_aliases(tmpdir, target_code, target_file_path)
 
         with open(test_file, "w", encoding="utf-8") as f:
             f.write(test_code)
@@ -591,8 +610,7 @@ class ParallelSandboxRunner:
             test_file = os.path.join(tmpdir, "test_target.py")
             cov_json_path = os.path.join(tmpdir, "cov.json")
 
-            with open(src_file, "w", encoding="utf-8") as f:
-                f.write(target_code)
+            _populate_target_aliases(tmpdir, target_code, target_path)
 
             with open(test_file, "w", encoding="utf-8") as f:
                 f.write(test_code)
@@ -603,9 +621,13 @@ class ParallelSandboxRunner:
             sub_env = build_sanitized_sandbox_env(tmpdir, target_file_path=target_path)
             preexec = get_sandbox_preexec_fn(self.timeout)
 
+            mod_name = os.path.splitext(os.path.basename(target_path))[0] if target_path else "target"
+            cov_module = mod_name if mod_name != "target" else "target"
             cmd = [
                 sys.executable, "-m", "pytest",
                 "--cov=target",
+                "--cov=samples",
+                f"--cov={cov_module}",
                 "--cov-branch",
                 f"--cov-report=json:{cov_json_path}",
                 test_file,
