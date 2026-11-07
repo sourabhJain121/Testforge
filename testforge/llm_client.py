@@ -217,6 +217,11 @@ class HybridLLMClient:
                     is_503 = any(token in err_msg for token in ("503", "UNAVAILABLE", "overloaded"))
 
                     if is_429:
+                        if attempt < 2:
+                            delay = 6.0
+                            print(f"[*] Transient GenAI 429 quota/rate limit (attempt {attempt}/2). Retrying in {delay:.1f}s...")
+                            time.sleep(delay)
+                            continue
                         self.gemini_quota_exhausted = True
                         failover_msg = "[!] Gemini quota exhausted. Switching to secondary provider..."
                         print(f"\n{failover_msg}")
@@ -336,7 +341,7 @@ class HybridLLMClient:
         if should_try_local:
             tags_url = self.local_url.replace("/api/generate", "/api/tags") if "/api/generate" in self.local_url else "http://localhost:11434/api/tags"
             if is_ollama_running(tags_url, timeout=0.8):
-                ollama_timeout = float(os.environ.get("TESTFORGE_OLLAMA_TIMEOUT", "60.0"))
+                ollama_timeout = float(os.environ.get("TESTFORGE_OLLAMA_TIMEOUT", "180.0"))
                 candidate_models = [self.local_model]
                 for extra_model in ["qwen2.5-coder:7b", "codellama:7b"]:
                     if extra_model not in candidate_models:
