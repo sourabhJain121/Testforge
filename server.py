@@ -2339,7 +2339,10 @@ def run_multi_target_benchmark_endpoint(payload: Optional[MultiTargetBenchmarkRu
     fast_mode = opts.get("fast_mode", False)
     engine_mode = opts.get("engine_mode", "auto")
     model_name = opts.get("model_name", "gemini-3.6-flash")
-    output_dir = opts.get("output_dir") or str(BASE_DIR / "qa_artifacts")
+    if fast_mode and not opts.get("output_dir"):
+        output_dir = str(BASE_DIR / "qa_artifacts" / "scratch_runs")
+    else:
+        output_dir = opts.get("output_dir") or str(BASE_DIR / "qa_artifacts")
 
     try:
         results = run_multi_target_benchmark(

@@ -13,7 +13,7 @@
 | Sub-Task ID | Description | Status | Last Commit | Next Step / Notes |
 | :--- | :--- | :---: | :---: | :--- |
 | **0.1** | Score provenance audit & pipeline-only separation | DONE | `de58324` | Documented in `docs/PROVENANCE_AUDIT.md`. Manual oracles separated into `tests/manual_oracles/`. `qa_artifacts/test_hardened_*.py` verified 100% pipeline-generated. |
-| **0.2** | Single source of truth (`MULTI_TARGET_BENCHMARK_RESULTS.json`), reconcile stale claims across repo, add sync test | TODO | - | Script to generate README/UI/MD from single JSON, add CI consistency test |
+| **0.2** | Single source of truth (`MULTI_TARGET_BENCHMARK_RESULTS.json`), reconcile stale claims across repo, add sync test | DONE | `e260ea5` | Established JSON as single source of truth, protected server endpoint against overwrite, created `sync_benchmarks.py`, and added `tests/test_benchmark_source_of_truth_sync.py` (4 passed). |
 | **0.3** | `order_fsm` survivor loop diagnosis (ToT, ReAct, RAG, convergence stop) | TODO | - | Classify 31 survivors, fix loop heuristics, measure pipeline-only delta |
 | **0.4** | Baseline competitors: (a) developer, (b) zero-shot, (c) zero-shot+retry, (d) TestForge with 3 seeds | TODO | - | Run multi-seed benchmark with real model (`qwen2.5-coder:7b` / `gemini`), report mean ± std |
 | **0.5** | Fresh benign set (40+ files) & prompt injection attack samples | TODO | - | Evaluate benign set without tuning, measure FP rate, evaluate public attacks |
