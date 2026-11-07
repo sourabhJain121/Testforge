@@ -156,6 +156,9 @@ def inspect_source_for_indirect_injections(
                 comment_text = tok.string
                 # Strip leading '#' and whitespace
                 raw_comment = re.sub(r"^#+\s*", "", comment_text)
+                # Filter out standard Python static analysis pragmas (e.g. type: ignore[override], noqa, pylint)
+                if re.match(r"^(?:type:\s*ignore|noqa|pylint:\s*disable|mypy:)", raw_comment.strip()):
+                    continue
                 sec_res = guard.inspect_prompt(raw_comment)
                 if not sec_res.allowed or sec_res.risk_level in (SecurityRiskLevel.HIGH, SecurityRiskLevel.CRITICAL):
                     for f in sec_res.findings:

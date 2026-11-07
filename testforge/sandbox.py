@@ -23,6 +23,7 @@ import tempfile
 import subprocess
 import signal
 from dataclasses import dataclass, field
+from abc import ABC, abstractmethod
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from typing import Dict, Any, Tuple, List, Optional, Set
 from testforge.accel import hw_profile
@@ -272,6 +273,152 @@ def _populate_target_aliases(tmpdir: str, code: str, target_file_path: Optional[
                 f.write(code)
 
 
+def is_docker_available() -> bool:
+    """
+    Returns True if Docker CLI is installed and the Docker daemon is responding.
+    Enforces a strict 1.5s non-blocking timeout.
+    """
+    try:
+        proc = subprocess.run(
+            ["docker", "info"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            timeout=1.5
+        )
+        return proc.returncode == 0
+    except Exception:
+        return False
+
+
+class SandboxBackend(ABC):
+    """
+    Abstract base class for sandboxed test execution backends.
+    """
+    @abstractmethod
+    def run_command(
+        self,
+        cmd: List[str],
+        cwd: str,
+        env: Dict[str, str],
+        timeout: float,
+        preexec_fn: Optional[Any] = None
+    ) -> Tuple[int, str, str, bool]:
+        """
+        Executes sandboxed test command.
+        Returns: (exit_code, stdout, stderr, timed_out)
+        """
+        pass
+
+
+class SubprocessSandboxBackend(SandboxBackend):
+    """
+    Local process-isolated sandbox backend (default).
+    Enforces subprocess timeout, detached process group termination,
+    least-privilege environment variable scrubbing, and python-level network monkeypatching.
+    
+    Known limitations:
+      - Best-effort isolation (defense in depth), not a kernel-level hardware sandbox.
+      - On macOS arm64, RLIMIT_AS (virtual memory limit) is not enforced by the Darwin kernel.
+      - Network confinement via Python conftest.py prevents Python socket/urllib/http requests,
+        but non-Python child binaries (e.g. spawned curl) are unconstrained without cgroups/Docker.
+    """
+    def run_command(
+        self,
+        cmd: List[str],
+        cwd: str,
+        env: Dict[str, str],
+        timeout: float,
+        preexec_fn: Optional[Any] = None
+    ) -> Tuple[int, str, str, bool]:
+        run_kwargs: Dict[str, Any] = {
+            "cwd": cwd,
+            "env": env,
+            "capture_output": True,
+            "text": True,
+            "timeout": timeout,
+        }
+        if preexec_fn is not None:
+            run_kwargs["preexec_fn"] = preexec_fn
+
+        try:
+            res = subprocess.run(cmd, **run_kwargs)
+            return res.returncode, res.stdout, res.stderr, False
+        except subprocess.TimeoutExpired:
+            return -1, "", f"Subprocess timed out after {timeout}s (Safety Guardrail: Infinite loop caught)", True
+        except Exception as exc:
+            return -2, "", str(exc), False
+
+
+class DockerSandboxBackend(SandboxBackend):
+    """
+    Hardware-isolated Docker container sandbox backend.
+    Enforces true Linux kernel namespaces, cgroups v2 limits (--memory 512m --cpus 1.0 --pids-limit 128),
+    read-only root filesystem, dropped capabilities (--cap-drop ALL), and complete network isolation (--network none).
+    """
+    def __init__(self, image: Optional[str] = None):
+        self.image = image or os.environ.get("TESTFORGE_DOCKER_IMAGE", "testforge:latest")
+
+    def run_command(
+        self,
+        cmd: List[str],
+        cwd: str,
+        env: Dict[str, str],
+        timeout: float,
+        preexec_fn: Optional[Any] = None
+    ) -> Tuple[int, str, str, bool]:
+        if not is_docker_available():
+            raise RuntimeError(
+                "DockerSandboxBackend requested (TESTFORGE_SANDBOX=docker) but Docker daemon is unreachable. "
+                "Ensure Docker Desktop or dockerd is running, or unset TESTFORGE_SANDBOX to use subprocess isolation."
+            )
+
+        abs_cwd = os.path.abspath(cwd)
+        docker_cmd = [
+            "docker", "run", "--rm",
+            "--network", "none",
+            "--read-only",
+            "--memory", "512m",
+            "--cpus", "1.0",
+            "--pids-limit", "128",
+            "--cap-drop", "ALL",
+            "--tmpfs", "/tmp:rw,noexec,nosuid,size=64m",
+            "-v", f"{abs_cwd}:/app:ro",
+            "-w", "/app",
+        ]
+
+        for k in ("PYTHONPATH", "HOME", "TMPDIR"):
+            if k in env:
+                docker_cmd.extend(["-e", f"{k}={env[k]}"])
+
+        # Translate host python executable to container python
+        container_cmd = ["python" if c == sys.executable else c for c in cmd]
+        full_cmd = docker_cmd + [self.image] + container_cmd
+
+        try:
+            res = subprocess.run(
+                full_cmd,
+                capture_output=True,
+                text=True,
+                timeout=timeout
+            )
+            return res.returncode, res.stdout, res.stderr, False
+        except subprocess.TimeoutExpired:
+            return -1, "", f"Docker container timed out after {timeout}s (Safety Guardrail: Infinite loop caught)", True
+        except Exception as exc:
+            return -2, "", str(exc), False
+
+
+def get_sandbox_backend() -> SandboxBackend:
+    """
+    Factory creating the configured sandbox execution backend.
+    Selectable via TESTFORGE_SANDBOX: 'subprocess' (default) or 'docker'.
+    """
+    backend_mode = os.environ.get("TESTFORGE_SANDBOX", "subprocess").lower().strip()
+    if backend_mode == "docker":
+        return DockerSandboxBackend()
+    return SubprocessSandboxBackend()
+
+
 def _run_single_test_task(
     test_code: str,
     target_code: str,
@@ -324,38 +471,17 @@ def _run_single_test_task(
         # Use the virtualenv's python executable
         pytest_cmd = [sys.executable, "-m", "pytest", test_file, "-v", "--disable-warnings", "-p", "no:cacheprovider"]
 
-        run_kwargs: Dict[str, Any] = {
-            "cwd": tmpdir,
-            "env": sub_env,
-            "capture_output": True,
-            "text": True,
-            "timeout": timeout_seconds,
-        }
-        if preexec is not None:
-            run_kwargs["preexec_fn"] = preexec
+        backend = get_sandbox_backend()
+        res_code, res_stdout, res_stderr, timed_out = backend.run_command(
+            pytest_cmd,
+            cwd=tmpdir,
+            env=sub_env,
+            timeout=timeout_seconds,
+            preexec_fn=preexec
+        )
+        elapsed_ms = (time.perf_counter() - start_time) * 1000.0
 
-        try:
-            res = subprocess.run(
-                pytest_cmd,
-                **run_kwargs
-            )
-            elapsed_ms = (time.perf_counter() - start_time) * 1000.0
-            parsed = parse_pytest_output(res.stdout, res.stderr, res.returncode)
-            return {
-                "exit_code": res.returncode,
-                "stdout": res.stdout,
-                "stderr": res.stderr,
-                "status": parsed["status"],
-                "timed_out": False,
-                "duration_ms": elapsed_ms,
-                "tests_collected": parsed["collected"],
-                "tests_passed": parsed["passed"],
-                "tests_failed": parsed["failed"],
-                "tests_errors": parsed["errors"],
-                "has_exec_error": parsed["has_exec_error"]
-            }
-        except subprocess.TimeoutExpired:
-            elapsed_ms = (time.perf_counter() - start_time) * 1000.0
+        if timed_out:
             return {
                 "exit_code": -1,
                 "stdout": "",
@@ -369,21 +495,21 @@ def _run_single_test_task(
                 "tests_errors": 1,
                 "has_exec_error": False
             }
-        except Exception as exc:
-            elapsed_ms = (time.perf_counter() - start_time) * 1000.0
-            return {
-                "exit_code": -2,
-                "stdout": "",
-                "stderr": str(exc),
-                "status": "ERROR",
-                "timed_out": False,
-                "duration_ms": elapsed_ms,
-                "tests_collected": 0,
-                "tests_passed": 0,
-                "tests_failed": 0,
-                "tests_errors": 1,
-                "has_exec_error": True
-            }
+
+        parsed = parse_pytest_output(res_stdout, res_stderr, res_code)
+        return {
+            "exit_code": res_code,
+            "stdout": res_stdout,
+            "stderr": res_stderr,
+            "status": parsed["status"],
+            "timed_out": False,
+            "duration_ms": elapsed_ms,
+            "tests_collected": parsed["collected"],
+            "tests_passed": parsed["passed"],
+            "tests_failed": parsed["failed"],
+            "tests_errors": parsed["errors"],
+            "has_exec_error": parsed["has_exec_error"]
+        }
 
 
 class ParallelSandboxRunner:
@@ -634,19 +760,16 @@ class ParallelSandboxRunner:
                 "-p", "no:cacheprovider"
             ]
 
-            run_kwargs: Dict[str, Any] = {
-                "cwd": tmpdir,
-                "env": sub_env,
-                "capture_output": True,
-                "text": True,
-                "timeout": self.timeout,
-            }
-            if preexec is not None:
-                run_kwargs["preexec_fn"] = preexec
+            backend = get_sandbox_backend()
+            res_code, res_stdout, res_stderr, timed_out = backend.run_command(
+                cmd,
+                cwd=tmpdir,
+                env=sub_env,
+                timeout=self.timeout,
+                preexec_fn=preexec
+            )
 
-            try:
-                res = subprocess.run(cmd, **run_kwargs)
-            except subprocess.TimeoutExpired:
+            if timed_out:
                 cov_info = {
                     "percent_covered": 0.0,
                     "line_coverage_pct": 0.0,

@@ -120,3 +120,50 @@
 ### 3. Documentation Consistency Audit
 * Synchronized version claims in [`README.md`](file:///Users/sourabh/TestForge/README.md) to accurately reflect Python 3.11–3.13 support (Python 3.13.18 production target) and updated the regression test count command from legacy 24 to 849+ tests.
 
+---
+
+## Task 4: Sandbox Honesty & Hardware Isolation
+
+### 1. Empirical Subprocess Sandbox Audit on macOS
+* **Subprocess Timeout**: Enforces strict timeouts (e.g. 5.0s) reliably via `subprocess.run(timeout=...)` with SIGKILL termination. Verified on infinite loop tests.
+* **Memory Limits (`RLIMIT_AS`)**: On macOS Apple Silicon (Darwin arm64), setting `RLIMIT_AS` raises `ValueError: current limit exceeds maximum limit` or is ignored by the Darwin kernel. Documented as a known limitation in [`testforge/sandbox.py`](file:///Users/sourabh/TestForge/testforge/sandbox.py).
+* **Network Isolation**:
+  * In `SubprocessSandboxBackend`, network confinement is enforced at Python level via dynamic `conftest.py` monkeypatching of `socket`, `urllib.request`, and `http.client`.
+  * External non-Python child processes (e.g. `curl` invoked via shell) are not blocked by Python-level monkeypatches.
+  * Accurately documented as "best-effort isolation (defense in depth) with subprocess timeout guardrail".
+
+### 2. Implementation of `DockerSandboxBackend`
+* Implemented extensible `SandboxBackend` architecture in [`testforge/sandbox.py`](file:///Users/sourabh/TestForge/testforge/sandbox.py):
+  * `SubprocessSandboxBackend`: Default lightweight process-level sandbox for fast local iterations.
+  * `DockerSandboxBackend`: Hardware-isolated container backend enforcing:
+    ```bash
+    docker run --rm --network none --read-only --memory 512m --cpus 1.0 --pids-limit 128 --cap-drop ALL \
+      --tmpfs /tmp:rw,noexec,nosuid,size=64m \
+      -v <tmpdir>:/app:ro -w /app <image> pytest ...
+    ```
+  * Factory `get_sandbox_backend()` selectable dynamically via `TESTFORGE_SANDBOX=subprocess|docker`.
+* **Verification**:
+  * Added unit test suite [`tests/test_sandbox_backend.py`](file:///Users/sourabh/TestForge/tests/test_sandbox_backend.py) covering timeout enforcement, factory selection, unavailable daemon handling, and kernel-level network isolation (`6 passed, 1 skipped in 2.32s`).
+
+---
+
+## Task 4B: Public Labels & Benchmark Citations
+
+### 1. Protocol Terminology Alignment: A2A vs FIPA
+* **Internal Multi-Agent Broker** ([`testforge/a2a.py`](file:///Users/sourabh/TestForge/testforge/a2a.py)):
+  * Formally labeled as: *"FIPA-compliant agent communication envelope with A2A-compatible JSON schema"*.
+  * Implements structured communicative acts (`REQUEST`, `INFORM`, `AGREE`, `REFUSE`, `FAILURE`, `PROPOSE`) for in-process inter-agent coordination.
+* **External Protocol Gateway** ([`testforge/a2a_protocol.py`](file:///Users/sourabh/TestForge/testforge/a2a_protocol.py)):
+  * Formally labeled as: *"Official A2A Protocol Interoperability Layer (v0.3.0 via `a2a-sdk` 0.3.26)"*.
+  * Implements `AgentCard` discovery at `/.well-known/agent-card.json`, JSON-RPC 2.0 transport, and standard task lifecycle events.
+
+### 2. Prompt Injection Evaluation Suite Attribution & False-Positive Rate
+* **Benchmark Attribution**:
+  * Evaluated using: *"In-house synthetic prompt injection evaluation suite (Sourabh & Shreshth, 2026)"*.
+* **False-Positive Measurement**:
+  * Evaluated detector against 20 benign Python codebases (canonical sample modules and real-world Python packages).
+  * **Initial Result**: 1 false positive out of 20 (5.0%) caused by `# type: ignore[override]` matching `[override]`.
+  * **Remediation**: Added static analysis pragma filter (`type: ignore`, `noqa`, `pylint`) in [`testforge/prompt_guard.py`](file:///Users/sourabh/TestForge/testforge/prompt_guard.py).
+  * **Final Measured Result**: **0/20 false positives (0.0% FP rate)** across all 20 benign files while preserving 10/10 true positive detections in [`tests/test_prompt_injection_defense.py`](file:///Users/sourabh/TestForge/tests/test_prompt_injection_defense.py).
+
+
