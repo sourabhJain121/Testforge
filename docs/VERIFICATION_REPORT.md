@@ -166,4 +166,26 @@
   * **Remediation**: Added static analysis pragma filter (`type: ignore`, `noqa`, `pylint`) in [`testforge/prompt_guard.py`](file:///Users/sourabh/TestForge/testforge/prompt_guard.py).
   * **Final Measured Result**: **0/20 false positives (0.0% FP rate)** across all 20 benign files while preserving 10/10 true positive detections in [`tests/test_prompt_injection_defense.py`](file:///Users/sourabh/TestForge/tests/test_prompt_injection_defense.py).
 
+---
+
+## Task 5: Surviving Mutant Empirical Analysis
+
+### 1. Empirical Extraction & Classification
+* Evaluated all 4 canonical benchmark targets (`discount.py`, `lru_cache.py`, `order_fsm.py`, `stats_calculator.py`) against deterministic AST mutants.
+* Documented exhaustive mutant ledger in [`docs/SURVIVING_MUTANTS.md`](file:///Users/sourabh/TestForge/docs/SURVIVING_MUTANTS.md):
+  * `samples/discount.py`: 19 total mutants -> 18 killed, 0 survived, 1 mathematically equivalent (`MUT_BOUNDARY_SWAP_003` at line 9, `price <= 0.0` vs `price < 0.0`), achieving **100.0% adjusted kill score**.
+  * `samples/order_fsm.py`: 106 total mutants -> 74 killed, 31 survived, 1 equivalent (**70.5% adjusted kill score**).
+  * `samples/lru_cache.py`: 42 total mutants -> 13 killed, 25 survived, 4 equivalent (**34.2% adjusted kill score**).
+  * `samples/stats_calculator.py`: 73 total mutants -> 33 killed, 38 survived, 2 equivalent (**46.5% adjusted kill score**).
+
+### 2. Killable Survivor Regression Fixes
+* **`discount.py`**:
+  * Survivor `MUT_MATH_FUNC_018` (`round(price, 2)` -> `round(price, 1)`) was killable.
+  * Added test fixture `test_calculate_discount_two_decimal_precision` in [`qa_artifacts/test_hardened_discount.py`](file:///Users/sourabh/TestForge/qa_artifacts/test_hardened_discount.py) asserting `calculate_discount(10.55, 1, False) == 10.55`.
+  * Verified: Survivor eliminated; 0 mutants survive in `discount.py`.
+* **`order_fsm.py`**:
+  * 54 state dictionary and audit trail mutants survived due to unexercised multi-state paths.
+  * Added regression test fixtures in [`qa_artifacts/test_hardened_order_fsm.py`](file:///Users/sourabh/TestForge/qa_artifacts/test_hardened_order_fsm.py) exercising complete order lifecycle (`CREATED` -> `PENDING_PAYMENT` -> `PAID` -> `PROCESSING` -> `SHIPPED` -> `DELIVERED` -> `COMPLETED`, `RETURNED` -> `REFUNDED`), killing 23 additional mutants (kills increased from 51 to 74).
+
+
 

@@ -73,3 +73,7 @@ def test_calculate_discount_property_monotonicity():
     r1 = calculate_discount(1.0, 2, False)
     r2 = calculate_discount(100.0, 2, False)
     assert r1 <= r2
+
+def test_calculate_discount_two_decimal_precision():
+    """Kills MUT_MATH_FUNC_018 (round to 1 decimal place mutant)."""
+    assert calculate_discount(10.55, 1, False) == 10.55
