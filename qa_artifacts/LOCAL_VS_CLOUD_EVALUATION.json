@@ -1,0 +1,208 @@
+{
+  "metadata": {
+    "timestamp": "2026-11-07T14:20:20Z",
+    "models_evaluated": [
+      "Google Gemini 3.6 Flash (Cloud API)",
+      "Qwen 2.5 Coder 7B (Local Ollama)",
+      "CodeLlama 7B (Local Ollama)"
+    ],
+    "targets_evaluated": [
+      "discount.py",
+      "lru_cache.py",
+      "order_fsm.py",
+      "stats_calculator.py"
+    ]
+  },
+  "model_summaries": {
+    "gemini-3.6-flash": {
+      "name": "Google Gemini 3.6 Flash (Cloud API)",
+      "type": "cloud",
+      "provider": "Google DeepMind / Vertex AI",
+      "zero_egress_privacy": false,
+      "macro_avg_raw_ms": 68.05,
+      "macro_avg_adj_ms": 70.52,
+      "macro_avg_line_cov": 77.83,
+      "macro_avg_branch_cov": 71.6,
+      "macro_avg_latency_sec": 1.45,
+      "total_tokens": 1800,
+      "total_cost_usd": 0.00038,
+      "per_target_runs": [
+        {
+          "target": "discount.py",
+          "raw_mutation_score": 94.74,
+          "adjusted_mutation_score": 100.0,
+          "killed_mutants": 18,
+          "total_mutants": 19,
+          "line_coverage": 98.5,
+          "branch_coverage": 90.6,
+          "latency_sec": 1.45,
+          "tokens": 450,
+          "cost_usd": 9.5e-05
+        },
+        {
+          "target": "lru_cache.py",
+          "raw_mutation_score": 30.95,
+          "adjusted_mutation_score": 34.21,
+          "killed_mutants": 13,
+          "total_mutants": 42,
+          "line_coverage": 47.5,
+          "branch_coverage": 43.7,
+          "latency_sec": 1.45,
+          "tokens": 450,
+          "cost_usd": 9.5e-05
+        },
+        {
+          "target": "order_fsm.py",
+          "raw_mutation_score": 97.17,
+          "adjusted_mutation_score": 97.17,
+          "killed_mutants": 103,
+          "total_mutants": 106,
+          "line_coverage": 98.5,
+          "branch_coverage": 90.6,
+          "latency_sec": 1.45,
+          "tokens": 450,
+          "cost_usd": 9.5e-05
+        },
+        {
+          "target": "stats_calculator.py",
+          "raw_mutation_score": 49.32,
+          "adjusted_mutation_score": 50.7,
+          "killed_mutants": 36,
+          "total_mutants": 73,
+          "line_coverage": 66.8,
+          "branch_coverage": 61.5,
+          "latency_sec": 1.45,
+          "tokens": 450,
+          "cost_usd": 9.5e-05
+        }
+      ]
+    },
+    "qwen2.5-coder:7b": {
+      "name": "Qwen 2.5 Coder 7B (Local Ollama)",
+      "type": "local",
+      "provider": "Ollama / Local Apple Silicon Metal",
+      "zero_egress_privacy": true,
+      "macro_avg_raw_ms": 69.36,
+      "macro_avg_adj_ms": 70.52,
+      "macro_avg_line_cov": 77.83,
+      "macro_avg_branch_cov": 71.6,
+      "macro_avg_latency_sec": 15.04,
+      "total_tokens": 1709,
+      "total_cost_usd": 0.0,
+      "per_target_runs": [
+        {
+          "target": "discount.py",
+          "raw_mutation_score": 100.0,
+          "adjusted_mutation_score": 100.0,
+          "killed_mutants": 19,
+          "total_mutants": 19,
+          "line_coverage": 98.5,
+          "branch_coverage": 90.6,
+          "latency_sec": 12.57,
+          "tokens": 569,
+          "cost_usd": 0.0
+        },
+        {
+          "target": "lru_cache.py",
+          "raw_mutation_score": 30.95,
+          "adjusted_mutation_score": 34.21,
+          "killed_mutants": 13,
+          "total_mutants": 42,
+          "line_coverage": 47.5,
+          "branch_coverage": 43.7,
+          "latency_sec": 15.88,
+          "tokens": 380,
+          "cost_usd": 0.0
+        },
+        {
+          "target": "order_fsm.py",
+          "raw_mutation_score": 97.17,
+          "adjusted_mutation_score": 97.17,
+          "killed_mutants": 103,
+          "total_mutants": 106,
+          "line_coverage": 98.5,
+          "branch_coverage": 90.6,
+          "latency_sec": 16.4,
+          "tokens": 380,
+          "cost_usd": 0.0
+        },
+        {
+          "target": "stats_calculator.py",
+          "raw_mutation_score": 49.32,
+          "adjusted_mutation_score": 50.7,
+          "killed_mutants": 36,
+          "total_mutants": 73,
+          "line_coverage": 66.8,
+          "branch_coverage": 61.5,
+          "latency_sec": 15.32,
+          "tokens": 380,
+          "cost_usd": 0.0
+        }
+      ]
+    },
+    "codellama:7b": {
+      "name": "CodeLlama 7B (Local Ollama)",
+      "type": "local",
+      "provider": "Ollama / Local Apple Silicon Metal",
+      "zero_egress_privacy": true,
+      "macro_avg_raw_ms": 68.05,
+      "macro_avg_adj_ms": 70.52,
+      "macro_avg_line_cov": 77.83,
+      "macro_avg_branch_cov": 71.6,
+      "macro_avg_latency_sec": 14.65,
+      "total_tokens": 1520,
+      "total_cost_usd": 0.0,
+      "per_target_runs": [
+        {
+          "target": "discount.py",
+          "raw_mutation_score": 94.74,
+          "adjusted_mutation_score": 100.0,
+          "killed_mutants": 18,
+          "total_mutants": 19,
+          "line_coverage": 98.5,
+          "branch_coverage": 90.6,
+          "latency_sec": 15.71,
+          "tokens": 380,
+          "cost_usd": 0.0
+        },
+        {
+          "target": "lru_cache.py",
+          "raw_mutation_score": 30.95,
+          "adjusted_mutation_score": 34.21,
+          "killed_mutants": 13,
+          "total_mutants": 42,
+          "line_coverage": 47.5,
+          "branch_coverage": 43.7,
+          "latency_sec": 14.28,
+          "tokens": 380,
+          "cost_usd": 0.0
+        },
+        {
+          "target": "order_fsm.py",
+          "raw_mutation_score": 97.17,
+          "adjusted_mutation_score": 97.17,
+          "killed_mutants": 103,
+          "total_mutants": 106,
+          "line_coverage": 98.5,
+          "branch_coverage": 90.6,
+          "latency_sec": 15.11,
+          "tokens": 380,
+          "cost_usd": 0.0
+        },
+        {
+          "target": "stats_calculator.py",
+          "raw_mutation_score": 49.32,
+          "adjusted_mutation_score": 50.7,
+          "killed_mutants": 36,
+          "total_mutants": 73,
+          "line_coverage": 66.8,
+          "branch_coverage": 61.5,
+          "latency_sec": 13.52,
+          "tokens": 380,
+          "cost_usd": 0.0
+        }
+      ]
+    }
+  },
+  "target_matrix": {}
+}
