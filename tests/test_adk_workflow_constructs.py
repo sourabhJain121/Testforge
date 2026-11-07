@@ -206,3 +206,78 @@ class TestADKBlackboardSessionBridge:
         assert metrics.target_mutation_score == 92.0
         assert critic.latest_directive == "Tighten boundary equality"
         assert "Tighten boundary equality" in critic.critic_directives
+
+
+class TestADKNativenessAndRunnerIntegration:
+    """Verifies genuine Google ADK class inheritance and Runner session execution."""
+
+    def test_native_agent_class_inheritance(self):
+        from google.adk.agents.base_agent import BaseAgent
+        from google.adk.agents.parallel_agent import ParallelAgent
+        from google.adk.agents.loop_agent import LoopAgent
+        from google.adk.agents.llm_agent import LlmAgent
+        from testforge.adk_generator import GoogleADKTestGenerator
+        from testforge.supervisor_agent import SupervisorAgent
+        from testforge.code_intelligence_agent import CodeIntelligenceAgent
+
+        par_agent = ADKParallelAnalysisAgent()
+        assert isinstance(par_agent, ParallelAgent)
+        assert isinstance(par_agent, BaseAgent)
+
+        loop_agent = ADKLoopReflectionAgent(max_iterations=2, target_score=90.0)
+        assert isinstance(loop_agent, LoopAgent)
+        assert isinstance(loop_agent, BaseAgent)
+
+        gen = GoogleADKTestGenerator()
+        assert isinstance(gen.adk_agent, LlmAgent)
+        assert isinstance(gen.adk_agent, BaseAgent)
+
+        sup = SupervisorAgent()
+        assert isinstance(sup.adk_agent, LlmAgent)
+        assert isinstance(sup.adk_agent, BaseAgent)
+
+        code_intel = CodeIntelligenceAgent()
+        assert isinstance(code_intel.adk_agent, LlmAgent)
+        assert isinstance(code_intel.adk_agent, BaseAgent)
+
+    def test_native_runner_pipeline_execution_and_session_state(self):
+        import asyncio
+        from google.adk.runners import Runner
+        from google.adk.sessions.in_memory_session_service import InMemorySessionService
+        from google.genai import types
+
+        async def _run_test():
+            par_agent = ADKParallelAnalysisAgent()
+            session_service = InMemorySessionService()
+            runner = Runner(agent=par_agent, session_service=session_service, app_name="testforge_integration")
+
+            test_code = "def add(x: int, y: int) -> int:\n    return x + y\n"
+            session = await session_service.create_session(
+                app_name="testforge_integration",
+                user_id="test_qa",
+                state={"app:source_code": test_code, "app:job_id": "job_int_01"},
+            )
+
+            user_message = types.Content(role="user", parts=[types.Part(text="analyze_target")])
+            events = []
+            async for event in runner.run_async(
+                user_id="test_qa",
+                session_id=session.id,
+                new_message=user_message,
+            ):
+                events.append(event)
+
+            assert len(events) >= 2
+            updated_session = await session_service.get_session(
+                app_name="testforge_integration",
+                user_id="test_qa",
+                session_id=session.id,
+            )
+
+            assert updated_session.state.get("app:security_allowed") is True
+            assert updated_session.state.get("app:security_risk") == "SAFE"
+            callables = updated_session.state.get("app:discovered_callables", [])
+            assert "add" in callables
+
+        asyncio.run(_run_test())
+
