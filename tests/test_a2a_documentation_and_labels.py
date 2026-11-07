@@ -10,6 +10,7 @@ Verifies:
 """
 
 from pathlib import Path
+
 import pytest
 
 
@@ -32,3 +33,4 @@ def test_a2a_protocol_specification_content():
 
     # Ensure document is comprehensive
     assert len(content) > 1500
+

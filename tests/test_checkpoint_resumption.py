@@ -19,55 +19,54 @@ Validates all 14 required capabilities:
 14. Regression coverage for existing checkpoint, cancellation, lifecycle, and MCP behavior.
 """
 
-import os
 import json
-import time
-import uuid
-import pytest
+import os
+import sqlite3
 import tempfile
 import threading
-import sqlite3
+import time
+import uuid
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+import pytest
 from fastapi.testclient import TestClient
 
-from testforge.persistence import (
-    SQLiteBlackboardStorage,
-    CheckpointMetadata,
-    CheckpointRecord,
-    ResumptionPlan,
-    CheckpointError,
-    CheckpointNotFoundError,
-    CorruptedSnapshotError,
-    IncompatibleSchemaError,
-    InputHashMismatchError,
-    IncompleteCheckpointError,
-    InvalidRecoveryStageError,
-    compute_source_hash,
-    determine_resumption_plan,
-    CURRENT_SCHEMA_VERSION,
-)
+from server import JOB_LOCK, JOBS, app
 from testforge.blackboard import (
     Blackboard,
-    TargetSpace,
-    MutantSpace,
-    CriticSpace,
-    SuiteSpace,
-    MetricsSpace,
     BlackboardSnapshot,
-)
-from testforge.state import (
-    TaskLifecycleState,
-    TaskLifecycleFSM,
-    MutantRecord,
-    IterationMetrics,
-    TestForgeState,
+    CriticSpace,
+    MetricsSpace,
+    MutantSpace,
+    SuiteSpace,
+    TargetSpace,
 )
 from testforge.callbacks import CallbackRegistry, EventType, LifecycleEvent
 from testforge.orchestrator import TestForgeOrchestrator
-from server import app, JOBS, JOB_LOCK
-
+from testforge.persistence import (
+    CURRENT_SCHEMA_VERSION,
+    CheckpointError,
+    CheckpointMetadata,
+    CheckpointNotFoundError,
+    CheckpointRecord,
+    CorruptedSnapshotError,
+    IncompatibleSchemaError,
+    IncompleteCheckpointError,
+    InputHashMismatchError,
+    InvalidRecoveryStageError,
+    ResumptionPlan,
+    SQLiteBlackboardStorage,
+    compute_source_hash,
+    determine_resumption_plan,
+)
+from testforge.state import (
+    IterationMetrics,
+    MutantRecord,
+    TaskLifecycleFSM,
+    TaskLifecycleState,
+    TestForgeState,
+)
 
 SAMPLE_TARGET_CODE = """
 def discount(amount: float, is_vip: bool) -> float:

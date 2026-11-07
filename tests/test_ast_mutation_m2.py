@@ -16,10 +16,11 @@ Verifies:
 """
 
 import ast
+
 import pytest
+
 from testforge.mutator import ASTMutator, MutationTransformer
 from testforge.state import MutantRecord
-
 
 COMPLEX_TARGET_SOURCE = """def compute_risk(score: int, weight: float, flag: bool) -> float:
     \"\"\"Docstring explaining compute risk.\"\"\"

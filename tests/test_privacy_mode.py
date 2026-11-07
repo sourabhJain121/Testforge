@@ -13,6 +13,7 @@ Covers:
 
 import os
 import socket
+
 import pytest
 from starlette.testclient import TestClient
 
@@ -156,3 +157,4 @@ def test_privacy_api_endpoints():
     resp = client.post("/api/privacy/toggle", json={"enabled": False})
     assert resp.status_code == 200
     assert resp.json()["privacy_mode_enabled"] is False
+

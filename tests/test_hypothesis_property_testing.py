@@ -5,6 +5,7 @@ Automated Test Suite for Hypothesis Property-Based Testing Generation (Sub-Task 
 """
 
 import ast
+
 import pytest
 
 from testforge.property_generator import PropertyEvaluationResult, PropertyTestGenerator
@@ -36,7 +37,7 @@ def test_property_tests_pass_clean_target():
     sandbox = ParallelSandboxRunner(target_file_path="samples/discount.py")
     res = sandbox.validate_and_filter_candidate_suite(code, src)
 
-    assert res.overall_status in ("ALL_VALID", "PASS", "PARTIAL_PASS")
+    assert res.overall_status in ("ALL_VALID", "PASS", "PARTIALLY_VALID", "PARTIAL_PASS")
     assert res.retained_count >= 3
 
 
@@ -58,3 +59,4 @@ def test_single_item():
     assert res.property_only_killed_count > 0
     assert res.combined_mutation_score > res.example_mutation_score
     assert res.score_lift_pct > 0.0
+

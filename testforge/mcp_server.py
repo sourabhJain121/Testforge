@@ -328,12 +328,13 @@ def create_testforge_server(repo_root: Optional[Path] = None) -> FastMCP:
         Executes TestForge autonomous mutation-verified test hardening on a Python module.
         Validates path confinement, discovers AST mutants, executes reflection loop, and returns results.
         """
-        import uuid
         import time
+        import uuid
+
+        from testforge.equivalence import calculate_mutation_scores
         from testforge.intelligent_generator import IntelligentASTSynthesizer
         from testforge.mutator import ASTMutator
         from testforge.sandbox import ParallelSandboxRunner
-        from testforge.equivalence import calculate_mutation_scores
 
         safe, resolved, err = _is_path_safe(file_path, root)
         if not safe:

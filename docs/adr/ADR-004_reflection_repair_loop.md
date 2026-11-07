@@ -27,3 +27,4 @@ We implemented a multi-stage **Reflection and Equivalence Loop**:
 
 ### Negative / Trade-offs
 - Bytecode disassembly and comparison adds a small static analysis overhead (~5ms per mutant), which is negligible compared to sandbox execution time.
+

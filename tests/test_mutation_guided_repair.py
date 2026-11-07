@@ -8,27 +8,28 @@ one broken or invalid test does not force the entire candidate suite to be disca
 
 import ast
 import hashlib
-import pytest
-from typing import Dict, Any
+from typing import Any, Dict
+from unittest.mock import Mock
 
-from testforge.sandbox import (
-    ParallelSandboxRunner,
-    SubprocessSandbox,
-    GranularTestValidator,
-    TestValidationStatus,
-    CandidateSuiteValidationResult,
-)
-from testforge.state import MutantRecord, TestForgeState
+import pytest
+
+from testforge.agents import AdversarialCriticAgent, TestGeneratorAgent
 from testforge.blackboard import Blackboard
-from testforge.mutator import ASTMutator
+from testforge.equivalence import calculate_mutation_scores
 from testforge.guidance import (
     SemanticMutantGuidance,
-    derive_semantic_guidance,
     derive_guidance_for_surviving_mutants,
+    derive_semantic_guidance,
 )
-from unittest.mock import Mock
-from testforge.agents import AdversarialCriticAgent, TestGeneratorAgent
-from testforge.equivalence import calculate_mutation_scores
+from testforge.mutator import ASTMutator
+from testforge.sandbox import (
+    CandidateSuiteValidationResult,
+    GranularTestValidator,
+    ParallelSandboxRunner,
+    SubprocessSandbox,
+    TestValidationStatus,
+)
+from testforge.state import MutantRecord, TestForgeState
 
 TestGeneratorAgent.__test__ = False
 
@@ -987,8 +988,8 @@ class TestAgenticReflectionQualityRemediation:
 
     # 6. Currency converter deterministic fallback passes clean reference code
     def test_currency_converter_fallback_passes_clean_reference(self, sandbox):
+        from testforge.agents import CodeSanitizer, TestGeneratorAgent, extract_function_signatures
         from testforge.corpus.fixtures.currency_converter import REFERENCE_CODE
-        from testforge.agents import TestGeneratorAgent, extract_function_signatures, CodeSanitizer
 
         gen = TestGeneratorAgent(model_name="Local Ollama:qwen2.5-coder:7b", api_key="")
         sigs = extract_function_signatures(REFERENCE_CODE)

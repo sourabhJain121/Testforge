@@ -368,7 +368,7 @@ class SecurityAgent:
                 highest_risk = SecurityRiskLevel.MEDIUM
 
         # 5. Deterministic AST Security Policy Check (eval, exec, os.system, etc.)
-        ast_res = self.guardrail.inspect_code_ast(source_code, enforce_policy=True)
+        ast_res = self.guardrail.inspect_code_ast(source_code, enforce_policy=True, is_test_code=False)
         if not ast_res.allowed:
             is_blocked = True
             highest_risk = SecurityRiskLevel.CRITICAL

@@ -13,7 +13,7 @@ import json
 import math
 import os
 import re
-from typing import Dict, Any, List, Tuple
+from typing import Any, Dict, List, Tuple
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 RESULTS_JSON = os.path.join(BASE_DIR, "qa_artifacts", "MULTI_TARGET_BENCHMARK_RESULTS.json")

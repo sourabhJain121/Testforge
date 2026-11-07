@@ -90,3 +90,4 @@ This document provides a component-by-component architectural deep dive for oral
 - **Source Files**: [`testforge/diff_incremental.py`](file:///Users/sourabh/TestForge/testforge/diff_incremental.py)
 - **Algorithm**: Parses unified diff hunk headers (`@@ -l,s +start,count @@`) and restricts AST mutant injection exclusively to touched lines.
 - **Empirical Result**: Across 4 realistic PR scenarios, eliminated **88.3% of redundant mutants** (240 down to 28), speeding up execution from 15.08s to 2.80s (**5.39x speedup**) with 100% diff-line defect detection.
+

@@ -14,14 +14,15 @@ Verifies:
 """
 
 import pytest
-from testforge.state import MutantRecord
+
 from testforge.equivalence import (
-    EquivalentMutantAnalyzer,
+    DeadCodeVisitor,
     EquivalenceClassification,
-    EquivalenceMethod,
     EquivalenceConfidence,
-    DeadCodeVisitor
+    EquivalenceMethod,
+    EquivalentMutantAnalyzer,
 )
+from testforge.state import MutantRecord
 
 
 def test_killed_mutant_not_equivalent():

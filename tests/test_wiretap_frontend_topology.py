@@ -6,8 +6,10 @@ in the Multi-Agent Wiretap API and Cockpit UI.
 """
 
 import pathlib
+
 import pytest
 from starlette.testclient import TestClient
+
 from server import app
 
 BASE_DIR = pathlib.Path(__file__).resolve().parent.parent

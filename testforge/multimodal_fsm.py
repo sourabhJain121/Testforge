@@ -54,7 +54,7 @@ def generate_fsm_diagram(output_path: str = "tests/fixtures/fsm_diagram.png") ->
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
-    from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
+    from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 
     os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
 
@@ -317,7 +317,7 @@ class MultimodalFSMDeriver:
                 f'    fsm_{term.lower()} = OrderFSM("ORD-TERM", initial_state="{term}")',
                 f'    assert fsm_{term.lower()}.is_terminal()',
                 f'    ok, _ = fsm_{term.lower()}.transition("PAID", user_role="ADMIN")',
-                f'    assert not ok',
+                '    assert not ok',
             ])
 
         lines.extend([

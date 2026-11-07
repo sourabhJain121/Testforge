@@ -8,22 +8,23 @@ ADK Lifecycle Callbacks, and ADKBlackboardSessionBridge.
 """
 
 import pytest
-from testforge.adk_workflow_agents import (
-    ADKParallelAnalysisAgent,
-    ADKLoopReflectionAgent,
-    ParallelAnalysisResult,
-    LoopReflectionResult,
-)
+
 from testforge.adk_callbacks import (
-    adk_before_model_callback,
     adk_after_model_callback,
+    adk_before_model_callback,
     redact_secrets_and_pii,
     validate_python_syntax,
 )
 from testforge.adk_session_bridge import ADKBlackboardSessionBridge
+from testforge.adk_workflow_agents import (
+    ADKLoopReflectionAgent,
+    ADKParallelAnalysisAgent,
+    LoopReflectionResult,
+    ParallelAnalysisResult,
+)
 from testforge.blackboard import Blackboard
-from testforge.security_agent import SecurityAgent
 from testforge.code_intelligence_agent import CodeIntelligenceAgent
+from testforge.security_agent import SecurityAgent
 
 
 class TestADKParallelAnalysisAgent:
@@ -213,12 +214,12 @@ class TestADKNativenessAndRunnerIntegration:
 
     def test_native_agent_class_inheritance(self):
         from google.adk.agents.base_agent import BaseAgent
-        from google.adk.agents.parallel_agent import ParallelAgent
-        from google.adk.agents.loop_agent import LoopAgent
         from google.adk.agents.llm_agent import LlmAgent
+        from google.adk.agents.loop_agent import LoopAgent
+        from google.adk.agents.parallel_agent import ParallelAgent
+
         from testforge.adk_generator import GoogleADKTestGenerator
         from testforge.supervisor_agent import SupervisorAgent
-        from testforge.code_intelligence_agent import CodeIntelligenceAgent
 
         par_agent = ADKParallelAnalysisAgent()
         assert isinstance(par_agent, ParallelAgent)
@@ -242,6 +243,7 @@ class TestADKNativenessAndRunnerIntegration:
 
     def test_native_runner_pipeline_execution_and_session_state(self):
         import asyncio
+
         from google.adk.runners import Runner
         from google.adk.sessions.in_memory_session_service import InMemorySessionService
         from google.genai import types

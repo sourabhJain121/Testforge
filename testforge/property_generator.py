@@ -204,3 +204,4 @@ class PropertyTestGenerator:
             property_test_code=property_tests_code,
             duration_sec=round(elapsed, 3),
         )
+

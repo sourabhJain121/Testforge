@@ -3,26 +3,27 @@ tests/test_server_recovery_and_exports.py - Tests for GAP-007 (Server Job Recove
 and GAP-010 (CI/CD JUnit XML & SARIF v2.1.0 Report Exports).
 """
 
-import os
-import time
 import json
+import os
 import sqlite3
 import tempfile
+import time
 import xml.etree.ElementTree as ET
+
 import pytest
 from fastapi.testclient import TestClient
 
 from server import (
-    app,
+    DEFAULT_CHECKPOINT_DB_PATH,
     JOB_LOCK,
     JOBS,
-    DEFAULT_CHECKPOINT_DB_PATH,
-    recover_interrupted_jobs_on_startup,
+    app,
     generate_junit_xml,
     generate_sarif_report,
+    recover_interrupted_jobs_on_startup,
 )
-from testforge.persistence import SQLiteBlackboardStorage
 from testforge.blackboard import Blackboard
+from testforge.persistence import SQLiteBlackboardStorage
 
 
 class TestServerRecoveryGAP007:

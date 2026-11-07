@@ -11,13 +11,15 @@ Tests:
   - POST /api/checkpoints/{id}/restore 404 on unknown ID
 """
 
-import os
 import json
+import os
+
 import pytest
 from starlette.testclient import TestClient
-from server import app, DEFAULT_CHECKPOINT_DB_PATH
-from testforge.persistence import SQLiteBlackboardStorage
+
+from server import DEFAULT_CHECKPOINT_DB_PATH, app
 from testforge.blackboard import Blackboard
+from testforge.persistence import SQLiteBlackboardStorage
 from testforge.state import MutantRecord
 
 

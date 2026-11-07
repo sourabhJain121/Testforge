@@ -61,3 +61,4 @@ def test_diff_analyze_api_endpoint():
     data = resp.json()
     assert data["changed_lines"] == [20, 21]
     assert data["changed_lines_count"] == 2
+

@@ -227,7 +227,7 @@ def run_frontend_verification() -> Dict[str, Any]:
     with open(report_path, "w", encoding="utf-8") as f:
         json.dump(report, f, indent=2)
 
-    print(f"\n[✓] Browser verification completed successfully!")
+    print("\n[✓] Browser verification completed successfully!")
     print(f"    - Total Views Captured: {len(captured_screenshots)}")
     print(f"    - Uncaught Page Errors: {len(page_errors)}")
     print(f"    - Uncaught Console Errors: {len(console_errors)}")

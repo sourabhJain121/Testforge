@@ -20,11 +20,13 @@ import os
 import sys
 import tempfile
 from unittest import mock
+
 import pytest
+
+from testforge.equivalence import calculate_mutation_scores
+from testforge.mutator import ASTMutator
 from testforge.orchestrator import TestForgeOrchestrator
 from testforge.sandbox import ParallelSandboxRunner, _run_single_test_task
-from testforge.mutator import ASTMutator
-from testforge.equivalence import calculate_mutation_scores
 from testforge.state import MutantRecord
 
 

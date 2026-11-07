@@ -8,20 +8,22 @@ Validates:
 """
 
 from __future__ import annotations
+
 import pytest
-from testforge.state import MutantRecord
-from testforge.intelligent_generator import IntelligentASTSynthesizer
+
+from testforge.a2a import CriticDirectivePayload, MutationQualityCriticPayload
 from testforge.crew_critic import TestQualityAnalyzer
 from testforge.equivalence import (
-    EquivalentMutantAnalyzer,
     EquivalenceClassification,
     EquivalenceConfidence,
     EquivalenceMethod,
-    detect_boundary_equivalent_mutants,
+    EquivalentMutantAnalyzer,
     calculate_mutation_scores,
+    detect_boundary_equivalent_mutants,
 )
-from testforge.a2a import MutationQualityCriticPayload, CriticDirectivePayload
+from testforge.intelligent_generator import IntelligentASTSynthesizer
 from testforge.sandbox import ParallelSandboxRunner
+from testforge.state import MutantRecord
 
 
 class TestPropertyInvariantSoundnessGAP002:

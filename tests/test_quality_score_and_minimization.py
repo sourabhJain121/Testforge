@@ -10,6 +10,7 @@ Verifies:
 """
 
 import pytest
+
 from testforge.crew_critic import TestQualityAnalyzer
 from testforge.sandbox import ParallelSandboxRunner
 

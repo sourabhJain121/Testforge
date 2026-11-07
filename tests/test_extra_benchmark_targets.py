@@ -10,13 +10,14 @@ Automated test suite verifying Handout Criterion 1.3:
 """
 
 from pathlib import Path
+
 import pytest
 
-from testforge.mutator import ASTMutator
 from samples.expression_tokenizer import ExpressionTokenizer, TokenType
-from samples.sliding_window_rate_limiter import SlidingWindowRateLimiter, Tier
 from samples.interval_set import Interval, IntervalSet
 from samples.inventory_ledger import InventoryLedger, ReservationStatus
+from samples.sliding_window_rate_limiter import SlidingWindowRateLimiter, Tier
+from testforge.mutator import ASTMutator
 
 TARGET_FILES = [
     "samples/expression_tokenizer.py",

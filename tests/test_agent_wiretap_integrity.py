@@ -8,21 +8,22 @@ Validates:
 4. Correct deduplication and handling of scoped vs all-time traces.
 """
 
-import os
 import json
+import os
 import tempfile
+
 import pytest
 from fastapi.testclient import TestClient
 
 from server import app
-from testforge.logger import TraceLogger
-from testforge.agents import TestGeneratorAgent, AdversarialCriticAgent
-from testforge.ingestion import TargetManagerAgent
+from testforge.a2a import A2ABroker
 from testforge.adk_generator import GoogleADKTestGenerator
+from testforge.agents import AdversarialCriticAgent, TestGeneratorAgent
 from testforge.crew_critic import CrewAICriticAgent
+from testforge.ingestion import TargetManagerAgent
+from testforge.logger import TraceLogger
 from testforge.orchestrator import TestForgeOrchestrator
 from testforge.sandbox import ParallelSandboxRunner, SubprocessSandbox
-from testforge.a2a import A2ABroker
 
 
 @pytest.fixture

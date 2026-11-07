@@ -10,11 +10,11 @@ Verifies:
 """
 
 import os
-import pytest
-from starlette.testclient import TestClient
 
+import pytest
 from google.adk.agents.llm_agent import LlmAgent
 from google.adk.cli.fast_api import AgentLoader, get_fast_api_app
+from starlette.testclient import TestClient
 
 
 class TestADKWebCompatibility:
@@ -51,3 +51,4 @@ class TestADKWebCompatibility:
         res = client.get("/healthz")
         # ADK fast_api provides health or root endpoint
         assert res.status_code in (200, 404)  # Server responds without exception
+

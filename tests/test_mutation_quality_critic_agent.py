@@ -4,24 +4,25 @@ CrewAI Mutation & Quality Critic Agent.
 """
 
 import time
+
 import pytest
 from pydantic import ValidationError
 
 from testforge.a2a import (
+    A2ABroker,
     A2AMessage,
     A2APerformative,
-    MutationQualityCriticPayload,
     CriticDirectivePayload,
-    A2ABroker,
+    MutationQualityCriticPayload,
 )
 from testforge.blackboard import Blackboard
-from testforge.mutator import MutantRecord
 from testforge.crew_critic import (
-    MutationQualityCriticAgent,
     CrewAICriticAgent,
     CrewAILLMBridge,
+    MutationQualityCriticAgent,
     TestQualityAnalyzer,
 )
+from testforge.mutator import MutantRecord
 
 
 class TestMutationQualityCriticUnit:

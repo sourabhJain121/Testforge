@@ -6,6 +6,7 @@ Automated Test Suite for Kill-Matrix Greedy Set Cover Test Minimization (Sub-Tas
 
 import ast
 import os
+
 import pytest
 
 from testforge.minimizer import KillMatrixData, MinimizationResult, TestSuiteMinimizer
@@ -67,6 +68,7 @@ def test_minimized_code_valid_syntax(discount_context):
 
 def test_minimizer_api_endpoints():
     from starlette.testclient import TestClient
+
     from server import app
 
     client = TestClient(app)

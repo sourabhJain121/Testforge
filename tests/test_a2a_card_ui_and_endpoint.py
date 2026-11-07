@@ -2,15 +2,15 @@
 tests/test_a2a_card_ui_and_endpoint.py - Verification tests for A2A Card endpoint and UI contracts.
 """
 
-import re
 import json
-import pytest
+import re
 from pathlib import Path
+
+import pytest
 from starlette.testclient import TestClient
 
 from server import app
 from testforge.a2a_protocol import build_testforge_agent_card
-
 
 client = TestClient(app)
 

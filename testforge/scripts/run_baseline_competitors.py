@@ -13,24 +13,25 @@ Outputs:
   - docs/BASELINE_COMPARISON.md
 """
 
-import os
-import sys
 import json
-import time
 import math
+import os
 import random
 import re
+import sys
+import time
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 sys.path.insert(0, os.path.abspath("."))
 
-from testforge.benchmarking import BenchmarkRunner, PRICING_TABLE_PER_MILLION
+from testforge.benchmarking import PRICING_TABLE_PER_MILLION, BenchmarkRunner
+from testforge.intelligent_generator import IntelligentASTSynthesizer
 from testforge.llm_client import HybridLLMClient
 from testforge.logger import TraceLogger
-from testforge.intelligent_generator import IntelligentASTSynthesizer
-from testforge.sandbox import ParallelSandboxRunner
+from testforge.mutator import ASTMutator
 from testforge.orchestrator import TestForgeOrchestrator, format_standalone_test_suite
+from testforge.sandbox import ParallelSandboxRunner
 
 TARGETS = [
     {
@@ -442,7 +443,7 @@ def run_benchmark():
 
     # Generate Markdown Table
     render_markdown_table(raw_results, Path("docs/BASELINE_COMPARISON.md"))
-    print(f"[✓] Rendered comparison markdown report to docs/BASELINE_COMPARISON.md")
+    print("[✓] Rendered comparison markdown report to docs/BASELINE_COMPARISON.md")
 
 
 def render_markdown_table(raw_data: Dict[str, Any], output_path: Path):
@@ -549,7 +550,7 @@ def render_markdown_table(raw_data: Dict[str, Any], output_path: Path):
         "3. **Zero Test Execution Failure Rate**: While raw LLM outputs (zero-shot) frequently suffer from invalid import paths or signature hallucinations (requiring retries), TestForge validates every test candidate in a sub-process sandbox with strict rollback guarantees.",
         "",
         "> [!NOTE]",
-        f"> - Raw benchmark data recorded in `qa_artifacts/BASELINE_COMPARISON_RAW.json`.",
+        "> - Raw benchmark data recorded in `qa_artifacts/BASELINE_COMPARISON_RAW.json`.",
         f"> - Exact model version tested: `{meta['model_version']}`."
     ])
 

@@ -122,3 +122,4 @@ class TestADKAgentCallbacks:
         ctx.state["iteration"] = 10
         with pytest.raises(RuntimeError, match="Maximum iteration limit"):
             adk_before_agent_callback(ctx, agent)
+

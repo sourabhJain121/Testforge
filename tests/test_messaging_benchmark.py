@@ -10,12 +10,14 @@ Tests:
   6. CLI execution support and file export.
 """
 
-import pytest
 import json
 from pathlib import Path
+
+import pytest
+
 from testforge.benchmark_messaging import (
-    MessagingBenchmarkRunner,
     MessagingBenchmarkReport,
+    MessagingBenchmarkRunner,
     OperationalBenchmarkResult,
 )
 

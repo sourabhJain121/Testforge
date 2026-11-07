@@ -18,9 +18,14 @@ Provides:
 from __future__ import annotations
 
 import ast
+import json
+import logging
+import os
 import re
 from enum import Enum
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set, Tuple
+
+logger = logging.getLogger("testforge.equivalence")
 
 from pydantic import BaseModel, Field
 
@@ -338,18 +343,6 @@ class EquivalentMutantAnalyzer:
             except Exception:
                 pass
 
-        # 2b. Rule: Bytecode Compilation Identity (HIGH confidence EQUIVALENT)
-        if orig_code and mut_code:
-            is_bc, bc_reason = compare_bytecode_instructions(orig_code, mut_code)
-            if is_bc:
-                return EquivalenceResult(
-                    status=EquivalenceClassification.EQUIVALENT,
-                    method=EquivalenceMethod.BYTECODE_IDENTITY,
-                    reason=bc_reason or "Bytecode instructions are strictly identical after compilation.",
-                    confidence=EquivalenceConfidence.HIGH,
-                    evidence={"bytecode_match": True}
-                )
-
         # 3. Rule: Dead Code Mutation (HIGH confidence EQUIVALENT)
         # If the mutation occurs inside an unreachable block, behavior cannot differ.
         if orig_code:
@@ -361,6 +354,18 @@ class EquivalentMutantAnalyzer:
                     reason=f"Mutation site at line {mutant.line_number} is in provably unreachable dead code.",
                     confidence=EquivalenceConfidence.HIGH,
                     evidence={"dead_line": mutant.line_number, "dead_lines": sorted(list(dead_lines))}
+                )
+
+        # 3b. Rule: Bytecode Compilation Identity (HIGH confidence EQUIVALENT)
+        if orig_code and mut_code:
+            is_bc, bc_reason = compare_bytecode_instructions(orig_code, mut_code)
+            if is_bc:
+                return EquivalenceResult(
+                    status=EquivalenceClassification.EQUIVALENT,
+                    method=EquivalenceMethod.BYTECODE_IDENTITY,
+                    reason=bc_reason or "Bytecode instructions are strictly identical after compilation.",
+                    confidence=EquivalenceConfidence.HIGH,
+                    evidence={"bytecode_match": True}
                 )
 
         # 4. Rule: Self-canceling / Algebraic Identity Transforms (HIGH confidence EQUIVALENT)

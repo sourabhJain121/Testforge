@@ -6,24 +6,26 @@ and bounded payload limits across FastMCP GitHub tools without over-mocking the 
 """
 
 from __future__ import annotations
-import io
-import json
+
 import base64
 import email.message
-import urllib.request
+import io
+import json
 import urllib.error
 import urllib.parse
-from typing import Dict, Any, List, Optional
+import urllib.request
+from typing import Any, Dict, List, Optional
+
 import pytest
 
+from testforge.mcp_server import create_github_server
 from testforge.network_security import (
     ALLOWED_GITHUB_HOSTS,
     DEFAULT_MAX_SOURCE_SIZE_BYTES,
+    PayloadTooLargeError,
     SafeGitHubRedirectHandler,
     SSRFSecurityError,
-    PayloadTooLargeError,
 )
-from testforge.mcp_server import create_github_server
 
 
 class MockHTTPSTransport(urllib.request.BaseHandler):

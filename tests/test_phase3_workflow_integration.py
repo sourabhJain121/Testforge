@@ -11,14 +11,15 @@ Verifies:
 7. Existing hardening functionality and regression stability remain intact.
 """
 
-import os
 import json
+import os
 import tempfile
-import pytest
-from testforge.orchestrator import TestForgeOrchestrator
-from testforge.blackboard import Blackboard
-from testforge.state import TaskLifecycleState
 
+import pytest
+
+from testforge.blackboard import Blackboard
+from testforge.orchestrator import TestForgeOrchestrator
+from testforge.state import TaskLifecycleState
 
 CLEAN_CODE = """
 def multiply_by_two(x: int) -> int:

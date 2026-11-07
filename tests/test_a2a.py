@@ -2,16 +2,18 @@
 test_a2a.py - Comprehensive Unit and Integration Tests for Typed A2A Contract & Broker.
 """
 
-import pytest
 import time
+
+import pytest
+
 from testforge.a2a import (
     A2ABroker,
-    A2AMessage,
-    A2APerformative,
-    CriticDirectivePayload,
     A2ACritiqueRequestPayload,
     A2ACritiqueResponsePayload,
     A2AErrorPayload,
+    A2AMessage,
+    A2APerformative,
+    CriticDirectivePayload,
 )
 from testforge.blackboard import Blackboard
 from testforge.callbacks import CallbackRegistry, EventType, LifecycleEvent

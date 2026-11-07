@@ -190,3 +190,4 @@ class PrivacyModeManager:
             "pii_scrubbing": "ACTIVE",
             "allowed_hosts": list(ALLOWED_LOCAL_HOSTS),
         }
+

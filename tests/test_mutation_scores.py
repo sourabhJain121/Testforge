@@ -14,8 +14,9 @@ Verifies:
 """
 
 import pytest
-from testforge.state import MutantRecord
+
 from testforge.equivalence import calculate_mutation_scores
+from testforge.state import MutantRecord
 
 
 def make_mutant(m_id: str, status: str, is_valid: bool = True, eq_status: str = None) -> MutantRecord:

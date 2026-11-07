@@ -10,6 +10,7 @@ Guarantees that:
 import json
 import os
 import pathlib
+
 import pytest
 
 BASE_DIR = pathlib.Path(__file__).parent.parent
@@ -71,6 +72,7 @@ def test_markdown_summary_matches_json_source_of_truth(benchmark_data):
 def test_server_summary_endpoint_serves_json_source_of_truth(benchmark_data):
     """Asserts that the FastAPI server endpoint /api/benchmark/multi-target/summary matches the JSON source of truth."""
     from starlette.testclient import TestClient
+
     from server import app
 
     client = TestClient(app)

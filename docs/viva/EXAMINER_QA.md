@@ -74,3 +74,4 @@ Honest scientific disclosure is central to our work:
 1. **Air-Gap Latency**: While Google Gemini Flash takes ~1.5s per iteration, running entirely air-gapped on local Ollama `qwen2.5-coder:7b` requires ~15s per iteration on Apple Silicon CPU/Metal.
 2. **Equivalent Mutant Undecidability**: Rice's Theorem dictates that exact semantic equivalence in arbitrary programs is undecidable. While our bytecode normalization achieves 100% precision, semantic recall is bounded at ~90%.
 3. **Complex Mocking**: TestForge currently hardens standalone algorithmic modules (50-150 LOC). Hardening distributed microservices with complex database fixtures or external mock injections requires additional integration harness generators.
+

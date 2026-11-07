@@ -21,23 +21,24 @@ Covers:
   17. Compatibility with the existing TestForgeState API.
 """
 
-import pytest
 import threading
 import time
+
+import pytest
 from pydantic import ValidationError
 
 from testforge.blackboard import (
     Blackboard,
-    TargetSpace,
-    MutantSpace,
-    CriticSpace,
-    SuiteSpace,
-    MetricsSpace,
     BlackboardEvent,
     BlackboardSnapshot,
+    CriticSpace,
+    MetricsSpace,
+    MutantSpace,
+    SuiteSpace,
+    TargetSpace,
 )
-from testforge.state import MutantRecord, IterationMetrics, TestForgeState
 from testforge.callbacks import CallbackRegistry, EventType
+from testforge.state import IterationMetrics, MutantRecord, TestForgeState
 
 
 class TestBlackboardCore:

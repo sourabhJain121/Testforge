@@ -1,17 +1,19 @@
-import os
 import json
-import pytest
+import os
 from unittest.mock import MagicMock, patch
-from testforge.state import MutantRecord
+
+import pytest
+
 from testforge.benchmarking import (
-    BenchmarkRunner,
+    PRICING_TABLE_PER_MILLION,
     BenchmarkReport,
-    BenchmarkScenarioSummary,
+    BenchmarkRunner,
     BenchmarkRunResult,
+    BenchmarkScenarioSummary,
     MetricBreakdown,
     SuiteEvaluationResult,
-    PRICING_TABLE_PER_MILLION,
 )
+from testforge.state import MutantRecord
 
 SAMPLE_TARGET_CODE = '''"""Sample Discount Calculator"""
 

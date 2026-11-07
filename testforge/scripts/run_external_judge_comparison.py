@@ -18,13 +18,13 @@ import sys
 import tempfile
 import time
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Any, Dict, List
 
 sys.path.insert(0, os.path.abspath("."))
 
+from testforge.equivalence import calculate_mutation_scores
 from testforge.mutator import ASTMutator
 from testforge.sandbox import ParallelSandboxRunner
-from testforge.equivalence import calculate_mutation_scores
 
 CANONICAL_TARGETS = [
     {
@@ -221,9 +221,9 @@ def main():
         "# TestForge E3: External Mutation Judge (`mutmut`) Independent Comparison",
         "",
         f"**Evaluation Date**: `{comparison['metadata']['timestamp']}`  ",
-        f"**External Mutation Judge**: `mutmut v3.8.1` (LibCST AST Engine)  ",
-        f"**Internal Mutation Engine**: `TestForge ASTMutator v2.0` (Native Python AST Engine)  ",
-        f"**Test Suites Evaluated**: Autonomous Pipeline Test Suites (`qa_artifacts/test_hardened_*.py`)  ",
+        "**External Mutation Judge**: `mutmut v3.8.1` (LibCST AST Engine)  ",
+        "**Internal Mutation Engine**: `TestForge ASTMutator v2.0` (Native Python AST Engine)  ",
+        "**Test Suites Evaluated**: Autonomous Pipeline Test Suites (`qa_artifacts/test_hardened_*.py`)  ",
         "",
         "---",
         "",

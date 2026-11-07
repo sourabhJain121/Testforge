@@ -2,8 +2,12 @@
 test_security.py - Unit and Integration Tests for Security Guardrails and AST Policy Checks.
 """
 
-import pytest
 import ast
+
+import pytest
+
+from testforge.agents import CodeSanitizer
+from testforge.sandbox import _run_single_test_task
 from testforge.security import (
     SecurityGuardrail,
     SecurityPolicy,
@@ -11,8 +15,6 @@ from testforge.security import (
     SecuritySeverity,
     redact_sensitive_data,
 )
-from testforge.agents import CodeSanitizer
-from testforge.sandbox import _run_single_test_task
 
 
 class TestPromptInspection:

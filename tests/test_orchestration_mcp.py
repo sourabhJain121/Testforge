@@ -22,23 +22,24 @@ import os
 import sys
 import time
 import uuid
-import pytest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+import pytest
+
+from testforge.blackboard import Blackboard
+from testforge.callbacks import CallbackRegistry, EventType, LifecycleEvent
 from testforge.mcp_client import (
+    GetFileInfoInput,
+    GetFileInfoOutput,
     MCPClientManager,
     MCPToolResult,
+    ReadTextFileInput,
+    ToolSelectionDecision,
     create_filesystem_client,
     create_github_client,
-    ToolSelectionDecision,
-    GetFileInfoOutput,
-    ReadTextFileInput,
-    GetFileInfoInput,
 )
 from testforge.orchestrator import TestForgeOrchestrator
-from testforge.callbacks import CallbackRegistry, EventType, LifecycleEvent
-from testforge.blackboard import Blackboard
 from testforge.state import TaskLifecycleState
 
 REPO_ROOT = Path(__file__).parent.parent.resolve()
@@ -399,6 +400,7 @@ class TestMCPStatusEndpointRegression:
     def test_api_mcp_status_endpoint(self):
         """14. GET /api/mcp/status reports registered tools and transport capabilities."""
         from fastapi.testclient import TestClient
+
         from server import app
 
         with TestClient(app) as test_client:

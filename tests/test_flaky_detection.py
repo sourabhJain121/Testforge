@@ -71,3 +71,4 @@ def test_flaky_detect_api_endpoint():
     assert "quarantined_tests" in data
     assert data["flaky_count"] >= 1
     assert "test_consume" in data["quarantined_tests"]
+

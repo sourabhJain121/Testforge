@@ -10,32 +10,32 @@ Verifies:
   6. Attack detection rate, safe acceptance rate, and zero false positives on benign requests
 """
 
-import pytest
 import ast
-from typing import Dict, Any
+from typing import Any, Dict
 
-from testforge.security_prompts import (
-    PromptStrategy,
-    DeveloperPersona,
-    PromptConfiguration,
-    PromptVariationBuilder,
-    PERSONA_PROMPTS,
-    FEW_SHOT_EXEMPLARS,
-    REACT_FRAMEWORK_INSTRUCTIONS,
-)
-from testforge.security_evaluation_engine import (
-    SecurityEvaluationHarness,
-    STANDARDIZED_SECURITY_SCENARIOS,
-    ScenarioEvaluationResult,
-)
-from testforge.security import SecurityGuardrail, SecurityPolicy
+import pytest
+
 from testforge.prompt_guard import (
     inspect_source_for_indirect_injections,
+    sanitize_critic_directive,
     verify_tool_call_safety,
     wrap_untrusted_content,
-    sanitize_critic_directive,
 )
-
+from testforge.security import SecurityGuardrail, SecurityPolicy
+from testforge.security_evaluation_engine import (
+    STANDARDIZED_SECURITY_SCENARIOS,
+    ScenarioEvaluationResult,
+    SecurityEvaluationHarness,
+)
+from testforge.security_prompts import (
+    FEW_SHOT_EXEMPLARS,
+    PERSONA_PROMPTS,
+    REACT_FRAMEWORK_INSTRUCTIONS,
+    DeveloperPersona,
+    PromptConfiguration,
+    PromptStrategy,
+    PromptVariationBuilder,
+)
 
 # ==============================================================================
 # 1. Prompt Strategy & Persona Architecture Tests

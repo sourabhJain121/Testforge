@@ -19,23 +19,23 @@ Validates:
 
 import ast
 import json
-import pytest
-from typing import Dict, Any
+from typing import Any, Dict
 
+import pytest
+
+from testforge.adk_engine import ADKToolRegistry, ToolDefinition
+from testforge.adk_generator import GoogleADKTestGenerator
+from testforge.agents import TestGeneratorAgent
+from testforge.blackboard import Blackboard
 from testforge.prompt_guard import (
-    wrap_untrusted_content,
+    DEFENSIVE_SYSTEM_PREAMBLE,
+    get_defensive_system_instruction,
     inspect_source_for_indirect_injections,
     sanitize_critic_directive,
-    get_defensive_system_instruction,
     verify_tool_call_safety,
-    DEFENSIVE_SYSTEM_PREAMBLE,
+    wrap_untrusted_content,
 )
-from testforge.blackboard import Blackboard
 from testforge.security import SecurityGuardrail, SecurityPolicy
-from testforge.adk_engine import ADKToolRegistry, ToolDefinition
-from testforge.agents import TestGeneratorAgent
-from testforge.adk_generator import GoogleADKTestGenerator
-
 
 # ==============================================================================
 # Scenario 1: Malicious Python comment instructing agent to ignore instructions

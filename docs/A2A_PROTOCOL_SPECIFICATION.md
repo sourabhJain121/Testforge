@@ -112,3 +112,4 @@ As implemented in `testforge/a2a_distributed.py`:
 - Communications occur over localhost HTTP REST/JSON-RPC.
 - The parent process and child worker maintain **distinct OS PIDs**, proven in audit logs.
 - **Fail-Safe In-Process Fallback**: If the external daemon process is killed, the `DistributedCriticClient` seamlessly falls back to local in-process critique within the caller PID with zero pipeline disruption.
+

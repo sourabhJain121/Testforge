@@ -17,21 +17,23 @@ Validates:
 """
 
 from __future__ import annotations
-import os
+
 import ast
 import json
+import os
+
 import pytest
 from starlette.testclient import TestClient
 
+from server import app
 from testforge.benchmarking import (
     CANONICAL_TARGET_MODULES,
     MultiTargetBenchmarkRunner,
-    run_multi_target_benchmark,
-    generate_markdown_benchmark_summary,
     _arithmetic_mean,
     _geometric_mean,
+    generate_markdown_benchmark_summary,
+    run_multi_target_benchmark,
 )
-from server import app
 
 
 class TestTargetModulesSetup:
@@ -192,7 +194,7 @@ class TestBenchmarkArithmeticAndRawCounts:
     """Verifies Task 2 arithmetic integrity, unrounded raw count aggregation, and baseline configs."""
 
     def test_recomputed_geometric_mean_resolves_discrepancy(self):
-        from testforge.benchmarking import compute_raw_unrounded_means, _geometric_mean, _arithmetic_mean
+        from testforge.benchmarking import _arithmetic_mean, _geometric_mean, compute_raw_unrounded_means
 
         # Per-target historical baselines:
         # discount: 1/19 (5.2632%), lru_cache: 3/25 (12.0%), order_fsm: 7/82 (8.5366%), stats: 5/34 (14.7059%)

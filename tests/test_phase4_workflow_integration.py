@@ -14,11 +14,12 @@ Verifies:
 
 import os
 import tempfile
+
 import pytest
-from testforge.orchestrator import TestForgeOrchestrator
+
 from testforge.blackboard import Blackboard
 from testforge.callbacks import CallbackRegistry, EventType
-
+from testforge.orchestrator import TestForgeOrchestrator
 
 SAMPLE_TARGET_CODE = """
 def discount(price: float, is_vip: bool) -> float:

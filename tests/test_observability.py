@@ -10,6 +10,7 @@ Unit and API tests for OpenTelemetry (OTel) Observability and Supervisor Decisio
 
 import json
 import os
+
 import pytest
 from starlette.testclient import TestClient
 

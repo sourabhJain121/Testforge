@@ -14,7 +14,9 @@ Covers:
 """
 
 import json
+
 import pytest
+
 from testforge.diff_inspector import (
     DeterministicDiffInspector,
     DiffChangeType,

@@ -5,8 +5,9 @@ Authors: Sourabh & Shreshth
 """
 
 import pytest
-from testforge.mutator import ASTMutator
+
 from testforge.classifier import MutantTriageModel, extract_features
+from testforge.mutator import ASTMutator
 
 SAMPLE_CODE = """
 def process(a, b):

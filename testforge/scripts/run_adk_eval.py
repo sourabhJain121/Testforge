@@ -18,13 +18,13 @@ import os
 import sys
 import time
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Any, Dict, List
 
 sys.path.insert(0, os.path.abspath("."))
 
-from testforge.planning_agent import TestPlanningAgent
 from testforge.adk_generator import GoogleADKTestGenerator
 from testforge.code_intelligence_agent import CodeIntelligenceAgent
+from testforge.planning_agent import TestPlanningAgent
 
 
 def evaluate_planner_eval_set(eval_set_path: str) -> Dict[str, Any]:
@@ -211,7 +211,7 @@ def main():
         "# TestForge E4: Google ADK Evaluation Report (Planner & Generator)",
         "",
         f"**Evaluation Date**: `{results['metadata']['timestamp']}`  ",
-        f"**ADK Framework**: `Google ADK v1.14.1`  ",
+        "**ADK Framework**: `Google ADK v1.14.1`  ",
         "**Evaluation Harness**: `testforge/scripts/run_adk_eval.py`  ",
         "**Eval Sets**: `evals/planner_eval.evalset.json`, `evals/generator_eval.evalset.json`  ",
         "",

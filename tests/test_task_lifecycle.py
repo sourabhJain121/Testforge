@@ -19,24 +19,24 @@ Covers:
   14. Server API endpoints exposing lifecycle_state and stage_durations.
 """
 
-import time
 import threading
+import time
+
 import pytest
 from fastapi.testclient import TestClient
 
+from server import JOB_LOCK, JOBS, app
+from testforge.blackboard import Blackboard
+from testforge.callbacks import CallbackRegistry, EventType, LifecycleEvent
+from testforge.orchestrator import TestForgeOrchestrator
 from testforge.state import (
-    TaskLifecycleState,
-    TaskLifecycleFSM,
-    InvalidStateTransitionError,
     TERMINAL_LIFECYCLE_STATES,
     VALID_LIFECYCLE_TRANSITIONS,
+    InvalidStateTransitionError,
+    TaskLifecycleFSM,
+    TaskLifecycleState,
     TestForgeState,
 )
-from testforge.callbacks import CallbackRegistry, EventType, LifecycleEvent
-from testforge.blackboard import Blackboard
-from testforge.orchestrator import TestForgeOrchestrator
-from server import app, JOBS, JOB_LOCK
-
 
 # ==============================================================================
 # 1. State Machine Unit Tests

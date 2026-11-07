@@ -316,7 +316,8 @@ class SecurityGuardrail:
     def inspect_code_ast(
         self,
         code_or_tree: Union[str, ast.AST],
-        enforce_policy: bool = True
+        enforce_policy: bool = True,
+        is_test_code: bool = True,
     ) -> ASTSecurityResult:
         """
         Performs static AST inspection of Python code to detect unsafe execution
@@ -342,7 +343,7 @@ class SecurityGuardrail:
         else:
             tree = code_or_tree
 
-        visitor = _ASTSecurityVisitor(policy=self.policy)
+        visitor = _ASTSecurityVisitor(policy=self.policy, is_test_code=is_test_code)
         visitor.visit(tree)
 
         findings = visitor.findings
@@ -363,8 +364,9 @@ class _ASTSecurityVisitor(ast.NodeVisitor):
     Distinguishes dangerous function calls from legitimate method invocations and data imports.
     Tracks module aliasing, getattr invocations, and wildcard imports to prevent syntax bypasses.
     """
-    def __init__(self, policy: SecurityPolicy):
+    def __init__(self, policy: SecurityPolicy, is_test_code: bool = True):
         self.policy = policy
+        self.is_test_code = is_test_code
         self.findings: List[RuleFinding] = []
         self._module_aliases: Dict[str, str] = {}
         self._os_dangerous_funcs: Set[str] = set()
@@ -608,6 +610,10 @@ class _ASTSecurityVisitor(ast.NodeVisitor):
                         )
                     )
             elif base_mod in ("socket", "requests", "urllib", "http", "httpx", "aiohttp", "ftplib", "telnetlib"):
+                if not self.is_test_code:
+                    continue
+                if alias.name.startswith("urllib.parse"):
+                    continue
                 if self.policy.block_sockets:
                     self.findings.append(
                         RuleFinding(
@@ -659,15 +665,21 @@ class _ASTSecurityVisitor(ast.NodeVisitor):
                                 )
                             )
             elif base_mod in ("socket", "requests", "urllib", "http", "httpx", "aiohttp", "ftplib", "telnetlib"):
-                if self.policy.block_sockets:
-                    self.findings.append(
-                        RuleFinding(
-                            rule_id="SEC_AST_NETWORK_IMPORT",
-                            severity=SecuritySeverity.BLOCK,
-                            message=f"Direct import from network module '{node.module}' is prohibited in test sandbox.",
-                            line_number=getattr(node, "lineno", None),
-                            column_number=getattr(node, "col_offset", None),
-                            node_type="ImportFrom",
-                        )
-                    )
+                if not self.is_test_code:
+                    pass
+                else:
+                    is_safe_urllib = bool(node.module and (node.module == "urllib.parse" or node.module.startswith("urllib.parse")))
+                    is_safe_http = bool(node.module == "http" and all(a.name in ("HTTPStatus", "HTTPMethod") for a in node.names))
+                    if not (is_safe_urllib or is_safe_http):
+                        if self.policy.block_sockets:
+                            self.findings.append(
+                                RuleFinding(
+                                    rule_id="SEC_AST_NETWORK_IMPORT",
+                                    severity=SecuritySeverity.BLOCK,
+                                    message=f"Direct import from network module '{node.module}' is prohibited in test sandbox.",
+                                    line_number=getattr(node, "lineno", None),
+                                    column_number=getattr(node, "col_offset", None),
+                                    node_type="ImportFrom",
+                                )
+                            )
         self.generic_visit(node)

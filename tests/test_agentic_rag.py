@@ -8,20 +8,21 @@ Agentic RAG ("Test Knowledge Base") and Mutant Memory Subsystem.
 import os
 import shutil
 import tempfile
+
 import pytest
 
-from testforge.rag.vector_store import (
-    TestForgeVectorStore,
-    _tokenize_and_vectorize,
-    _cosine_similarity,
-)
+from testforge.agents import TestGeneratorAgent
 from testforge.rag.knowledge_retriever import (
     AgenticKnowledgeRetriever,
     RetrievalResult,
 )
 from testforge.rag.mutant_memory import MutantMemoryStore
+from testforge.rag.vector_store import (
+    TestForgeVectorStore,
+    _cosine_similarity,
+    _tokenize_and_vectorize,
+)
 from testforge.reflection_agent import ReflectionRepairAgent
-from testforge.agents import TestGeneratorAgent
 
 
 @pytest.fixture

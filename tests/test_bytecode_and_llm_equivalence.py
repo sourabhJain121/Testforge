@@ -76,3 +76,4 @@ def test_analyzer_zero_false_positives_on_real_faults():
     # Must NOT be classified as EQUIVALENT
     assert res.status != EquivalenceClassification.EQUIVALENT
     assert res.status in (EquivalenceClassification.UNKNOWN, EquivalenceClassification.NOT_EQUIVALENT)
+

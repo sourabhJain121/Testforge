@@ -29,3 +29,4 @@ All accesses are guarded by a thread-safe re-entrant lock (`threading.RLock()`).
 ### Negative / Trade-offs
 - Slight serialization overhead when marshaling complete state snapshots to JSON for SQLite storage.
 - Requires strict adherence to Pydantic data schemas across all participating agents.
+

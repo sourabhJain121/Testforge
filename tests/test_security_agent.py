@@ -15,15 +15,15 @@ Covers:
 """
 
 import pytest
-from testforge.security_agent import SecurityAgent, SecurityModelBridge
+
 from testforge.a2a import (
-    SecurityEvaluationPayload,
+    A2ABroker,
     A2AMessage,
     A2APerformative,
-    A2ABroker,
+    SecurityEvaluationPayload,
 )
 from testforge.blackboard import Blackboard
-
+from testforge.security_agent import SecurityAgent, SecurityModelBridge
 
 SAFE_CODE = """
 def calculate_vat(subtotal: float, rate: float = 0.20) -> float:

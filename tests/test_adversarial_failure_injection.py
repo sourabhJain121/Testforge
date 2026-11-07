@@ -12,19 +12,13 @@ Comprehensive failure modes tested:
   8. Conflicting / Invalid Blackboard update rejections with revision preservation.
 """
 
-import pytest
 import os
 import tempfile
 from unittest.mock import MagicMock, patch
+
+import pytest
 from pydantic import ValidationError
 
-from testforge.security import (
-    SecurityGuardrail,
-    SecurityPolicy,
-    SecurityRiskLevel,
-    SecuritySeverity,
-    redact_sensitive_data,
-)
 from testforge.a2a import (
     A2ABroker,
     A2AMessage,
@@ -32,11 +26,18 @@ from testforge.a2a import (
     CriticDirectivePayload,
     GeneratedTestPayload,
 )
-from testforge.blackboard import Blackboard
-from testforge.callbacks import CallbackRegistry, LifecycleEvent, EventType
-from testforge.orchestrator import TestForgeOrchestrator
 from testforge.agents import CodeSanitizer
+from testforge.blackboard import Blackboard
+from testforge.callbacks import CallbackRegistry, EventType, LifecycleEvent
 from testforge.mutator import ASTMutator
+from testforge.orchestrator import TestForgeOrchestrator
+from testforge.security import (
+    SecurityGuardrail,
+    SecurityPolicy,
+    SecurityRiskLevel,
+    SecuritySeverity,
+    redact_sensitive_data,
+)
 
 
 class TestAdversarialPromptInjections:

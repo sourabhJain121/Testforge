@@ -19,14 +19,14 @@ import random
 import sys
 import time
 from pathlib import Path
-from typing import Dict, List, Any, Tuple
+from typing import Any, Dict, List, Tuple
 
 sys.path.insert(0, os.path.abspath("."))
 
+from testforge.equivalence import calculate_mutation_scores
+from testforge.intelligent_generator import IntelligentASTSynthesizer
 from testforge.mutator import ASTMutator
 from testforge.sandbox import ParallelSandboxRunner
-from testforge.intelligent_generator import IntelligentASTSynthesizer
-from testforge.equivalence import calculate_mutation_scores
 
 UNSEEN_SEEDS = [101, 102, 103]
 
@@ -302,7 +302,7 @@ def evaluate_held_out_generalization() -> Dict[str, Any]:
         "# TestForge E2 Held-Out Mutants Evaluation: Empirical Generalization Report",
         "",
         f"**Evaluation Date**: `{report['metadata']['timestamp']}`  ",
-        f"**Unseen Seeds**: `[101, 102, 103]` (100% disjoint from training/ablation seeds `[42, 43, 44]`)  ",
+        "**Unseen Seeds**: `[101, 102, 103]` (100% disjoint from training/ablation seeds `[42, 43, 44]`)  ",
         "**Held-Out Mutation Operators**: `BITWISE_OP` (`&`, `|`, `^`, `<<`, `>>`), `EXCEPTION_SWAP` (`raise ValueError <-> TypeError, KeyError <-> IndexError`)  ",
         "**Target Suite**: 8 Targets (4 Canonical + 4 Real-World-Style Modules)  ",
         "",

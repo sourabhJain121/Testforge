@@ -9,6 +9,7 @@ Proves that:
 """
 
 import importlib.metadata
+
 import pytest
 from google.adk.runners import Runner
 from google.adk.sessions import BaseSessionService, InMemorySessionService
@@ -16,11 +17,11 @@ from google.adk.sessions import BaseSessionService, InMemorySessionService
 from testforge.adk_generator import GoogleADKTestGenerator
 from testforge.code_intelligence_agent import CodeIntelligenceAgent
 from testforge.execution_agent import TestExecutionAgent
+from testforge.orchestrator import TestForgeOrchestrator
 from testforge.planning_agent import TestPlanningAgent
 from testforge.reflection_agent import ReflectionRepairAgent
 from testforge.security_agent import SecurityAgent
 from testforge.supervisor_agent import SupervisorAgent
-from testforge.orchestrator import TestForgeOrchestrator
 
 
 def test_google_adk_pinned_version():

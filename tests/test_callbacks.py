@@ -2,19 +2,21 @@
 test_callbacks.py - Unit and Integration Tests for Lifecycle Callback Registry and TraceLogger Adapter.
 """
 
-import pytest
 import time
+
+import pytest
+
 from testforge.callbacks import (
     CallbackRegistry,
-    EventType,
-    LifecycleEvent,
-    OperationStartPayload,
-    OperationCompletePayload,
-    ToolStartPayload,
-    ToolCompletePayload,
-    StateChangePayload,
-    FailoverPayload,
     ErrorPayload,
+    EventType,
+    FailoverPayload,
+    LifecycleEvent,
+    OperationCompletePayload,
+    OperationStartPayload,
+    StateChangePayload,
+    ToolCompletePayload,
+    ToolStartPayload,
     TraceLoggerCallbackAdapter,
 )
 from testforge.logger import TraceLogger

@@ -13,19 +13,19 @@ Tests:
   6. FastAPI `/api/harden` endpoint remains fully compatible and functional.
 """
 
-import os
 import json
+import os
 import time
-import pytest
 from pathlib import Path
+
+import pytest
 from starlette.testclient import TestClient
 
 from server import app
+from testforge.a2a import SupervisorAction, WorkflowStage
 from testforge.orchestrator import TestForgeOrchestrator
-from testforge.supervisor_agent import SupervisorAgent, CANONICAL_EIGHT_AGENTS
-from testforge.a2a import WorkflowStage, SupervisorAction
 from testforge.state import TaskLifecycleState
-
+from testforge.supervisor_agent import CANONICAL_EIGHT_AGENTS, SupervisorAgent
 
 SAMPLE_DISCOUNT_CODE = '''
 def calculate_discount(price: float, quantity: int) -> float:

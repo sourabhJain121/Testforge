@@ -3,9 +3,10 @@ test_crew_critic.py - Unit and Integration Tests for Genuine CrewAI Adversarial 
 """
 
 import json
+
 import pytest
-from crewai import Agent, Task, Crew
-from testforge.crew_critic import CrewAICriticAgent, CrewAILLMBridge
+from crewai import Agent, Crew, Task
+
 from testforge.a2a import (
     A2ABroker,
     A2AMessage,
@@ -14,6 +15,7 @@ from testforge.a2a import (
 )
 from testforge.blackboard import Blackboard
 from testforge.callbacks import CallbackRegistry, EventType
+from testforge.crew_critic import CrewAICriticAgent, CrewAILLMBridge
 
 
 class TestCrewAICriticAgent:

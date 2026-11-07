@@ -91,7 +91,7 @@ def main():
     print(f"Collected {evidence['total_spans_collected']} spans and {evidence['total_supervisor_decisions']} supervisor decisions.")
 
     # 3. Write Markdown Report
-    doc = f"""# TestForge OpenTelemetry (OTel) Observability Architecture
+    doc = """# TestForge OpenTelemetry (OTel) Observability Architecture
 
 **Handout Reference**: Handout Feature F4 (Enterprise Distributed Tracing & Observability)  
 **Tracer Component**: `testforge.observability.TestForgeOtelTracer`  

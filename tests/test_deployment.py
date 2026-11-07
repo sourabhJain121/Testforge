@@ -10,10 +10,11 @@ Validates:
   6. Dockerfile and docker-compose.yml configuration structure integrity.
 """
 
-import pytest
 import os
-import yaml
 from pathlib import Path
+
+import pytest
+import yaml
 from fastapi.testclient import TestClient
 
 from server import app

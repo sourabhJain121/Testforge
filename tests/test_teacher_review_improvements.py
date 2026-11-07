@@ -10,7 +10,8 @@ Verifies:
 
 import pytest
 from fastapi.testclient import TestClient
-from server import app, JOBS, JOB_LOCK
+
+from server import JOB_LOCK, JOBS, app
 
 
 @pytest.fixture

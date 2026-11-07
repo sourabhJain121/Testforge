@@ -14,19 +14,20 @@ Verifies:
   10. Graceful handling of empty or malformed code intelligence inputs.
 """
 
-import pytest
 import time
+
+import pytest
+
 from testforge.a2a import (
-    CodeIntelligencePayload,
-    TestPlanPayload,
+    A2ABroker,
     A2AMessage,
     A2APerformative,
-    A2ABroker,
+    CodeIntelligencePayload,
+    TestPlanPayload,
 )
 from testforge.blackboard import Blackboard
-from testforge.planning_agent import TestPlanningAgent, PlanningModelBridge
 from testforge.callbacks import CallbackRegistry, EventType
-
+from testforge.planning_agent import PlanningModelBridge, TestPlanningAgent
 
 SAMPLE_SOURCE = """
 def calculate_discount(price: float, quantity: int, is_vip: bool) -> float:

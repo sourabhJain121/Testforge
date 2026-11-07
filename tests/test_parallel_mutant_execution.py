@@ -13,6 +13,7 @@ Proves that:
 import threading
 import time
 from pathlib import Path
+
 import pytest
 
 from testforge.equivalence import calculate_mutation_scores

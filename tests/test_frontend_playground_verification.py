@@ -25,17 +25,18 @@ Features:
 """
 
 from __future__ import annotations
+
 import ast
 import json
 import os
-import re
-import time
-import socket
 import pathlib
+import re
+import socket
 import threading
+import time
 import xml.etree.ElementTree as ET
 from html.parser import HTMLParser
-from typing import Set, List
+from typing import List, Set
 
 import httpx
 import pytest
@@ -43,7 +44,6 @@ import uvicorn
 from playwright.sync_api import sync_playwright
 
 from server import app
-
 
 BASE_DIR = pathlib.Path(__file__).resolve().parent.parent
 INDEX_HTML_PATH = BASE_DIR / "frontend" / "index.html"

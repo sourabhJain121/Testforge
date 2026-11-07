@@ -14,16 +14,17 @@ Covers:
 """
 
 import ast
+
 import pytest
-from testforge.code_intelligence_agent import CodeIntelligenceAgent, CodeIntelligenceModelBridge
+
 from testforge.a2a import (
-    CodeIntelligencePayload,
+    A2ABroker,
     A2AMessage,
     A2APerformative,
-    A2ABroker,
+    CodeIntelligencePayload,
 )
 from testforge.blackboard import Blackboard
-
+from testforge.code_intelligence_agent import CodeIntelligenceAgent, CodeIntelligenceModelBridge
 
 SAMPLE_PYTHON_CODE = """
 import os

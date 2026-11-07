@@ -201,7 +201,7 @@ def run_evaluation() -> Dict[str, Any]:
     f1 = round((2 * precision * recall) / (precision + recall), 1) if (precision + recall) > 0 else 0.0
     fpr = round((fp / (fp + tn)) * 100.0, 1) if (fp + tn) > 0 else 0.0
 
-    print(f"\nEmpirical Performance on 30 Labeled Mutants:")
+    print("\nEmpirical Performance on 30 Labeled Mutants:")
     print(f"  • True Positives (Equivalent Caught): {tp} / 10")
     print(f"  • False Positives (Real Faults Falsely Quashed): {fp} / 20 (FPR: {fpr}%)")
     print(f"  • True Negatives (Real Faults Kept Active): {tn} / 20")

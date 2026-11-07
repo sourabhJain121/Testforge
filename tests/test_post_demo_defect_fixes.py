@@ -6,18 +6,19 @@ test_post_demo_defect_fixes.py - Regression test suite for confirmed post-demo d
 """
 
 import os
+
 import pytest
-from testforge.agents import (
-    TestGeneratorAgent,
-    extract_function_signatures,
-    build_nominal_arguments,
-)
-from testforge.blackboard import Blackboard, SuiteSpace
+
 from testforge.a2a import A2ABroker, A2AMessage, A2APerformative
 from testforge.adk_generator import GoogleADKTestGenerator
-from testforge.sandbox import ParallelSandboxRunner, GranularTestValidator
+from testforge.agents import (
+    TestGeneratorAgent,
+    build_nominal_arguments,
+    extract_function_signatures,
+)
+from testforge.blackboard import Blackboard, SuiteSpace
+from testforge.sandbox import GranularTestValidator, ParallelSandboxRunner
 from testforge.state import TestForgeState
-
 
 # ==============================================================================
 # PHASE 1 REGRESSION TESTS: EXCEPTION SWALLOWING ELIMINATION

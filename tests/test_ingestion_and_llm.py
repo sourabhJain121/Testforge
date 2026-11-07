@@ -2,9 +2,11 @@
 test_ingestion_and_llm.py - Tests for GitHub Ingestion and OpenRouter LLM Failover.
 """
 
-import pytest
 import os
-from testforge.ingestion import fetch_github_source, TargetManagerAgent
+
+import pytest
+
+from testforge.ingestion import TargetManagerAgent, fetch_github_source
 from testforge.llm_client import HybridLLMClient, call_openrouter_api
 
 

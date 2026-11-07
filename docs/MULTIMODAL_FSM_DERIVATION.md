@@ -98,3 +98,4 @@ Run the automated test suite directly:
 .venv-release/bin/python3 -m pytest tests/test_multimodal_fsm.py -v
 ```
 All 5 test cases pass cleanly without warnings.
+

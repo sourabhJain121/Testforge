@@ -6,7 +6,9 @@ and Historical vs Current Run Aggregation.
 
 import json
 import os
+
 import pytest
+
 from testforge.logger import TraceLogger
 
 
@@ -272,6 +274,7 @@ class TestTelemetryEndpointAudit:
     @pytest.fixture
     def client(self):
         from fastapi.testclient import TestClient
+
         from server import app
         return TestClient(app)
 

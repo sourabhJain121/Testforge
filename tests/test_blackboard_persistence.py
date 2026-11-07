@@ -23,41 +23,41 @@ Covers all 18 requirements:
   19. REST API test for /api/checkpoints, /api/checkpoints/{id}, /api/checkpoints/{id}/restore.
 """
 
-import os
-import time
 import json
+import os
 import sqlite3
-import pytest
 import tempfile
 import threading
+import time
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
-from testforge.persistence import (
-    SQLiteBlackboardStorage,
-    CheckpointMetadata,
-    CheckpointRecord,
-    CheckpointSummary,
-    CheckpointError,
-    CheckpointNotFoundError,
-    IncompatibleSchemaError,
-    CorruptedSnapshotError,
-    PersistenceWriteError,
-    CURRENT_SCHEMA_VERSION,
-)
+import pytest
+
 from testforge.blackboard import (
     Blackboard,
-    TargetSpace,
-    MutantSpace,
-    CriticSpace,
-    SuiteSpace,
-    MetricsSpace,
-    BlackboardSnapshot,
     BlackboardEvent,
+    BlackboardSnapshot,
+    CriticSpace,
+    MetricsSpace,
+    MutantSpace,
+    SuiteSpace,
+    TargetSpace,
 )
-from testforge.state import MutantRecord, IterationMetrics, TestForgeState
-from testforge.callbacks import CallbackRegistry, LifecycleEvent, EventType
-
+from testforge.callbacks import CallbackRegistry, EventType, LifecycleEvent
+from testforge.persistence import (
+    CURRENT_SCHEMA_VERSION,
+    CheckpointError,
+    CheckpointMetadata,
+    CheckpointNotFoundError,
+    CheckpointRecord,
+    CheckpointSummary,
+    CorruptedSnapshotError,
+    IncompatibleSchemaError,
+    PersistenceWriteError,
+    SQLiteBlackboardStorage,
+)
+from testforge.state import IterationMetrics, MutantRecord, TestForgeState
 
 # ==============================================================================
 # Fixtures
@@ -600,6 +600,7 @@ class TestBlackboardPersistenceAPI:
     @pytest.fixture
     def test_client(self, tmp_path, monkeypatch):
         from starlette.testclient import TestClient
+
         from server import app
 
         api_db = tmp_path / "api_checkpoints.db"

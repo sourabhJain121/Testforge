@@ -4,14 +4,14 @@ ReflectionRepairAgent, TestGapAnalyzer, and TestGapRemediationPlan (GAP-004).
 """
 
 import pytest
+
 from testforge.blackboard import Blackboard
+from testforge.mutator import MutantRecord
 from testforge.reflection_agent import (
     ReflectionRepairAgent,
     TestGapAnalyzer,
     TestGapRemediationPlan,
 )
-from testforge.mutator import MutantRecord
-
 
 SAMPLE_TARGET = """
 def process_order(price: float, quantity: int, is_express: bool) -> float:

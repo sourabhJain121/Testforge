@@ -30,14 +30,14 @@ import sys
 import time
 import urllib.request
 from pathlib import Path
-from typing import Dict, Any, List, Tuple
+from typing import Any, Dict, List, Tuple
 
 sys.path.insert(0, os.path.abspath("."))
 
-from testforge.mutator import ASTMutator
-from testforge.sandbox import ParallelSandboxRunner
 from testforge.equivalence import calculate_mutation_scores
 from testforge.intelligent_generator import IntelligentASTSynthesizer
+from testforge.mutator import ASTMutator
+from testforge.sandbox import ParallelSandboxRunner
 
 TARGETS = [
     {

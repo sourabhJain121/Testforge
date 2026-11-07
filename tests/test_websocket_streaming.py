@@ -13,19 +13,15 @@ Tests:
   9. /api/ws/status health and metric tracking endpoint.
 """
 
-import time
 import json
 import threading
+import time
+
 import pytest
 from starlette.testclient import TestClient
 
 from server import app
-from testforge.callbacks import (
-    CallbackRegistry,
-    LifecycleEvent,
-    EventType,
-    default_callback_registry
-)
+from testforge.callbacks import CallbackRegistry, EventType, LifecycleEvent, default_callback_registry
 from testforge.websocket_hub import WebSocketEventHub, global_websocket_hub
 
 

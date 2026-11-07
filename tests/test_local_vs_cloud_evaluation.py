@@ -15,6 +15,7 @@ Verifies:
 
 import json
 from pathlib import Path
+
 import pytest
 
 
@@ -57,3 +58,4 @@ def test_local_vs_cloud_markdown_documentation():
     assert "Qwen 2.5 Coder 7B" in content
     assert "CodeLlama 7B" in content
     assert len(content) > 1000
+

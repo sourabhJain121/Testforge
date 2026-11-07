@@ -1833,7 +1833,7 @@ class TestForgeOrchestrator:
                     final_hardening_status=self.state.final_hardening_status,
                 )
                 self.blackboard.sync_to_state(self.state)
-                console.print(f"[yellow]⏩ Feature flag 'reflection=False': exiting after initial evaluation pass.[/yellow]\n")
+                console.print("[yellow]⏩ Feature flag 'reflection=False': exiting after initial evaluation pass.[/yellow]\n")
                 break
 
             if iteration == self.state.max_iterations:

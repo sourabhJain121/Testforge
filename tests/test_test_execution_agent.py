@@ -16,18 +16,19 @@ Verifies:
 
 import threading
 import time
+
 import pytest
+
 from testforge.a2a import (
-    TestExecutionPayload,
+    A2ABroker,
     A2AMessage,
     A2APerformative,
-    A2ABroker,
+    TestExecutionPayload,
 )
 from testforge.blackboard import Blackboard
-from testforge.execution_agent import TestExecutionAgent, ExecutionModelBridge
 from testforge.callbacks import CallbackRegistry, EventType
+from testforge.execution_agent import ExecutionModelBridge, TestExecutionAgent
 from testforge.state import MutantRecord
-
 
 SAMPLE_TARGET = """
 def add(a: int, b: int) -> int:

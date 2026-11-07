@@ -47,6 +47,7 @@ include = ["testforge*"]
 [tool.ruff]
 target-version = "py313"
 line-length = 120
+extend-exclude = ["testforge/evaluation_corpus", "samples"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I"]

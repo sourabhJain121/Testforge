@@ -113,3 +113,4 @@ If an unexpected environmental issue arises during examination:
    - If Ollama is not running, TestForge automatically shifts down to Tier 4 (Deterministic AST Synthesizer), guaranteeing 0 crashes and complete execution proof.
 3. **Pre-computed Multi-Target Cache**:
    - If offline, the Benchmarks tab instantly loads pre-computed single-source-of-truth benchmarks from `qa_artifacts/MULTI_TARGET_BENCHMARK_RESULTS.json`.
+

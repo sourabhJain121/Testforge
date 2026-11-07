@@ -5,14 +5,12 @@ and Metadata Normalization.
 """
 
 import json
+
 import pytest
 from fastapi.testclient import TestClient
+
 from server import app
-from testforge.logger import (
-    TraceLogger,
-    resolve_dynamic_execution_engine,
-    determine_scope_execution_engine
-)
+from testforge.logger import TraceLogger, determine_scope_execution_engine, resolve_dynamic_execution_engine
 
 
 @pytest.fixture

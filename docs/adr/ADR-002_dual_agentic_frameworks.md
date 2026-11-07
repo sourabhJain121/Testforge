@@ -21,3 +21,4 @@ We implemented a **Dual-Framework Agentic Architecture**:
 
 ### Negative / Trade-offs
 - Managing dependencies across both `google-adk` and `crewai` requires careful version pinning to avoid conflicting transitive dependencies (e.g., Pydantic v2 constraints).
+

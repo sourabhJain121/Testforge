@@ -9,11 +9,11 @@ and multi-target benchmark integration without NPM or build tools.
 
 import json
 import pathlib
+
 import pytest
 from starlette.testclient import TestClient
 
-from server import app, JOBS, JOB_LOCK
-
+from server import JOB_LOCK, JOBS, app
 
 BASE_DIR = pathlib.Path(__file__).resolve().parent.parent
 

@@ -17,25 +17,26 @@ Outputs:
   - qa_artifacts/ablation_progression_chart.png
 """
 
+import json
+import math
 import os
 import sys
-import json
 import time
-import math
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 sys.path.insert(0, os.path.abspath("."))
 
+from testforge.equivalence import calculate_mutation_scores
 from testforge.feature_flags import FeatureFlags
+from testforge.intelligent_generator import IntelligentASTSynthesizer
 from testforge.mutator import ASTMutator
 from testforge.sandbox import ParallelSandboxRunner
-from testforge.equivalence import calculate_mutation_scores
-from testforge.intelligent_generator import IntelligentASTSynthesizer
 
 TARGETS = [
     {
@@ -384,11 +385,11 @@ def run_ablation() -> Dict[str, Any]:
 
     # Generate Markdown Report
     generate_markdown_report(results, Path("docs/ABLATION_STUDY.md"))
-    print(f"[✓] Saved markdown ablation report to docs/ABLATION_STUDY.md")
+    print("[✓] Saved markdown ablation report to docs/ABLATION_STUDY.md")
 
     # Generate Matplotlib PNG Plot
     generate_ablation_plot(results, Path("qa_artifacts/ablation_progression_chart.png"))
-    print(f"[✓] Generated ablation progression chart at qa_artifacts/ablation_progression_chart.png")
+    print("[✓] Generated ablation progression chart at qa_artifacts/ablation_progression_chart.png")
 
     return results
 

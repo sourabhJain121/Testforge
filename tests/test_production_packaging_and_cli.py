@@ -3,15 +3,16 @@ test_production_packaging_and_cli.py - Verification suite for Handout Feature F8
 Production Deployment, Standalone CLI, Containerization, and CI/CD Automation.
 """
 
+import argparse
+import json
 import os
 import sys
-import json
-import yaml
 import tempfile
-import argparse
 import xml.etree.ElementTree as ET
 from pathlib import Path
+
 import pytest
+import yaml
 from fastapi.testclient import TestClient
 
 # Ensure CrewAI runs in headless test mode
@@ -19,14 +20,14 @@ os.environ["CREWAI_TESTING"] = "true"
 os.environ["CREWAI_TRACING_ENABLED"] = "false"
 
 from server import app
-from testforge.export import generate_junit_xml, generate_sarif_report
-from testforge.persistence import SQLiteBlackboardStorage, CheckpointRecord, CheckpointMetadata
 from testforge.cli import (
-    handle_harden_command,
+    export_job_report,
     handle_benchmark_command,
     handle_export_command,
-    export_job_report,
+    handle_harden_command,
 )
+from testforge.export import generate_junit_xml, generate_sarif_report
+from testforge.persistence import CheckpointMetadata, CheckpointRecord, SQLiteBlackboardStorage
 
 
 def test_server_healthz_and_readyz_probes():
@@ -110,8 +111,8 @@ def test_cli_harden_subcommand(tmp_path, monkeypatch):
 
 def test_cli_harden_coverage_metrics_fallback(tmp_path, monkeypatch, capsys):
     """Verifies that `testforge.cli harden` reads coverage from Blackboard and ExecutionSpace when state is 0.0."""
-    from testforge.state import TestForgeState
     from testforge.blackboard import Blackboard
+    from testforge.state import TestForgeState
 
     out_file = tmp_path / "hardened_discount_fallback.py"
     bb = Blackboard()

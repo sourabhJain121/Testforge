@@ -20,22 +20,23 @@ Tests:
   16. Quality success stops unnecessary repair.
 """
 
-import time
-import pytest
 import threading
+import time
+
+import pytest
 from pydantic import ValidationError
 
 from testforge.a2a import (
-    WorkflowStage,
-    SupervisorAction,
-    SupervisorDecisionPayload,
-    WorkflowTransitionRecord,
     A2AMessage,
     A2APerformative,
+    SupervisorAction,
+    SupervisorDecisionPayload,
+    WorkflowStage,
+    WorkflowTransitionRecord,
 )
 from testforge.blackboard import Blackboard
-from testforge.supervisor_agent import SupervisorAgent, ALLOWED_TRANSITIONS, CANONICAL_EIGHT_AGENTS
 from testforge.callbacks import CallbackRegistry
+from testforge.supervisor_agent import ALLOWED_TRANSITIONS, CANONICAL_EIGHT_AGENTS, SupervisorAgent
 
 
 @pytest.fixture

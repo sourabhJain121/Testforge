@@ -27,7 +27,7 @@ import uuid
 from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import TimeoutError as FuturesTimeoutError
 from enum import Enum
-from typing import Any, Callable, Dict, List, Literal, Optional, Set, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Literal, Optional, Set, Union
 
 from pydantic import BaseModel, Field, ValidationError, model_validator
 
@@ -1376,6 +1376,17 @@ _OFFICIAL_A2A_SYMBOLS = {
     "TESTFORGE_AGENT_NAME",
     "TESTFORGE_AGENT_VERSION",
 }
+
+if TYPE_CHECKING:
+    from testforge.a2a_protocol import (
+        OFFICIAL_A2A_PROTOCOL_VERSION,
+        TESTFORGE_AGENT_NAME,
+        TESTFORGE_AGENT_VERSION,
+        TestForgeA2AClient,
+        TestForgeA2AExecutor,
+        build_testforge_agent_card,
+        create_testforge_a2a_app,
+    )
 
 
 def __getattr__(name: str) -> Any:

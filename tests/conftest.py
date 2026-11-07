@@ -1,5 +1,5 @@
-import sys
 import os
+import sys
 
 # Ensure repository root is on sys.path for test discovery
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))

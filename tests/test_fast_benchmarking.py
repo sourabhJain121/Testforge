@@ -9,14 +9,15 @@ Tests:
   5. Repeatable determinism across independent runs.
 """
 
-import os
 import json
-import time
+import os
 import subprocess
+import time
 from pathlib import Path
+
 import pytest
 
-from testforge.benchmarking import BenchmarkRunner, BenchmarkReport
+from testforge.benchmarking import BenchmarkReport, BenchmarkRunner
 
 REPO_ROOT = Path(__file__).parent.parent.resolve()
 SAMPLE_CODE = """

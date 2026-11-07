@@ -6,13 +6,15 @@ Authors: Sourabh & Shreshth
 Course: CSE3101 - Agentic AI
 """
 
-import pytest
 from pathlib import Path
+
+import pytest
+
 from testforge.ingestion import (
     TargetManagerAgent,
     fetch_github_source_with_meta,
+    normalize_github_url,
     parse_and_normalize_github_url,
-    normalize_github_url
 )
 from testforge.orchestrator import TestForgeOrchestrator
 

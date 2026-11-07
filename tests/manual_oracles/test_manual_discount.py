@@ -6,6 +6,7 @@ Rule: This file is tracked separately from autonomous pipeline synthesis.
 """
 
 import pytest
+
 from samples.discount import calculate_discount
 
 

@@ -148,3 +148,4 @@ Execution security is enforced across three distinct isolation boundaries:
    - Dynamic OS socket monkeypatching blocks 100% of outbound external TCP connections.
    - Loopback connections (`127.0.0.1:11434` for Ollama) are whitelisted.
    - PII and secrets (Gemini, OpenRouter, GitHub, emails) are scrubbed before inference.
+

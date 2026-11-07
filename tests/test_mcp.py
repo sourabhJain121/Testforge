@@ -18,21 +18,16 @@ Tests:
 import os
 import sys
 import time
-import pytest
 from pathlib import Path
 from unittest.mock import MagicMock
 
+import pytest
 from mcp.client.stdio import StdioServerParameters
 
-from testforge.mcp_client import (
-    MCPClientManager,
-    MCPToolResult,
-    create_filesystem_client,
-    create_github_client
-)
-from testforge.mcp_server import create_filesystem_server, create_github_server
-from testforge.callbacks import CallbackRegistry, EventType, LifecycleEvent
 from testforge.blackboard import Blackboard
+from testforge.callbacks import CallbackRegistry, EventType, LifecycleEvent
+from testforge.mcp_client import MCPClientManager, MCPToolResult, create_filesystem_client, create_github_client
+from testforge.mcp_server import create_filesystem_server, create_github_server
 from testforge.orchestrator import TestForgeOrchestrator
 
 REPO_ROOT = Path(__file__).parent.parent.resolve()

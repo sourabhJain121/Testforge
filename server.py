@@ -7,58 +7,68 @@ while hosting the modern HTML/CSS/JavaScript web frontend.
 """
 
 from __future__ import annotations
-import os
-import sys
-import uuid
-import time
+
+import asyncio
 import json
 import logging
-import threading
-import asyncio
+import os
 import sqlite3
+import sys
+import threading
+import time
+import uuid
 import xml.etree.ElementTree as ET
-from pathlib import Path
 from contextlib import asynccontextmanager
-from typing import Dict, Any, Optional, List, Literal
+from pathlib import Path
+from typing import Any, Dict, List, Literal, Optional
 
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException, BackgroundTasks, status, WebSocket, WebSocketDisconnect
+from fastapi import (
+    BackgroundTasks,
+    FastAPI,
+    File,
+    Form,
+    HTTPException,
+    UploadFile,
+    WebSocket,
+    WebSocketDisconnect,
+    status,
+)
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, JSONResponse, FileResponse, PlainTextResponse, Response
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTextResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 # Ensure project root is on sys.path
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
-from testforge.ingestion import TargetManagerAgent, parse_and_normalize_github_url
-from testforge.github_service import GitHubRepoService, parse_github_repo_url
-from testforge.orchestrator import TestForgeOrchestrator
-from testforge.state import TaskLifecycleState
+from testforge.accel import hw_profile
+from testforge.benchmarking import (
+    CANONICAL_TARGET_MODULES,
+    BenchmarkReport,
+    BenchmarkRunner,
+    MultiTargetBenchmarkRunner,
+    generate_markdown_benchmark_summary,
+    run_multi_target_benchmark,
+)
 from testforge.blast_analyzer import BlastRadiusAnalyzer
 from testforge.git_diff import GitDiffInspector
-from testforge.accel import hw_profile
+from testforge.github_service import GitHubRepoService, parse_github_repo_url
+from testforge.ingestion import TargetManagerAgent, parse_and_normalize_github_url
 from testforge.llm_client import is_ollama_running
-from testforge.logger import TraceLogger, resolve_dynamic_execution_engine, determine_scope_execution_engine
-from testforge.benchmarking import (
-    BenchmarkRunner,
-    BenchmarkReport,
-    run_multi_target_benchmark,
-    generate_markdown_benchmark_summary,
-    CANONICAL_TARGET_MODULES,
-    MultiTargetBenchmarkRunner,
-)
-from testforge.websocket_hub import global_websocket_hub
-
+from testforge.logger import TraceLogger, determine_scope_execution_engine, resolve_dynamic_execution_engine
+from testforge.orchestrator import TestForgeOrchestrator
 from testforge.persistence import (
-    SQLiteBlackboardStorage,
     CheckpointNotFoundError,
     CorruptedSnapshotError,
     IncompatibleSchemaError,
-    InputHashMismatchError,
     IncompleteCheckpointError,
+    InputHashMismatchError,
     InvalidRecoveryStageError,
     ResumptionPlan,
+    SQLiteBlackboardStorage,
 )
+from testforge.state import TaskLifecycleState
+from testforge.websocket_hub import global_websocket_hub
 
 logging.basicConfig(level=logging.INFO, format="[%(asctime)s] %(levelname)s in %(name)s: %(message)s")
 logger = logging.getLogger("testforge.server")
@@ -594,8 +604,9 @@ async def run_a2a_test_action(req: A2ATestRequest):
 
     start_t = time.perf_counter()
     try:
-        from testforge.a2a_protocol import build_testforge_agent_card, OFFICIAL_A2A_PROTOCOL_VERSION
         from a2a.types import AgentCard
+
+        from testforge.a2a_protocol import OFFICIAL_A2A_PROTOCOL_VERSION, build_testforge_agent_card
 
         card = build_testforge_agent_card(rpc_url=req.target_url)
         card_dict = card.model_dump(exclude_none=True)
@@ -1092,8 +1103,8 @@ def _run_orchestration_job(job_id: str, payload: HardeningRunPayload):
 
     mcp_client = None
     try:
-        from testforge.mcp_client import create_filesystem_client
         from testforge.callbacks import default_callback_registry
+        from testforge.mcp_client import create_filesystem_client
         mcp_client = create_filesystem_client(
             permitted_root=BASE_DIR,
             callback_registry=default_callback_registry
@@ -1792,8 +1803,8 @@ async def diff_checkpoints_endpoint(
     Computes a deterministic, partition-aware semantic diff between two checkpoints.
     """
     try:
-        from testforge.persistence import SQLiteBlackboardStorage, CheckpointNotFoundError
         from testforge.diff_inspector import compare_checkpoints
+        from testforge.persistence import CheckpointNotFoundError, SQLiteBlackboardStorage
         storage = SQLiteBlackboardStorage(DEFAULT_CHECKPOINT_DB_PATH)
         try:
             base_record = storage.load_checkpoint(base_id)
@@ -1827,7 +1838,7 @@ async def get_checkpoint_details(checkpoint_id: str):
     Retrieves metadata and structured partition info for a specific checkpoint.
     """
     try:
-        from testforge.persistence import SQLiteBlackboardStorage, CheckpointNotFoundError
+        from testforge.persistence import CheckpointNotFoundError, SQLiteBlackboardStorage
         storage = SQLiteBlackboardStorage(DEFAULT_CHECKPOINT_DB_PATH)
         try:
             record = storage.load_checkpoint(checkpoint_id)
@@ -1871,8 +1882,8 @@ async def restore_checkpoint_endpoint(checkpoint_id: str):
     diagnostic inspection, state comparison, and verification.
     """
     try:
-        from testforge.persistence import SQLiteBlackboardStorage, CheckpointNotFoundError
         from testforge.blackboard import Blackboard, BlackboardSnapshot
+        from testforge.persistence import CheckpointNotFoundError, SQLiteBlackboardStorage
         storage = SQLiteBlackboardStorage(DEFAULT_CHECKPOINT_DB_PATH)
         try:
             record = storage.load_checkpoint(checkpoint_id)

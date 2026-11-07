@@ -17,48 +17,49 @@ Validates Phase 2 Architectural Foundations:
   12. Persistence transaction safety, WAL mode, and failure isolation.
 """
 
-import os
 import json
-import time
-import uuid
+import os
 import sqlite3
 import tempfile
 import threading
+import time
+import uuid
 from concurrent.futures import ThreadPoolExecutor
+
 import pytest
 from pydantic import ValidationError
 
+from testforge.a2a import (
+    A2ABroker,
+    A2AMessage,
+    A2APerformative,
+    CriticDirectivePayload,
+    GeneratedTestPayload,
+    RepairRequestPayload,
+    SecurityEvaluationPayload,
+    TestExecutionPayload,
+    TestPlanPayload,
+)
 from testforge.blackboard import (
     Blackboard,
-    TargetSpace,
-    MutantSpace,
-    CriticSpace,
-    SuiteSpace,
-    MetricsSpace,
-    PlanSpace,
-    ExecutionSpace,
-    SecuritySpace,
-    BlackboardSnapshot,
     BlackboardEvent,
+    BlackboardSnapshot,
+    CriticSpace,
+    ExecutionSpace,
+    MetricsSpace,
+    MutantSpace,
+    PlanSpace,
+    SecuritySpace,
+    SuiteSpace,
+    TargetSpace,
 )
 from testforge.persistence import (
-    SQLiteBlackboardStorage,
+    CURRENT_SCHEMA_VERSION,
+    SUPPORTED_SCHEMA_VERSIONS,
     CheckpointMetadata,
     CheckpointRecord,
     IncompatibleSchemaError,
-    CURRENT_SCHEMA_VERSION,
-    SUPPORTED_SCHEMA_VERSIONS,
-)
-from testforge.a2a import (
-    A2AMessage,
-    A2APerformative,
-    TestPlanPayload,
-    TestExecutionPayload,
-    SecurityEvaluationPayload,
-    RepairRequestPayload,
-    CriticDirectivePayload,
-    GeneratedTestPayload,
-    A2ABroker,
+    SQLiteBlackboardStorage,
 )
 
 

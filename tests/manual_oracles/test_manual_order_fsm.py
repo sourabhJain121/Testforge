@@ -7,6 +7,7 @@ Rule: This file is tracked separately from autonomous pipeline synthesis.
 """
 
 import pytest
+
 from samples.order_fsm import OrderFSM, validate_transition
 
 

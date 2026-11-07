@@ -155,3 +155,4 @@ class ApprovalGateManager:
     def clear(self) -> None:
         """Clears in-memory requests (for testing isolation)."""
         self._requests.clear()
+

@@ -10,15 +10,16 @@ Verifies:
   - Deterministic diff inspector integration: detecting newly equivalent mutants
 """
 
-import os
 import json
+import os
 import tempfile
+
 import pytest
 
-from testforge.state import MutantRecord, IterationMetrics, TestForgeState
-from testforge.blackboard import Blackboard, MutantSpace, MetricsSpace, BlackboardSnapshot
-from testforge.persistence import SQLiteBlackboardStorage
+from testforge.blackboard import Blackboard, BlackboardSnapshot, MetricsSpace, MutantSpace
 from testforge.diff_inspector import compare_checkpoints
+from testforge.persistence import SQLiteBlackboardStorage
+from testforge.state import IterationMetrics, MutantRecord, TestForgeState
 
 
 def test_blackboard_m2_partition_updates():

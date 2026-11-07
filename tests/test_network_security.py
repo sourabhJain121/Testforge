@@ -12,26 +12,26 @@ Covers:
 import io
 import json
 import socket
-import urllib.request
 import urllib.error
 import urllib.parse
+import urllib.request
 from pathlib import Path
-from unittest.mock import MagicMock, patch, call
+from unittest.mock import MagicMock, call, patch
+
 import pytest
 
+from testforge.github_service import GitHubRepoService
+from testforge.ingestion import fetch_github_source_with_meta
 from testforge.network_security import (
     ALLOWED_GITHUB_HOSTS,
     DEFAULT_MAX_SOURCE_SIZE_BYTES,
-    validate_url_hostname,
-    SafeGitHubRedirectHandler,
-    build_safe_opener,
-    bounded_read,
-    SSRFSecurityError,
     PayloadTooLargeError,
+    SafeGitHubRedirectHandler,
+    SSRFSecurityError,
+    bounded_read,
+    build_safe_opener,
+    validate_url_hostname,
 )
-from testforge.ingestion import fetch_github_source_with_meta
-from testforge.github_service import GitHubRepoService
-
 
 # ==============================================================================
 # 1. URL & Hostname SSRF Validation Unit Tests

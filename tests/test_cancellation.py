@@ -22,28 +22,28 @@ Covers:
 """
 
 from __future__ import annotations
+
+import concurrent.futures
 import os
 import sys
+import threading
 import time
 import uuid
-import threading
-import concurrent.futures
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any, Dict
 
 import pytest
 from fastapi.testclient import TestClient
 
-from server import app, JOBS, JOB_LOCK
+from server import JOB_LOCK, JOBS, app
+from testforge.blackboard import Blackboard
+from testforge.mutator import ASTMutator
 from testforge.orchestrator import (
-    TestForgeOrchestrator,
     HardeningCancelledError,
     HardeningTimeoutError,
+    TestForgeOrchestrator,
 )
 from testforge.sandbox import ParallelSandboxRunner
-from testforge.mutator import ASTMutator
-from testforge.blackboard import Blackboard
-
 
 TARGET_CODE = """
 def calculate_fee(amount: float, is_vip: bool) -> float:

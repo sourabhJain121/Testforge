@@ -12,6 +12,7 @@ Regression test suite verifying Stage 0.5 corpus hardening and guardrails perfor
 
 import json
 from pathlib import Path
+
 import pytest
 
 from testforge.prompt_guard import inspect_source_for_indirect_injections

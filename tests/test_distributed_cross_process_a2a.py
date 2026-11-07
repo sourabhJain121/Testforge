@@ -10,8 +10,9 @@ Verifies:
 """
 
 import os
-import pytest
 from pathlib import Path
+
+import pytest
 
 from testforge.a2a_distributed import CriticProcessManager, DistributedCriticClient
 
@@ -54,3 +55,4 @@ def test_cross_process_critic_dual_pids_and_fallback():
 
     finally:
         manager.stop()
+
