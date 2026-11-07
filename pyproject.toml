@@ -51,3 +51,20 @@ line-length = 120
 select = ["E", "F", "W", "I"]
 ignore = ["E501", "W293", "W291", "E402", "F841", "E741", "F401"]
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --durations=10"
+markers = [
+    "fast: Fast in-memory unit and contract tests",
+    "slow: Long-running end-to-end integration and benchmark tests",
+    "docker: Tests requiring a running Docker daemon",
+    "live_llm: Tests requiring live LLM API keys or local Ollama instances",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning:crewai.*",
+    "ignore::DeprecationWarning:google.*",
+    "ignore::FutureWarning:google.*",
+    "ignore::pydantic_settings.sources.utils.IncompleteFieldDefinitionWarning",
+    "ignore:.*lance is not fork-safe.*:UserWarning",
+]
+
