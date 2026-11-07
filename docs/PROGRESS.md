@@ -37,7 +37,7 @@
 ### Stage 2: Handout Protocols: MCP and A2A for Real
 | Sub-Task ID | Description | Status | Last Commit | Next Step / Notes |
 | :--- | :--- | :---: | :---: | :--- |
-| **2.1** | MCP tool consumption in ADK agent with path containment | DONE | `pending` | Implemented `ADKMCPToolRegistry` in `testforge/adk_mcp_adapter.py` adapting FastMCP tools (`read_text_file`, `list_directory`, `get_file_info`) into native Google ADK `FunctionTool` objects. Verified valid reads, path containment blocking directory traversal (`../../etc/passwd`), and sensitive file access blocking (`.env`). Traces captured in `qa_artifacts/MCP_ADK_INVOCATION_TRACE.json` and `docs/MCP_ADK_INTEGRATION.md`. Added `tests/test_adk_mcp_integration.py` (3 passed). |
+| **2.1** | MCP tool consumption in ADK agent with path containment | DONE | `fc270a1` | Implemented `ADKMCPToolRegistry` in `testforge/adk_mcp_adapter.py` adapting FastMCP tools (`read_text_file`, `list_directory`, `get_file_info`) into native Google ADK `FunctionTool` objects. Verified valid reads, path containment blocking directory traversal (`../../etc/passwd`), and sensitive file access blocking (`.env`). Traces captured in `qa_artifacts/MCP_ADK_INVOCATION_TRACE.json` and `docs/MCP_ADK_INTEGRATION.md`. Added `tests/test_adk_mcp_integration.py` (3 passed). |
 | **2.2** | TestForge as MCP server (`harden_module`, `get_report`, `list_jobs`) | TODO | - | FastMCP server, test with official client, Claude Desktop config |
 | **2.3** | Distributed cross-process A2A with separate Critic process | TODO | - | Dual-process execution, distinct PIDs in logs, in-process fallback |
 | **2.4** | Label accuracy in documentation | TODO | - | Disambiguate official A2A vs FIPA envelopes |
