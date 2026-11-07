@@ -2013,6 +2013,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       dom.btnRunHardening.disabled = true;
+      dom.btnRunHardening.setAttribute('disabled', 'true');
       dom.btnRunHardening.innerHTML = '<span class="icon">⏳</span> Hardening Pipeline Active...';
 
       if (dom.btnCancelHardening) {
@@ -2067,6 +2068,7 @@ document.addEventListener('DOMContentLoaded', () => {
       pollHardeningJob(jobData.job_id);
     } catch (err) {
       dom.btnRunHardening.disabled = false;
+      dom.btnRunHardening.removeAttribute('disabled');
       dom.btnRunHardening.innerHTML = '<span class="icon">⚡</span> Run TestForge Autonomous Hardening';
       if (dom.btnCancelHardening) {
         dom.btnCancelHardening.classList.add('hidden');
@@ -2248,6 +2250,7 @@ document.addEventListener('DOMContentLoaded', () => {
             dom.btnCancelHardening.innerHTML = '<span class="icon">🛑</span> Cancel Hardening';
           }
           dom.btnRunHardening.disabled = false;
+          dom.btnRunHardening.removeAttribute('disabled');
           dom.btnRunHardening.innerHTML = '<span class="icon">⚡</span> Run TestForge Autonomous Hardening';
           dom.hardeningProgressBox.classList.add('hidden');
 
@@ -2276,6 +2279,7 @@ document.addEventListener('DOMContentLoaded', () => {
             dom.btnCancelHardening.disabled = false;
           }
           dom.btnRunHardening.disabled = false;
+          dom.btnRunHardening.removeAttribute('disabled');
           dom.btnRunHardening.innerHTML = '<span class="icon">⚡</span> Run TestForge Autonomous Hardening';
           dom.hardeningProgressBox.classList.add('hidden');
 
@@ -2320,6 +2324,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
           dom.hardeningProgressBox.classList.add('hidden');
           dom.btnRunHardening.disabled = false;
+          dom.btnRunHardening.removeAttribute('disabled');
           dom.btnRunHardening.innerHTML = '<span class="icon">⚡</span> Run TestForge Autonomous Hardening';
 
           dom.hardeningVerdictBanner.classList.remove('hidden');
@@ -2336,6 +2341,7 @@ document.addEventListener('DOMContentLoaded', () => {
             dom.btnCancelHardening.classList.add('hidden');
           }
           dom.btnRunHardening.disabled = false;
+          dom.btnRunHardening.removeAttribute('disabled');
           dom.btnRunHardening.innerHTML = '<span class="icon">⚡</span> Run TestForge Autonomous Hardening';
           dom.hardeningProgressBox.classList.add('hidden');
 
@@ -2399,6 +2405,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     state.hardening.currentJobId = job.job_id || state.hardening.jobId;
     dom.btnRunHardening.disabled = false;
+    dom.btnRunHardening.removeAttribute('disabled');
     dom.btnRunHardening.innerHTML = '<span class="icon">⚡</span> Run TestForge Autonomous Hardening';
 
     const finalState = job.final_state || {};

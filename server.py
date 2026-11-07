@@ -768,6 +768,8 @@ async def ingest_upload(file: UploadFile = File(...)):
 
     has_syntax_error = getattr(analysis, "has_syntax_error", False)
     error_msg = getattr(analysis, "error_msg", None)
+    if has_syntax_error:
+        raise HTTPException(status_code=400, detail=error_msg or "Uploaded Python file contains syntax errors.")
 
     return {
         "status": "syntax_error" if has_syntax_error else "success",
