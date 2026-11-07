@@ -1,6 +1,6 @@
-# TestForge Pre-Final Submission Verification Report
+# TestForge Final Submission Verification Report
 
-**Branch**: `chore/pre-final-verification`  
+**Branch**: `feat/final-evidence` (branched from `chore/pre-final-verification`)  
 **Execution Environment**: macOS arm64 (Darwin 27.2.0), `.venv-release` (Python 3.13.18)  
 **Host Python**: Python 3.15.2 (`python3`)  
 **Date of Verification**: November 7, 2026  
@@ -10,18 +10,18 @@
 
 ## 1. Executive Summary
 
-This report establishes the definitive verification record for the pre-submission audit of **TestForge**, an autonomous multi-agent unit-test hardening platform driven by Google Agent Development Kit (ADK) and CrewAI, AST mutation engines, SQLite WAL session checkpoints, FastAPI (REST, SSE, WebSockets), FastMCP, and an interactive vanilla ES6 JavaScript cockpit dashboard.
+This report establishes the definitive verification record for the final Phase-3 course evaluation of **TestForge**, an autonomous multi-agent unit-test hardening platform driven by Google Agent Development Kit (ADK v1.14.1) and CrewAI (v0.102.0), AST mutation engines, SQLite WAL session checkpoints, FastAPI (REST, SSE, WebSockets), FastMCP, and an interactive vanilla ES6 JavaScript cockpit dashboard.
 
 ### Objectives & Scope
-The audit protocol executed a strict **VERIFY, FIX, RE-VERIFY** cycle across 7 substantive core tasks and Phase B frontend headless browser automation:
-1. Native Google ADK integration, `Runner` execution, and structural primitives (`ParallelAgent`, `LoopAgent`).
-2. Empirical benchmark arithmetic, raw mutation counts, and baseline recalibration across 4 canonical benchmark targets.
-3. Environment recording, dependency isolation in fresh virtualenvs, and packaging metadata.
-4. Hardware isolation honesty, Darwin kernel `RLIMIT_AS` limits, and `DockerSandboxBackend` implementation.
-5. In-house prompt injection benchmark attribution and false-positive measurement across benign codebases.
-6. Surviving mutant empirical extraction, equivalent vs. killable classification, and targeted test suite hardening.
-7. Codebase hygiene, protocol boundary deduplication (A2A vs FIPA), and static linter verification (`ruff`).
-8. Exhaustive headless browser and DOM integration testing (Scenarios B1–B5) using Playwright.
+The audit protocol executed a strict **VERIFY, FIX, RE-VERIFY** cycle across all coursework requirements (Features F1 through F9) and beyond-handout enhancements (Criteria C11 through C15):
+1. **Stage 0**: Integrity reconciliation, score provenance audit, single source of truth locking, and baseline competitor evaluation across 3 seeds.
+2. **Stage 1**: Feature flags, parallel mutant execution, 4 extra real-world targets, E1 ablation progression matrix, E2 held-out mutants, E3 external mutation judge (`mutmut` $r=0.9988$), E4 ADK eval sets, and E5 local vs cloud comparison.
+3. **Stage 2**: MCP tool consumption in ADK with path containment, TestForge native MCP server, and distributed cross-process A2A execution.
+4. **Stage 3**: ADK `DatabaseSessionService` & `InMemoryMemoryService` cross-job learning, lifecycle security callbacks, static AST output guardrails, Human Approval Gate, and OpenTelemetry W3C distributed tracing.
+5. **Stage 4**: Zero-Egress Privacy Mode with OS socket interception and secret scrubbing, plus Multimodal Vision FSM requirement derivation.
+6. **Stage 5**: 2D Kill-matrix minimization (greedy set cover, 79.1% reduction), diff-incremental PR mutation (5.39x speedup), flaky test detection, recursive bytecode instruction normalization, and Hypothesis property test generation.
+7. **Stage 6**: Real headless Chromium browser execution across 12 dashboard panes with 0 console errors and 0 unhandled exceptions.
+8. **Stage 7**: Complete architecture documentation, 4 Architectural Decision Records (ADRs), viva package, demo script, and rubric alignment.
 
 ### High-Level Audit Findings & Remediation
 * **ADK Nativeness**: Prototype wrapper agents previously delegated concurrency to Python `ThreadPoolExecutor` and loops to hand-written `while` constructs. These were completely refactored to directly subclass `google.adk.agents.ParallelAgent` and `LoopAgent`, with execution driven by genuine `google.adk.runners.Runner` instances and native `EventActions(escalate=True)` loop termination.
