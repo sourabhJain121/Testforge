@@ -1,0 +1,2954 @@
+{
+  "metadata": {
+    "timestamp": "2026-11-07T13:40:04Z",
+    "seeds": [
+      42,
+      43,
+      44
+    ],
+    "target_count": 8,
+    "configuration_count": 7
+  },
+  "configurations": [
+    "C1_ZeroShot",
+    "C2_PlusRefExec",
+    "C3_PlusReflection",
+    "C4_PlusSelfConsistency",
+    "C5_PlusToTReAct",
+    "C6_PlusRAGMemory",
+    "C7_FullTestForge"
+  ],
+  "targets": [
+    "discount.py",
+    "lru_cache.py",
+    "order_fsm.py",
+    "stats_calculator.py",
+    "expression_tokenizer.py",
+    "sliding_window_rate_limiter.py",
+    "interval_set.py",
+    "inventory_ledger.py"
+  ],
+  "matrix": {
+    "C1_ZeroShot": {
+      "label": "1. Zero-shot (Baseline)",
+      "flags": {
+        "ref_exec": false,
+        "reflection": false,
+        "self_consistency": false,
+        "tot": false,
+        "react": false,
+        "rag": false,
+        "memory": false,
+        "critic": false,
+        "equivalence": false
+      },
+      "targets": {
+        "discount.py": {
+          "mean_raw_mutation_score": 31.58,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 31.58,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 28.5,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 22.0,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 1.51,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 19,
+              "killed_mutants": 6,
+              "survived_mutants": 11,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 31.58,
+              "adjusted_mutation_score": 31.58,
+              "line_coverage": 28.5,
+              "branch_coverage": 22.0,
+              "duration_sec": 1.59
+            },
+            {
+              "seed": 43,
+              "total_mutants": 19,
+              "killed_mutants": 6,
+              "survived_mutants": 11,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 31.58,
+              "adjusted_mutation_score": 31.58,
+              "line_coverage": 28.5,
+              "branch_coverage": 22.0,
+              "duration_sec": 1.47
+            },
+            {
+              "seed": 44,
+              "total_mutants": 19,
+              "killed_mutants": 6,
+              "survived_mutants": 11,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 31.58,
+              "adjusted_mutation_score": 31.58,
+              "line_coverage": 28.5,
+              "branch_coverage": 22.0,
+              "duration_sec": 1.48
+            }
+          ]
+        },
+        "lru_cache.py": {
+          "mean_raw_mutation_score": 16.67,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 16.67,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 28.5,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 22.0,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 2.85,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 42,
+              "killed_mutants": 7,
+              "survived_mutants": 31,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 16.67,
+              "adjusted_mutation_score": 16.67,
+              "line_coverage": 28.5,
+              "branch_coverage": 22.0,
+              "duration_sec": 3.02
+            },
+            {
+              "seed": 43,
+              "total_mutants": 42,
+              "killed_mutants": 7,
+              "survived_mutants": 31,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 16.67,
+              "adjusted_mutation_score": 16.67,
+              "line_coverage": 28.5,
+              "branch_coverage": 22.0,
+              "duration_sec": 2.79
+            },
+            {
+              "seed": 44,
+              "total_mutants": 42,
+              "killed_mutants": 7,
+              "survived_mutants": 31,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 16.67,
+              "adjusted_mutation_score": 16.67,
+              "line_coverage": 28.5,
+              "branch_coverage": 22.0,
+              "duration_sec": 2.73
+            }
+          ]
+        },
+        "order_fsm.py": {
+          "mean_raw_mutation_score": 1.89,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 1.89,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 28.5,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 22.0,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 6.65,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 106,
+              "killed_mutants": 2,
+              "survived_mutants": 103,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 1.89,
+              "adjusted_mutation_score": 1.89,
+              "line_coverage": 28.5,
+              "branch_coverage": 22.0,
+              "duration_sec": 7.52
+            },
+            {
+              "seed": 43,
+              "total_mutants": 106,
+              "killed_mutants": 2,
+              "survived_mutants": 103,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 1.89,
+              "adjusted_mutation_score": 1.89,
+              "line_coverage": 28.5,
+              "branch_coverage": 22.0,
+              "duration_sec": 6.18
+            },
+            {
+              "seed": 44,
+              "total_mutants": 106,
+              "killed_mutants": 2,
+              "survived_mutants": 103,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 1.89,
+              "adjusted_mutation_score": 1.89,
+              "line_coverage": 28.5,
+              "branch_coverage": 22.0,
+              "duration_sec": 6.26
+            }
+          ]
+        },
+        "stats_calculator.py": {
+          "mean_raw_mutation_score": 0.0,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 0.0,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 28.5,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 22.0,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 6.27,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 73,
+              "killed_mutants": 0,
+              "survived_mutants": 0,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 0.0,
+              "adjusted_mutation_score": 0.0,
+              "line_coverage": 28.5,
+              "branch_coverage": 22.0,
+              "duration_sec": 6.01
+            },
+            {
+              "seed": 43,
+              "total_mutants": 73,
+              "killed_mutants": 0,
+              "survived_mutants": 0,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 0.0,
+              "adjusted_mutation_score": 0.0,
+              "line_coverage": 28.5,
+              "branch_coverage": 22.0,
+              "duration_sec": 6.63
+            },
+            {
+              "seed": 44,
+              "total_mutants": 73,
+              "killed_mutants": 0,
+              "survived_mutants": 0,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 0.0,
+              "adjusted_mutation_score": 0.0,
+              "line_coverage": 28.5,
+              "branch_coverage": 22.0,
+              "duration_sec": 6.16
+            }
+          ]
+        },
+        "expression_tokenizer.py": {
+          "mean_raw_mutation_score": 38.16,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 38.16,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 28.5,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 22.0,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 11.91,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 76,
+              "killed_mutants": 24,
+              "survived_mutants": 43,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 38.16,
+              "adjusted_mutation_score": 38.16,
+              "line_coverage": 28.5,
+              "branch_coverage": 22.0,
+              "duration_sec": 12.63
+            },
+            {
+              "seed": 43,
+              "total_mutants": 76,
+              "killed_mutants": 24,
+              "survived_mutants": 43,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 38.16,
+              "adjusted_mutation_score": 38.16,
+              "line_coverage": 28.5,
+              "branch_coverage": 22.0,
+              "duration_sec": 11.61
+            },
+            {
+              "seed": 44,
+              "total_mutants": 76,
+              "killed_mutants": 24,
+              "survived_mutants": 43,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 38.16,
+              "adjusted_mutation_score": 38.16,
+              "line_coverage": 28.5,
+              "branch_coverage": 22.0,
+              "duration_sec": 11.49
+            }
+          ]
+        },
+        "sliding_window_rate_limiter.py": {
+          "mean_raw_mutation_score": 17.91,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 17.91,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 28.5,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 22.0,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 4.18,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 67,
+              "killed_mutants": 12,
+              "survived_mutants": 52,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 17.91,
+              "adjusted_mutation_score": 17.91,
+              "line_coverage": 28.5,
+              "branch_coverage": 22.0,
+              "duration_sec": 4.55
+            },
+            {
+              "seed": 43,
+              "total_mutants": 67,
+              "killed_mutants": 12,
+              "survived_mutants": 52,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 17.91,
+              "adjusted_mutation_score": 17.91,
+              "line_coverage": 28.5,
+              "branch_coverage": 22.0,
+              "duration_sec": 3.99
+            },
+            {
+              "seed": 44,
+              "total_mutants": 67,
+              "killed_mutants": 12,
+              "survived_mutants": 52,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 17.91,
+              "adjusted_mutation_score": 17.91,
+              "line_coverage": 28.5,
+              "branch_coverage": 22.0,
+              "duration_sec": 4.0
+            }
+          ]
+        },
+        "interval_set.py": {
+          "mean_raw_mutation_score": 19.4,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 19.4,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 28.5,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 22.0,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 4.22,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 67,
+              "killed_mutants": 13,
+              "survived_mutants": 54,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 19.4,
+              "adjusted_mutation_score": 19.4,
+              "line_coverage": 28.5,
+              "branch_coverage": 22.0,
+              "duration_sec": 4.58
+            },
+            {
+              "seed": 43,
+              "total_mutants": 67,
+              "killed_mutants": 13,
+              "survived_mutants": 54,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 19.4,
+              "adjusted_mutation_score": 19.4,
+              "line_coverage": 28.5,
+              "branch_coverage": 22.0,
+              "duration_sec": 4.05
+            },
+            {
+              "seed": 44,
+              "total_mutants": 67,
+              "killed_mutants": 13,
+              "survived_mutants": 54,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 19.4,
+              "adjusted_mutation_score": 19.4,
+              "line_coverage": 28.5,
+              "branch_coverage": 22.0,
+              "duration_sec": 4.04
+            }
+          ]
+        },
+        "inventory_ledger.py": {
+          "mean_raw_mutation_score": 6.19,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 6.19,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 28.5,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 22.0,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 7.15,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 97,
+              "killed_mutants": 6,
+              "survived_mutants": 84,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 6.19,
+              "adjusted_mutation_score": 6.19,
+              "line_coverage": 28.5,
+              "branch_coverage": 22.0,
+              "duration_sec": 7.84
+            },
+            {
+              "seed": 43,
+              "total_mutants": 97,
+              "killed_mutants": 6,
+              "survived_mutants": 84,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 6.19,
+              "adjusted_mutation_score": 6.19,
+              "line_coverage": 28.5,
+              "branch_coverage": 22.0,
+              "duration_sec": 6.76
+            },
+            {
+              "seed": 44,
+              "total_mutants": 97,
+              "killed_mutants": 6,
+              "survived_mutants": 84,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 6.19,
+              "adjusted_mutation_score": 6.19,
+              "line_coverage": 28.5,
+              "branch_coverage": 22.0,
+              "duration_sec": 6.85
+            }
+          ]
+        }
+      }
+    },
+    "C2_PlusRefExec": {
+      "label": "2. + ref_exec",
+      "flags": {
+        "ref_exec": true,
+        "reflection": false,
+        "self_consistency": false,
+        "tot": false,
+        "react": false,
+        "rag": false,
+        "memory": false,
+        "critic": false,
+        "equivalence": false
+      },
+      "targets": {
+        "discount.py": {
+          "mean_raw_mutation_score": 31.58,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 31.58,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 38.0,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 30.5,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 1.67,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 19,
+              "killed_mutants": 6,
+              "survived_mutants": 11,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 31.58,
+              "adjusted_mutation_score": 31.58,
+              "line_coverage": 38.0,
+              "branch_coverage": 30.5,
+              "duration_sec": 1.73
+            },
+            {
+              "seed": 43,
+              "total_mutants": 19,
+              "killed_mutants": 6,
+              "survived_mutants": 11,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 31.58,
+              "adjusted_mutation_score": 31.58,
+              "line_coverage": 38.0,
+              "branch_coverage": 30.5,
+              "duration_sec": 1.6
+            },
+            {
+              "seed": 44,
+              "total_mutants": 19,
+              "killed_mutants": 6,
+              "survived_mutants": 11,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 31.58,
+              "adjusted_mutation_score": 31.58,
+              "line_coverage": 38.0,
+              "branch_coverage": 30.5,
+              "duration_sec": 1.69
+            }
+          ]
+        },
+        "lru_cache.py": {
+          "mean_raw_mutation_score": 16.67,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 16.67,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 38.0,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 30.5,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 3.02,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 42,
+              "killed_mutants": 7,
+              "survived_mutants": 31,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 16.67,
+              "adjusted_mutation_score": 16.67,
+              "line_coverage": 38.0,
+              "branch_coverage": 30.5,
+              "duration_sec": 3.03
+            },
+            {
+              "seed": 43,
+              "total_mutants": 42,
+              "killed_mutants": 7,
+              "survived_mutants": 31,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 16.67,
+              "adjusted_mutation_score": 16.67,
+              "line_coverage": 38.0,
+              "branch_coverage": 30.5,
+              "duration_sec": 3.0
+            },
+            {
+              "seed": 44,
+              "total_mutants": 42,
+              "killed_mutants": 7,
+              "survived_mutants": 31,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 16.67,
+              "adjusted_mutation_score": 16.67,
+              "line_coverage": 38.0,
+              "branch_coverage": 30.5,
+              "duration_sec": 3.02
+            }
+          ]
+        },
+        "order_fsm.py": {
+          "mean_raw_mutation_score": 1.89,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 1.89,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 38.0,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 30.5,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 6.91,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 106,
+              "killed_mutants": 2,
+              "survived_mutants": 103,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 1.89,
+              "adjusted_mutation_score": 1.89,
+              "line_coverage": 38.0,
+              "branch_coverage": 30.5,
+              "duration_sec": 6.86
+            },
+            {
+              "seed": 43,
+              "total_mutants": 106,
+              "killed_mutants": 2,
+              "survived_mutants": 103,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 1.89,
+              "adjusted_mutation_score": 1.89,
+              "line_coverage": 38.0,
+              "branch_coverage": 30.5,
+              "duration_sec": 6.99
+            },
+            {
+              "seed": 44,
+              "total_mutants": 106,
+              "killed_mutants": 2,
+              "survived_mutants": 103,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 1.89,
+              "adjusted_mutation_score": 1.89,
+              "line_coverage": 38.0,
+              "branch_coverage": 30.5,
+              "duration_sec": 6.88
+            }
+          ]
+        },
+        "stats_calculator.py": {
+          "mean_raw_mutation_score": 0.0,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 0.0,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 38.0,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 30.5,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 6.27,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 73,
+              "killed_mutants": 0,
+              "survived_mutants": 0,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 0.0,
+              "adjusted_mutation_score": 0.0,
+              "line_coverage": 38.0,
+              "branch_coverage": 30.5,
+              "duration_sec": 6.03
+            },
+            {
+              "seed": 43,
+              "total_mutants": 73,
+              "killed_mutants": 0,
+              "survived_mutants": 0,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 0.0,
+              "adjusted_mutation_score": 0.0,
+              "line_coverage": 38.0,
+              "branch_coverage": 30.5,
+              "duration_sec": 6.02
+            },
+            {
+              "seed": 44,
+              "total_mutants": 73,
+              "killed_mutants": 0,
+              "survived_mutants": 0,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 0.0,
+              "adjusted_mutation_score": 0.0,
+              "line_coverage": 38.0,
+              "branch_coverage": 30.5,
+              "duration_sec": 6.75
+            }
+          ]
+        },
+        "expression_tokenizer.py": {
+          "mean_raw_mutation_score": 38.16,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 38.16,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 38.0,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 30.5,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 11.75,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 76,
+              "killed_mutants": 24,
+              "survived_mutants": 43,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 38.16,
+              "adjusted_mutation_score": 38.16,
+              "line_coverage": 38.0,
+              "branch_coverage": 30.5,
+              "duration_sec": 11.73
+            },
+            {
+              "seed": 43,
+              "total_mutants": 76,
+              "killed_mutants": 24,
+              "survived_mutants": 43,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 38.16,
+              "adjusted_mutation_score": 38.16,
+              "line_coverage": 38.0,
+              "branch_coverage": 30.5,
+              "duration_sec": 11.67
+            },
+            {
+              "seed": 44,
+              "total_mutants": 76,
+              "killed_mutants": 24,
+              "survived_mutants": 43,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 38.16,
+              "adjusted_mutation_score": 38.16,
+              "line_coverage": 38.0,
+              "branch_coverage": 30.5,
+              "duration_sec": 11.85
+            }
+          ]
+        },
+        "sliding_window_rate_limiter.py": {
+          "mean_raw_mutation_score": 17.91,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 17.91,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 38.0,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 30.5,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 4.72,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 67,
+              "killed_mutants": 12,
+              "survived_mutants": 52,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 17.91,
+              "adjusted_mutation_score": 17.91,
+              "line_coverage": 38.0,
+              "branch_coverage": 30.5,
+              "duration_sec": 4.51
+            },
+            {
+              "seed": 43,
+              "total_mutants": 67,
+              "killed_mutants": 12,
+              "survived_mutants": 52,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 17.91,
+              "adjusted_mutation_score": 17.91,
+              "line_coverage": 38.0,
+              "branch_coverage": 30.5,
+              "duration_sec": 4.52
+            },
+            {
+              "seed": 44,
+              "total_mutants": 67,
+              "killed_mutants": 12,
+              "survived_mutants": 52,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 17.91,
+              "adjusted_mutation_score": 17.91,
+              "line_coverage": 38.0,
+              "branch_coverage": 30.5,
+              "duration_sec": 5.12
+            }
+          ]
+        },
+        "interval_set.py": {
+          "mean_raw_mutation_score": 19.4,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 19.4,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 38.0,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 30.5,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 4.53,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 67,
+              "killed_mutants": 13,
+              "survived_mutants": 54,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 19.4,
+              "adjusted_mutation_score": 19.4,
+              "line_coverage": 38.0,
+              "branch_coverage": 30.5,
+              "duration_sec": 4.63
+            },
+            {
+              "seed": 43,
+              "total_mutants": 67,
+              "killed_mutants": 13,
+              "survived_mutants": 54,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 19.4,
+              "adjusted_mutation_score": 19.4,
+              "line_coverage": 38.0,
+              "branch_coverage": 30.5,
+              "duration_sec": 4.46
+            },
+            {
+              "seed": 44,
+              "total_mutants": 67,
+              "killed_mutants": 13,
+              "survived_mutants": 54,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 19.4,
+              "adjusted_mutation_score": 19.4,
+              "line_coverage": 38.0,
+              "branch_coverage": 30.5,
+              "duration_sec": 4.5
+            }
+          ]
+        },
+        "inventory_ledger.py": {
+          "mean_raw_mutation_score": 6.19,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 6.19,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 38.0,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 30.5,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 7.07,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 97,
+              "killed_mutants": 6,
+              "survived_mutants": 84,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 6.19,
+              "adjusted_mutation_score": 6.19,
+              "line_coverage": 38.0,
+              "branch_coverage": 30.5,
+              "duration_sec": 7.04
+            },
+            {
+              "seed": 43,
+              "total_mutants": 97,
+              "killed_mutants": 6,
+              "survived_mutants": 84,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 6.19,
+              "adjusted_mutation_score": 6.19,
+              "line_coverage": 38.0,
+              "branch_coverage": 30.5,
+              "duration_sec": 6.5
+            },
+            {
+              "seed": 44,
+              "total_mutants": 97,
+              "killed_mutants": 6,
+              "survived_mutants": 84,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 6.19,
+              "adjusted_mutation_score": 6.19,
+              "line_coverage": 38.0,
+              "branch_coverage": 30.5,
+              "duration_sec": 7.67
+            }
+          ]
+        }
+      }
+    },
+    "C3_PlusReflection": {
+      "label": "3. + reflection",
+      "flags": {
+        "ref_exec": true,
+        "reflection": true,
+        "self_consistency": false,
+        "tot": false,
+        "react": false,
+        "rag": false,
+        "memory": false,
+        "critic": false,
+        "equivalence": false
+      },
+      "targets": {
+        "discount.py": {
+          "mean_raw_mutation_score": 89.47,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 89.47,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 65.0,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 55.0,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 1.69,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 19,
+              "killed_mutants": 17,
+              "survived_mutants": 1,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 89.47,
+              "adjusted_mutation_score": 89.47,
+              "line_coverage": 65.0,
+              "branch_coverage": 55.0,
+              "duration_sec": 1.81
+            },
+            {
+              "seed": 43,
+              "total_mutants": 19,
+              "killed_mutants": 17,
+              "survived_mutants": 1,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 89.47,
+              "adjusted_mutation_score": 89.47,
+              "line_coverage": 65.0,
+              "branch_coverage": 55.0,
+              "duration_sec": 1.68
+            },
+            {
+              "seed": 44,
+              "total_mutants": 19,
+              "killed_mutants": 17,
+              "survived_mutants": 1,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 89.47,
+              "adjusted_mutation_score": 89.47,
+              "line_coverage": 65.0,
+              "branch_coverage": 55.0,
+              "duration_sec": 1.57
+            }
+          ]
+        },
+        "lru_cache.py": {
+          "mean_raw_mutation_score": 16.67,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 16.67,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 65.0,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 55.0,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 3.04,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 42,
+              "killed_mutants": 7,
+              "survived_mutants": 31,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 16.67,
+              "adjusted_mutation_score": 16.67,
+              "line_coverage": 65.0,
+              "branch_coverage": 55.0,
+              "duration_sec": 2.82
+            },
+            {
+              "seed": 43,
+              "total_mutants": 42,
+              "killed_mutants": 7,
+              "survived_mutants": 31,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 16.67,
+              "adjusted_mutation_score": 16.67,
+              "line_coverage": 65.0,
+              "branch_coverage": 55.0,
+              "duration_sec": 3.42
+            },
+            {
+              "seed": 44,
+              "total_mutants": 42,
+              "killed_mutants": 7,
+              "survived_mutants": 31,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 16.67,
+              "adjusted_mutation_score": 16.67,
+              "line_coverage": 65.0,
+              "branch_coverage": 55.0,
+              "duration_sec": 2.88
+            }
+          ]
+        },
+        "order_fsm.py": {
+          "mean_raw_mutation_score": 42.45,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 42.45,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 65.0,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 55.0,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 7.98,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 106,
+              "killed_mutants": 45,
+              "survived_mutants": 60,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 42.45,
+              "adjusted_mutation_score": 42.45,
+              "line_coverage": 65.0,
+              "branch_coverage": 55.0,
+              "duration_sec": 7.86
+            },
+            {
+              "seed": 43,
+              "total_mutants": 106,
+              "killed_mutants": 45,
+              "survived_mutants": 60,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 42.45,
+              "adjusted_mutation_score": 42.45,
+              "line_coverage": 65.0,
+              "branch_coverage": 55.0,
+              "duration_sec": 8.05
+            },
+            {
+              "seed": 44,
+              "total_mutants": 106,
+              "killed_mutants": 45,
+              "survived_mutants": 60,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 42.45,
+              "adjusted_mutation_score": 42.45,
+              "line_coverage": 65.0,
+              "branch_coverage": 55.0,
+              "duration_sec": 8.03
+            }
+          ]
+        },
+        "stats_calculator.py": {
+          "mean_raw_mutation_score": 0.0,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 0.0,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 65.0,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 55.0,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 0.42,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 73,
+              "killed_mutants": 0,
+              "survived_mutants": 0,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 0.0,
+              "adjusted_mutation_score": 0.0,
+              "line_coverage": 65.0,
+              "branch_coverage": 55.0,
+              "duration_sec": 0.43
+            },
+            {
+              "seed": 43,
+              "total_mutants": 73,
+              "killed_mutants": 0,
+              "survived_mutants": 0,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 0.0,
+              "adjusted_mutation_score": 0.0,
+              "line_coverage": 65.0,
+              "branch_coverage": 55.0,
+              "duration_sec": 0.42
+            },
+            {
+              "seed": 44,
+              "total_mutants": 73,
+              "killed_mutants": 0,
+              "survived_mutants": 0,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 0.0,
+              "adjusted_mutation_score": 0.0,
+              "line_coverage": 65.0,
+              "branch_coverage": 55.0,
+              "duration_sec": 0.42
+            }
+          ]
+        },
+        "expression_tokenizer.py": {
+          "mean_raw_mutation_score": 39.47,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 39.47,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 65.0,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 55.0,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 11.62,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 76,
+              "killed_mutants": 25,
+              "survived_mutants": 42,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 39.47,
+              "adjusted_mutation_score": 39.47,
+              "line_coverage": 65.0,
+              "branch_coverage": 55.0,
+              "duration_sec": 11.6
+            },
+            {
+              "seed": 43,
+              "total_mutants": 76,
+              "killed_mutants": 25,
+              "survived_mutants": 42,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 39.47,
+              "adjusted_mutation_score": 39.47,
+              "line_coverage": 65.0,
+              "branch_coverage": 55.0,
+              "duration_sec": 11.62
+            },
+            {
+              "seed": 44,
+              "total_mutants": 76,
+              "killed_mutants": 25,
+              "survived_mutants": 42,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 39.47,
+              "adjusted_mutation_score": 39.47,
+              "line_coverage": 65.0,
+              "branch_coverage": 55.0,
+              "duration_sec": 11.64
+            }
+          ]
+        },
+        "sliding_window_rate_limiter.py": {
+          "mean_raw_mutation_score": 22.39,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 22.39,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 65.0,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 55.0,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 4.16,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 67,
+              "killed_mutants": 15,
+              "survived_mutants": 49,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 22.39,
+              "adjusted_mutation_score": 22.39,
+              "line_coverage": 65.0,
+              "branch_coverage": 55.0,
+              "duration_sec": 4.05
+            },
+            {
+              "seed": 43,
+              "total_mutants": 67,
+              "killed_mutants": 15,
+              "survived_mutants": 49,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 22.39,
+              "adjusted_mutation_score": 22.39,
+              "line_coverage": 65.0,
+              "branch_coverage": 55.0,
+              "duration_sec": 4.12
+            },
+            {
+              "seed": 44,
+              "total_mutants": 67,
+              "killed_mutants": 15,
+              "survived_mutants": 49,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 22.39,
+              "adjusted_mutation_score": 22.39,
+              "line_coverage": 65.0,
+              "branch_coverage": 55.0,
+              "duration_sec": 4.32
+            }
+          ]
+        },
+        "interval_set.py": {
+          "mean_raw_mutation_score": 19.4,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 19.4,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 65.0,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 55.0,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 4.5,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 67,
+              "killed_mutants": 13,
+              "survived_mutants": 54,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 19.4,
+              "adjusted_mutation_score": 19.4,
+              "line_coverage": 65.0,
+              "branch_coverage": 55.0,
+              "duration_sec": 4.84
+            },
+            {
+              "seed": 43,
+              "total_mutants": 67,
+              "killed_mutants": 13,
+              "survived_mutants": 54,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 19.4,
+              "adjusted_mutation_score": 19.4,
+              "line_coverage": 65.0,
+              "branch_coverage": 55.0,
+              "duration_sec": 4.32
+            },
+            {
+              "seed": 44,
+              "total_mutants": 67,
+              "killed_mutants": 13,
+              "survived_mutants": 54,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 19.4,
+              "adjusted_mutation_score": 19.4,
+              "line_coverage": 65.0,
+              "branch_coverage": 55.0,
+              "duration_sec": 4.35
+            }
+          ]
+        },
+        "inventory_ledger.py": {
+          "mean_raw_mutation_score": 25.77,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 25.77,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 65.0,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 55.0,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 6.23,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 97,
+              "killed_mutants": 25,
+              "survived_mutants": 65,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 25.77,
+              "adjusted_mutation_score": 25.77,
+              "line_coverage": 65.0,
+              "branch_coverage": 55.0,
+              "duration_sec": 6.1
+            },
+            {
+              "seed": 43,
+              "total_mutants": 97,
+              "killed_mutants": 25,
+              "survived_mutants": 65,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 25.77,
+              "adjusted_mutation_score": 25.77,
+              "line_coverage": 65.0,
+              "branch_coverage": 55.0,
+              "duration_sec": 6.31
+            },
+            {
+              "seed": 44,
+              "total_mutants": 97,
+              "killed_mutants": 25,
+              "survived_mutants": 65,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 25.77,
+              "adjusted_mutation_score": 25.77,
+              "line_coverage": 65.0,
+              "branch_coverage": 55.0,
+              "duration_sec": 6.29
+            }
+          ]
+        }
+      }
+    },
+    "C4_PlusSelfConsistency": {
+      "label": "4. + self_consistency",
+      "flags": {
+        "ref_exec": true,
+        "reflection": true,
+        "self_consistency": true,
+        "tot": false,
+        "react": false,
+        "rag": false,
+        "memory": false,
+        "critic": false,
+        "equivalence": false
+      },
+      "targets": {
+        "discount.py": {
+          "mean_raw_mutation_score": 89.47,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 89.47,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 78.5,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 70.0,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 1.65,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 19,
+              "killed_mutants": 17,
+              "survived_mutants": 1,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 89.47,
+              "adjusted_mutation_score": 89.47,
+              "line_coverage": 78.5,
+              "branch_coverage": 70.0,
+              "duration_sec": 1.68
+            },
+            {
+              "seed": 43,
+              "total_mutants": 19,
+              "killed_mutants": 17,
+              "survived_mutants": 1,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 89.47,
+              "adjusted_mutation_score": 89.47,
+              "line_coverage": 78.5,
+              "branch_coverage": 70.0,
+              "duration_sec": 1.71
+            },
+            {
+              "seed": 44,
+              "total_mutants": 19,
+              "killed_mutants": 17,
+              "survived_mutants": 1,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 89.47,
+              "adjusted_mutation_score": 89.47,
+              "line_coverage": 78.5,
+              "branch_coverage": 70.0,
+              "duration_sec": 1.57
+            }
+          ]
+        },
+        "lru_cache.py": {
+          "mean_raw_mutation_score": 16.67,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 16.67,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 78.5,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 70.0,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 2.81,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 42,
+              "killed_mutants": 7,
+              "survived_mutants": 31,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 16.67,
+              "adjusted_mutation_score": 16.67,
+              "line_coverage": 78.5,
+              "branch_coverage": 70.0,
+              "duration_sec": 2.83
+            },
+            {
+              "seed": 43,
+              "total_mutants": 42,
+              "killed_mutants": 7,
+              "survived_mutants": 31,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 16.67,
+              "adjusted_mutation_score": 16.67,
+              "line_coverage": 78.5,
+              "branch_coverage": 70.0,
+              "duration_sec": 2.8
+            },
+            {
+              "seed": 44,
+              "total_mutants": 42,
+              "killed_mutants": 7,
+              "survived_mutants": 31,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 16.67,
+              "adjusted_mutation_score": 16.67,
+              "line_coverage": 78.5,
+              "branch_coverage": 70.0,
+              "duration_sec": 2.8
+            }
+          ]
+        },
+        "order_fsm.py": {
+          "mean_raw_mutation_score": 42.45,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 42.45,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 78.5,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 70.0,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 7.64,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 106,
+              "killed_mutants": 45,
+              "survived_mutants": 60,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 42.45,
+              "adjusted_mutation_score": 42.45,
+              "line_coverage": 78.5,
+              "branch_coverage": 70.0,
+              "duration_sec": 7.6
+            },
+            {
+              "seed": 43,
+              "total_mutants": 106,
+              "killed_mutants": 45,
+              "survived_mutants": 60,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 42.45,
+              "adjusted_mutation_score": 42.45,
+              "line_coverage": 78.5,
+              "branch_coverage": 70.0,
+              "duration_sec": 7.65
+            },
+            {
+              "seed": 44,
+              "total_mutants": 106,
+              "killed_mutants": 45,
+              "survived_mutants": 60,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 42.45,
+              "adjusted_mutation_score": 42.45,
+              "line_coverage": 78.5,
+              "branch_coverage": 70.0,
+              "duration_sec": 7.68
+            }
+          ]
+        },
+        "stats_calculator.py": {
+          "mean_raw_mutation_score": 0.0,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 0.0,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 78.5,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 70.0,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 0.42,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 73,
+              "killed_mutants": 0,
+              "survived_mutants": 0,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 0.0,
+              "adjusted_mutation_score": 0.0,
+              "line_coverage": 78.5,
+              "branch_coverage": 70.0,
+              "duration_sec": 0.43
+            },
+            {
+              "seed": 43,
+              "total_mutants": 73,
+              "killed_mutants": 0,
+              "survived_mutants": 0,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 0.0,
+              "adjusted_mutation_score": 0.0,
+              "line_coverage": 78.5,
+              "branch_coverage": 70.0,
+              "duration_sec": 0.41
+            },
+            {
+              "seed": 44,
+              "total_mutants": 73,
+              "killed_mutants": 0,
+              "survived_mutants": 0,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 0.0,
+              "adjusted_mutation_score": 0.0,
+              "line_coverage": 78.5,
+              "branch_coverage": 70.0,
+              "duration_sec": 0.42
+            }
+          ]
+        },
+        "expression_tokenizer.py": {
+          "mean_raw_mutation_score": 39.47,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 39.47,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 78.5,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 70.0,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 11.63,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 76,
+              "killed_mutants": 25,
+              "survived_mutants": 42,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 39.47,
+              "adjusted_mutation_score": 39.47,
+              "line_coverage": 78.5,
+              "branch_coverage": 70.0,
+              "duration_sec": 11.67
+            },
+            {
+              "seed": 43,
+              "total_mutants": 76,
+              "killed_mutants": 25,
+              "survived_mutants": 42,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 39.47,
+              "adjusted_mutation_score": 39.47,
+              "line_coverage": 78.5,
+              "branch_coverage": 70.0,
+              "duration_sec": 11.6
+            },
+            {
+              "seed": 44,
+              "total_mutants": 76,
+              "killed_mutants": 25,
+              "survived_mutants": 42,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 39.47,
+              "adjusted_mutation_score": 39.47,
+              "line_coverage": 78.5,
+              "branch_coverage": 70.0,
+              "duration_sec": 11.61
+            }
+          ]
+        },
+        "sliding_window_rate_limiter.py": {
+          "mean_raw_mutation_score": 22.39,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 22.39,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 78.5,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 70.0,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 4.45,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 67,
+              "killed_mutants": 15,
+              "survived_mutants": 49,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 22.39,
+              "adjusted_mutation_score": 22.39,
+              "line_coverage": 78.5,
+              "branch_coverage": 70.0,
+              "duration_sec": 4.41
+            },
+            {
+              "seed": 43,
+              "total_mutants": 67,
+              "killed_mutants": 15,
+              "survived_mutants": 49,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 22.39,
+              "adjusted_mutation_score": 22.39,
+              "line_coverage": 78.5,
+              "branch_coverage": 70.0,
+              "duration_sec": 4.34
+            },
+            {
+              "seed": 44,
+              "total_mutants": 67,
+              "killed_mutants": 15,
+              "survived_mutants": 49,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 22.39,
+              "adjusted_mutation_score": 22.39,
+              "line_coverage": 78.5,
+              "branch_coverage": 70.0,
+              "duration_sec": 4.59
+            }
+          ]
+        },
+        "interval_set.py": {
+          "mean_raw_mutation_score": 19.4,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 19.4,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 78.5,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 70.0,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 4.52,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 67,
+              "killed_mutants": 13,
+              "survived_mutants": 54,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 19.4,
+              "adjusted_mutation_score": 19.4,
+              "line_coverage": 78.5,
+              "branch_coverage": 70.0,
+              "duration_sec": 4.77
+            },
+            {
+              "seed": 43,
+              "total_mutants": 67,
+              "killed_mutants": 13,
+              "survived_mutants": 54,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 19.4,
+              "adjusted_mutation_score": 19.4,
+              "line_coverage": 78.5,
+              "branch_coverage": 70.0,
+              "duration_sec": 4.37
+            },
+            {
+              "seed": 44,
+              "total_mutants": 67,
+              "killed_mutants": 13,
+              "survived_mutants": 54,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 19.4,
+              "adjusted_mutation_score": 19.4,
+              "line_coverage": 78.5,
+              "branch_coverage": 70.0,
+              "duration_sec": 4.42
+            }
+          ]
+        },
+        "inventory_ledger.py": {
+          "mean_raw_mutation_score": 25.77,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 25.77,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 78.5,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 70.0,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 6.22,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 97,
+              "killed_mutants": 25,
+              "survived_mutants": 65,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 25.77,
+              "adjusted_mutation_score": 25.77,
+              "line_coverage": 78.5,
+              "branch_coverage": 70.0,
+              "duration_sec": 6.22
+            },
+            {
+              "seed": 43,
+              "total_mutants": 97,
+              "killed_mutants": 25,
+              "survived_mutants": 65,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 25.77,
+              "adjusted_mutation_score": 25.77,
+              "line_coverage": 78.5,
+              "branch_coverage": 70.0,
+              "duration_sec": 6.23
+            },
+            {
+              "seed": 44,
+              "total_mutants": 97,
+              "killed_mutants": 25,
+              "survived_mutants": 65,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 25.77,
+              "adjusted_mutation_score": 25.77,
+              "line_coverage": 78.5,
+              "branch_coverage": 70.0,
+              "duration_sec": 6.22
+            }
+          ]
+        }
+      }
+    },
+    "C5_PlusToTReAct": {
+      "label": "5. + tot / react",
+      "flags": {
+        "ref_exec": true,
+        "reflection": true,
+        "self_consistency": true,
+        "tot": true,
+        "react": true,
+        "rag": false,
+        "memory": false,
+        "critic": false,
+        "equivalence": false
+      },
+      "targets": {
+        "discount.py": {
+          "mean_raw_mutation_score": 94.74,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 94.74,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 90.0,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 85.5,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 2.02,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 19,
+              "killed_mutants": 18,
+              "survived_mutants": 0,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 94.74,
+              "adjusted_mutation_score": 94.74,
+              "line_coverage": 90.0,
+              "branch_coverage": 85.5,
+              "duration_sec": 1.82
+            },
+            {
+              "seed": 43,
+              "total_mutants": 19,
+              "killed_mutants": 18,
+              "survived_mutants": 0,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 94.74,
+              "adjusted_mutation_score": 94.74,
+              "line_coverage": 90.0,
+              "branch_coverage": 85.5,
+              "duration_sec": 1.93
+            },
+            {
+              "seed": 44,
+              "total_mutants": 19,
+              "killed_mutants": 18,
+              "survived_mutants": 0,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 94.74,
+              "adjusted_mutation_score": 94.74,
+              "line_coverage": 90.0,
+              "branch_coverage": 85.5,
+              "duration_sec": 2.3
+            }
+          ]
+        },
+        "lru_cache.py": {
+          "mean_raw_mutation_score": 33.33,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 33.33,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 90.0,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 85.5,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 3.13,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 42,
+              "killed_mutants": 14,
+              "survived_mutants": 24,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 33.33,
+              "adjusted_mutation_score": 33.33,
+              "line_coverage": 90.0,
+              "branch_coverage": 85.5,
+              "duration_sec": 3.31
+            },
+            {
+              "seed": 43,
+              "total_mutants": 42,
+              "killed_mutants": 14,
+              "survived_mutants": 24,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 33.33,
+              "adjusted_mutation_score": 33.33,
+              "line_coverage": 90.0,
+              "branch_coverage": 85.5,
+              "duration_sec": 3.04
+            },
+            {
+              "seed": 44,
+              "total_mutants": 42,
+              "killed_mutants": 14,
+              "survived_mutants": 24,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 33.33,
+              "adjusted_mutation_score": 33.33,
+              "line_coverage": 90.0,
+              "branch_coverage": 85.5,
+              "duration_sec": 3.03
+            }
+          ]
+        },
+        "order_fsm.py": {
+          "mean_raw_mutation_score": 97.17,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 97.17,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 90.0,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 85.5,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 11.16,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 106,
+              "killed_mutants": 103,
+              "survived_mutants": 3,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 97.17,
+              "adjusted_mutation_score": 97.17,
+              "line_coverage": 90.0,
+              "branch_coverage": 85.5,
+              "duration_sec": 11.03
+            },
+            {
+              "seed": 43,
+              "total_mutants": 106,
+              "killed_mutants": 103,
+              "survived_mutants": 3,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 97.17,
+              "adjusted_mutation_score": 97.17,
+              "line_coverage": 90.0,
+              "branch_coverage": 85.5,
+              "duration_sec": 11.02
+            },
+            {
+              "seed": 44,
+              "total_mutants": 106,
+              "killed_mutants": 103,
+              "survived_mutants": 3,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 97.17,
+              "adjusted_mutation_score": 97.17,
+              "line_coverage": 90.0,
+              "branch_coverage": 85.5,
+              "duration_sec": 11.43
+            }
+          ]
+        },
+        "stats_calculator.py": {
+          "mean_raw_mutation_score": 0.0,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 0.0,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 90.0,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 85.5,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 6.07,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 73,
+              "killed_mutants": 0,
+              "survived_mutants": 0,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 0.0,
+              "adjusted_mutation_score": 0.0,
+              "line_coverage": 90.0,
+              "branch_coverage": 85.5,
+              "duration_sec": 6.19
+            },
+            {
+              "seed": 43,
+              "total_mutants": 73,
+              "killed_mutants": 0,
+              "survived_mutants": 0,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 0.0,
+              "adjusted_mutation_score": 0.0,
+              "line_coverage": 90.0,
+              "branch_coverage": 85.5,
+              "duration_sec": 6.06
+            },
+            {
+              "seed": 44,
+              "total_mutants": 73,
+              "killed_mutants": 0,
+              "survived_mutants": 0,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 0.0,
+              "adjusted_mutation_score": 0.0,
+              "line_coverage": 90.0,
+              "branch_coverage": 85.5,
+              "duration_sec": 5.96
+            }
+          ]
+        },
+        "expression_tokenizer.py": {
+          "mean_raw_mutation_score": 46.05,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 46.05,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 90.0,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 85.5,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 14.49,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 76,
+              "killed_mutants": 27,
+              "survived_mutants": 38,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 46.05,
+              "adjusted_mutation_score": 46.05,
+              "line_coverage": 90.0,
+              "branch_coverage": 85.5,
+              "duration_sec": 14.54
+            },
+            {
+              "seed": 43,
+              "total_mutants": 76,
+              "killed_mutants": 27,
+              "survived_mutants": 38,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 46.05,
+              "adjusted_mutation_score": 46.05,
+              "line_coverage": 90.0,
+              "branch_coverage": 85.5,
+              "duration_sec": 14.41
+            },
+            {
+              "seed": 44,
+              "total_mutants": 76,
+              "killed_mutants": 27,
+              "survived_mutants": 38,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 46.05,
+              "adjusted_mutation_score": 46.05,
+              "line_coverage": 90.0,
+              "branch_coverage": 85.5,
+              "duration_sec": 14.53
+            }
+          ]
+        },
+        "sliding_window_rate_limiter.py": {
+          "mean_raw_mutation_score": 31.34,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 31.34,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 90.0,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 85.5,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 4.41,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 67,
+              "killed_mutants": 21,
+              "survived_mutants": 44,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 31.34,
+              "adjusted_mutation_score": 31.34,
+              "line_coverage": 90.0,
+              "branch_coverage": 85.5,
+              "duration_sec": 4.45
+            },
+            {
+              "seed": 43,
+              "total_mutants": 67,
+              "killed_mutants": 21,
+              "survived_mutants": 44,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 31.34,
+              "adjusted_mutation_score": 31.34,
+              "line_coverage": 90.0,
+              "branch_coverage": 85.5,
+              "duration_sec": 4.33
+            },
+            {
+              "seed": 44,
+              "total_mutants": 67,
+              "killed_mutants": 21,
+              "survived_mutants": 44,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 31.34,
+              "adjusted_mutation_score": 31.34,
+              "line_coverage": 90.0,
+              "branch_coverage": 85.5,
+              "duration_sec": 4.46
+            }
+          ]
+        },
+        "interval_set.py": {
+          "mean_raw_mutation_score": 19.4,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 19.4,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 90.0,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 85.5,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 4.3,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 67,
+              "killed_mutants": 13,
+              "survived_mutants": 54,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 19.4,
+              "adjusted_mutation_score": 19.4,
+              "line_coverage": 90.0,
+              "branch_coverage": 85.5,
+              "duration_sec": 4.42
+            },
+            {
+              "seed": 43,
+              "total_mutants": 67,
+              "killed_mutants": 13,
+              "survived_mutants": 54,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 19.4,
+              "adjusted_mutation_score": 19.4,
+              "line_coverage": 90.0,
+              "branch_coverage": 85.5,
+              "duration_sec": 4.25
+            },
+            {
+              "seed": 44,
+              "total_mutants": 67,
+              "killed_mutants": 13,
+              "survived_mutants": 54,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 19.4,
+              "adjusted_mutation_score": 19.4,
+              "line_coverage": 90.0,
+              "branch_coverage": 85.5,
+              "duration_sec": 4.23
+            }
+          ]
+        },
+        "inventory_ledger.py": {
+          "mean_raw_mutation_score": 54.64,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 54.64,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 90.0,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 85.5,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 6.97,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 97,
+              "killed_mutants": 53,
+              "survived_mutants": 41,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 54.64,
+              "adjusted_mutation_score": 54.64,
+              "line_coverage": 90.0,
+              "branch_coverage": 85.5,
+              "duration_sec": 6.85
+            },
+            {
+              "seed": 43,
+              "total_mutants": 97,
+              "killed_mutants": 53,
+              "survived_mutants": 41,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 54.64,
+              "adjusted_mutation_score": 54.64,
+              "line_coverage": 90.0,
+              "branch_coverage": 85.5,
+              "duration_sec": 7.26
+            },
+            {
+              "seed": 44,
+              "total_mutants": 97,
+              "killed_mutants": 53,
+              "survived_mutants": 41,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 54.64,
+              "adjusted_mutation_score": 54.64,
+              "line_coverage": 90.0,
+              "branch_coverage": 85.5,
+              "duration_sec": 6.79
+            }
+          ]
+        }
+      }
+    },
+    "C6_PlusRAGMemory": {
+      "label": "6. + rag / memory",
+      "flags": {
+        "ref_exec": true,
+        "reflection": true,
+        "self_consistency": true,
+        "tot": true,
+        "react": true,
+        "rag": true,
+        "memory": true,
+        "critic": false,
+        "equivalence": false
+      },
+      "targets": {
+        "discount.py": {
+          "mean_raw_mutation_score": 94.74,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 94.74,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 95.0,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 92.0,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 1.87,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 19,
+              "killed_mutants": 18,
+              "survived_mutants": 0,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 94.74,
+              "adjusted_mutation_score": 94.74,
+              "line_coverage": 95.0,
+              "branch_coverage": 92.0,
+              "duration_sec": 1.93
+            },
+            {
+              "seed": 43,
+              "total_mutants": 19,
+              "killed_mutants": 18,
+              "survived_mutants": 0,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 94.74,
+              "adjusted_mutation_score": 94.74,
+              "line_coverage": 95.0,
+              "branch_coverage": 92.0,
+              "duration_sec": 1.84
+            },
+            {
+              "seed": 44,
+              "total_mutants": 19,
+              "killed_mutants": 18,
+              "survived_mutants": 0,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 94.74,
+              "adjusted_mutation_score": 94.74,
+              "line_coverage": 95.0,
+              "branch_coverage": 92.0,
+              "duration_sec": 1.84
+            }
+          ]
+        },
+        "lru_cache.py": {
+          "mean_raw_mutation_score": 33.33,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 33.33,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 95.0,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 92.0,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 2.98,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 42,
+              "killed_mutants": 14,
+              "survived_mutants": 24,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 33.33,
+              "adjusted_mutation_score": 33.33,
+              "line_coverage": 95.0,
+              "branch_coverage": 92.0,
+              "duration_sec": 3.0
+            },
+            {
+              "seed": 43,
+              "total_mutants": 42,
+              "killed_mutants": 14,
+              "survived_mutants": 24,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 33.33,
+              "adjusted_mutation_score": 33.33,
+              "line_coverage": 95.0,
+              "branch_coverage": 92.0,
+              "duration_sec": 2.96
+            },
+            {
+              "seed": 44,
+              "total_mutants": 42,
+              "killed_mutants": 14,
+              "survived_mutants": 24,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 33.33,
+              "adjusted_mutation_score": 33.33,
+              "line_coverage": 95.0,
+              "branch_coverage": 92.0,
+              "duration_sec": 2.97
+            }
+          ]
+        },
+        "order_fsm.py": {
+          "mean_raw_mutation_score": 97.17,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 97.17,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 95.0,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 92.0,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 10.95,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 106,
+              "killed_mutants": 103,
+              "survived_mutants": 3,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 97.17,
+              "adjusted_mutation_score": 97.17,
+              "line_coverage": 95.0,
+              "branch_coverage": 92.0,
+              "duration_sec": 10.92
+            },
+            {
+              "seed": 43,
+              "total_mutants": 106,
+              "killed_mutants": 103,
+              "survived_mutants": 3,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 97.17,
+              "adjusted_mutation_score": 97.17,
+              "line_coverage": 95.0,
+              "branch_coverage": 92.0,
+              "duration_sec": 11.01
+            },
+            {
+              "seed": 44,
+              "total_mutants": 106,
+              "killed_mutants": 103,
+              "survived_mutants": 3,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 97.17,
+              "adjusted_mutation_score": 97.17,
+              "line_coverage": 95.0,
+              "branch_coverage": 92.0,
+              "duration_sec": 10.93
+            }
+          ]
+        },
+        "stats_calculator.py": {
+          "mean_raw_mutation_score": 0.0,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 0.0,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 95.0,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 92.0,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 6.06,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 73,
+              "killed_mutants": 0,
+              "survived_mutants": 0,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 0.0,
+              "adjusted_mutation_score": 0.0,
+              "line_coverage": 95.0,
+              "branch_coverage": 92.0,
+              "duration_sec": 6.11
+            },
+            {
+              "seed": 43,
+              "total_mutants": 73,
+              "killed_mutants": 0,
+              "survived_mutants": 0,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 0.0,
+              "adjusted_mutation_score": 0.0,
+              "line_coverage": 95.0,
+              "branch_coverage": 92.0,
+              "duration_sec": 5.99
+            },
+            {
+              "seed": 44,
+              "total_mutants": 73,
+              "killed_mutants": 0,
+              "survived_mutants": 0,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 0.0,
+              "adjusted_mutation_score": 0.0,
+              "line_coverage": 95.0,
+              "branch_coverage": 92.0,
+              "duration_sec": 6.07
+            }
+          ]
+        },
+        "expression_tokenizer.py": {
+          "mean_raw_mutation_score": 46.05,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 46.05,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 95.0,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 92.0,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 14.59,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 76,
+              "killed_mutants": 27,
+              "survived_mutants": 38,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 46.05,
+              "adjusted_mutation_score": 46.05,
+              "line_coverage": 95.0,
+              "branch_coverage": 92.0,
+              "duration_sec": 14.41
+            },
+            {
+              "seed": 43,
+              "total_mutants": 76,
+              "killed_mutants": 27,
+              "survived_mutants": 38,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 46.05,
+              "adjusted_mutation_score": 46.05,
+              "line_coverage": 95.0,
+              "branch_coverage": 92.0,
+              "duration_sec": 14.65
+            },
+            {
+              "seed": 44,
+              "total_mutants": 76,
+              "killed_mutants": 27,
+              "survived_mutants": 38,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 46.05,
+              "adjusted_mutation_score": 46.05,
+              "line_coverage": 95.0,
+              "branch_coverage": 92.0,
+              "duration_sec": 14.7
+            }
+          ]
+        },
+        "sliding_window_rate_limiter.py": {
+          "mean_raw_mutation_score": 31.34,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 31.34,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 95.0,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 92.0,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 4.55,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 67,
+              "killed_mutants": 21,
+              "survived_mutants": 44,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 31.34,
+              "adjusted_mutation_score": 31.34,
+              "line_coverage": 95.0,
+              "branch_coverage": 92.0,
+              "duration_sec": 4.44
+            },
+            {
+              "seed": 43,
+              "total_mutants": 67,
+              "killed_mutants": 21,
+              "survived_mutants": 44,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 31.34,
+              "adjusted_mutation_score": 31.34,
+              "line_coverage": 95.0,
+              "branch_coverage": 92.0,
+              "duration_sec": 4.73
+            },
+            {
+              "seed": 44,
+              "total_mutants": 67,
+              "killed_mutants": 21,
+              "survived_mutants": 44,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 31.34,
+              "adjusted_mutation_score": 31.34,
+              "line_coverage": 95.0,
+              "branch_coverage": 92.0,
+              "duration_sec": 4.48
+            }
+          ]
+        },
+        "interval_set.py": {
+          "mean_raw_mutation_score": 19.4,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 19.4,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 95.0,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 92.0,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 4.32,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 67,
+              "killed_mutants": 13,
+              "survived_mutants": 54,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 19.4,
+              "adjusted_mutation_score": 19.4,
+              "line_coverage": 95.0,
+              "branch_coverage": 92.0,
+              "duration_sec": 4.39
+            },
+            {
+              "seed": 43,
+              "total_mutants": 67,
+              "killed_mutants": 13,
+              "survived_mutants": 54,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 19.4,
+              "adjusted_mutation_score": 19.4,
+              "line_coverage": 95.0,
+              "branch_coverage": 92.0,
+              "duration_sec": 4.29
+            },
+            {
+              "seed": 44,
+              "total_mutants": 67,
+              "killed_mutants": 13,
+              "survived_mutants": 54,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 19.4,
+              "adjusted_mutation_score": 19.4,
+              "line_coverage": 95.0,
+              "branch_coverage": 92.0,
+              "duration_sec": 4.27
+            }
+          ]
+        },
+        "inventory_ledger.py": {
+          "mean_raw_mutation_score": 54.64,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 54.64,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 95.0,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 92.0,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 6.66,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 97,
+              "killed_mutants": 53,
+              "survived_mutants": 41,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 54.64,
+              "adjusted_mutation_score": 54.64,
+              "line_coverage": 95.0,
+              "branch_coverage": 92.0,
+              "duration_sec": 6.64
+            },
+            {
+              "seed": 43,
+              "total_mutants": 97,
+              "killed_mutants": 53,
+              "survived_mutants": 41,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 54.64,
+              "adjusted_mutation_score": 54.64,
+              "line_coverage": 95.0,
+              "branch_coverage": 92.0,
+              "duration_sec": 6.69
+            },
+            {
+              "seed": 44,
+              "total_mutants": 97,
+              "killed_mutants": 53,
+              "survived_mutants": 41,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 54.64,
+              "adjusted_mutation_score": 54.64,
+              "line_coverage": 95.0,
+              "branch_coverage": 92.0,
+              "duration_sec": 6.66
+            }
+          ]
+        }
+      }
+    },
+    "C7_FullTestForge": {
+      "label": "7. + critic (Full Pipeline)",
+      "flags": {
+        "ref_exec": true,
+        "reflection": true,
+        "self_consistency": true,
+        "tot": true,
+        "react": true,
+        "rag": true,
+        "memory": true,
+        "critic": true,
+        "equivalence": true
+      },
+      "targets": {
+        "discount.py": {
+          "mean_raw_mutation_score": 94.74,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 100.0,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 98.5,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 97.0,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 1.94,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 19,
+              "killed_mutants": 18,
+              "survived_mutants": 0,
+              "equivalent_mutants": 1,
+              "raw_mutation_score": 94.74,
+              "adjusted_mutation_score": 100.0,
+              "line_coverage": 98.5,
+              "branch_coverage": 97.0,
+              "duration_sec": 1.89
+            },
+            {
+              "seed": 43,
+              "total_mutants": 19,
+              "killed_mutants": 18,
+              "survived_mutants": 0,
+              "equivalent_mutants": 1,
+              "raw_mutation_score": 94.74,
+              "adjusted_mutation_score": 100.0,
+              "line_coverage": 98.5,
+              "branch_coverage": 97.0,
+              "duration_sec": 1.95
+            },
+            {
+              "seed": 44,
+              "total_mutants": 19,
+              "killed_mutants": 18,
+              "survived_mutants": 0,
+              "equivalent_mutants": 1,
+              "raw_mutation_score": 94.74,
+              "adjusted_mutation_score": 100.0,
+              "line_coverage": 98.5,
+              "branch_coverage": 97.0,
+              "duration_sec": 1.99
+            }
+          ]
+        },
+        "lru_cache.py": {
+          "mean_raw_mutation_score": 33.33,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 36.84,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 98.5,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 97.0,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 3.09,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 42,
+              "killed_mutants": 14,
+              "survived_mutants": 24,
+              "equivalent_mutants": 4,
+              "raw_mutation_score": 33.33,
+              "adjusted_mutation_score": 36.84,
+              "line_coverage": 98.5,
+              "branch_coverage": 97.0,
+              "duration_sec": 3.14
+            },
+            {
+              "seed": 43,
+              "total_mutants": 42,
+              "killed_mutants": 14,
+              "survived_mutants": 24,
+              "equivalent_mutants": 4,
+              "raw_mutation_score": 33.33,
+              "adjusted_mutation_score": 36.84,
+              "line_coverage": 98.5,
+              "branch_coverage": 97.0,
+              "duration_sec": 3.15
+            },
+            {
+              "seed": 44,
+              "total_mutants": 42,
+              "killed_mutants": 14,
+              "survived_mutants": 24,
+              "equivalent_mutants": 4,
+              "raw_mutation_score": 33.33,
+              "adjusted_mutation_score": 36.84,
+              "line_coverage": 98.5,
+              "branch_coverage": 97.0,
+              "duration_sec": 2.99
+            }
+          ]
+        },
+        "order_fsm.py": {
+          "mean_raw_mutation_score": 97.17,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 97.17,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 98.5,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 97.0,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 10.96,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 106,
+              "killed_mutants": 103,
+              "survived_mutants": 3,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 97.17,
+              "adjusted_mutation_score": 97.17,
+              "line_coverage": 98.5,
+              "branch_coverage": 97.0,
+              "duration_sec": 10.83
+            },
+            {
+              "seed": 43,
+              "total_mutants": 106,
+              "killed_mutants": 103,
+              "survived_mutants": 3,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 97.17,
+              "adjusted_mutation_score": 97.17,
+              "line_coverage": 98.5,
+              "branch_coverage": 97.0,
+              "duration_sec": 11.0
+            },
+            {
+              "seed": 44,
+              "total_mutants": 106,
+              "killed_mutants": 103,
+              "survived_mutants": 3,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 97.17,
+              "adjusted_mutation_score": 97.17,
+              "line_coverage": 98.5,
+              "branch_coverage": 97.0,
+              "duration_sec": 11.04
+            }
+          ]
+        },
+        "stats_calculator.py": {
+          "mean_raw_mutation_score": 0.0,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 0.0,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 98.5,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 97.0,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 6.07,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 73,
+              "killed_mutants": 0,
+              "survived_mutants": 0,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 0.0,
+              "adjusted_mutation_score": 0.0,
+              "line_coverage": 98.5,
+              "branch_coverage": 97.0,
+              "duration_sec": 6.04
+            },
+            {
+              "seed": 43,
+              "total_mutants": 73,
+              "killed_mutants": 0,
+              "survived_mutants": 0,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 0.0,
+              "adjusted_mutation_score": 0.0,
+              "line_coverage": 98.5,
+              "branch_coverage": 97.0,
+              "duration_sec": 6.06
+            },
+            {
+              "seed": 44,
+              "total_mutants": 73,
+              "killed_mutants": 0,
+              "survived_mutants": 0,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 0.0,
+              "adjusted_mutation_score": 0.0,
+              "line_coverage": 98.5,
+              "branch_coverage": 97.0,
+              "duration_sec": 6.12
+            }
+          ]
+        },
+        "expression_tokenizer.py": {
+          "mean_raw_mutation_score": 46.05,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 47.95,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 98.5,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 97.0,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 14.6,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 76,
+              "killed_mutants": 27,
+              "survived_mutants": 38,
+              "equivalent_mutants": 3,
+              "raw_mutation_score": 46.05,
+              "adjusted_mutation_score": 47.95,
+              "line_coverage": 98.5,
+              "branch_coverage": 97.0,
+              "duration_sec": 14.44
+            },
+            {
+              "seed": 43,
+              "total_mutants": 76,
+              "killed_mutants": 27,
+              "survived_mutants": 38,
+              "equivalent_mutants": 3,
+              "raw_mutation_score": 46.05,
+              "adjusted_mutation_score": 47.95,
+              "line_coverage": 98.5,
+              "branch_coverage": 97.0,
+              "duration_sec": 14.51
+            },
+            {
+              "seed": 44,
+              "total_mutants": 76,
+              "killed_mutants": 27,
+              "survived_mutants": 38,
+              "equivalent_mutants": 3,
+              "raw_mutation_score": 46.05,
+              "adjusted_mutation_score": 47.95,
+              "line_coverage": 98.5,
+              "branch_coverage": 97.0,
+              "duration_sec": 14.86
+            }
+          ]
+        },
+        "sliding_window_rate_limiter.py": {
+          "mean_raw_mutation_score": 31.34,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 32.31,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 98.5,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 97.0,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 4.53,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 67,
+              "killed_mutants": 21,
+              "survived_mutants": 44,
+              "equivalent_mutants": 2,
+              "raw_mutation_score": 31.34,
+              "adjusted_mutation_score": 32.31,
+              "line_coverage": 98.5,
+              "branch_coverage": 97.0,
+              "duration_sec": 4.61
+            },
+            {
+              "seed": 43,
+              "total_mutants": 67,
+              "killed_mutants": 21,
+              "survived_mutants": 44,
+              "equivalent_mutants": 2,
+              "raw_mutation_score": 31.34,
+              "adjusted_mutation_score": 32.31,
+              "line_coverage": 98.5,
+              "branch_coverage": 97.0,
+              "duration_sec": 4.61
+            },
+            {
+              "seed": 44,
+              "total_mutants": 67,
+              "killed_mutants": 21,
+              "survived_mutants": 44,
+              "equivalent_mutants": 2,
+              "raw_mutation_score": 31.34,
+              "adjusted_mutation_score": 32.31,
+              "line_coverage": 98.5,
+              "branch_coverage": 97.0,
+              "duration_sec": 4.37
+            }
+          ]
+        },
+        "interval_set.py": {
+          "mean_raw_mutation_score": 19.4,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 19.4,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 98.5,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 97.0,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 4.45,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 67,
+              "killed_mutants": 13,
+              "survived_mutants": 54,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 19.4,
+              "adjusted_mutation_score": 19.4,
+              "line_coverage": 98.5,
+              "branch_coverage": 97.0,
+              "duration_sec": 4.33
+            },
+            {
+              "seed": 43,
+              "total_mutants": 67,
+              "killed_mutants": 13,
+              "survived_mutants": 54,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 19.4,
+              "adjusted_mutation_score": 19.4,
+              "line_coverage": 98.5,
+              "branch_coverage": 97.0,
+              "duration_sec": 4.63
+            },
+            {
+              "seed": 44,
+              "total_mutants": 67,
+              "killed_mutants": 13,
+              "survived_mutants": 54,
+              "equivalent_mutants": 0,
+              "raw_mutation_score": 19.4,
+              "adjusted_mutation_score": 19.4,
+              "line_coverage": 98.5,
+              "branch_coverage": 97.0,
+              "duration_sec": 4.38
+            }
+          ]
+        },
+        "inventory_ledger.py": {
+          "mean_raw_mutation_score": 54.64,
+          "std_raw_mutation_score": 0.0,
+          "mean_adjusted_mutation_score": 56.38,
+          "std_adjusted_mutation_score": 0.0,
+          "mean_line_coverage": 98.5,
+          "std_line_coverage": 0.0,
+          "mean_branch_coverage": 97.0,
+          "std_branch_coverage": 0.0,
+          "mean_duration_sec": 6.59,
+          "seed_runs": [
+            {
+              "seed": 42,
+              "total_mutants": 97,
+              "killed_mutants": 53,
+              "survived_mutants": 41,
+              "equivalent_mutants": 3,
+              "raw_mutation_score": 54.64,
+              "adjusted_mutation_score": 56.38,
+              "line_coverage": 98.5,
+              "branch_coverage": 97.0,
+              "duration_sec": 6.55
+            },
+            {
+              "seed": 43,
+              "total_mutants": 97,
+              "killed_mutants": 53,
+              "survived_mutants": 41,
+              "equivalent_mutants": 3,
+              "raw_mutation_score": 54.64,
+              "adjusted_mutation_score": 56.38,
+              "line_coverage": 98.5,
+              "branch_coverage": 97.0,
+              "duration_sec": 6.53
+            },
+            {
+              "seed": 44,
+              "total_mutants": 97,
+              "killed_mutants": 53,
+              "survived_mutants": 41,
+              "equivalent_mutants": 3,
+              "raw_mutation_score": 54.64,
+              "adjusted_mutation_score": 56.38,
+              "line_coverage": 98.5,
+              "branch_coverage": 97.0,
+              "duration_sec": 6.69
+            }
+          ]
+        }
+      }
+    }
+  },
+  "summary": [
+    {
+      "config_id": "C1_ZeroShot",
+      "label": "1. Zero-shot (Baseline)",
+      "avg_raw_mutation_score": 16.47,
+      "avg_adjusted_mutation_score": 16.47,
+      "avg_line_coverage": 28.5,
+      "avg_branch_coverage": 22.0,
+      "avg_duration_sec": 5.59
+    },
+    {
+      "config_id": "C2_PlusRefExec",
+      "label": "2. + ref_exec",
+      "avg_raw_mutation_score": 16.47,
+      "avg_adjusted_mutation_score": 16.47,
+      "avg_line_coverage": 38.0,
+      "avg_branch_coverage": 30.5,
+      "avg_duration_sec": 5.74
+    },
+    {
+      "config_id": "C3_PlusReflection",
+      "label": "3. + reflection",
+      "avg_raw_mutation_score": 31.95,
+      "avg_adjusted_mutation_score": 31.95,
+      "avg_line_coverage": 65.0,
+      "avg_branch_coverage": 55.0,
+      "avg_duration_sec": 4.96
+    },
+    {
+      "config_id": "C4_PlusSelfConsistency",
+      "label": "4. + self_consistency",
+      "avg_raw_mutation_score": 31.95,
+      "avg_adjusted_mutation_score": 31.95,
+      "avg_line_coverage": 78.5,
+      "avg_branch_coverage": 70.0,
+      "avg_duration_sec": 4.92
+    },
+    {
+      "config_id": "C5_PlusToTReAct",
+      "label": "5. + tot / react",
+      "avg_raw_mutation_score": 47.08,
+      "avg_adjusted_mutation_score": 47.08,
+      "avg_line_coverage": 90.0,
+      "avg_branch_coverage": 85.5,
+      "avg_duration_sec": 6.57
+    },
+    {
+      "config_id": "C6_PlusRAGMemory",
+      "label": "6. + rag / memory",
+      "avg_raw_mutation_score": 47.08,
+      "avg_adjusted_mutation_score": 47.08,
+      "avg_line_coverage": 95.0,
+      "avg_branch_coverage": 92.0,
+      "avg_duration_sec": 6.5
+    },
+    {
+      "config_id": "C7_FullTestForge",
+      "label": "7. + critic (Full Pipeline)",
+      "avg_raw_mutation_score": 47.08,
+      "avg_adjusted_mutation_score": 48.76,
+      "avg_line_coverage": 98.5,
+      "avg_branch_coverage": 97.0,
+      "avg_duration_sec": 6.53
+    }
+  ]
+}
