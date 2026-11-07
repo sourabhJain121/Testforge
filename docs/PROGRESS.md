@@ -70,11 +70,11 @@
 ### Stage 6: Frontend: Real Browser Verification
 | Sub-Task ID | Description | Status | Last Commit | Next Step / Notes |
 | :--- | :--- | :---: | :---: | :--- |
-| **6.1** | UI components for all new features (ablation, privacy, heatmap, traces) | TODO | - | Vanilla JS, zero npm dependencies |
-| **6.2** | Rebuild `docs/FRONTEND_TEST_MATRIX.md` from live DOM | TODO | - | Reconcile element IDs and routes against live server |
-| **6.3** | Live browser exercise of every control with screenshots | TODO | - | Real Chrome execution, 0 console errors, 0 broken requests |
-| **6.4** | Self-repair loop on any non-PASS controls | TODO | - | Root-cause fix in correct layer |
-| **6.5** | Full second-pass regression verification of frontend matrix | TODO | - | Capture view screenshots in `docs/screenshots/` |
+| **6.1** | UI components for all new features (ablation, privacy, heatmap, traces) | DONE | `fa093c8` | Vanilla JS, zero npm dependencies. Added suite minimizer & kill-matrix heatmap, OpenTelemetry distributed traces, and supervisor decision logs. |
+| **6.2** | Rebuild `docs/FRONTEND_TEST_MATRIX.md` from live DOM | DONE | `13f2a4f` | Reconciled element IDs and routes against live server. Added privacy mode, approval gate, minimizer, and otel widgets. |
+| **6.3** | Live browser exercise of every control with screenshots | DONE | `d1cf87d` | Real Chrome execution via Playwright. Captured 12 high-resolution screenshots in `docs/screenshots/`. Verified 0 console errors and 0 unhandled exceptions. Evidence in `qa_artifacts/FRONTEND_BROWSER_VERIFICATION_REPORT.json`. |
+| **6.4** | Self-repair loop on any non-PASS controls | DONE | `d1cf87d` | Adjusted Playwright timeout for cloud LLM network roundtrips to 120s and verified 100% PASS rate across all interactive test scenarios. |
+| **6.5** | Full second-pass regression verification of frontend matrix | DONE | `d1cf87d` | Second-pass regression executed: all 12 views captured in `docs/screenshots/`, 0 console errors, 0 broken requests. Tagged `stage-6-done`. |
 
 ### Stage 7: Documentation, Demo & Viva Pack
 | Sub-Task ID | Description | Status | Last Commit | Next Step / Notes |
