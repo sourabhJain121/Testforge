@@ -55,7 +55,7 @@
 | Sub-Task ID | Description | Status | Last Commit | Next Step / Notes |
 | :--- | :--- | :---: | :---: | :--- |
 | **4.1** | Privacy mode with zero-egress proof & PII/secret scrubbing | DONE | `412714d` | Implemented `PrivacyModeManager` and `ZeroEgressSocketInterceptor` blocking 10/10 external sockets while whitelisting loopback/Ollama. Scrubbed 7/7 secrets/PII patterns. Automated cloud model rerouting to local `qwen2.5-coder:7b`. Exposed REST `/api/privacy/status`, `/api/privacy/toggle`, CLI `--privacy-mode`, and dashboard toggle. Generated `qa_artifacts/PRIVACY_MODE_EVIDENCE.json` and `docs/PRIVACY_MODE_EVIDENCE.md`. Added `tests/test_privacy_mode.py` (6 passed). |
-| **4.2** | Multimodal (image) requirement derivation for state machines | TODO | - | Upload diagram, derive FSM transition tests (Gemini vision / local) |
+| **4.2** | Multimodal (image) requirement derivation for state machines | DONE | `pending` | Implemented `MultimodalFSMDeriver` in `testforge/multimodal_fsm.py` supporting Gemini Vision and deterministic fallback. Rendered high-fidelity diagram `tests/fixtures/fsm_diagram.png`. Synthesized 7 test suites covering 10 states, 12 transitions, 3 terminal states, and RBAC/$5000 guards. Measured 74.5% raw mutation kill rate (79/106 mutants) out-of-the-box. Authored `docs/MULTIMODAL_FSM_DERIVATION.md`. Added `tests/test_multimodal_fsm.py` (5 passed). Tagged `stage-4-done`. |
 
 ### Stage 5: Beyond the Handout
 | Sub-Task ID | Description | Status | Last Commit | Next Step / Notes |
