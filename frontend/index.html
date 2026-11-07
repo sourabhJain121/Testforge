@@ -960,9 +960,40 @@
                 <button class="btn btn-outline btn-icon" id="btn-download-suite" data-alias="btn-download-hardened-suite">💾 Download</button>
                 <button class="btn btn-outline btn-icon" id="btn-download-junit" disabled title="Download standard JUnit XML test report (GAP-010)">⬇ JUnit XML</button>
                 <button class="btn btn-outline btn-icon" id="btn-download-sarif" disabled title="Download OASIS SARIF v2.1.0 security report (GAP-010)">⬇ SARIF Report</button>
+                <button class="btn btn-warning btn-icon" id="btn-request-repo-write" title="Request Human Approval to write hardened suite to repo">🛡 Request Repo Write</button>
               </div>
             </div>
             <pre class="code-block"><code id="hardened-suite-code">// Hardened tests will appear here after completion.</code></pre>
+          </div>
+
+          <!-- Human Approval Gate Panel (Sub-Task 3.3) -->
+          <div class="glass-panel panel-padded" id="approval-gate-panel" style="margin-top: 1.5rem;">
+            <div class="panel-header-flex">
+              <div>
+                <h4 class="metric-row-title"><span class="icon">🛡️</span> Human Approval Gate (Repo Writes & PR Dispatch)</h4>
+                <p class="panel-desc">Mandatory human sign-off required before writing hardened test suites to disk or opening PRs.</p>
+              </div>
+              <div class="btn-group">
+                <button class="btn btn-secondary btn-sm" id="btn-refresh-approvals">🔄 Refresh</button>
+              </div>
+            </div>
+            <div class="table-responsive" style="margin-top: 1rem;">
+              <table class="data-table" id="approval-requests-table">
+                <thead>
+                  <tr>
+                    <th>Request ID</th>
+                    <th>Action</th>
+                    <th>Target Path</th>
+                    <th>Status</th>
+                    <th>Reviewer</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="approval-requests-body">
+                  <tr><td colspan="6" class="text-center text-muted">No pending approval requests.</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
 
         </div>

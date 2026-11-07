@@ -2949,6 +2949,128 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Human Approval Gate Handlers (Sub-Task 3.3)
+  const btnRequestRepoWrite = document.getElementById('btn-request-repo-write');
+  const btnRefreshApprovals = document.getElementById('btn-refresh-approvals');
+  const approvalRequestsBody = document.getElementById('approval-requests-body');
+
+  async function loadApprovalRequests() {
+    if (!approvalRequestsBody) return;
+    try {
+      const res = await fetch('/api/approval/requests');
+      const data = await res.json();
+      const reqs = data.requests || [];
+      if (reqs.length === 0) {
+        approvalRequestsBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No pending approval requests.</td></tr>';
+        return;
+      }
+      approvalRequestsBody.innerHTML = reqs.map(r => {
+        const isPending = r.status === 'PENDING';
+        const isApproved = r.status === 'APPROVED';
+        const statusBadge = isPending 
+          ? '<span class="badge badge-warning">⏳ PENDING</span>'
+          : (isApproved ? '<span class="badge badge-success">✓ APPROVED</span>' : '<span class="badge badge-danger">✗ REJECTED</span>');
+        
+        const actionButtons = isPending ? `
+          <button class="btn btn-sm btn-success btn-approve-req" data-id="${r.request_id}">✓ Approve</button>
+          <button class="btn btn-sm btn-danger btn-reject-req" data-id="${r.request_id}">✗ Reject</button>
+        ` : (isApproved ? `
+          <button class="btn btn-sm btn-primary btn-execute-req" data-id="${r.request_id}">🚀 Execute Write</button>
+        ` : '<span class="text-muted">Closed</span>');
+
+        return `
+          <tr>
+            <td><code>${r.request_id}</code></td>
+            <td><strong>${r.action_type}</strong></td>
+            <td><code>${r.target_path}</code></td>
+            <td>${statusBadge}</td>
+            <td>${r.reviewer || 'N/A'}</td>
+            <td>${actionButtons}</td>
+          </tr>
+        `;
+      }).join('');
+
+      // Bind dynamic buttons
+      approvalRequestsBody.querySelectorAll('.btn-approve-req').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.getAttribute('data-id');
+          await fetch(`/api/approval/requests/${id}/approve`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ reviewer: 'dashboard_operator', comments: 'Approved via web UI' })
+          });
+          showToast(`Approval request [${id}] APPROVED`, 'success');
+          loadApprovalRequests();
+        });
+      });
+
+      approvalRequestsBody.querySelectorAll('.btn-reject-req').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.getAttribute('data-id');
+          await fetch(`/api/approval/requests/${id}/reject`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ reviewer: 'dashboard_operator', comments: 'Rejected via web UI' })
+          });
+          showToast(`Approval request [${id}] REJECTED`, 'warning');
+          loadApprovalRequests();
+        });
+      });
+
+      approvalRequestsBody.querySelectorAll('.btn-execute-req').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.getAttribute('data-id');
+          const res = await fetch(`/api/approval/requests/${id}/execute`, { method: 'POST' });
+          if (res.ok) {
+            showToast(`Approved write executed for [${id}]!`, 'success');
+          } else {
+            const err = await res.json();
+            showToast(err.detail || 'Execute write failed', 'error');
+          }
+          loadApprovalRequests();
+        });
+      });
+    } catch (err) {
+      console.warn('Failed to load approval requests:', err);
+    }
+  }
+
+  if (btnRefreshApprovals) {
+    btnRefreshApprovals.addEventListener('click', () => {
+      loadApprovalRequests();
+      showToast('Refreshed approval requests.', 'info');
+    });
+  }
+
+  if (btnRequestRepoWrite) {
+    btnRequestRepoWrite.addEventListener('click', async () => {
+      const code = dom.hardenedSuiteCode ? dom.hardenedSuiteCode.textContent : '';
+      if (!code || code.includes('// Hardened tests will appear here')) {
+        showToast('No hardened test suite available to request write for.', 'warning');
+        return;
+      }
+      const targetPath = state.targetPath ? `tests/test_${state.targetFileName || 'hardened'}.py` : 'tests/test_hardened_suite.py';
+      try {
+        const res = await fetch('/api/approval/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            job_id: state.hardening.currentJobId || 'job_manual',
+            action_type: 'REPO_WRITE',
+            target_path: targetPath,
+            proposed_content: code,
+            diff_preview: `Write hardened suite (${code.length} bytes) to ${targetPath}`
+          })
+        });
+        const data = await res.json();
+        showToast(`Approval request [${data.request_id}] created for repo write!`, 'success');
+        loadApprovalRequests();
+      } catch (err) {
+        showToast(`Failed to create approval request: ${err.message}`, 'error');
+      }
+    });
+  }
+
   // Interactive KPI Hover / Toggle Bindings (GAP-003, GAP-005)
   if (dom.kpiTqsCard && dom.tqsBreakdownTooltip) {
     let tqsPinned = false;
@@ -4824,13 +4946,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // 7. Load multi-target benchmark summary if available (GAP-009)
     loadMultiTargetBenchmark();
 
-    // 8. Expose test helpers for QA automation
+    // 8. Load pending Human Approval Gate requests (Sub-Task 3.3)
+    loadApprovalRequests();
+
+    // 9. Expose test helpers for QA automation
     window.__testforge = {
       showToast,
       switchTab,
       updateTargetBanner,
       renderHardeningResults,
       loadMultiTargetBenchmark,
+      loadApprovalRequests,
       renderMultiTargetBenchmark,
       runMultiTargetBenchmarkWorkflow,
       fetchWiretap,

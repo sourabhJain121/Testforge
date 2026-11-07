@@ -1514,6 +1514,109 @@ async def get_hardened_suite():
 
 
 # --------------------------------------------------------------------------
+# Human Approval Gate Endpoints (Sub-Task 3.3)
+# --------------------------------------------------------------------------
+
+class ApprovalCreatePayload(BaseModel):
+    job_id: str = "default_job"
+    action_type: str = "REPO_WRITE"
+    target_path: str
+    proposed_content: str
+    diff_preview: str = ""
+
+
+class ApprovalDecisionPayload(BaseModel):
+    reviewer: str = "human_operator"
+    comments: Optional[str] = None
+
+
+@app.get("/api/approval/requests")
+async def list_approval_requests(status: Optional[str] = None):
+    """Lists human approval requests for repository writes and PRs."""
+    from testforge.approval_gate import ApprovalGateManager
+    mgr = ApprovalGateManager.get_instance()
+    reqs = mgr.list_requests(status=status)
+    from dataclasses import asdict
+    return {"requests": [asdict(r) for r in reqs], "total": len(reqs)}
+
+
+@app.get("/api/approval/requests/{request_id}")
+async def get_approval_request(request_id: str):
+    """Retrieves a specific human approval request."""
+    from testforge.approval_gate import ApprovalGateManager
+    mgr = ApprovalGateManager.get_instance()
+    req = mgr.get_request(request_id)
+    if not req:
+        raise HTTPException(status_code=404, detail=f"Approval request '{request_id}' not found.")
+    from dataclasses import asdict
+    return asdict(req)
+
+
+@app.post("/api/approval/create")
+async def create_approval_request(payload: ApprovalCreatePayload):
+    """Creates a new human approval request in PENDING state."""
+    from testforge.approval_gate import ApprovalGateManager
+    mgr = ApprovalGateManager.get_instance()
+    req = mgr.create_request(
+        job_id=payload.job_id,
+        action_type=payload.action_type,
+        target_path=payload.target_path,
+        proposed_content=payload.proposed_content,
+        diff_preview=payload.diff_preview,
+    )
+    from dataclasses import asdict
+    return asdict(req)
+
+
+@app.post("/api/approval/requests/{request_id}/approve")
+async def approve_request_endpoint(request_id: str, payload: Optional[ApprovalDecisionPayload] = None):
+    """Human approval sign-off allowing write to repo or PR dispatch."""
+    from testforge.approval_gate import ApprovalGateManager
+    mgr = ApprovalGateManager.get_instance()
+    reviewer = payload.reviewer if payload else "human_operator"
+    comments = payload.comments if payload else "Approved by human operator."
+    try:
+        req = mgr.approve_request(request_id, reviewer=reviewer, comments=comments)
+        from dataclasses import asdict
+        return asdict(req)
+    except KeyError:
+        raise HTTPException(status_code=404, detail=f"Approval request '{request_id}' not found.")
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/api/approval/requests/{request_id}/reject")
+async def reject_request_endpoint(request_id: str, payload: Optional[ApprovalDecisionPayload] = None):
+    """Rejects a human approval request, preventing any write actions."""
+    from testforge.approval_gate import ApprovalGateManager
+    mgr = ApprovalGateManager.get_instance()
+    reviewer = payload.reviewer if payload else "human_operator"
+    reason = payload.comments if payload else "Rejected by human operator."
+    try:
+        req = mgr.reject_request(request_id, reviewer=reviewer, reason=reason)
+        from dataclasses import asdict
+        return asdict(req)
+    except KeyError:
+        raise HTTPException(status_code=404, detail=f"Approval request '{request_id}' not found.")
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/api/approval/requests/{request_id}/execute")
+async def execute_approved_write_endpoint(request_id: str):
+    """Executes the file write to disk. Blocked with 403 unless approved."""
+    from testforge.approval_gate import ApprovalGateManager
+    mgr = ApprovalGateManager.get_instance()
+    try:
+        result = mgr.execute_approved_write(request_id)
+        return result
+    except KeyError:
+        raise HTTPException(status_code=404, detail=f"Approval request '{request_id}' not found.")
+    except PermissionError as e:
+        raise HTTPException(status_code=403, detail=str(e))
+
+
+# --------------------------------------------------------------------------
 # Checkpoint Persistence & Recovery Endpoints
 # --------------------------------------------------------------------------
 

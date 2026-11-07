@@ -607,6 +607,18 @@ class _ASTSecurityVisitor(ast.NodeVisitor):
                             node_type="Import",
                         )
                     )
+            elif base_mod in ("socket", "requests", "urllib", "http", "httpx", "aiohttp", "ftplib", "telnetlib"):
+                if self.policy.block_sockets:
+                    self.findings.append(
+                        RuleFinding(
+                            rule_id="SEC_AST_NETWORK_IMPORT",
+                            severity=SecuritySeverity.BLOCK,
+                            message=f"Import of outbound network module '{alias.name}' is prohibited in test sandbox.",
+                            line_number=getattr(node, "lineno", None),
+                            column_number=getattr(node, "col_offset", None),
+                            node_type="Import",
+                        )
+                    )
         self.generic_visit(node)
 
     def visit_ImportFrom(self, node: ast.ImportFrom):
@@ -646,4 +658,16 @@ class _ASTSecurityVisitor(ast.NodeVisitor):
                                     node_type="ImportFrom",
                                 )
                             )
+            elif base_mod in ("socket", "requests", "urllib", "http", "httpx", "aiohttp", "ftplib", "telnetlib"):
+                if self.policy.block_sockets:
+                    self.findings.append(
+                        RuleFinding(
+                            rule_id="SEC_AST_NETWORK_IMPORT",
+                            severity=SecuritySeverity.BLOCK,
+                            message=f"Direct import from network module '{node.module}' is prohibited in test sandbox.",
+                            line_number=getattr(node, "lineno", None),
+                            column_number=getattr(node, "col_offset", None),
+                            node_type="ImportFrom",
+                        )
+                    )
         self.generic_visit(node)
