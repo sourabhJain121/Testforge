@@ -1,0 +1,78 @@
+{
+  "timestamp": "2026-11-07T15:34:51Z",
+  "sub_task": "5.3",
+  "description": "Flaky-Test Detection (Randomized Execution Order Re-runs & Seed Control)",
+  "total_suites_evaluated": 5,
+  "total_tests_evaluated": 58,
+  "total_flaky_detected": 2,
+  "total_quarantined": 2,
+  "classification_accuracy_pct": 100.0,
+  "seeds_used": [
+    42,
+    101,
+    2024,
+    777,
+    9999
+  ],
+  "suites": [
+    {
+      "name": "Clean Canonical Suite (discount.py)",
+      "category": "BENIGN_DETERMINISTIC",
+      "total_tests": 23,
+      "flaky_detected": 0,
+      "expected_flaky": 0,
+      "quarantined_tests": [],
+      "deterministic_passes": 23,
+      "duration_sec": 1.146,
+      "passed": true
+    },
+    {
+      "name": "Clean Canonical Suite (stats_calculator.py)",
+      "category": "BENIGN_DETERMINISTIC",
+      "total_tests": 27,
+      "flaky_detected": 0,
+      "expected_flaky": 0,
+      "quarantined_tests": [],
+      "deterministic_passes": 27,
+      "duration_sec": 1.125,
+      "passed": true
+    },
+    {
+      "name": "Order-Dependent State Mutation Suite",
+      "category": "SYNTHETIC_FLAKY_ORDER",
+      "total_tests": 3,
+      "flaky_detected": 1,
+      "expected_flaky": 1,
+      "quarantined_tests": [
+        "test_dependent_action"
+      ],
+      "deterministic_passes": 2,
+      "duration_sec": 1.097,
+      "passed": true
+    },
+    {
+      "name": "Time-Dependent Race Condition Suite",
+      "category": "BENIGN_DETERMINISTIC",
+      "total_tests": 2,
+      "flaky_detected": 0,
+      "expected_flaky": 0,
+      "quarantined_tests": [],
+      "deterministic_passes": 2,
+      "duration_sec": 1.04,
+      "passed": true
+    },
+    {
+      "name": "State Leakage Singleton Suite",
+      "category": "SYNTHETIC_FLAKY_ORDER",
+      "total_tests": 3,
+      "flaky_detected": 1,
+      "expected_flaky": 1,
+      "quarantined_tests": [
+        "test_cache_starts_empty"
+      ],
+      "deterministic_passes": 2,
+      "duration_sec": 1.027,
+      "passed": true
+    }
+  ]
+}

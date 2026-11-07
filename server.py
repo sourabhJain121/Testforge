@@ -1728,6 +1728,30 @@ async def analyze_diff_endpoint(payload: DiffAnalyzeRequest):
 
 
 # --------------------------------------------------------------------------
+# Flaky-Test Detection & Quarantine Endpoints (Sub-Task 5.3)
+# --------------------------------------------------------------------------
+
+class FlakyDetectRequest(BaseModel):
+    test_code: str
+    target_source: str
+    target_module: Optional[str] = "target_module"
+    iterations: Optional[int] = 5
+
+
+@app.post("/api/flaky/detect")
+async def detect_flaky_tests_endpoint(payload: FlakyDetectRequest):
+    """Executes multi-seed randomized execution order analysis to flag flaky tests."""
+    from testforge.flaky_detector import FlakyTestDetector
+    detector = FlakyTestDetector(iterations=payload.iterations or 5)
+    result = detector.detect_flakiness(
+        test_code=payload.test_code,
+        target_source_code=payload.target_source,
+        target_module_name=payload.target_module or "target_module",
+    )
+    return result.model_dump()
+
+
+# --------------------------------------------------------------------------
 # Checkpoint Persistence & Recovery Endpoints
 # --------------------------------------------------------------------------
 
