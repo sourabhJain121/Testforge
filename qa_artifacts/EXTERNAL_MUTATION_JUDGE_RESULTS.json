@@ -1,0 +1,132 @@
+{
+  "metadata": {
+    "timestamp": "2026-11-07T14:11:11Z",
+    "external_judge": "mutmut v3.8.1 (LibCST based)",
+    "internal_judge": "TestForge ASTMutator v2.0 (AST based)",
+    "test_source": "Autonomous Pipeline Hardened Test Suites (qa_artifacts/test_hardened_*.py)"
+  },
+  "targets": {
+    "discount.py": {
+      "mutmut": {
+        "total_mutants": 22,
+        "killed_mutants": 20,
+        "survived_mutants": 2,
+        "raw_mutation_score": 90.91,
+        "duration_sec": 0.79,
+        "survived_mutant_ids": [
+          "target.x_calculate_discount__mutmut_1",
+          "target.x_calculate_discount__mutmut_22"
+        ]
+      },
+      "testforge": {
+        "total_mutants": 19,
+        "killed_mutants": 18,
+        "survived_mutants": 0,
+        "equivalent_mutants": 1,
+        "raw_mutation_score": 94.74,
+        "adjusted_mutation_score": 100.0,
+        "duration_sec": 1.48
+      },
+      "score_difference_raw": 3.83
+    },
+    "lru_cache.py": {
+      "mutmut": {
+        "total_mutants": 85,
+        "killed_mutants": 27,
+        "survived_mutants": 58,
+        "raw_mutation_score": 31.76,
+        "duration_sec": 1.15,
+        "survived_mutant_ids": [
+          "target.x\u01c1Node\u01c1__init____mutmut_1",
+          "target.x\u01c1Node\u01c1__init____mutmut_2",
+          "target.x\u01c1Node\u01c1__init____mutmut_3",
+          "target.x\u01c1Node\u01c1__init____mutmut_4",
+          "target.x\u01c1LRUCache\u01c1__init____mutmut_1",
+          "target.x\u01c1LRUCache\u01c1__init____mutmut_2",
+          "target.x\u01c1LRUCache\u01c1__init____mutmut_3",
+          "target.x\u01c1LRUCache\u01c1__init____mutmut_4",
+          "target.x\u01c1LRUCache\u01c1__init____mutmut_5",
+          "target.x\u01c1LRUCache\u01c1__init____mutmut_6"
+        ]
+      },
+      "testforge": {
+        "total_mutants": 42,
+        "killed_mutants": 13,
+        "survived_mutants": 25,
+        "equivalent_mutants": 4,
+        "raw_mutation_score": 30.95,
+        "adjusted_mutation_score": 34.21,
+        "duration_sec": 2.97
+      },
+      "score_difference_raw": -0.81
+    },
+    "order_fsm.py": {
+      "mutmut": {
+        "total_mutants": 107,
+        "killed_mutants": 97,
+        "survived_mutants": 10,
+        "raw_mutation_score": 90.65,
+        "duration_sec": 1.56,
+        "survived_mutant_ids": [
+          "target.x_validate_transition__mutmut_7",
+          "target.x_validate_transition__mutmut_9",
+          "target.x_transition_order_state__mutmut_5",
+          "target.x_transition_order_state__mutmut_13",
+          "target.x_transition_order_state__mutmut_14",
+          "target.x\u01c1OrderFSM\u01c1__init____mutmut_4",
+          "target.x\u01c1OrderFSM\u01c1__init____mutmut_5",
+          "target.x\u01c1OrderFSM\u01c1__init____mutmut_12",
+          "target.x\u01c1OrderFSM\u01c1transition__mutmut_13",
+          "target.x\u01c1OrderFSM\u01c1transition__mutmut_14"
+        ]
+      },
+      "testforge": {
+        "total_mutants": 106,
+        "killed_mutants": 103,
+        "survived_mutants": 3,
+        "equivalent_mutants": 0,
+        "raw_mutation_score": 97.17,
+        "adjusted_mutation_score": 97.17,
+        "duration_sec": 10.76
+      },
+      "score_difference_raw": 6.52
+    },
+    "stats_calculator.py": {
+      "mutmut": {
+        "total_mutants": 136,
+        "killed_mutants": 69,
+        "survived_mutants": 67,
+        "raw_mutation_score": 50.74,
+        "duration_sec": 1.49,
+        "survived_mutant_ids": [
+          "target.x_calculate_mean__mutmut_2",
+          "target.x_calculate_mean__mutmut_3",
+          "target.x_calculate_mean__mutmut_4",
+          "target.x_calculate_mean__mutmut_5",
+          "target.x_calculate_variance__mutmut_1",
+          "target.x_calculate_variance__mutmut_4",
+          "target.x_calculate_variance__mutmut_5",
+          "target.x_calculate_variance__mutmut_6",
+          "target.x_calculate_variance__mutmut_7",
+          "target.x_calculate_variance__mutmut_8"
+        ]
+      },
+      "testforge": {
+        "total_mutants": 73,
+        "killed_mutants": 36,
+        "survived_mutants": 35,
+        "equivalent_mutants": 2,
+        "raw_mutation_score": 49.32,
+        "adjusted_mutation_score": 50.7,
+        "duration_sec": 5.34
+      },
+      "score_difference_raw": -1.42
+    }
+  },
+  "summary": {
+    "mutmut_macro_avg_score": 66.02,
+    "testforge_macro_avg_raw_score": 68.05,
+    "testforge_macro_avg_adjusted_score": 70.52,
+    "pearson_correlation": 0.9988
+  }
+}
