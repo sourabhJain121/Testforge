@@ -26,7 +26,7 @@
 | Sub-Task ID | Description | Status | Last Commit | Next Step / Notes |
 | :--- | :--- | :---: | :---: | :--- |
 | **1.1** | Feature flags for every capability with behavioral tests | DONE | `efec359` | Implemented `testforge/feature_flags.py` with 9 modular capability toggles (`ref_exec`, `reflection`, `self_consistency`, `tot`, `react`, `rag`, `memory`, `critic`, `equivalence`). Integrated into `TestForgeOrchestrator` and `ReflectionRepairAgent`. Added `tests/test_feature_flags.py` (9 passed). |
-| **1.2** | Parallel mutant execution (ProcessPoolExecutor) with score parity verification | TODO | - | Report speedup vs serial |
+| **1.2** | Parallel mutant execution (ProcessPoolExecutor) with score parity verification | DONE | `3976453` | Verified `ProcessPoolExecutor` speedup vs serial: 4.15x speedup on `discount.py` (4.17s serial vs 1.00s 4-worker) and 5.56x speedup on `order_fsm.py` (29.64s serial vs 5.33s 8-worker). Verified 100% mutant-for-mutant parity (0 mismatches) and identical mutation scores. Evidence in `qa_artifacts/PARALLEL_EXECUTION_EVIDENCE.md`. Added `tests/test_parallel_mutant_execution.py` (2 passed). |
 | **1.3** | 4 extra real-world-style targets (50-150 LOC) with permissive licenses | TODO | - | Tokenizer, rate limiter, interval utility, bank/inventory |
 | **1.4** | E1 Ablation matrix (7 configurations, 3 seeds, 8 targets, metrics & PNG chart) | TODO | - | Zero-shot -> +ref -> +refl -> +SC -> +ToT/ReAct -> +RAG/memory -> +3-critic |
 | **1.5** | E2 Held-out mutants (unseen seeds + 2 unseen operator classes) | TODO | - | Report seen vs held-out score gap per target |
