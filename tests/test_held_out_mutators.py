@@ -82,3 +82,29 @@ def test_generate_held_out_mutants_helper():
     types = {m.mutation_type for m in held_only}
     assert types == {"EXCEPTION_SWAP", "BITWISE_OP"}
 
+
+def test_statement_deletion_mutations():
+    code = """def manage_inventory(ledger, count):
+    ledger.record_action("restock")
+    ledger.total += count
+    return ledger.total
+"""
+    # Without include_held_out, no STATEMENT_DELETION
+    std_mutants = ASTMutator.mutate(code, include_held_out=False)
+    assert not any(m.mutation_type == "STATEMENT_DELETION" for m in std_mutants)
+
+    # With include_held_out, STATEMENT_DELETION mutants are generated
+    held_mutants = ASTMutator.mutate(code, include_held_out=True)
+    stmt_dels = [m for m in held_mutants if m.mutation_type == "STATEMENT_DELETION"]
+    assert len(stmt_dels) >= 2
+
+    # Verify both function call and AugAssign were mutated to pass
+    diff_text = "\n".join(m.unified_diff for m in stmt_dels)
+    assert "pass" in diff_text
+
+    # All mutants are syntactically valid
+    for m in stmt_dels:
+        assert m.is_valid_syntax is True
+        ast.parse(m.mutated_code_snippet)
+
+

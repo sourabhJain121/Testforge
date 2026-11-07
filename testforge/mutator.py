@@ -17,9 +17,10 @@ Implements 10 deterministic, syntax-aware AST mutation categories:
   9. Constant literal mutations (CONST_VAL: e.g. True <-> False, 0 <-> 1, str -> "")
  10. Safe Exception handling mutation (EXCEPT_HANDLER: e.g. except ValueError -> except TypeError)
 
-Held-Out / Evaluation Operator Categories (Stage 1.5 - E2 Generalization):
+Held-Out / Evaluation Operator Categories (Stage 1.5 & Sub-Task 5.6):
  11. Bitwise operator swapping (BITWISE_OP: e.g. & to |, ^ to &, << to >>)
  12. Exception class raising swap (EXCEPTION_SWAP: e.g. raise ValueError -> raise TypeError)
+ 13. Statement deletion (STATEMENT_DELETION: e.g. total += x -> pass, call() -> pass)
 """
 
 from __future__ import annotations
@@ -284,6 +285,19 @@ class MutationTransformer(ast.NodeTransformer):
             return new_node
         return self.generic_visit(node)
 
+    def visit_AugAssign(self, node: ast.AugAssign) -> ast.AST:
+        # 13. Statement Deletion Mutations (STATEMENT_DELETION - Extended operator)
+        if self.include_held_out:
+            if self.target_lines is not None and getattr(node, "lineno", None) not in self.target_lines:
+                return self.generic_visit(node)
+            self.current_node_id += 1
+            if self.current_node_id == self.target_node_id and not self.applied:
+                new_node = ast.Pass()
+                ast.copy_location(new_node, node)
+                self._mark_applied(node, "STATEMENT_DELETION", orig_node=node, mutated_node=new_node)
+                return new_node
+        return self.generic_visit(node)
+
     def visit_Expr(self, node: ast.Expr) -> ast.AST:
         # Detect and preserve module/function docstrings
         if isinstance(node.value, ast.Constant) and isinstance(node.value.value, str):
@@ -292,6 +306,18 @@ class MutationTransformer(ast.NodeTransformer):
                 return self.generic_visit(node)
             finally:
                 self._in_docstring = False
+
+        # Statement Deletion on standalone function/method calls (when include_held_out)
+        if self.include_held_out and isinstance(node.value, ast.Call):
+            if self.target_lines is not None and getattr(node, "lineno", None) not in self.target_lines:
+                return self.generic_visit(node)
+            self.current_node_id += 1
+            if self.current_node_id == self.target_node_id and not self.applied:
+                new_node = ast.Pass()
+                ast.copy_location(new_node, node)
+                self._mark_applied(node, "STATEMENT_DELETION", orig_node=node, mutated_node=new_node)
+                return new_node
+
         return self.generic_visit(node)
 
     def visit_Constant(self, node: ast.Constant) -> ast.AST:
