@@ -1,0 +1,61 @@
+{
+  "session_backend": "google.adk.sessions.DatabaseSessionService (SQLite WAL)",
+  "memory_backend": "google.adk.memory.InMemoryMemoryService",
+  "db_url": "sqlite:///qa_artifacts/testforge_adk_sessions.db",
+  "jobs": [
+    {
+      "job_id": "job_discount_cold_start",
+      "target_path": "samples/discount.py",
+      "target_name": "discount.py",
+      "use_cross_job_memory": false,
+      "memories_retrieved": 0,
+      "retrieved_memory_snippets": [],
+      "iterations_run": 3,
+      "reflection_turns": 2,
+      "initial_raw_mutation_score": 31.58,
+      "final_raw_mutation_score": 100.0,
+      "final_adjusted_mutation_score": 100.0,
+      "total_mutants": 19,
+      "killed_mutants": 19,
+      "survived_mutants": 0,
+      "equivalent_mutants": 0,
+      "elapsed_seconds": 9.765,
+      "generated_test_code": "from target import calculate_discount\n\ndef test_nominal():\n    assert calculate_discount(100.0, 1, False) == 100.0\n\ndef test_member_and_volume():\n    assert calculate_discount(100.0, 1, True) == 90.0\n    assert calculate_discount(100.0, 5, False) == 90.0\n    assert calculate_discount(100.0, 5, True) == 80.0\n\ndef test_boundaries_and_off_by_one():\n    assert calculate_discount(100.0, 4, False) == 100.0\n    assert calculate_discount(100.0, 6, False) == 90.0\n    assert calculate_discount(0.0, 1, False) == 0.0\n    assert calculate_discount(-10.0, 1, False) == 0.0\n    assert calculate_discount(10.555, 1, False) == 10.56\n"
+    },
+    {
+      "job_id": "job_discount_warm_start",
+      "target_path": "samples/discount.py",
+      "target_name": "discount.py",
+      "use_cross_job_memory": true,
+      "memories_retrieved": 2,
+      "retrieved_memory_snippets": [
+        "Learned mutant test pattern for discount.py: Discount rate rules: member gives 10%, quantity >= 5 gives 10%, compound yields 80.0.",
+        "Learned mutant test pattern for discount.py: Boundary pattern price <= 0 yields 0.0; quantity off-by-one 4 vs 6; rounding precision to 2 decimal places."
+      ],
+      "iterations_run": 1,
+      "reflection_turns": 0,
+      "initial_raw_mutation_score": 100.0,
+      "final_raw_mutation_score": 100.0,
+      "final_adjusted_mutation_score": 100.0,
+      "total_mutants": 19,
+      "killed_mutants": 19,
+      "survived_mutants": 0,
+      "equivalent_mutants": 0,
+      "elapsed_seconds": 4.823,
+      "generated_test_code": "from target import calculate_discount\n\ndef test_nominal():\n    assert calculate_discount(100.0, 1, False) == 100.0\n\n# Injected from Google ADK Memory Service Cross-Job Retrieval\ndef test_member_and_volume():\n    assert calculate_discount(100.0, 1, True) == 90.0\n    assert calculate_discount(100.0, 5, False) == 90.0\n    assert calculate_discount(100.0, 5, True) == 80.0\n\ndef test_boundaries_and_off_by_one():\n    assert calculate_discount(100.0, 4, False) == 100.0\n    assert calculate_discount(100.0, 6, False) == 90.0\n    assert calculate_discount(0.0, 1, False) == 0.0\n    assert calculate_discount(-10.0, 1, False) == 0.0\n    assert calculate_discount(10.555, 1, False) == 10.56\n"
+    }
+  ],
+  "cross_job_learning_impact": {
+    "cold_start_turns": 3,
+    "warm_start_turns": 1,
+    "turn_reduction": 2,
+    "turn_reduction_percent": 66.67,
+    "cold_start_reflection_turns": 2,
+    "warm_start_reflection_turns": 0,
+    "reflection_turn_reduction": 2,
+    "cold_start_latency_seconds": 9.765,
+    "warm_start_latency_seconds": 4.823,
+    "latency_speedup_factor": 2.02,
+    "memory_reuse_verified": true
+  }
+}

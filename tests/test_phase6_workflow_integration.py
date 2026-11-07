@@ -137,6 +137,7 @@ def test_orchestrator_end_to_end_phase6_reflection_loop():
     try:
         orch = TestForgeOrchestrator(
             target_source_code=SAMPLE_TARGET_CODE,
+            initial_test_code=INITIAL_TEST_CODE,
             max_iterations=2,
             target_mutation_score=100.0,
             trace_log_path=trace_path,

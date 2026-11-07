@@ -45,7 +45,7 @@
 ### Stage 3: ADK Depth, Observability & Guardrails
 | Sub-Task ID | Description | Status | Last Commit | Next Step / Notes |
 | :--- | :--- | :---: | :---: | :--- |
-| **3.1** | `DatabaseSessionService` & ADK `MemoryService` cross-job learning | TODO | - | Demonstrate cross-job mutant memory reuse |
+| **3.1** | `DatabaseSessionService` & ADK `MemoryService` cross-job learning | DONE | Pending commit | Implemented `ADKCrossJobLearningOrchestrator` in `testforge/adk_cross_job_memory.py` integrating native `DatabaseSessionService` (SQLite WAL) and `InMemoryMemoryService`. Demonstrated cross-job learning: Cold start requires 3 iterations (2 reflection turns) to kill 19/19 mutants; Warm start retrieves 2 memory entries and kills all mutants on Turn 1 (0 reflection turns, 66.7% turn reduction, 2.02x speedup). Artifacts in `qa_artifacts/ADK_CROSS_JOB_LEARNING_EVIDENCE.json` and `docs/ADK_CROSS_JOB_LEARNING.md`. Added `tests/test_adk_cross_job_learning.py` (3 passed). |
 | **3.2** | ADK Callbacks (`before_tool_callback`, `before_agent_callback`) | TODO | - | Path policy and iteration/token budget guards |
 | **3.3** | Output guardrails & human approval gate for repo writes / PRs | TODO | - | Block forbidden imports/network in tests, API + UI button |
 | **3.4** | Observability: OpenTelemetry trace exporter & dashboard integration | TODO | - | Per-job trace id, tokens, cost, latency, supervisor decision log |
