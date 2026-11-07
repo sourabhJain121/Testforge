@@ -1,0 +1,80 @@
+{
+  "status": "PASS",
+  "timestamp": "2026-11-07T16:02:54Z",
+  "total_views_verified": 12,
+  "total_elements_verified": 18,
+  "uncaught_page_errors": 0,
+  "uncaught_console_errors": 0,
+  "page_errors": [],
+  "console_errors": [],
+  "captured_screenshots": [
+    {
+      "view": "Hardening Lab",
+      "file": "01_hardening_lab.png"
+    },
+    {
+      "view": "Multi-Agent Wiretap",
+      "file": "02_wiretap_topology.png"
+    },
+    {
+      "view": "Benchmarks & Ablation",
+      "file": "03_benchmarks_ablation.png"
+    },
+    {
+      "view": "Checkpoints Timeline",
+      "file": "04_checkpoints_timeline.png"
+    },
+    {
+      "view": "Observability Traces",
+      "file": "05_observability_traces.png"
+    },
+    {
+      "view": "Blast Radius",
+      "file": "06_blast_radius.png"
+    },
+    {
+      "view": "Mode A Workspace",
+      "file": "07_mode_a_workspace.png"
+    },
+    {
+      "view": "Mode B Synthesis",
+      "file": "08_mode_b_synthesis.png"
+    },
+    {
+      "view": "Mode C GitHub",
+      "file": "09_mode_c_github.png"
+    },
+    {
+      "view": "A2A Agent Card Modal",
+      "file": "10_a2a_agent_card.png"
+    },
+    {
+      "view": "FastMCP Tools Modal",
+      "file": "11_fastmcp_tools.png"
+    },
+    {
+      "view": "System Settings & Privacy",
+      "file": "12_system_settings_privacy.png"
+    }
+  ],
+  "verified_elements": [
+    "page_title",
+    "#tab-btn-lab",
+    "#minimizer-panel",
+    "#approval-gate-panel",
+    "wiretap_cards_8",
+    "#multi-target-benchmark-table",
+    "#checkpoint-cards-stream",
+    "#nav-telemetry",
+    "#otel-spans-table",
+    "#supervisor-decisions-table",
+    "#nav-blast",
+    "#nav-mode-a",
+    "#nav-mode-b",
+    "#nav-mode-c",
+    "#btn-a2a-card",
+    "#btn-mcp-status",
+    "#btn-toggle-settings",
+    "#btn-toggle-privacy"
+  ]
+}
