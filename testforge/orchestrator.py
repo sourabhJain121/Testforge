@@ -163,7 +163,20 @@ class TestForgeOrchestrator:
         github_repo: Optional[str] = None,
         resume_checkpoint_id: Optional[str] = None,
         feature_flags: Optional[FeatureFlags] = None,
+        privacy_mode: Optional[bool] = None,
     ):
+        from testforge.privacy_mode import PrivacyModeManager
+        privacy_mgr = PrivacyModeManager.get_instance()
+        if privacy_mode is True:
+            privacy_mgr.enable()
+        elif privacy_mode is False:
+            privacy_mgr.disable()
+
+        self.privacy_mode = privacy_mgr.is_enabled()
+        if self.privacy_mode:
+            model_name = privacy_mgr.validate_model_selection(model_name)
+            engine_mode = "local"
+
         self.target_file_path = target_file_path
         self.engine_mode = engine_mode
         self.target_lines = target_lines

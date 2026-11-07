@@ -54,7 +54,7 @@
 ### Stage 4: Privacy & Multimodal
 | Sub-Task ID | Description | Status | Last Commit | Next Step / Notes |
 | :--- | :--- | :---: | :---: | :--- |
-| **4.1** | Privacy mode with zero-egress proof & PII/secret scrubbing | TODO | - | Single toggle (UI/CLI/env), verify zero outbound connections |
+| **4.1** | Privacy mode with zero-egress proof & PII/secret scrubbing | DONE | `pending` | Implemented `PrivacyModeManager` and `ZeroEgressSocketInterceptor` blocking 10/10 external sockets while whitelisting loopback/Ollama. Scrubbed 7/7 secrets/PII patterns. Automated cloud model rerouting to local `qwen2.5-coder:7b`. Exposed REST `/api/privacy/status`, `/api/privacy/toggle`, CLI `--privacy-mode`, and dashboard toggle. Generated `qa_artifacts/PRIVACY_MODE_EVIDENCE.json` and `docs/PRIVACY_MODE_EVIDENCE.md`. Added `tests/test_privacy_mode.py` (6 passed). |
 | **4.2** | Multimodal (image) requirement derivation for state machines | TODO | - | Upload diagram, derive FSM transition tests (Gemini vision / local) |
 
 ### Stage 5: Beyond the Handout

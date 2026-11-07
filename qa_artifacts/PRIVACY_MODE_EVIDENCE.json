@@ -1,0 +1,146 @@
+{
+  "timestamp": "2026-11-07T15:19:34Z",
+  "sub_task": "4.1",
+  "description": "Privacy Mode with Zero-Egress Proof & PII/Secret Scrubbing",
+  "egress_interception": {
+    "tested_targets": 10,
+    "blocked_targets": 10,
+    "enforcement_rate_pct": 100.0,
+    "targets": [
+      {
+        "target": "google.com:443",
+        "status": "BLOCKED",
+        "blocked": true,
+        "error": "PrivacySecurityError: Zero-egress Privacy Mode is ACTIVE. Outbound connection to 'google.com:443' was blocked."
+      },
+      {
+        "target": "api.openai.com:443",
+        "status": "BLOCKED",
+        "blocked": true,
+        "error": "PrivacySecurityError: Zero-egress Privacy Mode is ACTIVE. Outbound connection to 'api.openai.com:443' was blocked."
+      },
+      {
+        "target": "api.anthropic.com:443",
+        "status": "BLOCKED",
+        "blocked": true,
+        "error": "PrivacySecurityError: Zero-egress Privacy Mode is ACTIVE. Outbound connection to 'api.anthropic.com:443' was blocked."
+      },
+      {
+        "target": "generativelanguage.googleapis.com:443",
+        "status": "BLOCKED",
+        "blocked": true,
+        "error": "PrivacySecurityError: Zero-egress Privacy Mode is ACTIVE. Outbound connection to 'generativelanguage.googleapis.com:443' was blocked."
+      },
+      {
+        "target": "openrouter.ai:443",
+        "status": "BLOCKED",
+        "blocked": true,
+        "error": "PrivacySecurityError: Zero-egress Privacy Mode is ACTIVE. Outbound connection to 'openrouter.ai:443' was blocked."
+      },
+      {
+        "target": "github.com:443",
+        "status": "BLOCKED",
+        "blocked": true,
+        "error": "PrivacySecurityError: Zero-egress Privacy Mode is ACTIVE. Outbound connection to 'github.com:443' was blocked."
+      },
+      {
+        "target": "8.8.8.8:53",
+        "status": "BLOCKED",
+        "blocked": true,
+        "error": "PrivacySecurityError: Zero-egress Privacy Mode is ACTIVE. Outbound connection to '8.8.8.8:53' was blocked."
+      },
+      {
+        "target": "1.1.1.1:53",
+        "status": "BLOCKED",
+        "blocked": true,
+        "error": "PrivacySecurityError: Zero-egress Privacy Mode is ACTIVE. Outbound connection to '1.1.1.1:53' was blocked."
+      },
+      {
+        "target": "pypi.org:443",
+        "status": "BLOCKED",
+        "blocked": true,
+        "error": "PrivacySecurityError: Zero-egress Privacy Mode is ACTIVE. Outbound connection to 'pypi.org:443' was blocked."
+      },
+      {
+        "target": "huggingface.co:443",
+        "status": "BLOCKED",
+        "blocked": true,
+        "error": "PrivacySecurityError: Zero-egress Privacy Mode is ACTIVE. Outbound connection to 'huggingface.co:443' was blocked."
+      }
+    ],
+    "loopback_permitted": true
+  },
+  "pii_and_secret_scrubbing": {
+    "tested_patterns": 7,
+    "redacted_patterns": 7,
+    "accuracy_pct": 100.0,
+    "samples": [
+      {
+        "label": "Gemini Key",
+        "raw": "Analyze this code with api_key: AIzaSyD9876543210abcdefghijklmnop",
+        "scrubbed": "Analyze this code with api_key: [REDACTED_API_KEY_GEMINI]",
+        "redaction_count": 1,
+        "passed": true
+      },
+      {
+        "label": "OpenRouter Key",
+        "raw": "Dispatch prompt using sk-or-v1-abcdef0123456789abcdef0123456789",
+        "scrubbed": "Dispatch prompt using [REDACTED_API_KEY_OPENROUTER]",
+        "redaction_count": 1,
+        "passed": true
+      },
+      {
+        "label": "OpenAI Key",
+        "raw": "Authorization: Bearer sk-abcdef0123456789abcdef0123456789",
+        "scrubbed": "Authorization: Bearer [REDACTED_API_KEY]",
+        "redaction_count": 1,
+        "passed": true
+      },
+      {
+        "label": "GitHub Token",
+        "raw": "Push changes using token ghp_abcdef0123456789abcdef0123456789",
+        "scrubbed": "Push changes using token [REDACTED_API_KEY_GITHUB]",
+        "redaction_count": 1,
+        "passed": true
+      },
+      {
+        "label": "SSN Pattern",
+        "raw": "Applicant SSN is 987-65-4321 for verification",
+        "scrubbed": "Applicant SSN is [REDACTED_PII_SSN] for verification",
+        "redaction_count": 1,
+        "passed": true
+      },
+      {
+        "label": "Email Pattern",
+        "raw": "Contact lead engineer at sourabh.jain@university.edu",
+        "scrubbed": "Contact lead engineer at [REDACTED_PII_EMAIL]",
+        "redaction_count": 1,
+        "passed": true
+      },
+      {
+        "label": "Password",
+        "raw": "Database connection string password='SuperSecretPassword123!'",
+        "scrubbed": "Database connection string [REDACTED_SECRET]",
+        "redaction_count": 1,
+        "passed": true
+      }
+    ]
+  },
+  "model_routing_confinement": {
+    "requested_model": "gemini-3.6-flash",
+    "enforced_model": "qwen2.5-coder:7b (Local Ollama Engine)",
+    "cloud_calls_made": 0,
+    "offline_rule_fallback_active": true
+  },
+  "end_to_end_hardening": {
+    "target": "samples/discount.py",
+    "execution_time_sec": 22.805,
+    "total_mutants": 19,
+    "killed_mutants": 18,
+    "raw_mutation_score": 94.74,
+    "adjusted_mutation_score": 100.0,
+    "line_coverage": 50.0,
+    "branch_coverage": 50.0
+  },
+  "status": "VERIFIED_PASSING"
+}

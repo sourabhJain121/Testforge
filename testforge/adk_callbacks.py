@@ -17,9 +17,10 @@ logger = logging.getLogger("testforge.adk_callbacks")
 
 # Secret & Token Redaction Patterns
 API_KEY_PATTERNS = [
-    (r"\bAIza[0-9A-Za-z-_]{35}\b", "[REDACTED_API_KEY]"),
-    (r"\bsk-[a-zA-Z0-9]{20,}\b", "[REDACTED_API_KEY]"),
-    (r"\bghp_[a-zA-Z0-9]{20,}\b", "[REDACTED_API_KEY]"),
+    (r"\bAIza[0-9A-Za-z-_]{20,}\b", "[REDACTED_API_KEY_GEMINI]"),
+    (r"\bsk-or-v1-[a-zA-Z0-9_\-]{20,}\b", "[REDACTED_API_KEY_OPENROUTER]"),
+    (r"\bsk-[a-zA-Z0-9_\-]{20,}\b", "[REDACTED_API_KEY]"),
+    (r"\bghp_[a-zA-Z0-9]{20,}\b", "[REDACTED_API_KEY_GITHUB]"),
     (r"\b(?:bearer|token|apikey|api_key)\s*[:=]\s*['\"]?([a-zA-Z0-9_\-\.]{16,})['\"]?", "[REDACTED_SECRET]"),
     (r"\b(?:password|passwd|secret)\s*[:=]\s*['\"]?([^'\"\s\n]{8,})['\"]?", "[REDACTED_SECRET]"),
 ]

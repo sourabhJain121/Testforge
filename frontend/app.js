@@ -105,6 +105,12 @@ document.addEventListener('DOMContentLoaded', () => {
     dotOpenrouter: document.getElementById('dot-openrouter'),
     labelOpenrouter: document.getElementById('label-openrouter'),
 
+    // Privacy Mode (Sub-Task 4.1)
+    btnTogglePrivacy: document.getElementById('btn-toggle-privacy'),
+    iconPrivacy: document.getElementById('icon-privacy'),
+    labelPrivacy: document.getElementById('label-privacy'),
+    checkboxPrivacy: document.getElementById('toggle-privacy-mode-checkbox'),
+
     // A2A Card Modal
     btnA2aCard: document.getElementById('btn-a2a-card'),
     a2aModalBackdrop: document.getElementById('a2a-modal-backdrop'),
@@ -3071,6 +3077,73 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // --------------------------------------------------------------------------
+  // Zero-Egress Privacy Mode Handlers (Sub-Task 4.1)
+  // --------------------------------------------------------------------------
+  async function fetchPrivacyStatus() {
+    try {
+      const resp = await fetch('/api/privacy/status');
+      if (!resp.ok) return;
+      const data = await resp.json();
+      updatePrivacyUI(data.privacy_mode_enabled);
+    } catch (err) {
+      console.warn('Failed to fetch privacy status:', err);
+    }
+  }
+
+  function updatePrivacyUI(enabled) {
+    if (dom.btnTogglePrivacy) {
+      if (enabled) {
+        dom.btnTogglePrivacy.classList.add('btn-success');
+        dom.btnTogglePrivacy.classList.remove('btn-outline');
+        if (dom.iconPrivacy) dom.iconPrivacy.textContent = '🔒';
+        if (dom.labelPrivacy) dom.labelPrivacy.textContent = 'Privacy: ON';
+        dom.btnTogglePrivacy.style.borderColor = '#10b981';
+        dom.btnTogglePrivacy.style.color = '#10b981';
+      } else {
+        dom.btnTogglePrivacy.classList.remove('btn-success');
+        dom.btnTogglePrivacy.classList.add('btn-outline');
+        if (dom.iconPrivacy) dom.iconPrivacy.textContent = '🔓';
+        if (dom.labelPrivacy) dom.labelPrivacy.textContent = 'Privacy: OFF';
+        dom.btnTogglePrivacy.style.borderColor = '';
+        dom.btnTogglePrivacy.style.color = '';
+      }
+    }
+    if (dom.checkboxPrivacy) {
+      dom.checkboxPrivacy.checked = !!enabled;
+    }
+  }
+
+  async function togglePrivacyMode(targetState) {
+    try {
+      const payload = typeof targetState === 'boolean' ? { enabled: targetState } : {};
+      const resp = await fetch('/api/privacy/toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        updatePrivacyUI(data.privacy_mode_enabled);
+        showToast(
+          data.privacy_mode_enabled
+            ? '🔒 Zero-Egress Privacy Mode ENABLED. Air-gap active, cloud LLMs prohibited.'
+            : '🔓 Privacy Mode DISABLED. Standard network access restored.',
+          data.privacy_mode_enabled ? 'success' : 'info'
+        );
+      }
+    } catch (err) {
+      showToast('Failed to toggle privacy mode: ' + err.message, 'error');
+    }
+  }
+
+  if (dom.btnTogglePrivacy) {
+    dom.btnTogglePrivacy.addEventListener('click', () => togglePrivacyMode());
+  }
+  if (dom.checkboxPrivacy) {
+    dom.checkboxPrivacy.addEventListener('change', (e) => togglePrivacyMode(e.target.checked));
+  }
+
   // Interactive KPI Hover / Toggle Bindings (GAP-003, GAP-005)
   if (dom.kpiTqsCard && dom.tqsBreakdownTooltip) {
     let tqsPinned = false;
@@ -4949,7 +5022,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // 8. Load pending Human Approval Gate requests (Sub-Task 3.3)
     loadApprovalRequests();
 
-    // 9. Expose test helpers for QA automation
+    // 9. Fetch Zero-Egress Privacy Mode status (Sub-Task 4.1)
+    await fetchPrivacyStatus();
+
+    // 10. Expose test helpers for QA automation
     window.__testforge = {
       showToast,
       switchTab,
@@ -4957,6 +5033,9 @@ document.addEventListener('DOMContentLoaded', () => {
       renderHardeningResults,
       loadMultiTargetBenchmark,
       loadApprovalRequests,
+      fetchPrivacyStatus,
+      togglePrivacyMode,
+      updatePrivacyUI,
       renderMultiTargetBenchmark,
       runMultiTargetBenchmarkWorkflow,
       fetchWiretap,

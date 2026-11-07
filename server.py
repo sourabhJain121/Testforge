@@ -1639,6 +1639,33 @@ async def get_supervisor_decisions_endpoint(job_id: Optional[str] = None):
 
 
 # --------------------------------------------------------------------------
+# Privacy Mode Endpoints (Sub-Task 4.1)
+# --------------------------------------------------------------------------
+
+class PrivacyTogglePayload(BaseModel):
+    enabled: Optional[bool] = None
+
+
+@app.get("/api/privacy/status")
+async def get_privacy_status():
+    """Retrieves current Privacy Mode status and blocked egress logs."""
+    from testforge.privacy_mode import PrivacyModeManager
+    return PrivacyModeManager.get_instance().get_status()
+
+
+@app.post("/api/privacy/toggle")
+async def toggle_privacy_mode(payload: Optional[PrivacyTogglePayload] = None):
+    """Toggles or sets the global zero-egress Privacy Mode."""
+    from testforge.privacy_mode import PrivacyModeManager
+    mgr = PrivacyModeManager.get_instance()
+    if payload is not None and payload.enabled is not None:
+        mgr.set_enabled(payload.enabled)
+    else:
+        mgr.set_enabled(not mgr.is_enabled())
+    return mgr.get_status()
+
+
+# --------------------------------------------------------------------------
 # Checkpoint Persistence & Recovery Endpoints
 # --------------------------------------------------------------------------
 

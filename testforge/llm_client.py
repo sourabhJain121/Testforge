@@ -150,11 +150,19 @@ class HybridLLMClient:
           Tier 3: Local Ollama (qwen2.5-coder:7b) via http://localhost:11434
           Tier 4: AST-guided deterministic rule synthesizer (guarantees zero unhandled crashes)
         """
+        # Privacy Mode Enforcement (Zero-Egress & PII Scrubbing)
+        from testforge.privacy_mode import PrivacyModeManager
+        privacy_mgr = PrivacyModeManager.get_instance()
+        is_privacy = privacy_mgr.is_enabled()
+        if is_privacy:
+            prompt, _ = privacy_mgr.scrub_prompt(prompt)
+
         # ======================================================================
         # TIER 1: CLOUD API (Google GenAI - gemini-3.6-flash)
         # ======================================================================
         should_try_cloud = (
-            self.engine_mode in ("auto", "cloud")
+            not is_privacy
+            and self.engine_mode in ("auto", "cloud")
             and self.genai_client is not None
             and not self.gemini_quota_exhausted
         )
@@ -264,7 +272,8 @@ class HybridLLMClient:
         # TIER 2: SECONDARY CLOUD API (OpenRouter - OpenAI compatible endpoint)
         # ======================================================================
         should_try_openrouter = (
-            self.engine_mode in ("auto", "openrouter")
+            not is_privacy
+            and self.engine_mode in ("auto", "openrouter")
             and bool(self.openrouter_api_key)
             and not self.openrouter_quota_exhausted
         )

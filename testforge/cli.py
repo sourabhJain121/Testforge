@@ -137,6 +137,11 @@ def cmd_harden(args: argparse.Namespace) -> int:
         with open(args.tests, "r", encoding="utf-8") as f:
             initial_tests = f.read()
 
+    if getattr(args, "privacy_mode", False):
+        from testforge.privacy_mode import PrivacyModeManager
+        PrivacyModeManager.get_instance().enable()
+        console.print("[bold green][🔒 Privacy Mode Active][/bold green] Zero-egress air-gap enforced. Local models only.")
+
     orchestrator = TestForgeOrchestrator(
         target_source_code=analysis.source_code,
         initial_test_code=initial_tests,
@@ -145,6 +150,7 @@ def cmd_harden(args: argparse.Namespace) -> int:
         model_name=args.model,
         target_file_path=target_path,
         engine_mode=args.engine_mode,
+        privacy_mode=getattr(args, "privacy_mode", False),
     )
 
     console.print("[dim]Executing multi-agent hardening pipeline...[/dim]")
@@ -294,6 +300,7 @@ def main():
     parser.add_argument("--model", "-m", default="gemini-3.6-flash", help="LLM foundation model name")
     parser.add_argument("--engine-mode", "-e", choices=["auto", "cloud", "openrouter", "local"], default="auto", help="Engine execution mode (auto, cloud, openrouter, local)")
     parser.add_argument("--output", "-o", default=None, help="Output file for hardened tests")
+    parser.add_argument("--privacy-mode", action="store_true", help="Enforce zero-egress air-gap isolation and PII scrubbing")
 
     subparsers = parser.add_subparsers(dest="subcommand", help="Available subcommands")
 
@@ -307,6 +314,7 @@ def main():
     harden_p.add_argument("--model", "-m", default="gemini-3.6-flash", help="LLM foundation model name")
     harden_p.add_argument("--engine-mode", "-e", choices=["auto", "cloud", "openrouter", "local"], default="auto", help="Engine execution mode")
     harden_p.add_argument("--tests", "-s", default=None, help="Path to initial test file (optional)")
+    harden_p.add_argument("--privacy-mode", action="store_true", help="Enforce zero-egress air-gap isolation and PII scrubbing")
 
     # Subcommand: benchmark
     bench_p = subparsers.add_parser("benchmark", help="Execute multi-target empirical benchmark suite")
@@ -378,6 +386,11 @@ def main():
         else:
             console.print(f"[yellow][!] Tests file '{args.tests}' not found. TestForge will synthesize tests autonomously.[/yellow]")
 
+    if getattr(args, "privacy_mode", False):
+        from testforge.privacy_mode import PrivacyModeManager
+        PrivacyModeManager.get_instance().enable()
+        console.print("[bold green][🔒 Privacy Mode Active][/bold green] Zero-egress air-gap enforced. Local models only.")
+
     # Launch multi-agent hardening pipeline
     orchestrator = TestForgeOrchestrator(
         target_source_code=source_code,
@@ -386,7 +399,8 @@ def main():
         target_mutation_score=args.target_score,
         model_name=args.model,
         target_file_path=target_path,
-        engine_mode=args.engine_mode
+        engine_mode=args.engine_mode,
+        privacy_mode=getattr(args, "privacy_mode", False)
     )
 
     final_state = orchestrator.run()
