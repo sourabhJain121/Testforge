@@ -72,6 +72,13 @@ This document provides a comprehensive verification catalog of every interactive
 | `#btn-clear-diff-selection` | Clears active diff selections | Click trigger & label reset assertion | PASS | Verified diff clear logic |
 | `#btn-confirm-restore` | Confirms checkpoint state restoration via `POST /api/checkpoint/restore` | Playwright click trigger; verifies isolated state restoration | PASS | Verified checkpoint restoration |
 | `#btn-cancel-restore` | Cancels snapshot restoration modal | Click trigger & modal hidden check | PASS | Verified restore cancellation |
+| `#btn-toggle-privacy` | Toggles Zero-Egress Privacy Mode via `POST /api/privacy/toggle` | Click trigger & navbar badge text/icon toggle | PASS | Verified in Privacy Mode tests |
+| `#btn-refresh-approvals` | Refreshes pending Human Approval Gate requests via `GET /api/approval/requests` | Click trigger & table body update | PASS | Verified in Approval Gate tests |
+| `#btn-request-repo-write` | Dispatches repo write approval request via `POST /api/approval/create` | Click trigger & toast notification | PASS | Verified in Approval Gate tests |
+| `#btn-load-minimizer-summary` | Loads precomputed greedy set cover suite minimization benchmarks from `/api/minimizer/summary` | Click trigger & KPI card updates | PASS | Verified in Suite Minimizer tests |
+| `#btn-run-minimizer` | Executes greedy set cover suite minimization via `POST /api/minimizer/minimize` | Click trigger & minimal test chips / heatmap render | PASS | Verified in Suite Minimizer tests |
+| `#btn-refresh-otel-spans` | Queries `/api/observability/traces` to display OpenTelemetry spans | Click trigger & table body update | PASS | Verified in Observability tests |
+| `#btn-refresh-supervisor-decisions` | Queries `/api/observability/supervisor-decisions` to display decision logs | Click trigger & table body update | PASS | Verified in Observability tests |
 | Filter buttons (`[data-filter]`) | Filters AST mutation table (`ALL`, `KILLED`, `SURVIVED`, `EQUIVALENT`) | Playwright click on each filter; checks table row count updates | PASS | Verified filter toggles |
 
 ---
@@ -80,6 +87,7 @@ This document provides a comprehensive verification catalog of every interactive
 
 | Element ID / Selector | Expected Behavior | Verification Method | Status | Evidence / Log Excerpt |
 |---|---|---|---|---|
+| `#toggle-privacy-mode-checkbox` | Toggles Zero-Egress Privacy Mode in settings modal | Change event & state synchronization | PASS | Verified in Privacy Mode tests |
 | `#target-select` | Selects built-in sample (`discount.py`, `banking.py`, `inventory_pricing.py`, `rate_limiter.py`, `state_machine.py`) | Value change & AST reload verification | PASS | Verified dropdown selection |
 | `#radio-source-sample` / `#radio-source-upload` | Toggles between sample dropdown and custom upload dropzone in Mode A | Click trigger & container visibility checks | PASS | Verified radio toggle |
 | `#file-upload-input` | Accepts `.py` file for custom ingestion | Simulated file upload event | PASS | Verified upload handler |
@@ -130,6 +138,12 @@ This document provides a comprehensive verification catalog of every interactive
 | `#diff-code-display` | Renders unified AST diff of the selected mutant | Inner text syntax check | PASS | Verified diff inspector |
 | `#hardened-suite-code` | Displays final executable hardened test suite | Python syntax check | PASS | Verified hardened suite display |
 | `#wiretap-ws-status-badge` | Shows WebSocket connection state (`Connecting...` -> `Live Streaming` or `Disconnected`) | Badge text & CSS class assertion | PASS | Verified in scenario B5 |
+| `#label-privacy` / `#icon-privacy` | Reactive Privacy Mode badge in navbar (`Privacy Mode: OFF / ON`) | DOM text & icon update | PASS | Verified in Privacy Mode tests |
+| `#approval-requests-body` | Renders pending repo write and PR approval requests with action buttons | Dynamic table rows & action listeners | PASS | Verified in Approval Gate tests |
+| `#min-kpi-original-tests` / `#min-kpi-retained-tests` / `#min-kpi-reduction-pct` / `#min-kpi-retention-pct` | Suite Minimizer KPIs displaying original vs minimal test count, reduction %, and score retention % | Numerical and percentage badge updates | PASS | Verified in Suite Minimizer tests |
+| `#minimizer-retained-list` / `#kill-matrix-heatmap-table` | Retained test name chips and 2D Boolean kill matrix heatmap sample | Dynamic chip list & matrix table | PASS | Verified in Suite Minimizer tests |
+| `#otel-spans-table-body` | Renders OpenTelemetry distributed spans with trace ID, span name, kind, duration, status, and attributes | Dynamic table rows & status badges | PASS | Verified in Observability tests |
+| `#supervisor-decisions-table-body` | Renders supervisor orchestration decisions with job ID, iteration, decision, and rationale | Dynamic table rows & decision badges | PASS | Verified in Observability tests |
 
 ---
 
