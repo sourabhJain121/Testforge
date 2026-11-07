@@ -1,0 +1,596 @@
+{
+  "timestamp": "2026-11-07T15:28:50Z",
+  "sub_task": "5.1",
+  "description": "Kill-Matrix Greedy Set Cover Test Suite Minimization",
+  "total_original_tests": 134,
+  "total_minimized_tests": 28,
+  "macro_reduction_pct": 79.1,
+  "mutation_score_retention_pct": 100.0,
+  "targets": [
+    {
+      "target": "discount.py",
+      "original_tests": 23,
+      "minimized_tests": 5,
+      "reduction_pct": 78.3,
+      "selected_tests": [
+        "test_calculate_discount_threshold_quantity_5",
+        "test_calculate_discount_threshold_price_neg_0_1",
+        "test_calculate_discount_extreme_price_decimal_precision_0_05",
+        "test_calculate_discount_threshold_quantity_4",
+        "test_calculate_discount_branch_is_member_True"
+      ],
+      "redundant_tests": [
+        "test_calculate_discount_nominal",
+        "test_calculate_discount_multi_arg_scenario",
+        "test_calculate_discount_guard_price_returns_constant",
+        "test_calculate_discount_threshold_price_0_0",
+        "test_calculate_discount_threshold_price_0_1",
+        "test_calculate_discount_threshold_quantity_6",
+        "test_calculate_discount_branch_is_member_False",
+        "test_calculate_discount_extreme_price_zero",
+        "test_calculate_discount_extreme_price_negative_one",
+        "test_calculate_discount_extreme_price_negative_large",
+        "test_calculate_discount_extreme_price_large_positive",
+        "test_calculate_discount_extreme_price_decimal_precision_10_55",
+        "test_calculate_discount_extreme_quantity_zero",
+        "test_calculate_discount_extreme_quantity_negative_one",
+        "test_calculate_discount_extreme_quantity_negative_large",
+        "test_calculate_discount_extreme_quantity_large_positive",
+        "test_calculate_discount_property_non_negative_range",
+        "test_calculate_discount_property_monotonicity"
+      ],
+      "total_mutants": 19,
+      "original_kills": 18,
+      "minimized_kills": 18,
+      "score_retention_pct": 100.0,
+      "clean_target_pass": true,
+      "score_parity_verified": true,
+      "minimization_time_sec": 1.245,
+      "sample_kill_matrix": {
+        "test_names": [
+          "test_calculate_discount_nominal",
+          "test_calculate_discount_multi_arg_scenario",
+          "test_calculate_discount_guard_price_returns_constant",
+          "test_calculate_discount_threshold_price_0_0",
+          "test_calculate_discount_threshold_price_neg_0_1",
+          "test_calculate_discount_threshold_price_0_1",
+          "test_calculate_discount_threshold_quantity_5",
+          "test_calculate_discount_threshold_quantity_4"
+        ],
+        "mutant_ids": [
+          "MUT_COND_INV_001",
+          "MUT_COMP_OP_002",
+          "MUT_BOUNDARY_SWAP_003",
+          "MUT_OFF_BY_ONE_004",
+          "MUT_OFF_BY_ONE_005",
+          "MUT_RETURN_VAL_006",
+          "MUT_COND_INV_007",
+          "MUT_COMP_OP_008"
+        ],
+        "matrix_subset": [
+          [
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            1
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0
+          ],
+          [
+            1,
+            1,
+            0,
+            0,
+            1,
+            1,
+            0,
+            0
+          ],
+          [
+            1,
+            1,
+            0,
+            1,
+            0,
+            0,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "target": "lru_cache.py",
+      "original_tests": 5,
+      "minimized_tests": 4,
+      "reduction_pct": 20.0,
+      "selected_tests": [
+        "test_LRUCache_get_hit_ratio_nominal",
+        "test_LRUCache_get_nominal",
+        "test_LRUCache_put_nominal",
+        "test_LRUCache_size_nominal"
+      ],
+      "redundant_tests": [
+        "test_LRUCache_clear_nominal"
+      ],
+      "total_mutants": 42,
+      "original_kills": 13,
+      "minimized_kills": 13,
+      "score_retention_pct": 100.0,
+      "clean_target_pass": true,
+      "score_parity_verified": true,
+      "minimization_time_sec": 2.272,
+      "sample_kill_matrix": {
+        "test_names": [
+          "test_LRUCache_get_nominal",
+          "test_LRUCache_put_nominal",
+          "test_LRUCache_size_nominal",
+          "test_LRUCache_clear_nominal",
+          "test_LRUCache_get_hit_ratio_nominal"
+        ],
+        "mutant_ids": [
+          "MUT_COND_INV_001",
+          "MUT_COMP_OP_002",
+          "MUT_BOUNDARY_SWAP_003",
+          "MUT_OFF_BY_ONE_004",
+          "MUT_OFF_BY_ONE_005",
+          "MUT_CONST_VAL_006",
+          "MUT_CONST_VAL_007",
+          "MUT_CONST_VAL_008"
+        ],
+        "matrix_subset": [
+          [
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0
+          ]
+        ]
+      }
+    },
+    {
+      "target": "order_fsm.py",
+      "original_tests": 79,
+      "minimized_tests": 16,
+      "reduction_pct": 79.7,
+      "selected_tests": [
+        "test_OrderFSM_complete_lifecycle_path",
+        "test_OrderFSM_state_and_methods",
+        "test_transition_order_state_extreme_current_state_empty_string",
+        "test_OrderFSM_admin_role_rejection",
+        "test_validate_transition_guard_high_value_customer",
+        "test_OrderFSM_default_parameters",
+        "test_validate_transition_extreme_next_state_empty_string",
+        "test_validate_transition_guard_unauthorized_role",
+        "test_OrderFSM_return_and_refund_lifecycle",
+        "test_validate_transition_guard_admin_cancel_customer_rejected",
+        "test_transition_order_state_valid",
+        "test_validate_transition_valid_pending_payment_to_cancelled",
+        "test_validate_transition_valid_processing_to_cancelled",
+        "test_validate_transition_guard_support_role_admin",
+        "test_validate_transition_guard_high_value_customer_allowed_4999",
+        "test_OrderFSM_invalid_initial_state_fallback"
+      ],
+      "redundant_tests": [
+        "test_validate_transition_nominal",
+        "test_validate_transition_multi_arg_scenario",
+        "test_validate_transition_threshold_amount_5000_0",
+        "test_validate_transition_threshold_amount_4999_0",
+        "test_validate_transition_threshold_amount_5001_0",
+        "test_validate_transition_enum_user_role_admin",
+        "test_validate_transition_enum_user_role_support",
+        "test_validate_transition_extreme_current_state_empty_string",
+        "test_validate_transition_extreme_current_state_single_char",
+        "test_validate_transition_extreme_current_state_whitespace_string",
+        "test_validate_transition_extreme_next_state_single_char",
+        "test_validate_transition_extreme_next_state_whitespace_string",
+        "test_validate_transition_extreme_user_role_empty_string",
+        "test_validate_transition_extreme_user_role_single_char",
+        "test_validate_transition_extreme_user_role_whitespace_string",
+        "test_validate_transition_extreme_amount_zero",
+        "test_validate_transition_extreme_amount_negative_one",
+        "test_validate_transition_extreme_amount_negative_large",
+        "test_validate_transition_extreme_amount_large_positive",
+        "test_validate_transition_extreme_amount_decimal_precision_10_55",
+        "test_validate_transition_extreme_amount_decimal_precision_0_05",
+        "test_transition_order_state_nominal",
+        "test_transition_order_state_multi_arg_scenario",
+        "test_transition_order_state_extreme_current_state_single_char",
+        "test_transition_order_state_extreme_current_state_whitespace_string",
+        "test_transition_order_state_extreme_next_state_empty_string",
+        "test_transition_order_state_extreme_next_state_single_char",
+        "test_transition_order_state_extreme_next_state_whitespace_string",
+        "test_transition_order_state_extreme_user_role_empty_string",
+        "test_transition_order_state_extreme_user_role_single_char",
+        "test_transition_order_state_extreme_user_role_whitespace_string",
+        "test_transition_order_state_extreme_amount_zero",
+        "test_transition_order_state_extreme_amount_negative_one",
+        "test_transition_order_state_extreme_amount_negative_large",
+        "test_transition_order_state_extreme_amount_large_positive",
+        "test_transition_order_state_extreme_amount_decimal_precision_10_55",
+        "test_transition_order_state_extreme_amount_decimal_precision_0_05",
+        "test_OrderFSM_can_transition_nominal",
+        "test_OrderFSM_transition_nominal",
+        "test_OrderFSM_is_terminal_nominal",
+        "test_OrderFSM_get_audit_trail_nominal",
+        "test_validate_transition_valid_created_to_pending_payment",
+        "test_validate_transition_valid_created_to_cancelled",
+        "test_validate_transition_valid_pending_payment_to_paid",
+        "test_validate_transition_valid_paid_to_processing",
+        "test_validate_transition_valid_paid_to_refunded",
+        "test_validate_transition_valid_processing_to_shipped",
+        "test_validate_transition_valid_shipped_to_delivered",
+        "test_validate_transition_valid_shipped_to_returned",
+        "test_validate_transition_valid_delivered_to_completed",
+        "test_validate_transition_valid_returned_to_refunded",
+        "test_validate_transition_guard_invalid_src",
+        "test_validate_transition_guard_invalid_tgt",
+        "test_validate_transition_guard_illegal_step",
+        "test_validate_transition_guard_admin_required_cancelled",
+        "test_validate_transition_guard_admin_required_refunded",
+        "test_validate_transition_guard_high_value_merchant",
+        "test_transition_order_state_invalid",
+        "test_OrderFSM_custom_initial_state",
+        "test_OrderFSM_initial_history",
+        "test_OrderFSM_cancellation_lifecycle",
+        "test_OrderFSM_audit_trail_formatting",
+        "test_OrderFSM_illegal_transition_rejection"
+      ],
+      "total_mutants": 106,
+      "original_kills": 103,
+      "minimized_kills": 103,
+      "score_retention_pct": 100.0,
+      "clean_target_pass": true,
+      "score_parity_verified": true,
+      "minimization_time_sec": 7.646,
+      "sample_kill_matrix": {
+        "test_names": [
+          "test_validate_transition_nominal",
+          "test_validate_transition_multi_arg_scenario",
+          "test_validate_transition_threshold_amount_5000_0",
+          "test_validate_transition_threshold_amount_4999_0",
+          "test_validate_transition_threshold_amount_5001_0",
+          "test_validate_transition_enum_user_role_admin",
+          "test_validate_transition_enum_user_role_support",
+          "test_validate_transition_extreme_current_state_empty_string"
+        ],
+        "mutant_ids": [
+          "MUT_CONST_VAL_001",
+          "MUT_CONST_VAL_002",
+          "MUT_CONST_VAL_003",
+          "MUT_CONST_VAL_004",
+          "MUT_CONST_VAL_005",
+          "MUT_CONST_VAL_006",
+          "MUT_CONST_VAL_007",
+          "MUT_CONST_VAL_008"
+        ],
+        "matrix_subset": [
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "target": "stats_calculator.py",
+      "original_tests": 27,
+      "minimized_tests": 3,
+      "reduction_pct": 88.9,
+      "selected_tests": [
+        "test_calculate_z_scores_nominal",
+        "test_calculate_median_nominal",
+        "test_calculate_summary_stats_extreme_values_single_element_list"
+      ],
+      "redundant_tests": [
+        "test_calculate_mean_nominal",
+        "test_calculate_mean_extreme_values_empty_list_raises_ValueError",
+        "test_calculate_mean_extreme_values_single_element_list",
+        "test_calculate_variance_nominal",
+        "test_calculate_variance_extreme_values_empty_list_raises_ValueError",
+        "test_calculate_variance_extreme_values_single_element_list_raises_ValueError",
+        "test_calculate_variance_extreme_ddof_zero",
+        "test_calculate_variance_extreme_ddof_negative_one",
+        "test_calculate_variance_extreme_ddof_negative_large",
+        "test_calculate_variance_extreme_ddof_large_positive_raises_ValueError",
+        "test_calculate_stddev_nominal",
+        "test_calculate_stddev_extreme_values_empty_list_raises_ValueError",
+        "test_calculate_stddev_extreme_values_single_element_list_raises_ValueError",
+        "test_calculate_stddev_extreme_ddof_zero",
+        "test_calculate_stddev_extreme_ddof_negative_one",
+        "test_calculate_stddev_extreme_ddof_negative_large",
+        "test_calculate_stddev_extreme_ddof_large_positive_raises_ValueError",
+        "test_calculate_median_extreme_values_empty_list_raises_ValueError",
+        "test_calculate_median_extreme_values_single_element_list",
+        "test_calculate_z_scores_extreme_values_empty_list_raises_ValueError",
+        "test_calculate_z_scores_extreme_values_single_element_list_raises_ValueError",
+        "test_calculate_z_scores_property_idempotent",
+        "test_calculate_summary_stats_nominal",
+        "test_calculate_summary_stats_extreme_values_empty_list_raises_ValueError"
+      ],
+      "total_mutants": 73,
+      "original_kills": 36,
+      "minimized_kills": 36,
+      "score_retention_pct": 100.0,
+      "clean_target_pass": true,
+      "score_parity_verified": true,
+      "minimization_time_sec": 4.06,
+      "sample_kill_matrix": {
+        "test_names": [
+          "test_calculate_mean_nominal",
+          "test_calculate_mean_extreme_values_empty_list_raises_ValueError",
+          "test_calculate_mean_extreme_values_single_element_list",
+          "test_calculate_variance_nominal",
+          "test_calculate_variance_extreme_values_empty_list_raises_ValueError",
+          "test_calculate_variance_extreme_values_single_element_list_raises_ValueError",
+          "test_calculate_variance_extreme_ddof_zero",
+          "test_calculate_variance_extreme_ddof_negative_one"
+        ],
+        "mutant_ids": [
+          "MUT_COND_INV_001",
+          "MUT_CONST_VAL_002",
+          "MUT_RETURN_VAL_003",
+          "MUT_ARITH_OP_004",
+          "MUT_CONST_VAL_005",
+          "MUT_COND_INV_006",
+          "MUT_COMP_OP_007",
+          "MUT_OFF_BY_ONE_008"
+        ],
+        "matrix_subset": [
+          [
+            1,
+            0,
+            1,
+            1,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            1,
+            1,
+            0,
+            1,
+            1,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            1,
+            1,
+            0,
+            1,
+            1,
+            0
+          ],
+          [
+            1,
+            0,
+            1,
+            1,
+            0,
+            1,
+            1,
+            0
+          ]
+        ]
+      }
+    }
+  ]
+}

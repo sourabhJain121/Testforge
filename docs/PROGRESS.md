@@ -60,7 +60,7 @@
 ### Stage 5: Beyond the Handout
 | Sub-Task ID | Description | Status | Last Commit | Next Step / Notes |
 | :--- | :--- | :---: | :---: | :--- |
-| **5.1** | Kill-matrix minimization (greedy set cover, dashboard heatmap) | TODO | - | Tests x mutants matrix, minimal suite reduction |
+| **5.1** | Kill-matrix minimization (greedy set cover, dashboard heatmap) | DONE | `pending` | Implemented `TestSuiteMinimizer` in `testforge/minimizer.py`. Solved greedy set cover on 2D Boolean kill matrix. Evaluated on 4 benchmark targets: reduced test count from 134 to 28 (79.1% macro reduction) with 100.0% mutation score retention (0 dropped kills). Added REST endpoints `/api/minimizer/*`. Output saved to `qa_artifacts/SUITE_MINIMIZATION_RESULTS.json` and `docs/SUITE_MINIMIZATION_REPORT.md`. Added `tests/test_suite_minimizer.py` (4 passed). |
 | **5.2** | Diff-incremental mode (mutate only changed lines in PR) | TODO | - | Integrate into CI, measure time saved |
 | **5.3** | Flaky-test detection (randomized execution order re-runs) | TODO | - | Flag nondeterministic test executions |
 | **5.4** | Stronger equivalence detection (bytecode `dis` comparison + LLM judge) | TODO | - | Measure precision on labeled sample |

@@ -1666,6 +1666,47 @@ async def toggle_privacy_mode(payload: Optional[PrivacyTogglePayload] = None):
 
 
 # --------------------------------------------------------------------------
+# Suite Minimizer Endpoints (Sub-Task 5.1)
+# --------------------------------------------------------------------------
+
+class MinimizerRequest(BaseModel):
+    target_path: Optional[str] = "samples/discount.py"
+    test_path: Optional[str] = "qa_artifacts/test_hardened_discount.py"
+
+
+@app.get("/api/minimizer/summary")
+async def get_minimizer_summary():
+    """Returns precomputed suite minimization benchmarks across targets."""
+    summary_path = "qa_artifacts/SUITE_MINIMIZATION_RESULTS.json"
+    if os.path.exists(summary_path):
+        with open(summary_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return {"message": "Minimization benchmarks not yet computed."}
+
+
+@app.post("/api/minimizer/minimize")
+async def minimize_suite_endpoint(payload: MinimizerRequest):
+    """Executes greedy set cover minimization on target test suite."""
+    from testforge.minimizer import TestSuiteMinimizer
+    target_path = payload.target_path or "samples/discount.py"
+    test_path = payload.test_path or f"qa_artifacts/test_hardened_{os.path.basename(target_path).replace('.py', '')}.py"
+
+    if not os.path.exists(target_path):
+        raise HTTPException(status_code=404, detail=f"Target file not found: {target_path}")
+    if not os.path.exists(test_path):
+        raise HTTPException(status_code=404, detail=f"Test file not found: {test_path}")
+
+    with open(target_path, "r", encoding="utf-8") as f:
+        src = f.read()
+    with open(test_path, "r", encoding="utf-8") as f:
+        tests = f.read()
+
+    minimizer = TestSuiteMinimizer(target_file_path=target_path)
+    res = minimizer.minimize(tests, src, target_module_name=os.path.basename(target_path))
+    return res.model_dump()
+
+
+# --------------------------------------------------------------------------
 # Checkpoint Persistence & Recovery Endpoints
 # --------------------------------------------------------------------------
 
