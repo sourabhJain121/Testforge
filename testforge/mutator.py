@@ -16,6 +16,10 @@ Implements 10 deterministic, syntax-aware AST mutation categories:
   8. Return value mutation (RETURN_VAL: e.g. return True -> return False, return x -> return None)
   9. Constant literal mutations (CONST_VAL: e.g. True <-> False, 0 <-> 1, str -> "")
  10. Safe Exception handling mutation (EXCEPT_HANDLER: e.g. except ValueError -> except TypeError)
+
+Held-Out / Evaluation Operator Categories (Stage 1.5 - E2 Generalization):
+ 11. Bitwise operator swapping (BITWISE_OP: e.g. & to |, ^ to &, << to >>)
+ 12. Exception class raising swap (EXCEPTION_SWAP: e.g. raise ValueError -> raise TypeError)
 """
 
 from __future__ import annotations
@@ -35,9 +39,10 @@ class MutationTransformer(ast.NodeTransformer):
     Supports restricting mutations to specific line numbers via target_lines.
     Tracks exact original and mutated expressions for full provenance.
     """
-    def __init__(self, target_node_id: int, target_lines: Optional[List[int]] = None):
+    def __init__(self, target_node_id: int, target_lines: Optional[List[int]] = None, include_held_out: bool = False):
         self.target_node_id = target_node_id
         self.target_lines: Optional[Set[int]] = set(target_lines) if target_lines else None
+        self.include_held_out = include_held_out
         self.current_node_id = 0
         self.applied = False
         self.mutant_type: str = ""
@@ -181,6 +186,23 @@ class MutationTransformer(ast.NodeTransformer):
                 ast.copy_location(new_node, node)
                 self._mark_applied(node, "ARITH_OP", orig_node=node, mutated_node=new_node)
                 return new_node
+
+        # 11. Bitwise Operator Swapping (BITWISE_OP - Held-out evaluation operator)
+        if self.include_held_out:
+            bitwise_map: Dict[Type[ast.AST], Type[ast.AST]] = {
+                ast.BitAnd: ast.BitOr,
+                ast.BitOr: ast.BitAnd,
+                ast.BitXor: ast.BitAnd,
+                ast.LShift: ast.RShift,
+                ast.RShift: ast.LShift,
+            }
+            if op_cls in bitwise_map:
+                self.current_node_id += 1
+                if self.current_node_id == self.target_node_id and not self.applied:
+                    new_node = ast.BinOp(left=node.left, op=bitwise_map[op_cls](), right=node.right)
+                    ast.copy_location(new_node, node)
+                    self._mark_applied(node, "BITWISE_OP", orig_node=node, mutated_node=new_node)
+                    return new_node
         return self.generic_visit(node)
 
     def visit_BoolOp(self, node: ast.BoolOp) -> ast.AST:
@@ -332,13 +354,59 @@ class MutationTransformer(ast.NodeTransformer):
 
         return self.generic_visit(node)
 
+    def visit_Raise(self, node: ast.Raise) -> ast.AST:
+        # 12. Exception Raising Mutations (EXCEPTION_SWAP - Held-out evaluation operator)
+        if not self.include_held_out:
+            return self.generic_visit(node)
+        if self.target_lines is not None and getattr(node, "lineno", None) not in self.target_lines:
+            return self.generic_visit(node)
+
+        exc_swap = {
+            "ValueError": "TypeError",
+            "TypeError": "ValueError",
+            "KeyError": "IndexError",
+            "IndexError": "KeyError",
+            "RuntimeError": "ValueError",
+            "LookupError": "KeyError",
+        }
+
+        if node.exc is not None:
+            # e.g. raise ValueError("msg")
+            if isinstance(node.exc, ast.Call) and isinstance(node.exc.func, ast.Name):
+                func_name = node.exc.func.id
+                if func_name in exc_swap:
+                    self.current_node_id += 1
+                    if self.current_node_id == self.target_node_id and not self.applied:
+                        new_func = ast.Name(id=exc_swap[func_name], ctx=ast.Load())
+                        ast.copy_location(new_func, node.exc.func)
+                        new_call = ast.Call(func=new_func, args=node.exc.args, keywords=node.exc.keywords)
+                        ast.copy_location(new_call, node.exc)
+                        new_node = ast.Raise(exc=new_call, cause=node.cause)
+                        ast.copy_location(new_node, node)
+                        self._mark_applied(node, "EXCEPTION_SWAP", orig_node=node, mutated_node=new_node)
+                        return new_node
+            # e.g. raise ValueError
+            elif isinstance(node.exc, ast.Name):
+                func_name = node.exc.id
+                if func_name in exc_swap:
+                    self.current_node_id += 1
+                    if self.current_node_id == self.target_node_id and not self.applied:
+                        new_exc = ast.Name(id=exc_swap[func_name], ctx=ast.Load())
+                        ast.copy_location(new_exc, node.exc)
+                        new_node = ast.Raise(exc=new_exc, cause=node.cause)
+                        ast.copy_location(new_node, node)
+                        self._mark_applied(node, "EXCEPTION_SWAP", orig_node=node, mutated_node=new_node)
+                        return new_node
+
+        return self.generic_visit(node)
+
 
 class ASTMutator:
     """
     High-level orchestrator for discovering mutation sites and generating
     deterministic, syntax-validated AST mutants with provenance and equivalence analysis.
     """
-    _MUTANT_CACHE: Dict[Tuple[int, Optional[Tuple[int, ...]]], List[MutantRecord]] = {}
+    _MUTANT_CACHE: Dict[Tuple[int, Optional[Tuple[int, ...]], bool], List[MutantRecord]] = {}
 
     @classmethod
     def clear_cache(cls) -> None:
@@ -346,7 +414,7 @@ class ASTMutator:
         cls._MUTANT_CACHE.clear()
 
     @staticmethod
-    def inspect_mutation_points(source_code: str, target_lines: Optional[List[int]] = None) -> int:
+    def inspect_mutation_points(source_code: str, target_lines: Optional[List[int]] = None, include_held_out: bool = False) -> int:
         """
         Walks AST using MutationTransformer in inspection mode (target_node_id=0)
         to count the exact number of mutation sites deterministically.
@@ -356,12 +424,12 @@ class ASTMutator:
             tree = ast.parse(source_code)
         except SyntaxError:
             return 0
-        inspector = MutationTransformer(target_node_id=0, target_lines=target_lines)
+        inspector = MutationTransformer(target_node_id=0, target_lines=target_lines, include_held_out=include_held_out)
         inspector.visit(tree)
         return inspector.current_node_id
 
     @classmethod
-    def mutate(cls, source_code: str, target_lines: Optional[List[int]] = None) -> List[MutantRecord]:
+    def mutate(cls, source_code: str, target_lines: Optional[List[int]] = None, include_held_out: bool = False) -> List[MutantRecord]:
         """
         Generates deterministic AST mutants. If target_lines is provided and non-empty,
         only mutates AST nodes residing on those lines.
@@ -374,17 +442,17 @@ class ASTMutator:
             return []
 
         # Check in-memory AST cache for idempotent acceleration
-        cache_key = (hash(source_code), tuple(sorted(target_lines)) if target_lines else None)
+        cache_key = (hash(source_code), tuple(sorted(target_lines)) if target_lines else None, include_held_out)
         if cache_key in cls._MUTANT_CACHE:
             return [m.model_copy() for m in cls._MUTANT_CACHE[cache_key]]
 
-        num_targets = cls.inspect_mutation_points(source_code, target_lines=target_lines)
+        num_targets = cls.inspect_mutation_points(source_code, target_lines=target_lines, include_held_out=include_held_out)
         mutants: List[MutantRecord] = []
         original_lines = source_code.splitlines(keepends=True)
 
         for target_id in range(1, num_targets + 1):
             tree = ast.parse(source_code)
-            transformer = MutationTransformer(target_node_id=target_id, target_lines=target_lines)
+            transformer = MutationTransformer(target_node_id=target_id, target_lines=target_lines, include_held_out=include_held_out)
             mutated_tree = transformer.visit(tree)
             ast.fix_missing_locations(mutated_tree)
 
@@ -461,3 +529,12 @@ class ASTMutator:
         Alias for mutate() to preserve backward compatibility.
         """
         return cls.mutate(source_code, target_lines=target_lines)
+
+    @classmethod
+    def generate_held_out_mutants(cls, source_code: str, target_lines: Optional[List[int]] = None) -> List[MutantRecord]:
+        """
+        Generates exclusively the held-out mutation operators (BITWISE_OP, EXCEPTION_SWAP)
+        for empirical generalization evaluation (Stage 1.5).
+        """
+        all_with_held = cls.mutate(source_code, target_lines=target_lines, include_held_out=True)
+        return [m for m in all_with_held if m.mutation_type in ("BITWISE_OP", "EXCEPTION_SWAP")]

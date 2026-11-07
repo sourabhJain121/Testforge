@@ -1,0 +1,731 @@
+{
+  "metadata": {
+    "timestamp": "2026-11-07T14:01:33Z",
+    "unseen_seeds": [
+      101,
+      102,
+      103
+    ],
+    "seen_operator_classes": [
+      "COMP_OP",
+      "BOUNDARY_SWAP",
+      "OFF_BY_ONE",
+      "ARITH_OP",
+      "LOGICAL_CONN",
+      "MATH_FUNC",
+      "COND_INV",
+      "RETURN_VAL",
+      "CONST_VAL",
+      "EXCEPT_HANDLER"
+    ],
+    "held_out_operator_classes": [
+      "BITWISE_OP",
+      "EXCEPTION_SWAP"
+    ],
+    "target_count": 8
+  },
+  "targets": {
+    "discount.py": {
+      "seen_mutant_count": 19,
+      "held_out_mutant_count": 0,
+      "combined_mutant_count": 19,
+      "mean_seen_raw_ms": 94.74,
+      "std_seen_raw_ms": 0.0,
+      "mean_seen_adj_ms": 100.0,
+      "std_seen_adj_ms": 0.0,
+      "mean_held_out_raw_ms": 100.0,
+      "std_held_out_raw_ms": 0.0,
+      "mean_held_out_adj_ms": 100.0,
+      "std_held_out_adj_ms": 0.0,
+      "mean_combined_raw_ms": 94.74,
+      "std_combined_raw_ms": 0.0,
+      "mean_combined_adj_ms": 100.0,
+      "std_combined_adj_ms": 0.0,
+      "generalization_gap": -5.26,
+      "seen_runs": [
+        {
+          "seed": 101,
+          "total_mutants": 19,
+          "killed_mutants": 18,
+          "raw_mutation_score": 94.74,
+          "adjusted_mutation_score": 100.0
+        },
+        {
+          "seed": 102,
+          "total_mutants": 19,
+          "killed_mutants": 18,
+          "raw_mutation_score": 94.74,
+          "adjusted_mutation_score": 100.0
+        },
+        {
+          "seed": 103,
+          "total_mutants": 19,
+          "killed_mutants": 18,
+          "raw_mutation_score": 94.74,
+          "adjusted_mutation_score": 100.0
+        }
+      ],
+      "held_out_runs": [
+        {
+          "seed": 101,
+          "total_mutants": 0,
+          "killed_mutants": 0,
+          "raw_mutation_score": 100.0,
+          "adjusted_mutation_score": 100.0
+        },
+        {
+          "seed": 102,
+          "total_mutants": 0,
+          "killed_mutants": 0,
+          "raw_mutation_score": 100.0,
+          "adjusted_mutation_score": 100.0
+        },
+        {
+          "seed": 103,
+          "total_mutants": 0,
+          "killed_mutants": 0,
+          "raw_mutation_score": 100.0,
+          "adjusted_mutation_score": 100.0
+        }
+      ],
+      "combined_runs": [
+        {
+          "seed": 101,
+          "total_mutants": 19,
+          "killed_mutants": 18,
+          "raw_mutation_score": 94.74,
+          "adjusted_mutation_score": 100.0
+        },
+        {
+          "seed": 102,
+          "total_mutants": 19,
+          "killed_mutants": 18,
+          "raw_mutation_score": 94.74,
+          "adjusted_mutation_score": 100.0
+        },
+        {
+          "seed": 103,
+          "total_mutants": 19,
+          "killed_mutants": 18,
+          "raw_mutation_score": 94.74,
+          "adjusted_mutation_score": 100.0
+        }
+      ]
+    },
+    "lru_cache.py": {
+      "seen_mutant_count": 42,
+      "held_out_mutant_count": 1,
+      "combined_mutant_count": 43,
+      "mean_seen_raw_ms": 33.33,
+      "std_seen_raw_ms": 0.0,
+      "mean_seen_adj_ms": 36.84,
+      "std_seen_adj_ms": 0.0,
+      "mean_held_out_raw_ms": 0.0,
+      "std_held_out_raw_ms": 0.0,
+      "mean_held_out_adj_ms": 0.0,
+      "std_held_out_adj_ms": 0.0,
+      "mean_combined_raw_ms": 32.56,
+      "std_combined_raw_ms": 0.0,
+      "mean_combined_adj_ms": 35.9,
+      "std_combined_adj_ms": 0.0,
+      "generalization_gap": 33.33,
+      "seen_runs": [
+        {
+          "seed": 101,
+          "total_mutants": 42,
+          "killed_mutants": 14,
+          "raw_mutation_score": 33.33,
+          "adjusted_mutation_score": 36.84
+        },
+        {
+          "seed": 102,
+          "total_mutants": 42,
+          "killed_mutants": 14,
+          "raw_mutation_score": 33.33,
+          "adjusted_mutation_score": 36.84
+        },
+        {
+          "seed": 103,
+          "total_mutants": 42,
+          "killed_mutants": 14,
+          "raw_mutation_score": 33.33,
+          "adjusted_mutation_score": 36.84
+        }
+      ],
+      "held_out_runs": [
+        {
+          "seed": 101,
+          "total_mutants": 1,
+          "killed_mutants": 0,
+          "raw_mutation_score": 0.0,
+          "adjusted_mutation_score": 0.0
+        },
+        {
+          "seed": 102,
+          "total_mutants": 1,
+          "killed_mutants": 0,
+          "raw_mutation_score": 0.0,
+          "adjusted_mutation_score": 0.0
+        },
+        {
+          "seed": 103,
+          "total_mutants": 1,
+          "killed_mutants": 0,
+          "raw_mutation_score": 0.0,
+          "adjusted_mutation_score": 0.0
+        }
+      ],
+      "combined_runs": [
+        {
+          "seed": 101,
+          "total_mutants": 43,
+          "killed_mutants": 14,
+          "raw_mutation_score": 32.56,
+          "adjusted_mutation_score": 35.9
+        },
+        {
+          "seed": 102,
+          "total_mutants": 43,
+          "killed_mutants": 14,
+          "raw_mutation_score": 32.56,
+          "adjusted_mutation_score": 35.9
+        },
+        {
+          "seed": 103,
+          "total_mutants": 43,
+          "killed_mutants": 14,
+          "raw_mutation_score": 32.56,
+          "adjusted_mutation_score": 35.9
+        }
+      ]
+    },
+    "order_fsm.py": {
+      "seen_mutant_count": 106,
+      "held_out_mutant_count": 0,
+      "combined_mutant_count": 106,
+      "mean_seen_raw_ms": 97.17,
+      "std_seen_raw_ms": 0.0,
+      "mean_seen_adj_ms": 97.17,
+      "std_seen_adj_ms": 0.0,
+      "mean_held_out_raw_ms": 100.0,
+      "std_held_out_raw_ms": 0.0,
+      "mean_held_out_adj_ms": 100.0,
+      "std_held_out_adj_ms": 0.0,
+      "mean_combined_raw_ms": 97.17,
+      "std_combined_raw_ms": 0.0,
+      "mean_combined_adj_ms": 97.17,
+      "std_combined_adj_ms": 0.0,
+      "generalization_gap": -2.83,
+      "seen_runs": [
+        {
+          "seed": 101,
+          "total_mutants": 106,
+          "killed_mutants": 103,
+          "raw_mutation_score": 97.17,
+          "adjusted_mutation_score": 97.17
+        },
+        {
+          "seed": 102,
+          "total_mutants": 106,
+          "killed_mutants": 103,
+          "raw_mutation_score": 97.17,
+          "adjusted_mutation_score": 97.17
+        },
+        {
+          "seed": 103,
+          "total_mutants": 106,
+          "killed_mutants": 103,
+          "raw_mutation_score": 97.17,
+          "adjusted_mutation_score": 97.17
+        }
+      ],
+      "held_out_runs": [
+        {
+          "seed": 101,
+          "total_mutants": 0,
+          "killed_mutants": 0,
+          "raw_mutation_score": 100.0,
+          "adjusted_mutation_score": 100.0
+        },
+        {
+          "seed": 102,
+          "total_mutants": 0,
+          "killed_mutants": 0,
+          "raw_mutation_score": 100.0,
+          "adjusted_mutation_score": 100.0
+        },
+        {
+          "seed": 103,
+          "total_mutants": 0,
+          "killed_mutants": 0,
+          "raw_mutation_score": 100.0,
+          "adjusted_mutation_score": 100.0
+        }
+      ],
+      "combined_runs": [
+        {
+          "seed": 101,
+          "total_mutants": 106,
+          "killed_mutants": 103,
+          "raw_mutation_score": 97.17,
+          "adjusted_mutation_score": 97.17
+        },
+        {
+          "seed": 102,
+          "total_mutants": 106,
+          "killed_mutants": 103,
+          "raw_mutation_score": 97.17,
+          "adjusted_mutation_score": 97.17
+        },
+        {
+          "seed": 103,
+          "total_mutants": 106,
+          "killed_mutants": 103,
+          "raw_mutation_score": 97.17,
+          "adjusted_mutation_score": 97.17
+        }
+      ]
+    },
+    "stats_calculator.py": {
+      "seen_mutant_count": 73,
+      "held_out_mutant_count": 6,
+      "combined_mutant_count": 79,
+      "mean_seen_raw_ms": 0.0,
+      "std_seen_raw_ms": 0.0,
+      "mean_seen_adj_ms": 0.0,
+      "std_seen_adj_ms": 0.0,
+      "mean_held_out_raw_ms": 0.0,
+      "std_held_out_raw_ms": 0.0,
+      "mean_held_out_adj_ms": 0.0,
+      "std_held_out_adj_ms": 0.0,
+      "mean_combined_raw_ms": 0.0,
+      "std_combined_raw_ms": 0.0,
+      "mean_combined_adj_ms": 0.0,
+      "std_combined_adj_ms": 0.0,
+      "generalization_gap": 0.0,
+      "seen_runs": [
+        {
+          "seed": 101,
+          "total_mutants": 73,
+          "killed_mutants": 0,
+          "raw_mutation_score": 0.0,
+          "adjusted_mutation_score": 0.0
+        },
+        {
+          "seed": 102,
+          "total_mutants": 73,
+          "killed_mutants": 0,
+          "raw_mutation_score": 0.0,
+          "adjusted_mutation_score": 0.0
+        },
+        {
+          "seed": 103,
+          "total_mutants": 73,
+          "killed_mutants": 0,
+          "raw_mutation_score": 0.0,
+          "adjusted_mutation_score": 0.0
+        }
+      ],
+      "held_out_runs": [
+        {
+          "seed": 101,
+          "total_mutants": 6,
+          "killed_mutants": 0,
+          "raw_mutation_score": 0.0,
+          "adjusted_mutation_score": 0.0
+        },
+        {
+          "seed": 102,
+          "total_mutants": 6,
+          "killed_mutants": 0,
+          "raw_mutation_score": 0.0,
+          "adjusted_mutation_score": 0.0
+        },
+        {
+          "seed": 103,
+          "total_mutants": 6,
+          "killed_mutants": 0,
+          "raw_mutation_score": 0.0,
+          "adjusted_mutation_score": 0.0
+        }
+      ],
+      "combined_runs": [
+        {
+          "seed": 101,
+          "total_mutants": 79,
+          "killed_mutants": 0,
+          "raw_mutation_score": 0.0,
+          "adjusted_mutation_score": 0.0
+        },
+        {
+          "seed": 102,
+          "total_mutants": 79,
+          "killed_mutants": 0,
+          "raw_mutation_score": 0.0,
+          "adjusted_mutation_score": 0.0
+        },
+        {
+          "seed": 103,
+          "total_mutants": 79,
+          "killed_mutants": 0,
+          "raw_mutation_score": 0.0,
+          "adjusted_mutation_score": 0.0
+        }
+      ]
+    },
+    "expression_tokenizer.py": {
+      "seen_mutant_count": 76,
+      "held_out_mutant_count": 0,
+      "combined_mutant_count": 76,
+      "mean_seen_raw_ms": 46.05,
+      "std_seen_raw_ms": 0.0,
+      "mean_seen_adj_ms": 47.95,
+      "std_seen_adj_ms": 0.0,
+      "mean_held_out_raw_ms": 100.0,
+      "std_held_out_raw_ms": 0.0,
+      "mean_held_out_adj_ms": 100.0,
+      "std_held_out_adj_ms": 0.0,
+      "mean_combined_raw_ms": 46.05,
+      "std_combined_raw_ms": 0.0,
+      "mean_combined_adj_ms": 47.95,
+      "std_combined_adj_ms": 0.0,
+      "generalization_gap": -53.95,
+      "seen_runs": [
+        {
+          "seed": 101,
+          "total_mutants": 76,
+          "killed_mutants": 27,
+          "raw_mutation_score": 46.05,
+          "adjusted_mutation_score": 47.95
+        },
+        {
+          "seed": 102,
+          "total_mutants": 76,
+          "killed_mutants": 27,
+          "raw_mutation_score": 46.05,
+          "adjusted_mutation_score": 47.95
+        },
+        {
+          "seed": 103,
+          "total_mutants": 76,
+          "killed_mutants": 27,
+          "raw_mutation_score": 46.05,
+          "adjusted_mutation_score": 47.95
+        }
+      ],
+      "held_out_runs": [
+        {
+          "seed": 101,
+          "total_mutants": 0,
+          "killed_mutants": 0,
+          "raw_mutation_score": 100.0,
+          "adjusted_mutation_score": 100.0
+        },
+        {
+          "seed": 102,
+          "total_mutants": 0,
+          "killed_mutants": 0,
+          "raw_mutation_score": 100.0,
+          "adjusted_mutation_score": 100.0
+        },
+        {
+          "seed": 103,
+          "total_mutants": 0,
+          "killed_mutants": 0,
+          "raw_mutation_score": 100.0,
+          "adjusted_mutation_score": 100.0
+        }
+      ],
+      "combined_runs": [
+        {
+          "seed": 101,
+          "total_mutants": 76,
+          "killed_mutants": 27,
+          "raw_mutation_score": 46.05,
+          "adjusted_mutation_score": 47.95
+        },
+        {
+          "seed": 102,
+          "total_mutants": 76,
+          "killed_mutants": 27,
+          "raw_mutation_score": 46.05,
+          "adjusted_mutation_score": 47.95
+        },
+        {
+          "seed": 103,
+          "total_mutants": 76,
+          "killed_mutants": 27,
+          "raw_mutation_score": 46.05,
+          "adjusted_mutation_score": 47.95
+        }
+      ]
+    },
+    "sliding_window_rate_limiter.py": {
+      "seen_mutant_count": 67,
+      "held_out_mutant_count": 3,
+      "combined_mutant_count": 70,
+      "mean_seen_raw_ms": 31.34,
+      "std_seen_raw_ms": 0.0,
+      "mean_seen_adj_ms": 32.31,
+      "std_seen_adj_ms": 0.0,
+      "mean_held_out_raw_ms": 33.33,
+      "std_held_out_raw_ms": 0.0,
+      "mean_held_out_adj_ms": 33.33,
+      "std_held_out_adj_ms": 0.0,
+      "mean_combined_raw_ms": 31.43,
+      "std_combined_raw_ms": 0.0,
+      "mean_combined_adj_ms": 32.35,
+      "std_combined_adj_ms": 0.0,
+      "generalization_gap": -1.99,
+      "seen_runs": [
+        {
+          "seed": 101,
+          "total_mutants": 67,
+          "killed_mutants": 21,
+          "raw_mutation_score": 31.34,
+          "adjusted_mutation_score": 32.31
+        },
+        {
+          "seed": 102,
+          "total_mutants": 67,
+          "killed_mutants": 21,
+          "raw_mutation_score": 31.34,
+          "adjusted_mutation_score": 32.31
+        },
+        {
+          "seed": 103,
+          "total_mutants": 67,
+          "killed_mutants": 21,
+          "raw_mutation_score": 31.34,
+          "adjusted_mutation_score": 32.31
+        }
+      ],
+      "held_out_runs": [
+        {
+          "seed": 101,
+          "total_mutants": 3,
+          "killed_mutants": 1,
+          "raw_mutation_score": 33.33,
+          "adjusted_mutation_score": 33.33
+        },
+        {
+          "seed": 102,
+          "total_mutants": 3,
+          "killed_mutants": 1,
+          "raw_mutation_score": 33.33,
+          "adjusted_mutation_score": 33.33
+        },
+        {
+          "seed": 103,
+          "total_mutants": 3,
+          "killed_mutants": 1,
+          "raw_mutation_score": 33.33,
+          "adjusted_mutation_score": 33.33
+        }
+      ],
+      "combined_runs": [
+        {
+          "seed": 101,
+          "total_mutants": 70,
+          "killed_mutants": 22,
+          "raw_mutation_score": 31.43,
+          "adjusted_mutation_score": 32.35
+        },
+        {
+          "seed": 102,
+          "total_mutants": 70,
+          "killed_mutants": 22,
+          "raw_mutation_score": 31.43,
+          "adjusted_mutation_score": 32.35
+        },
+        {
+          "seed": 103,
+          "total_mutants": 70,
+          "killed_mutants": 22,
+          "raw_mutation_score": 31.43,
+          "adjusted_mutation_score": 32.35
+        }
+      ]
+    },
+    "interval_set.py": {
+      "seen_mutant_count": 67,
+      "held_out_mutant_count": 2,
+      "combined_mutant_count": 69,
+      "mean_seen_raw_ms": 19.4,
+      "std_seen_raw_ms": 0.0,
+      "mean_seen_adj_ms": 19.4,
+      "std_seen_adj_ms": 0.0,
+      "mean_held_out_raw_ms": 0.0,
+      "std_held_out_raw_ms": 0.0,
+      "mean_held_out_adj_ms": 0.0,
+      "std_held_out_adj_ms": 0.0,
+      "mean_combined_raw_ms": 18.84,
+      "std_combined_raw_ms": 0.0,
+      "mean_combined_adj_ms": 18.84,
+      "std_combined_adj_ms": 0.0,
+      "generalization_gap": 19.4,
+      "seen_runs": [
+        {
+          "seed": 101,
+          "total_mutants": 67,
+          "killed_mutants": 13,
+          "raw_mutation_score": 19.4,
+          "adjusted_mutation_score": 19.4
+        },
+        {
+          "seed": 102,
+          "total_mutants": 67,
+          "killed_mutants": 13,
+          "raw_mutation_score": 19.4,
+          "adjusted_mutation_score": 19.4
+        },
+        {
+          "seed": 103,
+          "total_mutants": 67,
+          "killed_mutants": 13,
+          "raw_mutation_score": 19.4,
+          "adjusted_mutation_score": 19.4
+        }
+      ],
+      "held_out_runs": [
+        {
+          "seed": 101,
+          "total_mutants": 2,
+          "killed_mutants": 0,
+          "raw_mutation_score": 0.0,
+          "adjusted_mutation_score": 0.0
+        },
+        {
+          "seed": 102,
+          "total_mutants": 2,
+          "killed_mutants": 0,
+          "raw_mutation_score": 0.0,
+          "adjusted_mutation_score": 0.0
+        },
+        {
+          "seed": 103,
+          "total_mutants": 2,
+          "killed_mutants": 0,
+          "raw_mutation_score": 0.0,
+          "adjusted_mutation_score": 0.0
+        }
+      ],
+      "combined_runs": [
+        {
+          "seed": 101,
+          "total_mutants": 69,
+          "killed_mutants": 13,
+          "raw_mutation_score": 18.84,
+          "adjusted_mutation_score": 18.84
+        },
+        {
+          "seed": 102,
+          "total_mutants": 69,
+          "killed_mutants": 13,
+          "raw_mutation_score": 18.84,
+          "adjusted_mutation_score": 18.84
+        },
+        {
+          "seed": 103,
+          "total_mutants": 69,
+          "killed_mutants": 13,
+          "raw_mutation_score": 18.84,
+          "adjusted_mutation_score": 18.84
+        }
+      ]
+    },
+    "inventory_ledger.py": {
+      "seen_mutant_count": 97,
+      "held_out_mutant_count": 2,
+      "combined_mutant_count": 99,
+      "mean_seen_raw_ms": 54.64,
+      "std_seen_raw_ms": 0.0,
+      "mean_seen_adj_ms": 56.38,
+      "std_seen_adj_ms": 0.0,
+      "mean_held_out_raw_ms": 50.0,
+      "std_held_out_raw_ms": 0.0,
+      "mean_held_out_adj_ms": 50.0,
+      "std_held_out_adj_ms": 0.0,
+      "mean_combined_raw_ms": 54.55,
+      "std_combined_raw_ms": 0.0,
+      "mean_combined_adj_ms": 56.25,
+      "std_combined_adj_ms": 0.0,
+      "generalization_gap": 4.64,
+      "seen_runs": [
+        {
+          "seed": 101,
+          "total_mutants": 97,
+          "killed_mutants": 53,
+          "raw_mutation_score": 54.64,
+          "adjusted_mutation_score": 56.38
+        },
+        {
+          "seed": 102,
+          "total_mutants": 97,
+          "killed_mutants": 53,
+          "raw_mutation_score": 54.64,
+          "adjusted_mutation_score": 56.38
+        },
+        {
+          "seed": 103,
+          "total_mutants": 97,
+          "killed_mutants": 53,
+          "raw_mutation_score": 54.64,
+          "adjusted_mutation_score": 56.38
+        }
+      ],
+      "held_out_runs": [
+        {
+          "seed": 101,
+          "total_mutants": 2,
+          "killed_mutants": 1,
+          "raw_mutation_score": 50.0,
+          "adjusted_mutation_score": 50.0
+        },
+        {
+          "seed": 102,
+          "total_mutants": 2,
+          "killed_mutants": 1,
+          "raw_mutation_score": 50.0,
+          "adjusted_mutation_score": 50.0
+        },
+        {
+          "seed": 103,
+          "total_mutants": 2,
+          "killed_mutants": 1,
+          "raw_mutation_score": 50.0,
+          "adjusted_mutation_score": 50.0
+        }
+      ],
+      "combined_runs": [
+        {
+          "seed": 101,
+          "total_mutants": 99,
+          "killed_mutants": 54,
+          "raw_mutation_score": 54.55,
+          "adjusted_mutation_score": 56.25
+        },
+        {
+          "seed": 102,
+          "total_mutants": 99,
+          "killed_mutants": 54,
+          "raw_mutation_score": 54.55,
+          "adjusted_mutation_score": 56.25
+        },
+        {
+          "seed": 103,
+          "total_mutants": 99,
+          "killed_mutants": 54,
+          "raw_mutation_score": 54.55,
+          "adjusted_mutation_score": 56.25
+        }
+      ]
+    }
+  },
+  "summary": {
+    "macro_avg_seen_raw_ms": 47.08,
+    "macro_avg_held_out_raw_ms": 47.92,
+    "macro_avg_combined_raw_ms": 46.92,
+    "macro_avg_generalization_gap": -0.83
+  }
+}
