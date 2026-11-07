@@ -1,0 +1,286 @@
+{
+  "timestamp": "2026-11-07T15:38:21Z",
+  "sub_task": "5.4",
+  "description": "Stronger Equivalence Detection (Bytecode dis Comparison + Static Semantic Reasoning)",
+  "total_labeled_mutants": 30,
+  "true_positives": 9,
+  "false_positives": 0,
+  "true_negatives": 20,
+  "false_negatives": 1,
+  "precision_pct": 100.0,
+  "recall_pct": 90.0,
+  "f1_score_pct": 94.7,
+  "false_positive_rate_pct": 0.0,
+  "samples": [
+    {
+      "id": "EQ_001_BYTECODE_CONST_FOLD",
+      "ground_truth": "EQUIVALENT",
+      "detected_status": "EQUIVALENT",
+      "method": "BYTECODE_IDENTITY",
+      "confidence": "HIGH",
+      "reason": "Bytecode instruction streams and nested code objects are strictly identical after compilation.",
+      "verdict": "CORRECT_EQUIVALENT (TP)"
+    },
+    {
+      "id": "EQ_002_BYTECODE_MEMBERSHIP",
+      "ground_truth": "EQUIVALENT",
+      "detected_status": "EQUIVALENT",
+      "method": "BYTECODE_IDENTITY",
+      "confidence": "HIGH",
+      "reason": "Bytecode instruction streams and nested code objects are strictly identical after compilation.",
+      "verdict": "CORRECT_EQUIVALENT (TP)"
+    },
+    {
+      "id": "EQ_003_ALGEBRAIC_ZERO",
+      "ground_truth": "EQUIVALENT",
+      "detected_status": "EQUIVALENT",
+      "method": "SELF_CANCELING_TRANSFORM",
+      "confidence": "HIGH",
+      "reason": "Algebraic zero-identity transformation (val + 0 -> val - 0) preserves semantic value.",
+      "verdict": "CORRECT_EQUIVALENT (TP)"
+    },
+    {
+      "id": "EQ_004_DOUBLE_NEGATION",
+      "ground_truth": "EQUIVALENT",
+      "detected_status": "EQUIVALENT",
+      "method": "BYTECODE_IDENTITY",
+      "confidence": "HIGH",
+      "reason": "Bytecode instruction streams and nested code objects are strictly identical after compilation.",
+      "verdict": "CORRECT_EQUIVALENT (TP)"
+    },
+    {
+      "id": "EQ_005_DEAD_CODE_POST_RETURN",
+      "ground_truth": "EQUIVALENT",
+      "detected_status": "EQUIVALENT",
+      "method": "BYTECODE_IDENTITY",
+      "confidence": "HIGH",
+      "reason": "Bytecode instruction streams and nested code objects are strictly identical after compilation.",
+      "verdict": "CORRECT_EQUIVALENT (TP)"
+    },
+    {
+      "id": "EQ_006_DEAD_CODE_IF_FALSE",
+      "ground_truth": "EQUIVALENT",
+      "detected_status": "EQUIVALENT",
+      "method": "BYTECODE_IDENTITY",
+      "confidence": "HIGH",
+      "reason": "Bytecode instruction streams and nested code objects are strictly identical after compilation.",
+      "verdict": "CORRECT_EQUIVALENT (TP)"
+    },
+    {
+      "id": "EQ_007_INTEGER_BOUNDARY_SHIFT",
+      "ground_truth": "EQUIVALENT",
+      "detected_status": "POTENTIALLY_EQUIVALENT",
+      "method": "REDUNDANT_BOUNDARY",
+      "confidence": "MEDIUM",
+      "reason": "Relational boundary mutation on non-negative domain invariant (len(...) >= 0); condition remains universally true.",
+      "verdict": "CORRECT_EQUIVALENT (TP)"
+    },
+    {
+      "id": "EQ_008_DISCOUNT_EQUIV_FALLBACK",
+      "ground_truth": "EQUIVALENT",
+      "detected_status": "UNKNOWN",
+      "method": "NONE",
+      "confidence": "NONE",
+      "reason": "Mutant was evaluated but no static semantic equivalence rule or proof applies. Surviving tests is insufficient evidence of equivalence.",
+      "verdict": "MISSED_EQUIVALENT (FN)"
+    },
+    {
+      "id": "EQ_009_SYNTACTIC_IDENTITY",
+      "ground_truth": "EQUIVALENT",
+      "detected_status": "EQUIVALENT",
+      "method": "SYNTACTIC_IDENTITY",
+      "confidence": "HIGH",
+      "reason": "AST normalization of mutated code produces identical source representation to original.",
+      "verdict": "CORRECT_EQUIVALENT (TP)"
+    },
+    {
+      "id": "EQ_010_ORDER_FSM_DEAD_CODE_MUTANT",
+      "ground_truth": "EQUIVALENT",
+      "detected_status": "EQUIVALENT",
+      "method": "DEAD_CODE_MUTATION",
+      "confidence": "HIGH",
+      "reason": "Mutation site at line 3 is in provably unreachable dead code.",
+      "verdict": "CORRECT_EQUIVALENT (TP)"
+    },
+    {
+      "id": "NE_001_MUTANT",
+      "ground_truth": "NOT_EQUIVALENT",
+      "detected_status": "UNKNOWN",
+      "method": "NONE",
+      "confidence": "NONE",
+      "reason": "Mutant was evaluated but no static semantic equivalence rule or proof applies. Surviving tests is insufficient evidence of equivalence.",
+      "verdict": "CORRECT_REJECTED (TN)"
+    },
+    {
+      "id": "NE_002_MUTANT",
+      "ground_truth": "NOT_EQUIVALENT",
+      "detected_status": "UNKNOWN",
+      "method": "NONE",
+      "confidence": "NONE",
+      "reason": "Mutant was evaluated but no static semantic equivalence rule or proof applies. Surviving tests is insufficient evidence of equivalence.",
+      "verdict": "CORRECT_REJECTED (TN)"
+    },
+    {
+      "id": "NE_003_MUTANT",
+      "ground_truth": "NOT_EQUIVALENT",
+      "detected_status": "UNKNOWN",
+      "method": "NONE",
+      "confidence": "NONE",
+      "reason": "Mutant was evaluated but no static semantic equivalence rule or proof applies. Surviving tests is insufficient evidence of equivalence.",
+      "verdict": "CORRECT_REJECTED (TN)"
+    },
+    {
+      "id": "NE_004_MUTANT",
+      "ground_truth": "NOT_EQUIVALENT",
+      "detected_status": "UNKNOWN",
+      "method": "NONE",
+      "confidence": "NONE",
+      "reason": "Mutant was evaluated but no static semantic equivalence rule or proof applies. Surviving tests is insufficient evidence of equivalence.",
+      "verdict": "CORRECT_REJECTED (TN)"
+    },
+    {
+      "id": "NE_005_MUTANT",
+      "ground_truth": "NOT_EQUIVALENT",
+      "detected_status": "UNKNOWN",
+      "method": "NONE",
+      "confidence": "NONE",
+      "reason": "Mutant was evaluated but no static semantic equivalence rule or proof applies. Surviving tests is insufficient evidence of equivalence.",
+      "verdict": "CORRECT_REJECTED (TN)"
+    },
+    {
+      "id": "NE_006_MUTANT",
+      "ground_truth": "NOT_EQUIVALENT",
+      "detected_status": "UNKNOWN",
+      "method": "NONE",
+      "confidence": "NONE",
+      "reason": "Mutant was evaluated but no static semantic equivalence rule or proof applies. Surviving tests is insufficient evidence of equivalence.",
+      "verdict": "CORRECT_REJECTED (TN)"
+    },
+    {
+      "id": "NE_007_MUTANT",
+      "ground_truth": "NOT_EQUIVALENT",
+      "detected_status": "UNKNOWN",
+      "method": "NONE",
+      "confidence": "NONE",
+      "reason": "Mutant was evaluated but no static semantic equivalence rule or proof applies. Surviving tests is insufficient evidence of equivalence.",
+      "verdict": "CORRECT_REJECTED (TN)"
+    },
+    {
+      "id": "NE_008_MUTANT",
+      "ground_truth": "NOT_EQUIVALENT",
+      "detected_status": "UNKNOWN",
+      "method": "NONE",
+      "confidence": "NONE",
+      "reason": "Mutant was evaluated but no static semantic equivalence rule or proof applies. Surviving tests is insufficient evidence of equivalence.",
+      "verdict": "CORRECT_REJECTED (TN)"
+    },
+    {
+      "id": "NE_009_MUTANT",
+      "ground_truth": "NOT_EQUIVALENT",
+      "detected_status": "UNKNOWN",
+      "method": "NONE",
+      "confidence": "NONE",
+      "reason": "Mutant was evaluated but no static semantic equivalence rule or proof applies. Surviving tests is insufficient evidence of equivalence.",
+      "verdict": "CORRECT_REJECTED (TN)"
+    },
+    {
+      "id": "NE_010_MUTANT",
+      "ground_truth": "NOT_EQUIVALENT",
+      "detected_status": "UNKNOWN",
+      "method": "NONE",
+      "confidence": "NONE",
+      "reason": "Mutant was evaluated but no static semantic equivalence rule or proof applies. Surviving tests is insufficient evidence of equivalence.",
+      "verdict": "CORRECT_REJECTED (TN)"
+    },
+    {
+      "id": "NE_011_MUTANT",
+      "ground_truth": "NOT_EQUIVALENT",
+      "detected_status": "UNKNOWN",
+      "method": "NONE",
+      "confidence": "NONE",
+      "reason": "Mutant was evaluated but no static semantic equivalence rule or proof applies. Surviving tests is insufficient evidence of equivalence.",
+      "verdict": "CORRECT_REJECTED (TN)"
+    },
+    {
+      "id": "NE_012_MUTANT",
+      "ground_truth": "NOT_EQUIVALENT",
+      "detected_status": "UNKNOWN",
+      "method": "NONE",
+      "confidence": "NONE",
+      "reason": "Mutant was evaluated but no static semantic equivalence rule or proof applies. Surviving tests is insufficient evidence of equivalence.",
+      "verdict": "CORRECT_REJECTED (TN)"
+    },
+    {
+      "id": "NE_013_MUTANT",
+      "ground_truth": "NOT_EQUIVALENT",
+      "detected_status": "UNKNOWN",
+      "method": "NONE",
+      "confidence": "NONE",
+      "reason": "Mutant was evaluated but no static semantic equivalence rule or proof applies. Surviving tests is insufficient evidence of equivalence.",
+      "verdict": "CORRECT_REJECTED (TN)"
+    },
+    {
+      "id": "NE_014_MUTANT",
+      "ground_truth": "NOT_EQUIVALENT",
+      "detected_status": "UNKNOWN",
+      "method": "NONE",
+      "confidence": "NONE",
+      "reason": "Mutant was evaluated but no static semantic equivalence rule or proof applies. Surviving tests is insufficient evidence of equivalence.",
+      "verdict": "CORRECT_REJECTED (TN)"
+    },
+    {
+      "id": "NE_015_MUTANT",
+      "ground_truth": "NOT_EQUIVALENT",
+      "detected_status": "UNKNOWN",
+      "method": "NONE",
+      "confidence": "NONE",
+      "reason": "Mutant was evaluated but no static semantic equivalence rule or proof applies. Surviving tests is insufficient evidence of equivalence.",
+      "verdict": "CORRECT_REJECTED (TN)"
+    },
+    {
+      "id": "NE_016_MUTANT",
+      "ground_truth": "NOT_EQUIVALENT",
+      "detected_status": "UNKNOWN",
+      "method": "NONE",
+      "confidence": "NONE",
+      "reason": "Mutant was evaluated but no static semantic equivalence rule or proof applies. Surviving tests is insufficient evidence of equivalence.",
+      "verdict": "CORRECT_REJECTED (TN)"
+    },
+    {
+      "id": "NE_017_MUTANT",
+      "ground_truth": "NOT_EQUIVALENT",
+      "detected_status": "UNKNOWN",
+      "method": "NONE",
+      "confidence": "NONE",
+      "reason": "Mutant was evaluated but no static semantic equivalence rule or proof applies. Surviving tests is insufficient evidence of equivalence.",
+      "verdict": "CORRECT_REJECTED (TN)"
+    },
+    {
+      "id": "NE_018_MUTANT",
+      "ground_truth": "NOT_EQUIVALENT",
+      "detected_status": "UNKNOWN",
+      "method": "NONE",
+      "confidence": "NONE",
+      "reason": "Mutant was evaluated but no static semantic equivalence rule or proof applies. Surviving tests is insufficient evidence of equivalence.",
+      "verdict": "CORRECT_REJECTED (TN)"
+    },
+    {
+      "id": "NE_019_MUTANT",
+      "ground_truth": "NOT_EQUIVALENT",
+      "detected_status": "UNKNOWN",
+      "method": "NONE",
+      "confidence": "NONE",
+      "reason": "Mutant was evaluated but no static semantic equivalence rule or proof applies. Surviving tests is insufficient evidence of equivalence.",
+      "verdict": "CORRECT_REJECTED (TN)"
+    },
+    {
+      "id": "NE_020_MUTANT",
+      "ground_truth": "NOT_EQUIVALENT",
+      "detected_status": "UNKNOWN",
+      "method": "NONE",
+      "confidence": "NONE",
+      "reason": "Mutant was evaluated but no static semantic equivalence rule or proof applies. Surviving tests is insufficient evidence of equivalence.",
+      "verdict": "CORRECT_REJECTED (TN)"
+    }
+  ]
+}

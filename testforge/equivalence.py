@@ -43,6 +43,8 @@ class EquivalenceConfidence(str, Enum):
 
 class EquivalenceMethod(str, Enum):
     SYNTACTIC_IDENTITY = "SYNTACTIC_IDENTITY"
+    BYTECODE_IDENTITY = "BYTECODE_IDENTITY"
+    LLM_SEMANTIC_JUDGE = "LLM_SEMANTIC_JUDGE"
     SELF_CANCELING_TRANSFORM = "SELF_CANCELING_TRANSFORM"
     DEAD_CODE_MUTATION = "DEAD_CODE_MUTATION"
     REDUNDANT_BOUNDARY = "REDUNDANT_BOUNDARY"
@@ -142,6 +144,122 @@ class DeadCodeVisitor(ast.NodeVisitor):
         self._mark_block_after_terminator(node.finalbody)
 
 
+# =========================================================================
+# Bytecode Comparison & LLM Equivalence Judge (Sub-Task 5.4)
+# =========================================================================
+
+import dis
+import types
+
+
+def normalize_bytecode(code_obj: types.CodeType) -> List[Tuple[str, str]]:
+    """Recursively normalizes bytecode instructions and nested code objects."""
+    instructions: List[Tuple[str, str]] = []
+    for inst in dis.get_instructions(code_obj):
+        arg = inst.argval
+        if isinstance(arg, types.CodeType):
+            arg = str(normalize_bytecode(arg))
+        else:
+            arg = str(arg)
+        instructions.append((inst.opname, arg))
+    return instructions
+
+
+def compare_bytecode_instructions(orig_code: str, mut_code: str) -> Tuple[bool, Optional[str]]:
+    """
+    Compiles both code snippets and compares their recursive bytecode instruction streams.
+    Returns (is_identical, explanation).
+    """
+    try:
+        co_orig = compile(orig_code, "<orig>", "exec")
+        co_mut = compile(mut_code, "<mut>", "exec")
+        norm_orig = normalize_bytecode(co_orig)
+        norm_mut = normalize_bytecode(co_mut)
+        if norm_orig == norm_mut:
+            return True, "Bytecode instruction streams and nested code objects are strictly identical after compilation."
+        return False, None
+    except Exception:
+        return False, None
+
+
+class LLMEquivalenceJudge:
+    """
+    Evaluates semantic behavioral equivalence between original and mutated code using
+    foundation models or deterministic semantic reasoning.
+    """
+    def __init__(self, model_name: str = "gemini-3.6-flash", api_key: Optional[str] = None):
+        self.model_name = model_name
+        self.api_key = api_key or os.environ.get("GEMINI_API_KEY", "").strip()
+
+    def judge_equivalence(
+        self,
+        original_code: str,
+        mutated_code: str,
+        diff: str,
+        context: Optional[str] = None
+    ) -> EquivalenceResult:
+        """
+        Assesses if mutant preserves exact input-output behavior for all domain inputs.
+        """
+        # 1. Bytecode check
+        is_bc, bc_reason = compare_bytecode_instructions(original_code, mutated_code)
+        if is_bc:
+            return EquivalenceResult(
+                status=EquivalenceClassification.EQUIVALENT,
+                method=EquivalenceMethod.BYTECODE_IDENTITY,
+                reason=bc_reason or "Bytecode compilation produces identical opcodes.",
+                confidence=EquivalenceConfidence.HIGH,
+                evidence={"bytecode_match": True}
+            )
+
+        # 2. LLM semantic check if API key is active and not privacy mode
+        from testforge.privacy_mode import PrivacyModeManager
+        is_privacy = PrivacyModeManager.get_instance().is_enabled()
+
+        if self.api_key and not is_privacy:
+            try:
+                from google import genai
+                from google.genai import types
+                client = genai.Client(api_key=self.api_key)
+                prompt = (
+                    f"You are a formal verification expert analyzing software mutation equivalence.\n"
+                    f"Target Context:\n{context or ''}\n"
+                    f"Original Snippet:\n{original_code}\n"
+                    f"Mutated Snippet:\n{mutated_code}\n"
+                    f"Unified Diff:\n{diff}\n\n"
+                    f"Determine if this mutation is EQUIVALENT (meaning NO input in the valid domain "
+                    f"can ever produce a different output, exception, or side effect) or NOT_EQUIVALENT.\n"
+                    f"Respond in JSON format:\n"
+                    f'{{"is_equivalent": true, "confidence": "HIGH", "reason": "...", "counterexample": null}}'
+                )
+                resp = client.models.generate_content(
+                    model="gemini-3.6-flash",
+                    contents=prompt,
+                    config=types.GenerateContentConfig(temperature=0.0)
+                )
+                text = resp.text or "{}"
+                m = re.search(r"\{.*\}", text, re.DOTALL)
+                if m:
+                    data = json.loads(m.group(0))
+                    if data.get("is_equivalent"):
+                        return EquivalenceResult(
+                            status=EquivalenceClassification.EQUIVALENT,
+                            method=EquivalenceMethod.LLM_SEMANTIC_JUDGE,
+                            reason=data.get("reason", "LLM formal analysis proved semantic equivalence."),
+                            confidence=getattr(EquivalenceConfidence, data.get("confidence", "HIGH"), EquivalenceConfidence.HIGH),
+                            evidence={"llm_verdict": data}
+                        )
+            except Exception as exc:
+                logger.warning(f"LLM equivalence judge call failed: {exc}")
+
+        return EquivalenceResult(
+            status=EquivalenceClassification.UNKNOWN,
+            method=EquivalenceMethod.NONE,
+            reason="No static, bytecode, or LLM equivalence proof applies.",
+            confidence=EquivalenceConfidence.NONE
+        )
+
+
 class EquivalentMutantAnalyzer:
     """
     Conservative analyzer for equivalent and potentially equivalent mutants.
@@ -219,6 +337,18 @@ class EquivalentMutantAnalyzer:
                     )
             except Exception:
                 pass
+
+        # 2b. Rule: Bytecode Compilation Identity (HIGH confidence EQUIVALENT)
+        if orig_code and mut_code:
+            is_bc, bc_reason = compare_bytecode_instructions(orig_code, mut_code)
+            if is_bc:
+                return EquivalenceResult(
+                    status=EquivalenceClassification.EQUIVALENT,
+                    method=EquivalenceMethod.BYTECODE_IDENTITY,
+                    reason=bc_reason or "Bytecode instructions are strictly identical after compilation.",
+                    confidence=EquivalenceConfidence.HIGH,
+                    evidence={"bytecode_match": True}
+                )
 
         # 3. Rule: Dead Code Mutation (HIGH confidence EQUIVALENT)
         # If the mutation occurs inside an unreachable block, behavior cannot differ.
