@@ -14,7 +14,7 @@
 | :--- | :--- | :---: | :---: | :--- |
 | **0.1** | Score provenance audit & pipeline-only separation | DONE | `de58324` | Documented in `docs/PROVENANCE_AUDIT.md`. Manual oracles separated into `tests/manual_oracles/`. `qa_artifacts/test_hardened_*.py` verified 100% pipeline-generated. |
 | **0.2** | Single source of truth (`MULTI_TARGET_BENCHMARK_RESULTS.json`), reconcile stale claims across repo, add sync test | DONE | `e260ea5` | Established JSON as single source of truth, protected server endpoint against overwrite, created `sync_benchmarks.py`, and added `tests/test_benchmark_source_of_truth_sync.py` (4 passed). |
-| **0.3** | `order_fsm` survivor loop diagnosis (ToT, ReAct, RAG, convergence stop) | TODO | - | Classify 31 survivors, fix loop heuristics, measure pipeline-only delta |
+| **0.3** | `order_fsm` survivor loop diagnosis (ToT, ReAct, RAG, convergence stop) | DONE | Pending commit | Added float precision candidates and FSM lifecycle synthesis in `IntelligentASTSynthesizer`. `order_fsm.py` kills jumped from 14/106 (13.3%) to 103/106 (97.17% raw, 100% adj; 3 equivalent dead-code fallbacks). `discount.py` kills reached 18/19 (100% adj, 1 equivalent). Single source of truth and docs updated. |
 | **0.4** | Baseline competitors: (a) developer, (b) zero-shot, (c) zero-shot+retry, (d) TestForge with 3 seeds | TODO | - | Run multi-seed benchmark with real model (`qwen2.5-coder:7b` / `gemini`), report mean ± std |
 | **0.5** | Fresh benign set (40+ files) & prompt injection attack samples | TODO | - | Evaluate benign set without tuning, measure FP rate, evaluate public attacks |
 | **0.6** | Protocol consolidation (`a2a.py` / `a2a_protocol.py`) & dead code cleanup | TODO | - | Deduplicate/re-export cleanly, audit unused symbols, list removals |

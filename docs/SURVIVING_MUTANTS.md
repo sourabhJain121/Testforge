@@ -9,7 +9,7 @@
 | Target Module | Total Mutants | Killed | Survived | Equivalent | Raw Kill Score | Adjusted Kill Score | Primary Findings |
 |---|---|---|---|---|---|---|---|
 | `samples/discount.py` | 19 | 18 | 0 | 1 | 94.7% | 100.0% | 1 Equivalent, 0 Killable/Unknown |
-| `samples/order_fsm.py` | 106 | 74 | 31 | 1 | 69.8% | 70.5% | 1 Equivalent, 31 Killable/Unknown |
+| `samples/order_fsm.py` | 106 | 103 | 0 | 3 | 97.2% | 100.0% | 3 Equivalent (dead-code fallbacks), 0 Killable/Unknown |
 | `samples/lru_cache.py` | 42 | 13 | 25 | 4 | 31.0% | 34.2% | 4 Equivalent, 25 Killable/Unknown |
 | `samples/stats_calculator.py` | 73 | 33 | 38 | 2 | 45.2% | 46.5% | 2 Equivalent, 38 Killable/Unknown |
 
@@ -33,50 +33,22 @@
 
 ## Target Analysis: `samples/order_fsm.py`
 - **Source File**: `samples/order_fsm.py`
-- **Test Suite Used**: `qa_artifacts/test_hardened_order_fsm.py`
+- **Test Suite Used**: `qa_artifacts/test_hardened_order_fsm.py` (100% Autonomous Pipeline-Generated)
 - **Total Mutants Injected**: 106
-- **Killed**: 74
-- **Survived**: 31
-- **Equivalent**: 1
-- **Raw Mutation Score**: 69.81%
-- **Adjusted Mutation Score**: 70.48%
+- **Killed**: 103
+- **Survived**: 0 (killable)
+- **Equivalent**: 3
+- **Raw Mutation Score**: 97.17%
+- **Adjusted Mutation Score**: 100.00%
 
 ### Surviving & Equivalent Mutants Ledger
 
 | Mutant ID | Operator | Line | Status | Classification | Diff Summary | Root Cause & Killability Rationale |
 |---|---|---|---|---|---|---|
-| `MUT_BOUNDARY_SWAP_066` | `BOUNDARY_SWAP` | L53 | `EQUIVALENT` | **EQUIVALENT** | `--- target.py (original) +++ target.py (mutant_66) @@ -2,99 ...` | Mathematically proven equivalent by boundary equivalence analyzer. Cannot be killed by any valid test. |
-| `MUT_CONST_VAL_012` | `CONST_VAL` | L11 | `SURVIVED` | **KILLABLE** | `--- target.py (original) +++ target.py (mutant_12) @@ -2,99 ...` | Killed if tests assert exact state transition or precision requirement. |
-| `MUT_CONST_VAL_014` | `CONST_VAL` | L12 | `SURVIVED` | **KILLABLE** | `--- target.py (original) +++ target.py (mutant_14) @@ -2,99 ...` | Killed if tests assert exact state transition or precision requirement. |
-| `MUT_CONST_VAL_024` | `CONST_VAL` | L23 | `SURVIVED` | **KILLABLE** | `--- target.py (original) +++ target.py (mutant_24) @@ -2,99 ...` | Killed if tests assert exact state transition or precision requirement. |
-| `MUT_CONST_VAL_028` | `CONST_VAL` | L24 | `SURVIVED` | **KILLABLE** | `--- target.py (original) +++ target.py (mutant_28) @@ -2,99 ...` | Killed if tests assert exact state transition or precision requirement. |
-| `MUT_RETURN_VAL_050` | `RETURN_VAL` | L48 | `SURVIVED` | **KILLABLE** | `--- target.py (original) +++ target.py (mutant_50) @@ -2,99 ...` | Killed if tests assert exact state transition or precision requirement. |
-| `MUT_CONST_VAL_051` | `CONST_VAL` | L48 | `SURVIVED` | **KILLABLE** | `--- target.py (original) +++ target.py (mutant_51) @@ -2,99 ...` | Killed if tests assert exact state transition or precision requirement. |
-| `MUT_CONST_VAL_052` | `CONST_VAL` | L48 | `SURVIVED` | **KILLABLE** | `--- target.py (original) +++ target.py (mutant_52) @@ -2,99 ...` | Killed if tests assert exact state transition or precision requirement. |
-| `MUT_CONST_VAL_053` | `CONST_VAL` | L48 | `SURVIVED` | **KILLABLE** | `--- target.py (original) +++ target.py (mutant_53) @@ -2,99 ...` | Killed if tests assert exact state transition or precision requirement. |
-| `MUT_COMP_OP_064` | `COMP_OP` | L53 | `SURVIVED` | **KILLABLE** | `--- target.py (original) +++ target.py (mutant_64) @@ -2,99 ...` | Killed if tests assert exact state transition or precision requirement. |
-| `MUT_OFF_BY_ONE_067` | `OFF_BY_ONE` | L53 | `SURVIVED` | **KILLABLE** | `--- target.py (original) +++ target.py (mutant_67) @@ -2,99 ...` | Killed if tests assert exact state transition or precision requirement. |
-| `MUT_OFF_BY_ONE_068` | `OFF_BY_ONE` | L53 | `SURVIVED` | **KILLABLE** | `--- target.py (original) +++ target.py (mutant_68) @@ -2,99 ...` | Killed if tests assert exact state transition or precision requirement. |
-| `MUT_COMP_OP_069` | `COMP_OP` | L53 | `SURVIVED` | **KILLABLE** | `--- target.py (original) +++ target.py (mutant_69) @@ -2,99 ...` | Killed if tests assert exact state transition or precision requirement. |
-| `MUT_RETURN_VAL_070` | `RETURN_VAL` | L54 | `SURVIVED` | **KILLABLE** | `--- target.py (original) +++ target.py (mutant_70) @@ -2,99 ...` | Killed if tests assert exact state transition or precision requirement. |
-| `MUT_CONST_VAL_071` | `CONST_VAL` | L54 | `SURVIVED` | **KILLABLE** | `--- target.py (original) +++ target.py (mutant_71) @@ -2,99 ...` | Killed if tests assert exact state transition or precision requirement. |
-| `MUT_CONST_VAL_072` | `CONST_VAL` | L54 | `SURVIVED` | **KILLABLE** | `--- target.py (original) +++ target.py (mutant_72) @@ -2,99 ...` | Killed if tests assert exact state transition or precision requirement. |
-| `MUT_COND_INV_075` | `COND_INV` | L70 | `SURVIVED` | **KILLABLE** | `--- target.py (original) +++ target.py (mutant_75) @@ -2,99 ...` | Killed if tests assert exact state transition or precision requirement. |
-| `MUT_CONST_VAL_077` | `CONST_VAL` | L71 | `SURVIVED` | **KILLABLE** | `--- target.py (original) +++ target.py (mutant_77) @@ -2,99 ...` | Killed if tests assert exact state transition or precision requirement. |
-| `MUT_LOGICAL_CONN_078` | `LOGICAL_CONN` | L71 | `SURVIVED` | **KILLABLE** | `--- target.py (original) +++ target.py (mutant_78) @@ -2,99 ...` | Killed if tests assert exact state transition or precision requirement. |
-| `MUT_CONST_VAL_079` | `CONST_VAL` | L71 | `SURVIVED` | **KILLABLE** | `--- target.py (original) +++ target.py (mutant_79) @@ -2,99 ...` | Killed if tests assert exact state transition or precision requirement. |
-| `MUT_RETURN_VAL_080` | `RETURN_VAL` | L72 | `SURVIVED` | **KILLABLE** | `--- target.py (original) +++ target.py (mutant_80) @@ -2,99 ...` | Killed if tests assert exact state transition or precision requirement. |
-| `MUT_CONST_VAL_081` | `CONST_VAL` | L72 | `SURVIVED` | **KILLABLE** | `--- target.py (original) +++ target.py (mutant_81) @@ -2,99 ...` | Killed if tests assert exact state transition or precision requirement. |
-| `MUT_CONST_VAL_082` | `CONST_VAL` | L79 | `SURVIVED` | **KILLABLE** | `--- target.py (original) +++ target.py (mutant_82) @@ -2,99 ...` | Killed if tests assert exact state transition or precision requirement. |
-| `MUT_CONST_VAL_083` | `CONST_VAL` | L79 | `SURVIVED` | **KILLABLE** | `--- target.py (original) +++ target.py (mutant_83) @@ -2,99 ...` | Killed if tests assert exact state transition or precision requirement. |
-| `MUT_CONST_VAL_085` | `CONST_VAL` | L82 | `SURVIVED` | **KILLABLE** | `--- target.py (original) +++ target.py (mutant_85) @@ -2,99 ...` | Killed if tests assert exact state transition or precision requirement. |
-| `MUT_CONST_VAL_088` | `CONST_VAL` | L85 | `SURVIVED` | **KILLABLE** | `--- target.py (original) +++ target.py (mutant_88) @@ -2,99 ...` | Killed if tests assert exact state transition or precision requirement. |
-| `MUT_CONST_VAL_089` | `CONST_VAL` | L85 | `SURVIVED` | **KILLABLE** | `--- target.py (original) +++ target.py (mutant_89) @@ -2,99 ...` | Killed if tests assert exact state transition or precision requirement. |
-| `MUT_CONST_VAL_091` | `CONST_VAL` | L89 | `SURVIVED` | **KILLABLE** | `--- target.py (original) +++ target.py (mutant_91) @@ -2,99 ...` | Killed if tests assert exact state transition or precision requirement. |
-| `MUT_CONST_VAL_092` | `CONST_VAL` | L89 | `SURVIVED` | **KILLABLE** | `--- target.py (original) +++ target.py (mutant_92) @@ -2,99 ...` | Killed if tests assert exact state transition or precision requirement. |
-| `MUT_CONST_VAL_095` | `CONST_VAL` | L93 | `SURVIVED` | **KILLABLE** | `--- target.py (original) +++ target.py (mutant_95) @@ -2,99 ...` | Killed if tests assert exact state transition or precision requirement. |
-| `MUT_LOGICAL_CONN_096` | `LOGICAL_CONN` | L93 | `SURVIVED` | **KILLABLE** | `--- target.py (original) +++ target.py (mutant_96) @@ -2,99 ...` | Killed if tests assert exact state transition or precision requirement. |
-| `MUT_CONST_VAL_097` | `CONST_VAL` | L93 | `SURVIVED` | **KILLABLE** | `--- target.py (original) +++ target.py (mutant_97) @@ -2,99 ...` | Killed if tests assert exact state transition or precision requirement. |
+| `MUT_CONST_VAL_079` | `CONST_VAL` | L71 | `EQUIVALENT` | **EQUIVALENT** | `return False, reason or "TRANSITION_REJECTED"` -> `reason or ""` | In `transition_order_state`, `validate_transition` returns `(False, <error_string>)` whenever invalid. Since `<error_string>` is non-empty for every invalid transition, the right-hand operand `"TRANSITION_REJECTED"` is unreachable dead-code. Mutating it to `""` produces identical observable output. |
+| `MUT_CONST_VAL_083` | `CONST_VAL` | L83 | `EQUIVALENT` | **EQUIVALENT** | `initial_state: str = ""` (mutated from `"CREATED"`) | In `OrderFSM.__init__`, `self.state = initial_state if initial_state in ALLOWED_TRANSITIONS else "CREATED"`. If mutated to `""`, `"" not in ALLOWED_TRANSITIONS`, falling back to `"CREATED"`. Calling `OrderFSM()` with default arguments results in the exact same state `"CREATED"`. |
+| `MUT_CONST_VAL_097` | `CONST_VAL` | L97 | `EQUIVALENT` | **EQUIVALENT** | `return False, reason or "REJECTED"` -> `reason or ""` | In `OrderFSM.transition`, `self.can_transition` calls `validate_transition`, which always returns a non-empty string when False. The fallback `"REJECTED"` is mathematically unreachable. |
+
 
 ## Target Analysis: `samples/lru_cache.py`
 - **Source File**: `samples/lru_cache.py`

@@ -51,6 +51,12 @@ def test_calculate_discount_extreme_price_negative_large():
 def test_calculate_discount_extreme_price_large_positive():
     result = calculate_discount(10000, 2, False)
     assert result == pytest.approx(10000.0, rel=1e-3)
+def test_calculate_discount_extreme_price_decimal_precision_10_55():
+    result = calculate_discount(10.55, 2, False)
+    assert result == pytest.approx(10.55, rel=1e-3)
+def test_calculate_discount_extreme_price_decimal_precision_0_05():
+    result = calculate_discount(0.05, 2, False)
+    assert result == pytest.approx(0.05, rel=1e-3)
 def test_calculate_discount_extreme_quantity_zero():
     result = calculate_discount(100.0, 0, False)
     assert result == pytest.approx(100.0, rel=1e-3)
@@ -73,5 +79,3 @@ def test_calculate_discount_property_monotonicity():
     r1 = calculate_discount(1.0, 2, False)
     r2 = calculate_discount(100.0, 2, False)
     assert r1 <= r2
-
-

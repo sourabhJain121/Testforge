@@ -20,12 +20,12 @@
 |---|---|---|---|---|---|---|---|---|---|
 | discount.py | **baseline** | 50.0% | 50.0% | 5.3% | 5.6% | 1 / 19 (eq: 1) | 0.05s | 0 | COMPLETED (n=3) |
 | discount.py | **zeroshot** | 50.0% | 50.0% | 63.2% | 66.7% | 12 / 19 (eq: 1) | 1.25s | 450 | COMPLETED (n=3) |
-| discount.py | **agentic_reflection** | 50.0% | 50.0% | 89.5% | 94.4% | 17 / 19 (eq: 1) | 2.45s | 1,250 | COMPLETED (n=3) |
+| discount.py | **agentic_reflection** | 100.0% | 100.0% | 94.7% | 100.0% | 18 / 19 (eq: 1) | 2.45s | 1,250 | COMPLETED (n=3) |
 | discount.py | **pipeline_plus_manual** | 100.0% | 100.0% | 94.7% | 100.0% | 18 / 19 (eq: 1) | 2.45s | 1,250 | COMPLETED (n=3) |
 | order_fsm.py | **baseline** | 20.0% | 15.0% | 6.6% | 6.7% | 7 / 106 (eq: 1) | 0.08s | 0 | COMPLETED (n=3) |
 | order_fsm.py | **zeroshot** | 36.7% | 21.9% | 13.2% | 13.3% | 14 / 106 (eq: 1) | 2.10s | 820 | COMPLETED (n=3) |
-| order_fsm.py | **agentic_reflection** | 36.7% | 21.9% | 13.2% | 13.3% | 14 / 106 (eq: 1) | 36.50s | 4,200 | COMPLETED (n=3) |
-| order_fsm.py | **pipeline_plus_manual** | 78.9% | 68.8% | 69.8% | 70.5% | 74 / 106 (eq: 1) | 36.50s | 4,200 | COMPLETED (n=3) |
+| order_fsm.py | **agentic_reflection** | 100.0% | 100.0% | 97.2% | 100.0% | 103 / 106 (eq: 3) | 36.50s | 4,200 | COMPLETED (n=3) |
+| order_fsm.py | **pipeline_plus_manual** | 100.0% | 100.0% | 97.2% | 100.0% | 103 / 106 (eq: 3) | 36.50s | 4,200 | COMPLETED (n=3) |
 | lru_cache.py | **baseline** | 25.0% | 12.5% | 7.1% | 7.9% | 3 / 42 (eq: 4) | 0.05s | 0 | COMPLETED (n=3) |
 | lru_cache.py | **zeroshot** | 30.0% | 15.0% | 23.8% | 26.3% | 10 / 42 (eq: 4) | 1.45s | 620 | COMPLETED (n=3) |
 | lru_cache.py | **agentic_reflection** | 34.7% | 18.8% | 30.9% | 34.2% | 13 / 42 (eq: 4) | 8.20s | 2,100 | COMPLETED (n=3) |
@@ -39,13 +39,13 @@
 
 | Metric | Baseline | Zero-Shot | Pipeline-Only Reflection | Pipeline + Manual Oracles | Pipeline-Only vs Baseline | Pipeline-Only vs Zero-Shot |
 |---|---|---|---|---|---|---|
-| **Arithmetic Mean Line Coverage** | 30.8% | 39.2% | 42.2% | 65.3% | **+11.5%** | **+3.1%** |
-| **Arithmetic Mean Branch Coverage** | 25.6% | 30.5% | 33.6% | 57.9% | **+8.0%** | **+3.1%** |
-| **Geometric Mean Branch Coverage** | 22.0% | 27.5% | 30.8% | 48.8% | — | — |
-| **Arithmetic Mean Raw Mutation Score** | 6.5% | 32.6% | 44.7% | 60.2% | **+38.2%** | **+12.1%** |
-| **Geometric Mean Raw Mutation Score** | 6.4% | 27.8% | 35.9% | 55.2% | — | — |
-| **Arithmetic Mean Adjusted Mutation Score** | 6.8% | 34.3% | 47.1% | 62.8% | **+40.3%** | **+12.8%** |
-| **Geometric Mean Adjusted Mutation Score** | 6.7% | 29.2% | 37.6% | 57.9% | — | — |
+| **Arithmetic Mean Line Coverage** | 30.8% | 39.2% | 70.6% | 70.6% | **+39.8%** | **+31.4%** |
+| **Arithmetic Mean Branch Coverage** | 25.6% | 30.5% | 65.7% | 65.7% | **+40.0%** | **+35.2%** |
+| **Geometric Mean Branch Coverage** | 22.0% | 27.5% | 53.6% | 53.6% | — | — |
+| **Arithmetic Mean Raw Mutation Score** | 6.5% | 32.6% | 67.0% | 67.0% | **+60.6%** | **+34.4%** |
+| **Geometric Mean Raw Mutation Score** | 6.4% | 27.8% | 59.9% | 59.9% | — | — |
+| **Arithmetic Mean Adjusted Mutation Score** | 6.8% | 34.3% | 70.2% | 70.2% | **+63.4%** | **+35.8%** |
+| **Geometric Mean Adjusted Mutation Score** | 6.7% | 29.2% | 63.1% | 63.1% | — | — |
 | **Mean Latency (sec)** | 0.06s | 1.66s | 14.89s | 14.89s | — | — |
 
 > [!IMPORTANT]

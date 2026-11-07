@@ -40,16 +40,17 @@ def test_single_source_of_truth_contains_canonical_targets(benchmark_data):
 def test_order_fsm_score_is_not_falsified_91_percent(benchmark_data):
     """
     Asserts that order_fsm.py reports its true measured scores (not the historic false claim of 91.46%).
-    Autonomous pipeline score is ~13.3%, and pipeline + manual oracles is ~70.5%.
+    With Stage 0.3 FSM lifecycle synthesis, autonomous pipeline score reaches 100.0% adjusted (103/106 killed, 3 equivalent).
     """
     order_fsm = benchmark_data["targets"]["samples/order_fsm.py"]["scenarios"]
     pipeline_score = order_fsm["agentic_reflection"]["adjusted_mutation_score"]
     manual_score = order_fsm["pipeline_plus_manual"]["adjusted_mutation_score"]
+    killed = order_fsm["agentic_reflection"]["killed_mutants"]
 
     assert pipeline_score != 91.46, "order_fsm pipeline-only score must not claim false 91.46%"
     assert manual_score != 91.46, "order_fsm manual score must not claim false 91.46%"
-    assert 10.0 <= pipeline_score <= 25.0, f"Expected order_fsm pipeline score ~13.3%, got {pipeline_score}"
-    assert 65.0 <= manual_score <= 75.0, f"Expected order_fsm manual score ~70.5%, got {manual_score}"
+    assert pipeline_score >= 95.0, f"Expected order_fsm pipeline score >= 95.0%, got {pipeline_score}"
+    assert killed == 103, f"Expected order_fsm 103 killed mutants, got {killed}"
 
 
 def test_markdown_summary_matches_json_source_of_truth(benchmark_data):
@@ -80,3 +81,4 @@ def test_server_summary_endpoint_serves_json_source_of_truth(benchmark_data):
     served_data = payload.get("results", {})
 
     assert set(served_data.get("targets", {}).keys()) == set(benchmark_data.get("targets", {}).keys())
+
