@@ -16,7 +16,7 @@ pydantic-settings>=2.2.0,<3.0.0
 
 # --- Agentic Frameworks & Protocol Integrations ---
 crewai>=1.15.0,<2.0.0
-google-adk>=1.14.0,<2.0.0
+google-adk==1.14.1
 google-genai>=0.1.1,<2.0.0
 mcp>=1.28.0,<2.0.0
 a2a-sdk>=0.3.0,<1.0.0
