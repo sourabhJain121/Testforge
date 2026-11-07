@@ -38,9 +38,25 @@ os.environ["OTEL_SDK_DISABLED"] = "true"
 os.environ["CREWAI_TESTING"] = "true"
 os.environ["CREWAI_TRACING_ENABLED"] = "false"
 
-from crewai import Agent, Task, Crew, Process
-from crewai.tools import tool
-from crewai.llms.base_llm import BaseLLM
+try:
+    from crewai import Agent, Task, Crew, Process
+    from crewai.tools import tool
+    from crewai.llms.base_llm import BaseLLM
+    HAS_CREWAI = True
+except ImportError:
+    HAS_CREWAI = False
+    Agent = Task = Crew = Process = None  # type: ignore
+
+    def tool(*args, **kwargs):  # type: ignore
+        def decorator(fn):
+            return fn
+        if len(args) == 1 and callable(args[0]):
+            return args[0]
+        return decorator
+
+    class BaseLLM:  # type: ignore
+        """Fallback stub when CrewAI is not installed."""
+        pass
 
 from testforge.a2a import (
     A2AMessage,

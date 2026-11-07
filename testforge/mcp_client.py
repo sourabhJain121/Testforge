@@ -25,9 +25,23 @@ from typing import Dict, Any, Optional, List, Union, Set
 
 from pydantic import BaseModel, Field
 
-from mcp.client.stdio import stdio_client, StdioServerParameters
-from mcp.client.session import ClientSession
-from mcp.shared.exceptions import McpError
+try:
+    from mcp.client.stdio import stdio_client, StdioServerParameters
+    from mcp.client.session import ClientSession
+    try:
+        from mcp.shared.exceptions import McpError
+    except ImportError:
+        try:
+            from mcp.shared.exceptions import MCPError as McpError
+        except ImportError:
+            class McpError(Exception):  # type: ignore
+                pass
+except ImportError:
+    stdio_client = None  # type: ignore
+    StdioServerParameters = None  # type: ignore
+    ClientSession = None  # type: ignore
+    class McpError(Exception):  # type: ignore
+        pass
 
 from testforge.security import redact_sensitive_data
 from testforge.callbacks import (

@@ -16,4 +16,7 @@ node_modules/
 testforge_trace.jsonl
 trace_*.jsonl
 scratch/
+*.egg-info/
+build/
+dist/
 

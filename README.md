@@ -190,7 +190,7 @@ TestForge/
 
 ### Prerequisites
 - macOS on Apple Silicon (M1/M2/M3/M4) recommended (Linux/x86_64 supported in CPU fallback mode).
-- Python 3.10+ (tested through Python 3.14).
+- Python 3.11–3.13 (Production reference: Python 3.13.18 in `.venv-release`).
 - (Optional) [Ollama](https://ollama.com/) with `qwen2.5-coder:7b` for local offline inference.
 
 ### Quickstart
@@ -200,19 +200,18 @@ TestForge/
 git clone https://github.com/sourabhJain121/Testforge.git
 cd TestForge
 
-# 2. Activate virtual environment
-source .venv/bin/activate
+# 2. Activate virtual environment (Python 3.13 recommended)
+source .venv-release/bin/activate
 
-# 3. Install dependencies
-pip install -r requirements.txt
-pip install mlx streamlit fastapi uvicorn pandas python-dotenv
+# 3. Install package and dependencies in editable mode
+pip install -e .
 
 # 4. Configure API Keys (Optional if using local Ollama or deterministic fallback)
 export GEMINI_API_KEY="your-gemini-api-key"
 export OPENROUTER_API_KEY="your-openrouter-api-key"
 
-# 5. Run full test suite (24 tests)
-pytest tests/ -v
+# 5. Run full test suite (849+ automated tests)
+CREWAI_TESTING=true CREWAI_TRACING_ENABLED=false pytest tests/ -q
 ```
 
 ---

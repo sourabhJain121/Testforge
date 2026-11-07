@@ -89,3 +89,34 @@
 * **Remaining Risks**: None. Discrepancy resolved and regression tested.
 
 ---
+
+## Task 3: Real Environment & Package Metadata Verification
+
+### 1. Measured System Details
+* **Host OS & Kernel**: macOS Apple Silicon (`Darwin Sourabhs-MacBook-Pro.local 27.2.0 Darwin Kernel Version 27.2.0 arm64`).
+* **Python Runtime**: Python 3.13.18 (`.venv-release/bin/python3`).
+* **Container Engine**: Docker Desktop 29.4.3 (build `055a478`).
+* **Model Inference Backends**: Local Ollama (`qwen2.5-coder:7b`) on `127.0.0.1:11434`, Cloud Google GenAI (`gemini-2.5-flash`), and Google ADK `1.14.1`.
+* **Environment Record**: Created complete specification in [`docs/ENVIRONMENT.md`](file:///Users/sourabh/TestForge/docs/ENVIRONMENT.md).
+
+### 2. Dependency Audit & Packaging Fixes
+* **Missing Package Defect (DEF-004)**:
+  * Running `testforge --help` in a clean virtual environment failed due to missing runtime dependencies: `psutil`, `httpx`, `aiohttp`, `pydantic-settings`, and `mcp`.
+  * In addition, `crewai` required Python `<3.14`.
+* **Fixes Applied**:
+  * Updated `pyproject.toml` dependencies with explicit version constraints:
+    * `"psutil>=5.9.0"`
+    * `"httpx>=0.25.0"`
+    * `"aiohttp>=3.9.0"`
+    * `"mcp>=1.2.0,<2.0.0"`
+    * `"pydantic-settings>=2.0.0"`
+    * `"crewai>=1.15.0; python_version < '3.14'"`
+  * Added graceful backward/forward compatibility fallbacks in [`testforge/mcp_client.py`](file:///Users/sourabh/TestForge/testforge/mcp_client.py) (`McpError`/`MCPError`) and [`testforge/crew_critic.py`](file:///Users/sourabh/TestForge/testforge/crew_critic.py) (graceful stubbing when optional crewai packages are missing).
+  * Added `*.egg-info/`, `build/`, and `dist/` to [`.gitignore`](file:///Users/sourabh/TestForge/.gitignore).
+* **Reproduction & Verification**:
+  * Created clean Python 3.13 virtualenv in `/tmp/test_fresh_venv313`.
+  * Executed `pip install -e .` followed by `testforge --help`. Verified exit code 0 and valid CLI help manual output.
+
+### 3. Documentation Consistency Audit
+* Synchronized version claims in [`README.md`](file:///Users/sourabh/TestForge/README.md) to accurately reflect Python 3.11–3.13 support (Python 3.13.18 production target) and updated the regression test count command from legacy 24 to 849+ tests.
+
