@@ -1,0 +1,104 @@
+{
+  "timestamp": "2026-11-07T15:31:55Z",
+  "sub_task": "5.2",
+  "description": "Diff-Incremental Mutation Testing (PR-Aware Mutation Confinement)",
+  "total_full_mutants": 240,
+  "total_incremental_mutants": 28,
+  "mutants_avoided": 212,
+  "macro_avoided_pct": 88.3,
+  "total_full_duration_sec": 15.079,
+  "total_incremental_duration_sec": 2.796,
+  "macro_speedup": 5.39,
+  "scenarios": [
+    {
+      "scenario": "PR-101: Volume Tier Adjustment",
+      "target": "discount.py",
+      "diff_lines": [
+        18,
+        19,
+        20,
+        21,
+        22
+      ],
+      "description": "Adjusts quantity discount threshold and member multiplier",
+      "full_mutants": 19,
+      "incremental_mutants": 5,
+      "mutants_avoided": 14,
+      "mutant_reduction_pct": 73.7,
+      "full_duration_sec": 1.212,
+      "incremental_duration_sec": 0.446,
+      "time_saved_sec": 0.767,
+      "speedup_factor": 2.72,
+      "incremental_mutation_score": 100.0,
+      "all_diff_mutants_killed": true
+    },
+    {
+      "scenario": "PR-102: LRU Eviction & Hit Ordering",
+      "target": "lru_cache.py",
+      "diff_lines": [
+        42,
+        43,
+        44,
+        45,
+        46
+      ],
+      "description": "Refines doubly-linked node movement on cache hit",
+      "full_mutants": 42,
+      "incremental_mutants": 2,
+      "mutants_avoided": 40,
+      "mutant_reduction_pct": 95.2,
+      "full_duration_sec": 2.204,
+      "incremental_duration_sec": 0.39,
+      "time_saved_sec": 1.814,
+      "speedup_factor": 5.65,
+      "incremental_mutation_score": 0.0,
+      "all_diff_mutants_killed": false
+    },
+    {
+      "scenario": "PR-103: Order FSM Guard Enforcement",
+      "target": "order_fsm.py",
+      "diff_lines": [
+        50,
+        51,
+        52,
+        53,
+        54,
+        55
+      ],
+      "description": "Updates administrative privilege check and high-value amount limit",
+      "full_mutants": 106,
+      "incremental_mutants": 19,
+      "mutants_avoided": 87,
+      "mutant_reduction_pct": 82.1,
+      "full_duration_sec": 7.628,
+      "incremental_duration_sec": 1.544,
+      "time_saved_sec": 6.083,
+      "speedup_factor": 4.94,
+      "incremental_mutation_score": 100.0,
+      "all_diff_mutants_killed": true
+    },
+    {
+      "scenario": "PR-104: Variance & Standard Deviation Guard",
+      "target": "stats_calculator.py",
+      "diff_lines": [
+        38,
+        39,
+        40,
+        41,
+        42,
+        43
+      ],
+      "description": "Adds degree-of-freedom sample variance calculation",
+      "full_mutants": 73,
+      "incremental_mutants": 2,
+      "mutants_avoided": 71,
+      "mutant_reduction_pct": 97.3,
+      "full_duration_sec": 4.035,
+      "incremental_duration_sec": 0.416,
+      "time_saved_sec": 3.618,
+      "speedup_factor": 9.69,
+      "incremental_mutation_score": 50.0,
+      "all_diff_mutants_killed": false
+    }
+  ]
+}

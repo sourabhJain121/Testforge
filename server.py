@@ -1707,6 +1707,27 @@ async def minimize_suite_endpoint(payload: MinimizerRequest):
 
 
 # --------------------------------------------------------------------------
+# Diff-Incremental Mutation Endpoints (Sub-Task 5.2)
+# --------------------------------------------------------------------------
+
+class DiffAnalyzeRequest(BaseModel):
+    diff_text: str
+    target_file: Optional[str] = None
+
+
+@app.post("/api/diff/analyze")
+async def analyze_diff_endpoint(payload: DiffAnalyzeRequest):
+    """Parses unified diff and returns targeted line numbers for incremental mutation."""
+    from testforge.diff_incremental import parse_unified_diff_lines
+    lines = parse_unified_diff_lines(payload.diff_text, payload.target_file)
+    return {
+        "target_file": payload.target_file,
+        "changed_lines": lines,
+        "changed_lines_count": len(lines),
+    }
+
+
+# --------------------------------------------------------------------------
 # Checkpoint Persistence & Recovery Endpoints
 # --------------------------------------------------------------------------
 
