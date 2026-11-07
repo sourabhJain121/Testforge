@@ -15,6 +15,8 @@ import json
 import logging
 import threading
 import asyncio
+import sqlite3
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from contextlib import asynccontextmanager
 from typing import Dict, Any, Optional, List, Literal
@@ -36,8 +38,15 @@ from testforge.blast_analyzer import BlastRadiusAnalyzer
 from testforge.git_diff import GitDiffInspector
 from testforge.accel import hw_profile
 from testforge.llm_client import is_ollama_running
-from testforge.logger import TraceLogger
-from testforge.benchmarking import BenchmarkRunner, BenchmarkReport
+from testforge.logger import TraceLogger, resolve_dynamic_execution_engine, determine_scope_execution_engine
+from testforge.benchmarking import (
+    BenchmarkRunner,
+    BenchmarkReport,
+    run_multi_target_benchmark,
+    generate_markdown_benchmark_summary,
+    CANONICAL_TARGET_MODULES,
+    MultiTargetBenchmarkRunner,
+)
 from testforge.websocket_hub import global_websocket_hub
 
 from testforge.persistence import (
@@ -54,9 +63,122 @@ from testforge.persistence import (
 logging.basicConfig(level=logging.INFO, format="[%(asctime)s] %(levelname)s in %(name)s: %(message)s")
 logger = logging.getLogger("testforge.server")
 
+# In-memory store for background hardening jobs
+JOB_LOCK = threading.Lock()
+JOBS: Dict[str, Dict[str, Any]] = {}
+BENCHMARK_JOBS: Dict[str, Dict[str, Any]] = {}
+LATEST_BENCHMARK: Optional[Dict[str, Any]] = None
+
+BASE_DIR = Path(__file__).parent.resolve()
+FRONTEND_DIR = BASE_DIR / "frontend"
+SAMPLES_DIR = BASE_DIR / "samples"
+SAMPLES_DIR.mkdir(parents=True, exist_ok=True)
+FRONTEND_DIR.mkdir(parents=True, exist_ok=True)
+
+DEFAULT_CHECKPOINT_DB_PATH = os.environ.get(
+    "TESTFORGE_CHECKPOINT_DB",
+    str(BASE_DIR / "qa_artifacts" / "testforge_checkpoints.db")
+)
+
+
+def recover_interrupted_jobs_on_startup(db_path: str = DEFAULT_CHECKPOINT_DB_PATH) -> List[str]:
+    """
+    Scans the checkpoint database on server startup for unfinalized / in-flight jobs
+    that were interrupted by an abrupt server crash or reboot, and marks them as INTERRUPTED.
+    """
+    interrupted_job_ids: List[str] = []
+    if not os.path.exists(db_path):
+        return interrupted_job_ids
+
+    terminal_statuses = {
+        "FINALIZED", "CANCELLED", "FAILED", "CONVERGED",
+        "COMPLETED", "TERMINATED", "SUCCESS", "TIMED_OUT",
+        "TARGET_SCORE_UNREACHED", "INTERRUPTED"
+    }
+    terminal_stages = {"FINALIZED", "CANCELLED", "TIMED_OUT"}
+
+    try:
+        conn = sqlite3.connect(db_path, timeout=5.0)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+        tables = {row["name"] for row in cursor.fetchall()}
+
+        # 1. Inspect primary 'checkpoints' table
+        if "checkpoints" in tables:
+            cursor.execute("SELECT DISTINCT job_id FROM checkpoints WHERE job_id IS NOT NULL AND job_id != ''")
+            job_rows = cursor.fetchall()
+            for j_row in job_rows:
+                jid = j_row["job_id"]
+                cursor.execute(
+                    "SELECT checkpoint_id, stage, status, created_at, snapshot_json FROM checkpoints WHERE job_id = ? ORDER BY created_at DESC LIMIT 1",
+                    (jid,)
+                )
+                latest = cursor.fetchone()
+                if latest:
+                    st = (latest["status"] or "").upper()
+                    sg = (latest["stage"] or "").upper()
+                    if st not in terminal_statuses and sg not in terminal_stages:
+                        interrupted_job_ids.append(jid)
+                        now = time.time()
+                        cursor.execute(
+                            "UPDATE checkpoints SET status = 'INTERRUPTED' WHERE checkpoint_id = ?",
+                            (latest["checkpoint_id"],)
+                        )
+                        target_file = None
+                        try:
+                            snap = json.loads(latest["snapshot_json"])
+                            target_file = snap.get("target", {}).get("target_module_path")
+                        except Exception:
+                            pass
+
+                        with JOB_LOCK:
+                            JOBS[jid] = {
+                                "job_id": jid,
+                                "status": "INTERRUPTED",
+                                "lifecycle_state": "INTERRUPTED",
+                                "interrupted_at": now,
+                                "interrupted_stage": latest["stage"],
+                                "resumable": True,
+                                "resumed_from_checkpoint": latest["checkpoint_id"],
+                                "target_file_path": target_file or "unknown",
+                                "created_at": latest["created_at"],
+                            }
+                        logger.info(f"Marked interrupted job '{jid}' (stage: {latest['stage']}) as INTERRUPTED on server startup.")
+
+        # 2. Inspect 'blackboard_checkpoints' table if present
+        if "blackboard_checkpoints" in tables:
+            cursor.execute("SELECT DISTINCT job_id FROM blackboard_checkpoints WHERE job_id IS NOT NULL AND job_id != ''")
+            for j_row in cursor.fetchall():
+                jid = j_row["job_id"]
+                cursor.execute(
+                    "SELECT id, status, stage FROM blackboard_checkpoints WHERE job_id = ? ORDER BY created_at DESC LIMIT 1",
+                    (jid,)
+                )
+                latest = cursor.fetchone()
+                if latest and (latest["status"] or "").upper() not in terminal_statuses:
+                    cursor.execute("UPDATE blackboard_checkpoints SET status = 'INTERRUPTED' WHERE id = ?", (latest["id"],))
+                    if jid not in interrupted_job_ids:
+                        interrupted_job_ids.append(jid)
+
+        # 3. Inspect 'workflow_runs' table if present
+        if "workflow_runs" in tables:
+            cursor.execute(
+                "UPDATE workflow_runs SET status = 'INTERRUPTED' WHERE UPPER(status) IN ('STARTED', 'INITIALIZING', 'GENERATING', 'EVALUATING', 'MUTATING', 'RUNNING', 'IN_PROGRESS')"
+            )
+
+        conn.commit()
+        conn.close()
+    except Exception as exc:
+        logger.warning(f"Error during startup interrupted jobs scan: {exc}")
+
+    return interrupted_job_ids
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Initializes WebSocket hub and connects it to the central callback registry."""
+    """Initializes WebSocket hub and connects it to the central callback registry, and checks for interrupted jobs."""
     try:
         loop = asyncio.get_running_loop()
         global_websocket_hub.set_event_loop(loop)
@@ -64,6 +186,15 @@ async def lifespan(app: FastAPI):
         logger.info("WebSocket event hub initialized on server startup.")
     except Exception as exc:
         logger.warning(f"Error during WebSocket hub startup hook: {exc}")
+
+    # GAP-007: Inspect SQLite checkpoint database for unfinalized jobs and mark status cleanly
+    try:
+        interrupted = recover_interrupted_jobs_on_startup()
+        if interrupted:
+            logger.info(f"Recovered and marked {len(interrupted)} interrupted job(s) from previous server session.")
+    except Exception as exc:
+        logger.warning(f"Error recovering interrupted jobs on startup: {exc}")
+
     yield
 
 app = FastAPI(
@@ -82,26 +213,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# In-memory store for background hardening jobs
-JOB_LOCK = threading.Lock()
-JOBS: Dict[str, Dict[str, Any]] = {}
-BENCHMARK_JOBS: Dict[str, Dict[str, Any]] = {}
-LATEST_BENCHMARK: Optional[Dict[str, Any]] = None
+# Mount static frontend directory with explicit cache disabling
+class NoCacheStaticFiles(StaticFiles):
+    async def get_response(self, path: str, scope: Any) -> Response:
+        response = await super().get_response(path, scope)
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+        return response
 
-# Ensure required directories exist
-BASE_DIR = Path(__file__).parent.resolve()
-FRONTEND_DIR = BASE_DIR / "frontend"
-SAMPLES_DIR = BASE_DIR / "samples"
-SAMPLES_DIR.mkdir(parents=True, exist_ok=True)
-FRONTEND_DIR.mkdir(parents=True, exist_ok=True)
-
-DEFAULT_CHECKPOINT_DB_PATH = os.environ.get(
-    "TESTFORGE_CHECKPOINT_DB",
-    str(BASE_DIR / "qa_artifacts" / "testforge_checkpoints.db")
-)
-
-# Mount static frontend directory
-app.mount("/static", StaticFiles(directory=str(FRONTEND_DIR)), name="static")
+app.mount("/static", NoCacheStaticFiles(directory=str(FRONTEND_DIR)), name="static")
 
 
 # --------------------------------------------------------------------------
@@ -172,6 +293,16 @@ class BenchmarkRunPayload(BaseModel):
     model_name: str = "gemini-3.6-flash"
 
 
+class MultiTargetBenchmarkRunPayload(BaseModel):
+    target_modules: Optional[List[str]] = None
+    scenarios: Optional[List[str]] = Field(default_factory=lambda: ["baseline", "zeroshot", "agentic_reflection"])
+    repetitions: int = 1
+    engine_mode: str = "auto"
+    fast_mode: bool = False
+    model_name: str = "gemini-3.6-flash"
+    output_dir: Optional[str] = None
+
+
 # --------------------------------------------------------------------------
 # Static Homepage Route
 # --------------------------------------------------------------------------
@@ -180,7 +311,14 @@ class BenchmarkRunPayload(BaseModel):
 async def serve_index():
     index_path = FRONTEND_DIR / "index.html"
     if index_path.exists():
-        return HTMLResponse(content=index_path.read_text(encoding="utf-8"))
+        return HTMLResponse(
+            content=index_path.read_text(encoding="utf-8"),
+            headers={
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+                "Pragma": "no-cache",
+                "Expires": "0"
+            }
+        )
     return HTMLResponse(content="<h1>TestForge Frontend Initializing...</h1>", status_code=200)
 
 
@@ -254,7 +392,8 @@ async def readyz():
     # 4. Test SQLite Persistence storage
     try:
         from testforge.persistence import SQLiteBlackboardStorage
-        probe_storage = SQLiteBlackboardStorage(":memory:")
+        test_db = DEFAULT_CHECKPOINT_DB_PATH if os.path.exists(os.path.dirname(DEFAULT_CHECKPOINT_DB_PATH) or ".") else ":memory:"
+        probe_storage = SQLiteBlackboardStorage(test_db)
         probe_storage.close()
         subsystems["sqlite_persistence"] = "operational"
     except Exception as exc:
@@ -267,6 +406,7 @@ async def readyz():
         content={
             "status": "ready" if is_ready else "not_ready",
             "service": "testforge-backend",
+            "db_accessible": subsystems.get("sqlite_persistence") == "operational",
             "subsystems": subsystems,
             "timestamp": time.time(),
         }
@@ -1000,29 +1140,41 @@ def _run_orchestration_job(job_id: str, payload: HardeningRunPayload):
                     JOBS[job_id]["resumption_plan"] = orchestrator.resumption_plan.model_dump()
 
         final_state = orchestrator.run()
-        orchestrator.export_hardened_suite("test_hardened.py")
-
-        # Read exported test code
-        test_hardened_content = ""
-        if os.path.exists("test_hardened.py"):
-            with open("test_hardened.py", "r", encoding="utf-8") as f:
-                test_hardened_content = f.read()
+        # Export hardened suite using job-specific path to guarantee concurrent job isolation
+        job_export_path = str(SAMPLES_DIR / f"test_hardened_{job_id}.py")
+        test_hardened_content = orchestrator.export_hardened_suite(job_export_path)
+        # Also maintain top-level test_hardened.py for single-job CLI compatibility
+        try:
+            with open("test_hardened.py", "w", encoding="utf-8") as f:
+                f.write(test_hardened_content)
+        except Exception:
+            pass
 
         active_provider = getattr(final_state, "active_provider", "") or orchestrator.generator.active_provider
 
         # Serialize Pydantic models
         state_dict = final_state.model_dump() if hasattr(final_state, "model_dump") else final_state.dict()
         # Bidirectional alias mapping for frontend API compatibility
-        state_dict["mutation_score"] = getattr(final_state, "final_mutation_score", 0.0)
+        state_dict["mutation_score"] = getattr(final_state, "final_mutation_score", None)
+        state_dict["final_mutation_score"] = getattr(final_state, "final_mutation_score", None)
         state_dict["hardening_status"] = getattr(final_state, "final_hardening_status", "UNKNOWN")
         state_dict["iteration_history"] = state_dict.get("history", [])
         state_dict["baseline_coverage"] = getattr(final_state, "baseline_line_coverage", 0.0)
+        state_dict["baseline_line_coverage"] = getattr(final_state, "baseline_line_coverage", 0.0)
+        state_dict["baseline_branch_coverage"] = getattr(final_state, "baseline_branch_coverage", 0.0)
+        state_dict["branch_coverage"] = getattr(final_state, "baseline_branch_coverage", 0.0)
+        state_dict["total_branches"] = getattr(final_state, "total_branches", 0)
+        state_dict["covered_branches"] = getattr(final_state, "covered_branches", 0)
+        state_dict["missing_branches"] = getattr(final_state, "missing_branches", [])
+        state_dict["baseline_execution_error"] = getattr(final_state, "baseline_execution_error", None)
+        state_dict["execution_errors"] = getattr(final_state, "execution_errors", 0) or getattr(final_state, "mutation_execution_errors", 0)
         state_dict["baseline_run"] = {
             "tests_generated": getattr(final_state, "baseline_tests_generated", 0),
             "tests_executed": getattr(final_state, "baseline_tests_executed", 0),
             "tests_passed": getattr(final_state, "baseline_tests_passed", 0),
             "tests_failed": getattr(final_state, "baseline_tests_failed", 0),
             "passed": getattr(final_state, "baseline_passed", False),
+            "execution_error": getattr(final_state, "baseline_execution_error", None),
         }
 
         with JOB_LOCK:
@@ -1031,7 +1183,11 @@ def _run_orchestration_job(job_id: str, payload: HardeningRunPayload):
                 final_status = getattr(final_state, "final_hardening_status", None) or getattr(final_state, "verdict", None)
                 curr_status = job_record.get("status")
 
-                if final_status == "TIMED_OUT":
+                if final_status in ("EXECUTION_ERROR", "FAILED_BASELINE", "MUTATION_GENERATION_FAILED", "MUTATION_EXECUTION_FAILED", "FAILED"):
+                    job_record["status"] = "FAILED"
+                    job_record["error"] = getattr(final_state, "termination_reason", "Pipeline execution failure")
+                    job_record["lifecycle_state"] = TaskLifecycleState.FAILED.value
+                elif final_status == "TIMED_OUT":
                     job_record["status"] = "TIMED_OUT"
                     job_record["lifecycle_state"] = TaskLifecycleState.TIMED_OUT.value
                 elif final_status == "CANCELLED" or curr_status == "CANCELLING" or cancel_event.is_set():
@@ -1103,7 +1259,13 @@ async def start_hardening_job(payload: HardeningRunPayload, background_tasks: Ba
             "_orchestrator": None,
         }
 
-    background_tasks.add_task(_run_orchestration_job, job_id, payload)
+    worker_thread = threading.Thread(
+        target=_run_orchestration_job,
+        args=(job_id, payload),
+        daemon=True,
+        name=f"worker-{job_id}"
+    )
+    worker_thread.start()
 
     return {
         "status": "queued",
@@ -1163,10 +1325,24 @@ async def get_hardening_job_status(job_id: str):
                                 "directives_count": len(bb.critic.critic_directives),
                                 "has_latest": bool(bb.critic.latest_directive)
                             },
+                            "ExecutionSpace": {
+                                "status": "active" if bb.execution.status != "NOT_STARTED" else "empty",
+                                "status_val": bb.execution.status,
+                                "total_tests": bb.execution.total_tests,
+                                "passed_tests": bb.execution.passed_tests,
+                                "line_coverage_pct": bb.execution.line_coverage_pct,
+                                "branch_coverage": getattr(bb.execution, "branch_coverage", 0.0),
+                                "total_branches": getattr(bb.execution, "total_branches", 0),
+                                "covered_branches": getattr(bb.execution, "covered_branches", 0),
+                            },
                             "MetricsSpace": {
                                 "status": "active" if (bb.metrics.current_iteration > 0 or bb.metrics.history) else "empty",
                                 "iteration": bb.metrics.current_iteration,
                                 "score": bb.metrics.final_mutation_score or bb.metrics.raw_mutation_score,
+                                "line_coverage": getattr(bb.metrics, "baseline_line_coverage", 0.0),
+                                "branch_coverage": getattr(bb.metrics, "branch_coverage", 0.0),
+                                "total_branches": getattr(bb.metrics, "total_branches", 0),
+                                "covered_branches": getattr(bb.metrics, "covered_branches", 0),
                                 "status_val": bb.metrics.final_hardening_status
                             }
                         }
@@ -1206,10 +1382,22 @@ async def get_hardening_job_status(job_id: str):
                         "directives_count": len(fs.get("critic_directives", [])),
                         "has_latest": bool(fs.get("latest_directive"))
                     },
+                    "ExecutionSpace": {
+                        "status": "active",
+                        "status_val": "PASSED",
+                        "line_coverage_pct": fs.get("baseline_line_coverage", fs.get("baseline_coverage", 0.0)),
+                        "branch_coverage": fs.get("baseline_branch_coverage", fs.get("branch_coverage", 0.0)),
+                        "total_branches": fs.get("total_branches", 0),
+                        "covered_branches": fs.get("covered_branches", 0),
+                    },
                     "MetricsSpace": {
                         "status": "active",
                         "iteration": len(fs.get("history", fs.get("iteration_history", []))),
                         "score": fs.get("final_mutation_score", fs.get("mutation_score", 0)),
+                        "line_coverage": fs.get("baseline_line_coverage", fs.get("baseline_coverage", 0.0)),
+                        "branch_coverage": fs.get("baseline_branch_coverage", fs.get("branch_coverage", 0.0)),
+                        "total_branches": fs.get("total_branches", 0),
+                        "covered_branches": fs.get("covered_branches", 0),
                         "status_val": fs.get("final_hardening_status", "COMPLETED")
                     }
                 }
@@ -1527,7 +1715,13 @@ async def resume_checkpoint_execution(
             "_orchestrator": None,
         }
 
-    background_tasks.add_task(_run_orchestration_job, job_id, hardening_payload)
+    worker_thread = threading.Thread(
+        target=_run_orchestration_job,
+        args=(job_id, hardening_payload),
+        daemon=True,
+        name=f"worker-{job_id}"
+    )
+    worker_thread.start()
 
     return {
         "status": "queued",
@@ -1546,15 +1740,162 @@ async def resume_job_execution(
 ):
     """
     Finds the latest resumable checkpoint for an interrupted or failed job and initiates execution resumption.
+    Returns HTTP 200 with {"status": "RESUMED", "job_id": job_id, "resumed_stage": stage}.
     """
     storage = SQLiteBlackboardStorage(DEFAULT_CHECKPOINT_DB_PATH)
     try:
         cp = storage.get_resumable_checkpoint(job_id=job_id)
         if not cp:
-            raise HTTPException(status_code=404, detail=f"No resumable checkpoint found for job '{job_id}'.")
-        return await resume_checkpoint_execution(cp.checkpoint_id, background_tasks, payload)
+            # Check latest checkpoint even if in intermediate stage
+            cp = storage.get_latest_checkpoint(job_id=job_id)
+        if not cp:
+            raise HTTPException(status_code=404, detail=f"No resumable checkpoint found: Job '{job_id}' not found.")
+
+        rec, plan = storage.validate_checkpoint(
+            cp.checkpoint_id,
+            expected_source_code=payload.expected_source_code if payload else None
+        )
+    except CheckpointNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Checkpoint for job '{job_id}' not found.")
+    except (InputHashMismatchError, IncompleteCheckpointError, IncompatibleSchemaError, CorruptedSnapshotError, InvalidRecoveryStageError) as exc:
+        raise HTTPException(status_code=422, detail=f"Checkpoint for job '{job_id}' cannot be resumed: {str(exc)}")
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
     finally:
         storage.close()
+
+    stage = plan.resumes_at or getattr(rec.metadata, "stage", "INITIALIZING")
+    cancel_event = threading.Event()
+    hardening_payload = HardeningRunPayload(
+        resume_checkpoint_id=cp.checkpoint_id,
+        resume_job_id=job_id,
+        max_iterations=payload.max_iterations if payload and payload.max_iterations else 3,
+        target_mutation_score=payload.target_mutation_score if payload and payload.target_mutation_score else 85.0,
+        timeout_seconds=payload.timeout_seconds if payload and payload.timeout_seconds else 300,
+        model_name=payload.model_name if payload and payload.model_name else "gemini-3.6-flash",
+        engine_mode=payload.engine_mode if payload and payload.engine_mode else "auto",
+    )
+
+    with JOB_LOCK:
+        JOBS[job_id] = {
+            "job_id": job_id,
+            "status": "RUNNING",
+            "lifecycle_state": TaskLifecycleState.RECOVERING.value,
+            "stage_durations": {},
+            "stage_history": [],
+            "created_at": time.time(),
+            "target_file_path": getattr(rec.metadata, "target_file", None) or "resumed_task",
+            "max_iterations": hardening_payload.max_iterations,
+            "target_mutation_score": hardening_payload.target_mutation_score,
+            "engine_mode": hardening_payload.engine_mode,
+            "model_name": hardening_payload.model_name,
+            "timeout_seconds": hardening_payload.timeout_seconds,
+            "resumed_from_checkpoint": cp.checkpoint_id,
+            "resumed_stage": stage,
+            "resumption_plan": plan.model_dump(),
+            "_cancel_event": cancel_event,
+            "_orchestrator": None,
+        }
+
+    worker_thread = threading.Thread(
+        target=_run_orchestration_job,
+        args=(job_id, hardening_payload),
+        daemon=True,
+        name=f"worker-{job_id}"
+    )
+    worker_thread.start()
+
+    return {
+        "status": "RESUMED",
+        "job_id": job_id,
+        "resumed_stage": stage,
+        "resumed_from_checkpoint": cp.checkpoint_id,
+        "poll_url": f"/api/harden/status/{job_id}",
+    }
+
+
+# --------------------------------------------------------------------------
+# Enterprise CI/CD Report Exports (GAP-010): JUnit XML & OASIS SARIF v2.1.0
+# --------------------------------------------------------------------------
+
+from testforge.export import generate_junit_xml, generate_sarif_report
+
+
+@app.get("/api/export/junit/{job_id}")
+async def export_junit_report(job_id: str):
+    """
+    Exports a standard JUnit XML report for all unit tests and mutation evaluations for job_id.
+    """
+    with JOB_LOCK:
+        job = JOBS.get(job_id)
+
+    if not job:
+        storage = SQLiteBlackboardStorage(DEFAULT_CHECKPOINT_DB_PATH)
+        try:
+            rec = storage.get_latest_checkpoint(job_id=job_id)
+            if rec:
+                snap = json.loads(rec.snapshot_json)
+                job = {
+                    "job_id": job_id,
+                    "target_file_path": snap.get("target", {}).get("target_module_path", "target.py"),
+                    "final_state": {
+                        "mutants": snap.get("mutant", {}).get("mutants", []),
+                        "baseline_run": {
+                            "tests_executed": snap.get("suite", {}).get("baseline_tests_executed", 1),
+                            "tests_passed": snap.get("suite", {}).get("baseline_tests_passed", 1),
+                            "tests_failed": snap.get("suite", {}).get("baseline_tests_failed", 0),
+                        }
+                    }
+                }
+        finally:
+            storage.close()
+
+    if not job:
+        raise HTTPException(status_code=404, detail=f"Job '{job_id}' not found.")
+
+    xml_content = generate_junit_xml(job_id, job)
+    return Response(
+        content=xml_content,
+        media_type="application/xml",
+        headers={"Content-Disposition": f'attachment; filename="testforge-junit-{job_id}.xml"'}
+    )
+
+
+@app.get("/api/export/sarif/{job_id}")
+async def export_sarif_report(job_id: str):
+    """
+    Exports an OASIS standard SARIF v2.1.0 vulnerability report for job_id.
+    """
+    with JOB_LOCK:
+        job = JOBS.get(job_id)
+
+    if not job:
+        storage = SQLiteBlackboardStorage(DEFAULT_CHECKPOINT_DB_PATH)
+        try:
+            rec = storage.get_latest_checkpoint(job_id=job_id)
+            if rec:
+                snap = json.loads(rec.snapshot_json)
+                job = {
+                    "job_id": job_id,
+                    "target_file_path": snap.get("target", {}).get("target_module_path", "target.py"),
+                    "final_state": {
+                        "mutants": snap.get("mutant", {}).get("mutants", []),
+                    }
+                }
+        finally:
+            storage.close()
+
+    if not job:
+        raise HTTPException(status_code=404, detail=f"Job '{job_id}' not found.")
+
+    sarif_data = generate_sarif_report(job_id, job)
+    return JSONResponse(
+        content=sarif_data,
+        media_type="application/sarif+json",
+        headers={"Content-Disposition": f'attachment; filename="testforge-sarif-{job_id}.json"'}
+    )
 
 
 # --------------------------------------------------------------------------
@@ -1562,48 +1903,259 @@ async def resume_job_execution(
 # --------------------------------------------------------------------------
 
 @app.get("/api/telemetry")
-def get_telemetry_trace(limit: int = 50):
+def get_telemetry_trace(
+    limit: int = 50,
+    scope: str = "all",
+    workflow_id: Optional[str] = None,
+    correlation_id: Optional[str] = None
+):
     """
     Returns structured event traces, token audit, and foundation model inference latencies.
+    Distinguishes actual LLM tokens from offline heuristic estimates, and supports
+    isolated current run querying without combining historical runs.
     """
     logger_instance = TraceLogger("testforge_trace.jsonl")
     traces = logger_instance.read_traces()
-    total_tokens = logger_instance.get_total_tokens()
 
-    # Filter LLM calls
-    llm_events = [t for t in traces if t.get("event_type") == "LLM_INFERENCE_TELEMETRY"]
+    target_wf = workflow_id
+    target_corr = correlation_id
+    if scope == "current" and not target_wf and not target_corr:
+        for t in reversed(traces):
+            if t.get("workflow_id"):
+                target_wf = t.get("workflow_id")
+                break
+            elif t.get("correlation_id"):
+                target_corr = t.get("correlation_id")
+                break
+
+    filtered_traces = traces
+    if target_wf:
+        filtered_traces = [t for t in traces if t.get("workflow_id") == target_wf or t.get("metadata", {}).get("workflow_id") == target_wf]
+    elif target_corr:
+        filtered_traces = [t for t in traces if t.get("correlation_id") == target_corr or t.get("metadata", {}).get("correlation_id") == target_corr]
+
+    summary = logger_instance.get_token_summary(traces=filtered_traces)
+    llm_events = [t for t in filtered_traces if t.get("event_type") == "LLM_INFERENCE_TELEMETRY"]
+
+    # 4-concept model & provider resolution
+    configured_model = os.environ.get("TESTFORGE_MODEL", "gemini-3.6-flash")
+    if os.environ.get("GEMINI_API_KEY"):
+        active_provider = "Google GenAI (Gemini)"
+    elif os.environ.get("OPENROUTER_API_KEY"):
+        active_provider = "OpenRouter Cloud"
+    elif is_ollama_running():
+        active_provider = "Local Ollama"
+    else:
+        active_provider = "None (Offline)"
+
+    normalized_calls = []
+    engine_labels = []
+    for event in reversed(llm_events[-limit:]):
+        d = dict(event.get("data", {}))
+        is_actual = d.get("is_actual_llm")
+        model = d.get("model_name") or d.get("model", "")
+        provider = d.get("provider") or d.get("provider_type", "")
+        if is_actual is None:
+            is_actual = False if ("deterministic" in model.lower() or "ast" in model.lower() or provider == "Unknown") else True
+            d["is_actual_llm"] = is_actual
+        if "token_accounting_source" not in d:
+            d["token_accounting_source"] = "provider_reported" if is_actual else "offline_heuristic_estimate"
+
+        # Dynamically resolve engine, provider, and clean model
+        engine_lbl, norm_prov, norm_model = resolve_dynamic_execution_engine(
+            model_name=model,
+            provider_type=provider,
+            is_actual_llm=is_actual
+        )
+
+        tokens_obj = d.get("tokens", {})
+        if "actual_total_tokens" in d and "estimated_total_tokens" in d:
+            actual_p = d.get("actual_prompt_tokens", 0)
+            actual_c = d.get("actual_completion_tokens", 0)
+            actual_t = d.get("actual_total_tokens", 0)
+            est_p = d.get("estimated_prompt_tokens", 0)
+            est_c = d.get("estimated_completion_tokens", 0)
+            est_t = d.get("estimated_total_tokens", 0)
+        else:
+            raw_p = tokens_obj.get("prompt_tokens", d.get("prompt_tokens", 0)) or 0
+            raw_c = tokens_obj.get("completion_tokens", d.get("completion_tokens", 0)) or 0
+            raw_t = tokens_obj.get("total_tokens", d.get("total_tokens", 0)) or 0
+            if is_actual:
+                actual_p, actual_c, actual_t = raw_p, raw_c, raw_t
+                est_p, est_c, est_t = 0, 0, 0
+            else:
+                actual_p, actual_c, actual_t = 0, 0, 0
+                est_p, est_c, est_t = raw_p, raw_c, raw_t
+
+        if not is_actual:
+            d["provider"] = None
+            d["model_name"] = None
+            d["execution_engine"] = "AST Deterministic Synthesizer"
+            d["actual_prompt_tokens"] = 0
+            d["actual_completion_tokens"] = 0
+            d["actual_total_tokens"] = 0
+            d["estimated_prompt_tokens"] = est_p
+            d["estimated_completion_tokens"] = est_c
+            d["estimated_total_tokens"] = est_t
+            engine_labels.append("Deterministic AST Synthesizer")
+        else:
+            d["provider"] = norm_prov
+            d["model_name"] = norm_model
+            d["execution_engine"] = engine_lbl
+            d["actual_prompt_tokens"] = actual_p
+            d["actual_completion_tokens"] = actual_c
+            d["actual_total_tokens"] = actual_t
+            d["estimated_prompt_tokens"] = 0
+            d["estimated_completion_tokens"] = 0
+            d["estimated_total_tokens"] = 0
+            engine_labels.append(engine_lbl)
+
+        d["prompt_tokens"] = d["actual_prompt_tokens"]
+        d["completion_tokens"] = d["actual_completion_tokens"]
+        d["total_tokens"] = d["actual_total_tokens"]
+        d["workflow_id"] = event.get("workflow_id")
+        d["correlation_id"] = event.get("correlation_id")
+        d["ast_valid"] = d.get("is_valid_ast", True)
+        d["latency_seconds"] = float(d.get("latency_seconds", 0.0))
+
+        normalized_calls.append({
+            "timestamp": event.get("timestamp"),
+            "iso_time": event.get("iso_time"),
+            "event_type": event.get("event_type"),
+            "workflow_id": event.get("workflow_id"),
+            "correlation_id": event.get("correlation_id"),
+            "data": d,
+            "metadata": event.get("metadata", {})
+        })
+
+    # Scope-level KPI determination
+    if not llm_events:
+        execution_engine_kpi = "No Execution Yet"
+        last_execution_model = None
+        last_execution_engine = None
+    else:
+        execution_engine_kpi = summary.get("execution_engine_kpi") or determine_scope_execution_engine(engine_labels)
+        last_execution_model = summary.get("last_execution_model")
+        last_execution_engine = summary.get("last_execution_engine")
 
     return {
-        "total_logged_events": len(traces),
-        "total_tokens_used": total_tokens,
-        "recent_traces": list(reversed(traces[-limit:])),
-        "recent_llm_calls": list(reversed(llm_events[-20:])),
+        "scope": scope,
+        "selected_workflow_id": target_wf or target_corr or "all",
+        "configured_model": configured_model,
+        "active_provider": active_provider,
+        "actual_execution_engine": execution_engine_kpi,
+        "execution_engine_kpi": execution_engine_kpi,
+        "last_execution_model": last_execution_model,
+        "last_execution_engine": last_execution_engine,
+        "execution_engine_breakdown": summary.get("execution_engine_breakdown", {}),
+        "execution_engines_used": summary.get("unique_execution_engines", []),
+        "total_logged_events": len(filtered_traces),
+        "actual_llm_tokens_used": summary["actual_llm_tokens"],
+        "actual_prompt_tokens_used": summary["actual_prompt_tokens"],
+        "actual_completion_tokens_used": summary["actual_completion_tokens"],
+        "estimated_tokens_used": summary["estimated_tokens"],
+        "estimated_prompt_tokens_used": summary["estimated_prompt_tokens"],
+        "estimated_completion_tokens_used": summary["estimated_completion_tokens"],
+        "total_tokens_used": summary["actual_llm_tokens"],
+        "combined_tokens_including_estimates": summary["total_tokens"],
+        "total_actual_llm_calls": summary["actual_calls"],
+        "total_deterministic_calls": summary["deterministic_calls"],
+        "recent_traces": list(reversed(filtered_traces[-limit:])),
+        "recent_llm_calls": normalized_calls,
     }
 
 
 @app.get("/api/wiretap")
-def get_wiretap_events():
+def get_wiretap_events(workflow_id: Optional[str] = None):
     """
     Returns multi-agent handoff trajectories and ADK tool deliberation events.
+    Optionally scoped to a specific workflow_id.
     """
     logger_instance = TraceLogger("testforge_trace.jsonl")
     traces = logger_instance.read_traces()
 
+    if workflow_id:
+        traces = [t for t in traces if t.get("workflow_id") == workflow_id or t.get("correlation_id") == workflow_id]
+
     handoffs = [t for t in traces if t.get("event_type") == "AGENT_HANDOFF"]
     adk_calls = [t for t in traces if t.get("event_type") == "ADK_TOOL_CALL"]
+    supervisor_decisions = [t for t in traces if t.get("event_type") == "SUPERVISOR_DECISION"]
 
-    participating_agents = set()
+    participating_entities = set()
     for h in handoffs:
         d = h.get("data", {})
         if d.get("from_agent"):
-            participating_agents.add(d["from_agent"])
+            participating_entities.add(d["from_agent"])
         if d.get("to_agent"):
-            participating_agents.add(d["to_agent"])
+            participating_entities.add(d["to_agent"])
+
+    for s in supervisor_decisions:
+        participating_entities.add("SupervisorAgent")
+        d = s.get("data", {})
+        target = d.get("target_agent", "")
+        if target:
+            clean_target = target.split(":")[-1].replace("-", " ").title().replace(" ", "")
+            for c in ("CodeIntelligenceAgent", "SecurityAgent", "TestPlanningAgent", "TestExecutionAgent", "MutationQualityCriticAgent", "ReflectionRepairAgent"):
+                if c.lower() in clean_target.lower():
+                    participating_entities.add(c)
+
+    sorted_entities = sorted(list(participating_entities))
+    cognitive_agents = [e for e in sorted_entities if e != "SubprocessSandbox"]
+    tool_entities = [e for e in sorted_entities if e == "SubprocessSandbox"]
+
+    # Canonical Eight-Agent truthfulness matrix
+    canonical_eight = [
+        "SupervisorAgent",
+        "CodeIntelligenceAgent",
+        "TestPlanningAgent",
+        "TestGeneratorAgent",
+        "TestExecutionAgent",
+        "MutationQualityCriticAgent",
+        "SecurityAgent",
+        "ReflectionRepairAgent",
+    ]
+    eight_agents_status = {}
+    for agent_name in canonical_eight:
+        is_participating = any(
+            agent_name.lower() in str(e).lower()
+            for e in participating_entities
+        )
+        eight_agents_status[agent_name] = {
+            "name": agent_name,
+            "registered": True,
+            "instantiated": True,
+            "available": True,
+            "participating": is_participating,
+            "executing": False,
+            "completed": is_participating,
+            "failed": False,
+            "skipped": not is_participating if workflow_id else False,
+        }
 
     return {
         "total_handoffs": len(handoffs),
         "total_adk_calls": len(adk_calls),
-        "participating_agents": sorted(list(participating_agents)),
+        "total_supervisor_decisions": len(supervisor_decisions),
+        "participating_agents": sorted_entities,
+        "cognitive_agents": cognitive_agents,
+        "tool_entities": tool_entities,
+        "cognitive_agents_count": len(cognitive_agents),
+        "registered_agents": [
+            "SupervisorAgent",
+            "TargetManagerAgent",
+            "TestGeneratorAgent",
+            "GoogleADKTestGenerator",
+            "AdversarialCriticAgent",
+            "CrewAICriticAgent",
+            "MutationQualityCriticAgent",
+            "CodeIntelligenceAgent",
+            "SecurityAgent",
+            "TestPlanningAgent",
+            "TestExecutionAgent",
+            "ReflectionRepairAgent"
+        ],
+        "eight_agents_status": eight_agents_status,
+        "supervisor_decisions": supervisor_decisions[-20:],
         "handoffs": handoffs,
         "adk_calls": adk_calls,
     }
@@ -1640,6 +2192,7 @@ def _run_benchmark_job(job_id: str, payload: BenchmarkRunPayload):
             target_file_path=file_path,
             baseline_tests=payload.baseline_tests,
             model_name=payload.model_name,
+            job_id=job_id,
         )
         report = runner.run_benchmark(
             scenarios=payload.scenarios,
@@ -1663,6 +2216,7 @@ def _run_benchmark_job(job_id: str, payload: BenchmarkRunPayload):
 
         BENCHMARK_JOBS[job_id]["status"] = "COMPLETED"
         BENCHMARK_JOBS[job_id]["end_time"] = time.time()
+        BENCHMARK_JOBS[job_id]["total_duration_seconds"] = report.total_duration_sec
         BENCHMARK_JOBS[job_id]["report"] = data
         BENCHMARK_JOBS[job_id]["markdown"] = markdown
     except Exception as exc:
@@ -1677,18 +2231,18 @@ def get_benchmark_results():
     """
     Returns the latest statistical benchmark report and ablation analysis.
     """
-    global LATEST_BENCHMARK
-    if LATEST_BENCHMARK:
-        return {"exists": True, "report": LATEST_BENCHMARK}
-
     cache_path = BASE_DIR / "benchmark_results.json"
     if cache_path.exists():
         try:
             data = json.loads(cache_path.read_text(encoding="utf-8"))
+            global LATEST_BENCHMARK
             LATEST_BENCHMARK = data
             return {"exists": True, "report": data}
         except Exception:
             pass
+
+    if LATEST_BENCHMARK:
+        return {"exists": True, "report": LATEST_BENCHMARK}
 
     return {"exists": False, "report": None, "message": "No benchmark runs have been recorded yet."}
 
@@ -1749,6 +2303,55 @@ def get_benchmark_job(job_id: str):
     if not job:
         raise HTTPException(status_code=404, detail=f"Benchmark job '{job_id}' not found.")
     return job
+
+
+@app.get("/api/benchmark/multi-target/summary")
+def get_multi_target_benchmark_summary():
+    """
+    Returns the latest empirical scorecard across diverse target modules (GAP-009).
+    """
+    results_path = BASE_DIR / "qa_artifacts" / "MULTI_TARGET_BENCHMARK_RESULTS.json"
+    if results_path.exists():
+        try:
+            data = json.loads(results_path.read_text(encoding="utf-8"))
+            return {"status": "SUCCESS", "results": data}
+        except Exception as exc:
+            logger.warning(f"Failed to read multi-target benchmark results cache: {exc}")
+
+    try:
+        data = run_multi_target_benchmark(fast_mode=True, repetitions=1, output_dir=str(BASE_DIR / "qa_artifacts"))
+        return {"status": "SUCCESS", "results": data}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Failed to generate multi-target benchmark summary: {exc}")
+
+
+@app.post("/api/benchmark/multi-target/run")
+def run_multi_target_benchmark_endpoint(payload: Optional[MultiTargetBenchmarkRunPayload] = None):
+    """
+    Executes empirical benchmarking across diverse Python modules and aggregates statistical metrics (GAP-009).
+    """
+    opts = payload.model_dump() if payload else {}
+    target_modules = opts.get("target_modules")
+    scenarios = opts.get("scenarios")
+    repetitions = opts.get("repetitions", 1)
+    fast_mode = opts.get("fast_mode", False)
+    engine_mode = opts.get("engine_mode", "auto")
+    model_name = opts.get("model_name", "gemini-3.6-flash")
+    output_dir = opts.get("output_dir") or str(BASE_DIR / "qa_artifacts")
+
+    try:
+        results = run_multi_target_benchmark(
+            target_modules=target_modules,
+            scenarios=scenarios,
+            repetitions=repetitions,
+            fast_mode=fast_mode,
+            engine_mode=engine_mode,
+            model_name=model_name,
+            output_dir=output_dir,
+        )
+        return {"status": "SUCCESS", "results": results}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Multi-target benchmark run failed: {exc}")
 
 
 

@@ -1,0 +1,617 @@
+{
+  "target_file": "samples/discount.py",
+  "timestamp": 1793617733.409055,
+  "repetitions": 5,
+  "total_duration_sec": 113.441,
+  "hardware_summary": "arm64 (Darwin, 10 cores, 16.0GB RAM)",
+  "runs": [
+    {
+      "scenario": "baseline",
+      "run_index": 1,
+      "success": true,
+      "error_message": null,
+      "metrics": {
+        "measured": {
+          "duration_seconds": 1.283,
+          "killed_mutants": 6,
+          "total_mutants": 19,
+          "survived_mutants": 13,
+          "timed_out_mutants": 0,
+          "equivalent_mutants": 0,
+          "executed_mutants": 19,
+          "total_tokens": 0,
+          "actual_llm_tokens": 0,
+          "estimated_tokens": 0,
+          "execution_mode": "DETERMINISTIC_BASELINE",
+          "engine_label": "Deterministic Baseline"
+        },
+        "calculated": {
+          "mutation_score_pct": 31.58,
+          "raw_mutation_score": 31.58,
+          "adjusted_mutation_score": 31.58,
+          "line_coverage_pct": 70.0
+        },
+        "estimated": {
+          "estimated_cost_usd": 0.0,
+          "actual_billed_cost_usd": 0.0
+        },
+        "unknown_or_unavailable": [
+          "prompt_tokens",
+          "completion_tokens"
+        ]
+      }
+    },
+    {
+      "scenario": "baseline",
+      "run_index": 2,
+      "success": true,
+      "error_message": null,
+      "metrics": {
+        "measured": {
+          "duration_seconds": 1.208,
+          "killed_mutants": 6,
+          "total_mutants": 19,
+          "survived_mutants": 13,
+          "timed_out_mutants": 0,
+          "equivalent_mutants": 0,
+          "executed_mutants": 19,
+          "total_tokens": 0,
+          "actual_llm_tokens": 0,
+          "estimated_tokens": 0,
+          "execution_mode": "DETERMINISTIC_BASELINE",
+          "engine_label": "Deterministic Baseline"
+        },
+        "calculated": {
+          "mutation_score_pct": 31.58,
+          "raw_mutation_score": 31.58,
+          "adjusted_mutation_score": 31.58,
+          "line_coverage_pct": 70.0
+        },
+        "estimated": {
+          "estimated_cost_usd": 0.0,
+          "actual_billed_cost_usd": 0.0
+        },
+        "unknown_or_unavailable": [
+          "prompt_tokens",
+          "completion_tokens"
+        ]
+      }
+    },
+    {
+      "scenario": "baseline",
+      "run_index": 3,
+      "success": true,
+      "error_message": null,
+      "metrics": {
+        "measured": {
+          "duration_seconds": 1.187,
+          "killed_mutants": 6,
+          "total_mutants": 19,
+          "survived_mutants": 13,
+          "timed_out_mutants": 0,
+          "equivalent_mutants": 0,
+          "executed_mutants": 19,
+          "total_tokens": 0,
+          "actual_llm_tokens": 0,
+          "estimated_tokens": 0,
+          "execution_mode": "DETERMINISTIC_BASELINE",
+          "engine_label": "Deterministic Baseline"
+        },
+        "calculated": {
+          "mutation_score_pct": 31.58,
+          "raw_mutation_score": 31.58,
+          "adjusted_mutation_score": 31.58,
+          "line_coverage_pct": 70.0
+        },
+        "estimated": {
+          "estimated_cost_usd": 0.0,
+          "actual_billed_cost_usd": 0.0
+        },
+        "unknown_or_unavailable": [
+          "prompt_tokens",
+          "completion_tokens"
+        ]
+      }
+    },
+    {
+      "scenario": "baseline",
+      "run_index": 4,
+      "success": true,
+      "error_message": null,
+      "metrics": {
+        "measured": {
+          "duration_seconds": 1.134,
+          "killed_mutants": 6,
+          "total_mutants": 19,
+          "survived_mutants": 13,
+          "timed_out_mutants": 0,
+          "equivalent_mutants": 0,
+          "executed_mutants": 19,
+          "total_tokens": 0,
+          "actual_llm_tokens": 0,
+          "estimated_tokens": 0,
+          "execution_mode": "DETERMINISTIC_BASELINE",
+          "engine_label": "Deterministic Baseline"
+        },
+        "calculated": {
+          "mutation_score_pct": 31.58,
+          "raw_mutation_score": 31.58,
+          "adjusted_mutation_score": 31.58,
+          "line_coverage_pct": 70.0
+        },
+        "estimated": {
+          "estimated_cost_usd": 0.0,
+          "actual_billed_cost_usd": 0.0
+        },
+        "unknown_or_unavailable": [
+          "prompt_tokens",
+          "completion_tokens"
+        ]
+      }
+    },
+    {
+      "scenario": "baseline",
+      "run_index": 5,
+      "success": true,
+      "error_message": null,
+      "metrics": {
+        "measured": {
+          "duration_seconds": 1.149,
+          "killed_mutants": 6,
+          "total_mutants": 19,
+          "survived_mutants": 13,
+          "timed_out_mutants": 0,
+          "equivalent_mutants": 0,
+          "executed_mutants": 19,
+          "total_tokens": 0,
+          "actual_llm_tokens": 0,
+          "estimated_tokens": 0,
+          "execution_mode": "DETERMINISTIC_BASELINE",
+          "engine_label": "Deterministic Baseline"
+        },
+        "calculated": {
+          "mutation_score_pct": 31.58,
+          "raw_mutation_score": 31.58,
+          "adjusted_mutation_score": 31.58,
+          "line_coverage_pct": 70.0
+        },
+        "estimated": {
+          "estimated_cost_usd": 0.0,
+          "actual_billed_cost_usd": 0.0
+        },
+        "unknown_or_unavailable": [
+          "prompt_tokens",
+          "completion_tokens"
+        ]
+      }
+    },
+    {
+      "scenario": "zeroshot",
+      "run_index": 1,
+      "success": true,
+      "error_message": null,
+      "metrics": {
+        "measured": {
+          "duration_seconds": 15.193,
+          "killed_mutants": 19,
+          "total_mutants": 19,
+          "survived_mutants": 0,
+          "timed_out_mutants": 0,
+          "equivalent_mutants": 0,
+          "executed_mutants": 19,
+          "total_tokens": 13525,
+          "actual_llm_tokens": 13525,
+          "estimated_tokens": 357,
+          "actual_prompt_tokens": 3082,
+          "actual_completion_tokens": 2959,
+          "estimated_prompt_tokens": 253,
+          "estimated_completion_tokens": 104,
+          "execution_mode": "LIVE_MODEL (Mixed Execution Engines)",
+          "engine_label": "Mixed Execution Engines"
+        },
+        "calculated": {
+          "mutation_score_pct": 100.0,
+          "raw_mutation_score": 100.0,
+          "adjusted_mutation_score": 100.0,
+          "line_coverage_pct": 100.0
+        },
+        "estimated": {
+          "estimated_cost_usd": 0.001119,
+          "actual_billed_cost_usd": 0.001119
+        },
+        "unknown_or_unavailable": []
+      }
+    },
+    {
+      "scenario": "zeroshot",
+      "run_index": 2,
+      "success": true,
+      "error_message": null,
+      "metrics": {
+        "measured": {
+          "duration_seconds": 16.827,
+          "killed_mutants": 19,
+          "total_mutants": 19,
+          "survived_mutants": 0,
+          "timed_out_mutants": 0,
+          "equivalent_mutants": 0,
+          "executed_mutants": 19,
+          "total_tokens": 5596,
+          "actual_llm_tokens": 5596,
+          "estimated_tokens": 357,
+          "actual_prompt_tokens": 1814,
+          "actual_completion_tokens": 1222,
+          "estimated_prompt_tokens": 253,
+          "estimated_completion_tokens": 104,
+          "execution_mode": "LIVE_MODEL (Mixed Execution Engines)",
+          "engine_label": "Mixed Execution Engines"
+        },
+        "calculated": {
+          "mutation_score_pct": 100.0,
+          "raw_mutation_score": 100.0,
+          "adjusted_mutation_score": 100.0,
+          "line_coverage_pct": 100.0
+        },
+        "estimated": {
+          "estimated_cost_usd": 0.000503,
+          "actual_billed_cost_usd": 0.000503
+        },
+        "unknown_or_unavailable": []
+      }
+    },
+    {
+      "scenario": "zeroshot",
+      "run_index": 3,
+      "success": true,
+      "error_message": null,
+      "metrics": {
+        "measured": {
+          "duration_seconds": 12.025,
+          "killed_mutants": 19,
+          "total_mutants": 19,
+          "survived_mutants": 0,
+          "timed_out_mutants": 0,
+          "equivalent_mutants": 0,
+          "executed_mutants": 19,
+          "total_tokens": 1879,
+          "actual_llm_tokens": 1879,
+          "estimated_tokens": 714,
+          "actual_prompt_tokens": 1180,
+          "actual_completion_tokens": 699,
+          "estimated_prompt_tokens": 506,
+          "estimated_completion_tokens": 208,
+          "execution_mode": "LIVE_MODEL (Mixed Execution Engines)",
+          "engine_label": "Mixed Execution Engines"
+        },
+        "calculated": {
+          "mutation_score_pct": 100.0,
+          "raw_mutation_score": 100.0,
+          "adjusted_mutation_score": 100.0,
+          "line_coverage_pct": 100.0
+        },
+        "estimated": {
+          "estimated_cost_usd": 0.000298,
+          "actual_billed_cost_usd": 0.000298
+        },
+        "unknown_or_unavailable": []
+      }
+    },
+    {
+      "scenario": "zeroshot",
+      "run_index": 4,
+      "success": true,
+      "error_message": null,
+      "metrics": {
+        "measured": {
+          "duration_seconds": 15.118,
+          "killed_mutants": 19,
+          "total_mutants": 19,
+          "survived_mutants": 0,
+          "timed_out_mutants": 0,
+          "equivalent_mutants": 0,
+          "executed_mutants": 19,
+          "total_tokens": 1925,
+          "actual_llm_tokens": 1925,
+          "estimated_tokens": 357,
+          "actual_prompt_tokens": 1180,
+          "actual_completion_tokens": 745,
+          "estimated_prompt_tokens": 253,
+          "estimated_completion_tokens": 104,
+          "execution_mode": "LIVE_MODEL (Mixed Execution Engines)",
+          "engine_label": "Mixed Execution Engines"
+        },
+        "calculated": {
+          "mutation_score_pct": 100.0,
+          "raw_mutation_score": 100.0,
+          "adjusted_mutation_score": 100.0,
+          "line_coverage_pct": 100.0
+        },
+        "estimated": {
+          "estimated_cost_usd": 0.000312,
+          "actual_billed_cost_usd": 0.000312
+        },
+        "unknown_or_unavailable": []
+      }
+    },
+    {
+      "scenario": "zeroshot",
+      "run_index": 5,
+      "success": true,
+      "error_message": null,
+      "metrics": {
+        "measured": {
+          "duration_seconds": 16.378,
+          "killed_mutants": 19,
+          "total_mutants": 19,
+          "survived_mutants": 0,
+          "timed_out_mutants": 0,
+          "equivalent_mutants": 0,
+          "executed_mutants": 19,
+          "total_tokens": 1884,
+          "actual_llm_tokens": 1884,
+          "estimated_tokens": 357,
+          "actual_prompt_tokens": 1180,
+          "actual_completion_tokens": 704,
+          "estimated_prompt_tokens": 253,
+          "estimated_completion_tokens": 104,
+          "execution_mode": "LIVE_MODEL (Mixed Execution Engines)",
+          "engine_label": "Mixed Execution Engines"
+        },
+        "calculated": {
+          "mutation_score_pct": 100.0,
+          "raw_mutation_score": 100.0,
+          "adjusted_mutation_score": 100.0,
+          "line_coverage_pct": 100.0
+        },
+        "estimated": {
+          "estimated_cost_usd": 0.0003,
+          "actual_billed_cost_usd": 0.0003
+        },
+        "unknown_or_unavailable": []
+      }
+    },
+    {
+      "scenario": "agentic_reflection",
+      "run_index": 1,
+      "success": true,
+      "error_message": null,
+      "metrics": {
+        "measured": {
+          "duration_seconds": 6.223,
+          "killed_mutants": 17,
+          "total_mutants": 19,
+          "survived_mutants": 2,
+          "iterations": 2,
+          "total_tokens": 0,
+          "actual_llm_tokens": 0,
+          "estimated_tokens": 0,
+          "actual_prompt_tokens": 0,
+          "actual_completion_tokens": 0,
+          "estimated_prompt_tokens": 0,
+          "estimated_completion_tokens": 0,
+          "execution_mode": "OFFLINE_FALLBACK (AST Deterministic Synthesizer (Offline))",
+          "engine_label": "AST Deterministic Synthesizer (Offline)"
+        },
+        "calculated": {
+          "mutation_score_pct": 89.47,
+          "raw_mutation_score": 89.47,
+          "adjusted_mutation_score": 89.47,
+          "line_coverage_pct": 100.0
+        },
+        "estimated": {
+          "estimated_cost_usd": 0.0,
+          "actual_billed_cost_usd": 0.0
+        },
+        "unknown_or_unavailable": [
+          "actual_api_tokens_unavailable_in_offline_mode"
+        ]
+      }
+    },
+    {
+      "scenario": "agentic_reflection",
+      "run_index": 2,
+      "success": true,
+      "error_message": null,
+      "metrics": {
+        "measured": {
+          "duration_seconds": 6.053,
+          "killed_mutants": 17,
+          "total_mutants": 19,
+          "survived_mutants": 2,
+          "iterations": 2,
+          "total_tokens": 0,
+          "actual_llm_tokens": 0,
+          "estimated_tokens": 0,
+          "actual_prompt_tokens": 0,
+          "actual_completion_tokens": 0,
+          "estimated_prompt_tokens": 0,
+          "estimated_completion_tokens": 0,
+          "execution_mode": "OFFLINE_FALLBACK (AST Deterministic Synthesizer (Offline))",
+          "engine_label": "AST Deterministic Synthesizer (Offline)"
+        },
+        "calculated": {
+          "mutation_score_pct": 89.47,
+          "raw_mutation_score": 89.47,
+          "adjusted_mutation_score": 89.47,
+          "line_coverage_pct": 100.0
+        },
+        "estimated": {
+          "estimated_cost_usd": 0.0,
+          "actual_billed_cost_usd": 0.0
+        },
+        "unknown_or_unavailable": [
+          "actual_api_tokens_unavailable_in_offline_mode"
+        ]
+      }
+    },
+    {
+      "scenario": "agentic_reflection",
+      "run_index": 3,
+      "success": true,
+      "error_message": null,
+      "metrics": {
+        "measured": {
+          "duration_seconds": 5.988,
+          "killed_mutants": 17,
+          "total_mutants": 19,
+          "survived_mutants": 2,
+          "iterations": 2,
+          "total_tokens": 0,
+          "actual_llm_tokens": 0,
+          "estimated_tokens": 0,
+          "actual_prompt_tokens": 0,
+          "actual_completion_tokens": 0,
+          "estimated_prompt_tokens": 0,
+          "estimated_completion_tokens": 0,
+          "execution_mode": "OFFLINE_FALLBACK (AST Deterministic Synthesizer (Offline))",
+          "engine_label": "AST Deterministic Synthesizer (Offline)"
+        },
+        "calculated": {
+          "mutation_score_pct": 89.47,
+          "raw_mutation_score": 89.47,
+          "adjusted_mutation_score": 89.47,
+          "line_coverage_pct": 100.0
+        },
+        "estimated": {
+          "estimated_cost_usd": 0.0,
+          "actual_billed_cost_usd": 0.0
+        },
+        "unknown_or_unavailable": [
+          "actual_api_tokens_unavailable_in_offline_mode"
+        ]
+      }
+    },
+    {
+      "scenario": "agentic_reflection",
+      "run_index": 4,
+      "success": true,
+      "error_message": null,
+      "metrics": {
+        "measured": {
+          "duration_seconds": 5.854,
+          "killed_mutants": 17,
+          "total_mutants": 19,
+          "survived_mutants": 2,
+          "iterations": 2,
+          "total_tokens": 0,
+          "actual_llm_tokens": 0,
+          "estimated_tokens": 0,
+          "actual_prompt_tokens": 0,
+          "actual_completion_tokens": 0,
+          "estimated_prompt_tokens": 0,
+          "estimated_completion_tokens": 0,
+          "execution_mode": "OFFLINE_FALLBACK (AST Deterministic Synthesizer (Offline))",
+          "engine_label": "AST Deterministic Synthesizer (Offline)"
+        },
+        "calculated": {
+          "mutation_score_pct": 89.47,
+          "raw_mutation_score": 89.47,
+          "adjusted_mutation_score": 89.47,
+          "line_coverage_pct": 100.0
+        },
+        "estimated": {
+          "estimated_cost_usd": 0.0,
+          "actual_billed_cost_usd": 0.0
+        },
+        "unknown_or_unavailable": [
+          "actual_api_tokens_unavailable_in_offline_mode"
+        ]
+      }
+    },
+    {
+      "scenario": "agentic_reflection",
+      "run_index": 5,
+      "success": true,
+      "error_message": null,
+      "metrics": {
+        "measured": {
+          "duration_seconds": 6.309,
+          "killed_mutants": 17,
+          "total_mutants": 19,
+          "survived_mutants": 2,
+          "iterations": 2,
+          "total_tokens": 0,
+          "actual_llm_tokens": 0,
+          "estimated_tokens": 0,
+          "actual_prompt_tokens": 0,
+          "actual_completion_tokens": 0,
+          "estimated_prompt_tokens": 0,
+          "estimated_completion_tokens": 0,
+          "execution_mode": "OFFLINE_FALLBACK (AST Deterministic Synthesizer (Offline))",
+          "engine_label": "AST Deterministic Synthesizer (Offline)"
+        },
+        "calculated": {
+          "mutation_score_pct": 89.47,
+          "raw_mutation_score": 89.47,
+          "adjusted_mutation_score": 89.47,
+          "line_coverage_pct": 100.0
+        },
+        "estimated": {
+          "estimated_cost_usd": 0.0,
+          "actual_billed_cost_usd": 0.0
+        },
+        "unknown_or_unavailable": [
+          "actual_api_tokens_unavailable_in_offline_mode"
+        ]
+      }
+    }
+  ],
+  "scenario_summaries": {
+    "baseline": {
+      "scenario": "baseline",
+      "runs_completed": 5,
+      "runs_failed": 0,
+      "mean_duration_sec": 1.192,
+      "stddev_duration_sec": 0.059,
+      "min_duration_sec": 1.134,
+      "max_duration_sec": 1.283,
+      "mean_mutation_score": 31.58,
+      "mean_adjusted_mutation_score": 31.58,
+      "mean_line_coverage": 70.0,
+      "total_tokens_consumed": 0,
+      "actual_llm_tokens": 0,
+      "estimated_tokens": 0,
+      "execution_engine": "Deterministic Baseline",
+      "estimated_total_cost_usd": 0.0,
+      "actual_billed_cost_usd": 0.0
+    },
+    "zeroshot": {
+      "scenario": "zeroshot",
+      "runs_completed": 5,
+      "runs_failed": 0,
+      "mean_duration_sec": 15.108,
+      "stddev_duration_sec": 1.876,
+      "min_duration_sec": 12.025,
+      "max_duration_sec": 16.827,
+      "mean_mutation_score": 100.0,
+      "mean_adjusted_mutation_score": 100.0,
+      "mean_line_coverage": 100.0,
+      "total_tokens_consumed": 24809,
+      "actual_llm_tokens": 24809,
+      "estimated_tokens": 2142,
+      "execution_engine": "Mixed Execution Engines",
+      "estimated_total_cost_usd": 0.002532,
+      "actual_billed_cost_usd": 0.002532
+    },
+    "agentic_reflection": {
+      "scenario": "agentic_reflection",
+      "runs_completed": 5,
+      "runs_failed": 0,
+      "mean_duration_sec": 6.085,
+      "stddev_duration_sec": 0.182,
+      "min_duration_sec": 5.854,
+      "max_duration_sec": 6.309,
+      "mean_mutation_score": 89.47,
+      "mean_adjusted_mutation_score": 89.47,
+      "mean_line_coverage": 100.0,
+      "total_tokens_consumed": 0,
+      "actual_llm_tokens": 0,
+      "estimated_tokens": 0,
+      "execution_engine": "AST Deterministic Synthesizer (Offline)",
+      "estimated_total_cost_usd": 0.0,
+      "actual_billed_cost_usd": 0.0
+    }
+  },
+  "fast_mode": false,
+  "disclaimer": null
+}

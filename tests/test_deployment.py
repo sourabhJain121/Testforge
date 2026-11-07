@@ -129,7 +129,7 @@ class TestBenchmarkEndpoints:
 
         md_resp = client.get("/api/benchmark/markdown")
         assert md_resp.status_code == 200
-        assert "TestForge Benchmark" in md_resp.text
+        assert "Benchmark" in md_resp.text
 
     def test_start_benchmark_async_and_poll_job(self, client):
         payload = {

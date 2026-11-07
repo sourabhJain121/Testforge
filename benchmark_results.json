@@ -1,7 +1,8 @@
 {
   "target_file": "samples/discount.py",
-  "timestamp": 1793437651.862377,
+  "timestamp": 1794046658.9855418,
   "repetitions": 1,
+  "total_duration_sec": 1.556,
   "hardware_summary": "arm64 (Darwin, 10 cores, 16.0GB RAM)",
   "runs": [
     {
@@ -11,18 +12,34 @@
       "error_message": null,
       "metrics": {
         "measured": {
-          "duration_seconds": 1.229,
-          "killed_mutants": 0,
+          "duration_seconds": 1.556,
+          "killed_mutants": 6,
           "total_mutants": 19,
+          "survived_mutants": 11,
+          "timed_out_mutants": 0,
+          "equivalent_mutants": 2,
+          "executed_mutants": 19,
           "total_tokens": 0,
-          "execution_mode": "DETERMINISTIC_BASELINE"
+          "actual_llm_tokens": 0,
+          "estimated_tokens": 0,
+          "actual_cloud_tokens": 0,
+          "actual_local_tokens": 0,
+          "provider_category": "Deterministic AST",
+          "execution_mode": "DETERMINISTIC_BASELINE",
+          "engine_label": "Deterministic AST Baseline",
+          "failover_occurred": false,
+          "failover_details": null
         },
         "calculated": {
-          "mutation_score_pct": 0.0,
-          "line_coverage_pct": 10.0
+          "mutation_score_pct": 31.58,
+          "raw_mutation_score": 31.58,
+          "adjusted_mutation_score": 35.29,
+          "line_coverage_pct": 70.0,
+          "branch_coverage_pct": 50.0
         },
         "estimated": {
-          "estimated_cost_usd": 0.0
+          "estimated_cost_usd": 0.0,
+          "actual_billed_cost_usd": 0.0
         },
         "unknown_or_unavailable": [
           "prompt_tokens",
@@ -36,12 +53,26 @@
       "scenario": "baseline",
       "runs_completed": 1,
       "runs_failed": 0,
-      "mean_duration_sec": 1.229,
-      "stddev_duration_sec": 0.0,
-      "mean_mutation_score": 0.0,
-      "mean_line_coverage": 10.0,
+      "mean_duration_sec": 1.556,
+      "stddev_duration_sec": null,
+      "min_duration_sec": 1.556,
+      "max_duration_sec": 1.556,
+      "mean_mutation_score": 31.58,
+      "mean_adjusted_mutation_score": 35.29,
+      "mean_line_coverage": 70.0,
+      "mean_branch_coverage": 50.0,
       "total_tokens_consumed": 0,
-      "estimated_total_cost_usd": 0.0
+      "actual_llm_tokens": 0,
+      "estimated_tokens": 0,
+      "actual_cloud_tokens": 0,
+      "actual_local_tokens": 0,
+      "provider_category": "Deterministic AST",
+      "execution_engine": "Deterministic AST Baseline",
+      "estimated_total_cost_usd": 0.0,
+      "actual_billed_cost_usd": 0.0,
+      "local_compute_cost": "N/A",
+      "failover_occurred": false,
+      "failover_details": null
     }
   },
   "fast_mode": false,

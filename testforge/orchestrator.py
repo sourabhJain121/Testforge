@@ -65,6 +65,7 @@ from testforge.persistence import (
     determine_resumption_plan,
     compute_source_hash,
 )
+from testforge.a2a import WorkflowStage, SupervisorAction
 
 console = Console()
 
@@ -121,7 +122,7 @@ import threading
 from testforge.llm_client import HybridLLMClient
 from testforge.a2a import A2ABroker, A2AMessage, A2APerformative
 from testforge.adk_generator import GoogleADKTestGenerator
-from testforge.crew_critic import CrewAICriticAgent
+from testforge.crew_critic import CrewAICriticAgent, MutationQualityCriticAgent
 
 
 class HardeningCancelledError(Exception):
@@ -201,7 +202,11 @@ class TestForgeOrchestrator:
             target_lines=self.target_lines or []
         )
         self.logger = TraceLogger(log_path=trace_log_path)
-        self.sandbox = ParallelSandboxRunner(timeout_seconds=5, cancel_event=self.cancel_event)
+        self.sandbox = ParallelSandboxRunner(
+            timeout_seconds=5,
+            cancel_event=self.cancel_event,
+            target_file_path=self.target_file_path
+        )
         self.llm_client = HybridLLMClient(
             cloud_model=model_name,
             api_key=api_key,
@@ -224,7 +229,36 @@ class TestForgeOrchestrator:
         # Agentic Frameworks Integration: Google ADK and CrewAI via A2A Broker
         self.broker = broker or A2ABroker(blackboard=self.blackboard, callback_registry=self.callbacks)
         self.adk_generator = GoogleADKTestGenerator(api_key=api_key)
-        self.crew_critic = CrewAICriticAgent(api_key=api_key, verbose=False)
+        self.crew_critic = MutationQualityCriticAgent(api_key=api_key, verbose=False)
+        from testforge.code_intelligence_agent import CodeIntelligenceAgent
+        from testforge.security_agent import SecurityAgent
+        self.code_intel_agent = CodeIntelligenceAgent(
+            api_key=api_key,
+            blackboard=self.blackboard,
+            callbacks=self.callbacks,
+            logger_instance=self.logger,
+        )
+        self.security_agent = SecurityAgent(
+            api_key=api_key,
+            blackboard=self.blackboard,
+            callbacks=self.callbacks,
+            logger_instance=self.logger,
+        )
+        from testforge.planning_agent import TestPlanningAgent
+        from testforge.execution_agent import TestExecutionAgent
+        self.planning_agent = TestPlanningAgent(
+            api_key=api_key,
+            blackboard=self.blackboard,
+            callbacks=self.callbacks,
+            logger_instance=self.logger,
+        )
+        self.execution_agent = TestExecutionAgent(
+            sandbox_runner=self.sandbox,
+            blackboard=self.blackboard,
+            callbacks=self.callbacks,
+            logger_instance=self.logger,
+            timeout_seconds=self.timeout_seconds,
+        )
         self.broker.register_handler(
             "agent:google-adk:generator",
             self.adk_generator.handle_a2a_message,
@@ -235,9 +269,69 @@ class TestForgeOrchestrator:
             self.crew_critic.handle_a2a_message,
             description="Official CrewAI Adversarial Critic Agent"
         )
+        self.broker.register_handler(
+            "agent:crewai:mutation-critic",
+            self.crew_critic.handle_a2a_message,
+            description="Official CrewAI Mutation & Quality Critic Agent"
+        )
+        self.broker.register_handler(
+            "agent:crewai:cooperative-crew",
+            self.crew_critic.handle_a2a_message,
+            description="Official 3-Agent Cooperative Critic Crew"
+        )
+        self.broker.register_handler(
+            "agent:google-adk:code-intelligence",
+            self.code_intel_agent.handle_a2a_message,
+            description="Official Google ADK Code Intelligence Agent"
+        )
+        self.broker.register_handler(
+            "agent:google-adk:security",
+            self.security_agent.handle_a2a_message,
+            description="Official Google ADK Security Agent"
+        )
+        self.broker.register_handler(
+            "agent:google-adk:test-planner",
+            self.planning_agent.handle_a2a_message,
+            description="Official Google ADK Test Planning Agent"
+        )
+        self.broker.register_handler(
+            "agent:google-adk:test-execution",
+            self.execution_agent.handle_a2a_message,
+            description="Official Google ADK Test Execution Agent"
+        )
+        from testforge.reflection_agent import ReflectionRepairAgent
+        self.reflection_agent = ReflectionRepairAgent(
+            api_key=api_key,
+            blackboard=self.blackboard,
+            callbacks=self.callbacks,
+            logger_instance=self.logger,
+            generator=self.adk_generator,
+            execution_agent=self.execution_agent,
+            critic_agent=self.crew_critic,
+            sandbox=self.sandbox,
+        )
+        self.broker.register_handler(
+            "agent:google-adk:reflection-repair",
+            self.reflection_agent.handle_a2a_message,
+            description="Official Google ADK Reflection & Repair Agent"
+        )
+        from testforge.supervisor_agent import SupervisorAgent
+        self.supervisor = SupervisorAgent(
+            api_key=api_key,
+            blackboard=self.blackboard,
+            callbacks=self.callbacks,
+            logger_instance=self.logger,
+        )
+        self.broker.register_handler(
+            "agent:google-adk:supervisor",
+            self.supervisor.handle_a2a_message,
+            description="Official Google ADK Top-Level Supervisor Agent"
+        )
         self.workflow_id = f"wf_{uuid.uuid4().hex[:12]}"
         task_id = self.job_id or self.workflow_id
         self.state.task_id = task_id
+        if hasattr(self.logger, "set_context"):
+            self.logger.set_context(workflow_id=self.workflow_id, correlation_id=self.workflow_id)
         self.fsm = TaskLifecycleFSM(
             task_id=task_id,
             initial_state=self.state.lifecycle_state,
@@ -650,30 +744,60 @@ class TestForgeOrchestrator:
 
         if not skip_ingestion:
             self._sync_lifecycle(TaskLifecycleState.VALIDATING, metadata={"target_file": self.target_file_path})
+            # Consult Top-Level Supervisor Agent for initial security screening approval
+            if hasattr(self, "supervisor") and self.supervisor:
+                self.supervisor.decide_next_step(
+                    WorkflowStage.INITIALIZING,
+                    context={
+                        "job_id": self.job_id,
+                        "task_id": self.state.task_id,
+                        "source_code": self.state.target_source_code,
+                        "cancel_event": self.cancel_event,
+                    }
+                )
+                self.supervisor.set_agent_executing("SecurityAgent", True)
             from testforge.security import SecurityGuardrail
             guardrail = SecurityGuardrail()
-            input_sec = guardrail.inspect_input(self.state.target_source_code)
-            if not input_sec.allowed:
-                refusal_reason = input_sec.explanation or "Target code exceeded security risk threshold."
+            # Authoritative evaluation via SecurityAgent (Google ADK)
+            sec_res = self.security_agent.evaluate_source(
+                source_code=self.state.target_source_code,
+                stage="INPUT_INSPECTION",
+                target_ref=self.target_file_path or "target_source_code",
+                job_id=self.job_id,
+                workflow_id=self.workflow_id,
+            )
+            if hasattr(self, "supervisor") and self.supervisor:
+                self.supervisor.set_agent_completed("SecurityAgent", success=sec_res.allowed, failure_reason=sec_res.remediation_notes if not sec_res.allowed else None)
+            if not sec_res.allowed:
+                refusal_reason = sec_res.remediation_notes or "Target code exceeded security risk threshold."
+                if hasattr(self, "supervisor") and self.supervisor:
+                    self.supervisor.decide_next_step(
+                        WorkflowStage.SECURITY_SCREENING,
+                        context={"job_id": self.job_id, "task_id": self.state.task_id}
+                    )
                 self.callbacks.dispatch(LifecycleEvent(
                     event_type=EventType.SECURITY_REFUSAL,
-                    emitter="TestForgeOrchestrator",
+                    emitter="SecurityAgent",
                     workflow_id=self.workflow_id,
                     correlation_id=self.workflow_id,
                     outcome="REFUSED",
                     error_code="INPUT_SECURITY_REFUSAL",
                     payload={
                         "policy": "INPUT_PROMPT_INSPECTION",
-                        "risk_level": input_sec.risk_level.value,
+                        "risk_level": sec_res.risk_level,
                         "reason": refusal_reason,
-                        "findings": [f.model_dump() for f in input_sec.findings],
+                        "findings": sec_res.findings,
                     }
                 ))
                 self.state.terminated = True
                 self.state.termination_reason = f"SecurityRefusal: {refusal_reason}"
+                self.state.final_hardening_status = "FAILED"
                 self._sync_lifecycle(TaskLifecycleState.FAILED, reason=f"SecurityRefusal: {refusal_reason}")
                 console.print(f"[bold red]⛔ SECURITY REFUSAL: {refusal_reason}[/bold red]\n")
                 return self.state
+            if not hasattr(self.state, "metadata") or self.state.metadata is None:
+                self.state.metadata = {}
+            self.state.metadata["security_assessment"] = sec_res.model_dump()
         else:
             console.print(f"[bold cyan]⏩ Restored from checkpoint: Skipping Step 0 security inspection (already validated)[/bold cyan]")
 
@@ -771,6 +895,91 @@ class TestForgeOrchestrator:
                 self._sync_lifecycle(TaskLifecycleState.FAILED, reason=err_msg)
                 return self.state
 
+            # Deep AST intelligence via CodeIntelligenceAgent (Google ADK)
+            if hasattr(self, "supervisor") and self.supervisor:
+                self.supervisor.decide_next_step(
+                    WorkflowStage.SECURITY_SCREENING,
+                    context={
+                        "job_id": self.job_id,
+                        "task_id": self.state.task_id,
+                        "source_code": self.state.target_source_code,
+                        "cancel_event": self.cancel_event,
+                    }
+                )
+                self.supervisor.set_agent_executing("CodeIntelligenceAgent", True)
+            intel_res = self.code_intel_agent.analyze_source(
+                source_code=self.state.target_source_code,
+                target_file_path=self.target_file_path,
+                job_id=self.job_id,
+                workflow_id=self.workflow_id,
+            )
+            if hasattr(self, "supervisor") and self.supervisor:
+                self.supervisor.set_agent_completed("CodeIntelligenceAgent", success=True)
+            if not hasattr(self.state, "metadata") or self.state.metadata is None:
+                self.state.metadata = {}
+            self.state.metadata["code_intelligence"] = intel_res.model_dump()
+
+            # Record handoff from SecurityAgent -> CodeIntelligenceAgent
+            self.logger.log_event("AGENT_HANDOFF", {
+                "from_agent": "SecurityAgent",
+                "to_agent": "CodeIntelligenceAgent",
+                "iteration": 0,
+                "summary": "Verified security clearance; transferred source for AST intelligence and complexity analysis",
+                "payload": {
+                    "job_id": self.job_id,
+                    "status": intel_res.analysis_status,
+                    "functions_count": len(intel_res.functions),
+                    "branches_count": len(intel_res.branches),
+                }
+            })
+
+            # Formulate structured test plan via TestPlanningAgent (Google ADK)
+            if hasattr(self, "supervisor") and self.supervisor:
+                self.supervisor.decide_next_step(
+                    WorkflowStage.CODE_INTELLIGENCE,
+                    context={
+                        "job_id": self.job_id,
+                        "task_id": self.state.task_id,
+                        "code_intelligence": intel_res.model_dump(),
+                        "cancel_event": self.cancel_event,
+                    }
+                )
+                self.supervisor.set_agent_executing("TestPlanningAgent", True)
+            self.logger.log_event("AGENT_HANDOFF", {
+                "from_agent": "CodeIntelligenceAgent",
+                "to_agent": "TestPlanningAgent",
+                "iteration": 0,
+                "summary": "Transferring AST intelligence for test scenario planning and prioritization",
+                "payload": {
+                    "job_id": self.job_id,
+                    "status": intel_res.analysis_status,
+                    "functions_count": len(intel_res.functions),
+                    "branches_count": len(intel_res.branches),
+                }
+            })
+
+            test_plan = self.planning_agent.plan_tests(
+                code_intelligence=intel_res,
+                job_id=self.job_id,
+                workflow_id=self.workflow_id,
+            )
+            if hasattr(self, "supervisor") and self.supervisor:
+                self.supervisor.set_agent_completed("TestPlanningAgent", success=True)
+            self.state.metadata["test_plan"] = test_plan.model_dump()
+
+            self.logger.log_event("AGENT_HANDOFF", {
+                "from_agent": "TestPlanningAgent",
+                "to_agent": "TestGeneratorAgent",
+                "iteration": 0,
+                "summary": "Transferred prioritized test plan with nominal, boundary, and negative scenarios",
+                "payload": {
+                    "job_id": self.job_id,
+                    "scenarios_count": len(test_plan.scenarios),
+                    "boundary_targets": test_plan.boundary_targets,
+                    "negative_cases": test_plan.negative_cases,
+                }
+            })
+
             # Inter-agent Handoff: TargetManagerAgent -> TestGeneratorAgent
             from testforge.blast_analyzer import BlastRadiusAnalyzer
             from testforge.agents import extract_function_signatures
@@ -797,6 +1006,7 @@ class TestForgeOrchestrator:
                 extra_meta={
                     "functions": func_list,
                     "blast_risk": blast_risk,
+                    "branches_count": len(intel_res.branches),
                     "source_sha": source_sha,
                     "line_count": line_count,
                     "mcp_tool_called": tool_decision.tool_name if (tool_decision and tool_decision.required) else None,
@@ -834,6 +1044,18 @@ class TestForgeOrchestrator:
         if not skip_baseline_synth and not self.state.current_test_code:
             self._sync_lifecycle(TaskLifecycleState.PLANNING, metadata={"action": "initial_candidate_plan"})
             self._sync_lifecycle(TaskLifecycleState.GENERATING_TESTS, metadata={"action": "initial_candidate_generation"})
+            # Consult Top-Level Supervisor Agent for candidate test generation
+            if hasattr(self, "supervisor") and self.supervisor:
+                self.supervisor.decide_next_step(
+                    WorkflowStage.TEST_PLANNING,
+                    context={
+                        "job_id": self.job_id,
+                        "task_id": self.state.task_id,
+                        "test_plan": self.state.metadata.get("test_plan") if hasattr(self.state, "metadata") and self.state.metadata else None,
+                        "cancel_event": self.cancel_event,
+                    }
+                )
+                self.supervisor.set_agent_executing("TestGeneratorAgent", True)
             console.print("[yellow][Step 1/6] Synthesizing initial candidate test suite...[/yellow]")
             initial_tests = ""
             provider_used = self.generator.active_provider
@@ -848,6 +1070,7 @@ class TestForgeOrchestrator:
                 payload={"agent_name": "GoogleADKTestGenerator", "action": "generate_tests", "iteration": 0}
             ))
 
+            test_plan_data = self.state.metadata.get("test_plan") if hasattr(self.state, "metadata") and self.state.metadata else None
             if self.engine_mode != "legacy":
                 try:
                     req = A2AMessage(
@@ -859,6 +1082,7 @@ class TestForgeOrchestrator:
                         payload={
                             "target_source_code": self.state.target_source_code,
                             "iteration": 0,
+                            "test_plan": test_plan_data,
                         }
                     )
                     resp = self.broker.send_message(req)
@@ -871,7 +1095,8 @@ class TestForgeOrchestrator:
             if not initial_tests:
                 initial_tests = self.generator.generate_tests(
                     source_code=self.state.target_source_code,
-                    iteration=0
+                    iteration=0,
+                    test_plan=test_plan_data,
                 )
                 provider_used = self.generator.active_provider
 
@@ -896,6 +1121,8 @@ class TestForgeOrchestrator:
                 current_test_code=self.state.current_test_code,
                 active_provider=self.state.active_provider
             )
+            if hasattr(self, "supervisor") and self.supervisor:
+                self.supervisor.set_agent_completed("TestGeneratorAgent", success=bool(self.state.current_test_code))
             self.blackboard.save_checkpoint(
                 stage="BASELINE_SYNTHESIS",
                 job_id=self.job_id,
@@ -930,8 +1157,43 @@ class TestForgeOrchestrator:
         self.check_cancellation_or_timeout()
         if not skip_baseline_validation:
             self._sync_lifecycle(TaskLifecycleState.EXECUTING, metadata={"step": "baseline_validation"})
+            # Consult Top-Level Supervisor Agent for sandbox execution approval
+            if hasattr(self, "supervisor") and self.supervisor:
+                self.supervisor.decide_next_step(
+                    WorkflowStage.TEST_GENERATION,
+                    context={
+                        "job_id": self.job_id,
+                        "task_id": self.state.task_id,
+                        "test_code": self.state.current_test_code,
+                        "cancel_event": self.cancel_event,
+                    }
+                )
+                self.supervisor.set_agent_executing("TestExecutionAgent", True)
             console.print("[yellow][Step 2/6] Sandbox validating test suite against clean target (pass@1 check)...[/yellow]")
-            baseline_exec = self.sandbox.run_single(self.state.current_test_code, self.state.target_source_code)
+            exec_res = self.execution_agent.execute_tests(
+                test_code=self.state.current_test_code,
+                target_code=self.state.target_source_code,
+                target_file_path=self.target_file_path,
+                measure_coverage=False,
+                job_id=self.job_id,
+                workflow_id=self.workflow_id,
+                cancel_event=self.cancel_event,
+            )
+            if hasattr(self, "supervisor") and self.supervisor:
+                self.supervisor.set_agent_completed("TestExecutionAgent", success=True)
+            baseline_exec = {
+                "status": "PASS" if exec_res.status == "PASSED" else exec_res.status,
+                "exit_code": exec_res.sandbox_metadata.get("exit_code", 0),
+                "stdout": exec_res.stdout,
+                "stderr": exec_res.stderr,
+                "timed_out": exec_res.sandbox_metadata.get("timed_out", False),
+                "has_exec_error": exec_res.sandbox_metadata.get("has_exec_error", False),
+                "duration_ms": exec_res.duration_seconds * 1000.0,
+                "tests_collected": exec_res.total_tests,
+                "tests_passed": exec_res.passed_tests,
+                "tests_failed": exec_res.failed_tests,
+                "tests_errors": exec_res.error_tests,
+            }
 
             if baseline_exec["status"] != "PASS" or baseline_exec.get("tests_passed", 0) == 0:
                 self.check_cancellation_or_timeout()
@@ -957,7 +1219,28 @@ class TestForgeOrchestrator:
 
                 self.check_cancellation_or_timeout()
                 self._sync_lifecycle(TaskLifecycleState.EXECUTING, metadata={"step": "baseline_repair_recheck"})
-                recheck = self.sandbox.run_single(self.state.current_test_code, self.state.target_source_code)
+                recheck_res = self.execution_agent.execute_tests(
+                    test_code=self.state.current_test_code,
+                    target_code=self.state.target_source_code,
+                    target_file_path=self.target_file_path,
+                    measure_coverage=False,
+                    job_id=self.job_id,
+                    workflow_id=self.workflow_id,
+                    cancel_event=self.cancel_event,
+                )
+                recheck = {
+                    "status": "PASS" if recheck_res.status == "PASSED" else recheck_res.status,
+                    "exit_code": recheck_res.sandbox_metadata.get("exit_code", 0),
+                    "stdout": recheck_res.stdout,
+                    "stderr": recheck_res.stderr,
+                    "timed_out": recheck_res.sandbox_metadata.get("timed_out", False),
+                    "has_exec_error": recheck_res.sandbox_metadata.get("has_exec_error", False),
+                    "duration_ms": recheck_res.duration_seconds * 1000.0,
+                    "tests_collected": recheck_res.total_tests,
+                    "tests_passed": recheck_res.passed_tests,
+                    "tests_failed": recheck_res.failed_tests,
+                    "tests_errors": recheck_res.error_tests,
+                }
                 if recheck["status"] != "PASS" or recheck.get("tests_passed", 0) == 0:
                     self.check_cancellation_or_timeout()
                     console.print("[yellow][!] Self-repaired tests failed clean target check. Engaging deterministic AST synthesis...[/yellow]")
@@ -976,7 +1259,28 @@ class TestForgeOrchestrator:
                         active_provider=self.state.active_provider
                     )
                     self.check_cancellation_or_timeout()
-                    final_check = self.sandbox.run_single(self.state.current_test_code, self.state.target_source_code)
+                    final_check_res = self.execution_agent.execute_tests(
+                        test_code=self.state.current_test_code,
+                        target_code=self.state.target_source_code,
+                        target_file_path=self.target_file_path,
+                        measure_coverage=False,
+                        job_id=self.job_id,
+                        workflow_id=self.workflow_id,
+                        cancel_event=self.cancel_event,
+                    )
+                    final_check = {
+                        "status": "PASS" if final_check_res.status == "PASSED" else final_check_res.status,
+                        "exit_code": final_check_res.sandbox_metadata.get("exit_code", 0),
+                        "stdout": final_check_res.stdout,
+                        "stderr": final_check_res.stderr,
+                        "timed_out": final_check_res.sandbox_metadata.get("timed_out", False),
+                        "has_exec_error": final_check_res.sandbox_metadata.get("has_exec_error", False),
+                        "duration_ms": final_check_res.duration_seconds * 1000.0,
+                        "tests_collected": final_check_res.total_tests,
+                        "tests_passed": final_check_res.passed_tests,
+                        "tests_failed": final_check_res.failed_tests,
+                        "tests_errors": final_check_res.error_tests,
+                    }
                 else:
                     final_check = recheck
             else:
@@ -986,11 +1290,82 @@ class TestForgeOrchestrator:
 
             # Record explicit baseline execution metrics
             tests_gen = len(re.findall(r"def\s+(test_\w+)\s*\(", self.state.current_test_code))
+            tests_collected = final_check.get("tests_collected", 0)
+            tests_passed = final_check.get("tests_passed", 0)
+            tests_failed = final_check.get("tests_failed", 0)
+            tests_errors = final_check.get("tests_errors", 0)
+            has_exec_error = final_check.get("has_exec_error", False) or final_check.get("status") == "ERROR"
+            raw_err = final_check.get("stderr") or final_check.get("stdout") or ""
+
             self.state.baseline_tests_generated = tests_gen
-            self.state.baseline_tests_executed = final_check.get("tests_collected", 0)
-            self.state.baseline_tests_passed = final_check.get("tests_passed", 0)
-            self.state.baseline_tests_failed = final_check.get("tests_failed", 0)
-            self.state.baseline_passed = (final_check["status"] == "PASS" and final_check.get("tests_passed", 0) > 0)
+            self.state.baseline_tests_executed = tests_collected
+            self.state.baseline_tests_passed = tests_passed
+            self.state.baseline_tests_failed = tests_failed
+            self.state.baseline_passed = (final_check["status"] == "PASS" and tests_passed > 0 and not has_exec_error)
+
+            if not self.state.baseline_passed:
+                self.state.terminated = True
+                self.state.final_mutation_score = None
+
+                # CASE 1: Tests generated, but NOT executed (collected == 0 or execution error)
+                if (tests_gen > 0 and tests_collected == 0) or has_exec_error:
+                    self.state.baseline_tests_executed = 0
+                    self.state.baseline_tests_passed = 0
+                    self.state.baseline_tests_failed = 0
+                    self.state.execution_errors = tests_errors if tests_errors > 0 else 1
+                    self.state.baseline_execution_error = raw_err.strip() or "Pytest failed to execute generated tests in sandbox."
+
+                    clean_err = re.sub(r"\x1b\[[0-9;]*m", "", raw_err)
+                    err_lines = [l.strip() for l in clean_err.splitlines() if l.strip()]
+                    last_err = ""
+                    for line in reversed(err_lines):
+                        if any(k in line for k in ["Error:", "Exception:", "ModuleNotFoundError", "SyntaxError", "ImportError"]):
+                            last_err = line
+                            break
+                    if not last_err and err_lines:
+                        last_err = err_lines[-1]
+
+                    self.state.final_hardening_status = "EXECUTION_ERROR"
+                    self.state.termination_reason = f"Execution Error: Tests generated ({tests_gen}) could not be executed by Pytest: {last_err or 'Execution/Collection error'}"
+                    console.print(f"[red][!] CRITICAL: {self.state.termination_reason}[/red]")
+                    self._sync_lifecycle(TaskLifecycleState.FAILED, reason=self.state.termination_reason)
+
+                # CASE 2: Tests executed, but failed assertions against clean code
+                else:
+                    self.state.final_hardening_status = "FAILED_BASELINE"
+                    self.state.baseline_execution_error = raw_err.strip() or f"{tests_failed}/{tests_collected} tests failed against clean code."
+                    self.state.termination_reason = f"Baseline validation failed: {tests_failed}/{tests_collected} tests failed against clean target code."
+                    console.print(f"[red][!] CRITICAL: {self.state.termination_reason}[/red]")
+                    self._sync_lifecycle(TaskLifecycleState.FAILED, reason=self.state.termination_reason)
+
+                self.blackboard.update_suite_space(
+                    baseline_tests_generated=self.state.baseline_tests_generated,
+                    baseline_tests_executed=self.state.baseline_tests_executed,
+                    baseline_tests_passed=self.state.baseline_tests_passed,
+                    baseline_tests_failed=self.state.baseline_tests_failed,
+                    baseline_passed=self.state.baseline_passed,
+                    baseline_execution_error=self.state.baseline_execution_error,
+                    baseline_tests_errors=self.state.execution_errors,
+                )
+                self.blackboard.update_metrics_space(
+                    terminated=self.state.terminated,
+                    termination_reason=self.state.termination_reason,
+                    final_hardening_status=self.state.final_hardening_status,
+                    execution_errors=self.state.execution_errors,
+                    baseline_execution_error=self.state.baseline_execution_error,
+                    current_mutation_score=None,
+                    raw_mutation_score=None,
+                    adjusted_mutation_score=None,
+                )
+                self.blackboard.sync_to_state(self.state)
+                self.logger.log_event("PIPELINE_COMPLETE", {
+                    "terminated": True,
+                    "reason": self.state.termination_reason,
+                    "final_score": None,
+                    "hardening_status": self.state.final_hardening_status,
+                    "execution_error": self.state.baseline_execution_error[:500] if hasattr(self.state, "baseline_execution_error") else None
+                })
+                return self.state
 
             self.blackboard.update_suite_space(
                 baseline_tests_generated=self.state.baseline_tests_generated,
@@ -1000,46 +1375,52 @@ class TestForgeOrchestrator:
                 baseline_passed=self.state.baseline_passed,
             )
 
-            if not self.state.baseline_passed:
-                console.print("[red][!] CRITICAL: Baseline test suite failed to pass against clean target code.[/red]")
-                self.state.terminated = True
-                self.state.termination_reason = "Baseline validation failed: Tests failed against clean target code."
-                self.state.final_hardening_status = "FAILED_BASELINE"
-                self._sync_lifecycle(TaskLifecycleState.FAILED, reason=self.state.termination_reason)
-                self.blackboard.update_metrics_space(
-                    terminated=self.state.terminated,
-                    termination_reason=self.state.termination_reason,
-                    final_hardening_status=self.state.final_hardening_status,
-                )
-                self.blackboard.sync_to_state(self.state)
-                self.logger.log_event("PIPELINE_COMPLETE", {
-                    "terminated": True,
-                    "reason": self.state.termination_reason,
-                    "final_score": 0.0,
-                    "hardening_status": "FAILED_BASELINE"
-                })
-                return self.state
-
             console.print(f"[green][✓] Candidate test suite passed on clean code ({self.state.baseline_tests_passed}/{self.state.baseline_tests_executed} tests passed).[/green]")
 
             # Step 3: Measure Baseline Line Coverage
             self.check_cancellation_or_timeout()
-            cov_pct, cov_info = self.sandbox.measure_coverage(self.state.current_test_code, self.state.target_source_code)
-            self.state.baseline_line_coverage = cov_pct
-            self.state.lines_covered = cov_info.get("covered_lines", 0)
-            self.state.num_statements = cov_info.get("num_statements", 0)
-            self.blackboard.update_metrics_space(
-                baseline_line_coverage=self.state.baseline_line_coverage,
-                lines_covered=self.state.lines_covered,
-                num_statements=self.state.num_statements,
+            cov_payload = self.execution_agent.execute_tests(
+                test_code=self.state.current_test_code,
+                target_code=self.state.target_source_code,
+                target_file_path=self.target_file_path,
+                measure_coverage=True,
+                job_id=self.job_id,
+                workflow_id=self.workflow_id,
+                cancel_event=self.cancel_event,
             )
-            console.print(f"[green][✓] Baseline Line Coverage: {cov_pct:.1f}% ({self.state.lines_covered}/{self.state.num_statements} lines covered)[/green]\n")
+            cov_pct = cov_payload.line_coverage_pct
+            branch_cov = getattr(cov_payload, "branch_coverage", 0.0)
+            self.state.baseline_line_coverage = cov_pct
+            self.state.lines_covered = cov_payload.lines_covered
+            self.state.num_statements = cov_payload.num_statements
+            self.state.baseline_branch_coverage = branch_cov
+            self.state.total_branches = getattr(cov_payload, "total_branches", 0)
+            self.state.covered_branches = getattr(cov_payload, "covered_branches", 0)
+            self.state.missing_branches = getattr(cov_payload, "missing_branches", [])
+            self.blackboard.record_coverage(
+                line_coverage_pct=self.state.baseline_line_coverage,
+                lines_covered=self.state.lines_covered,
+                lines_total=self.state.num_statements,
+                branch_coverage=self.state.baseline_branch_coverage,
+                total_branches=self.state.total_branches,
+                covered_branches=self.state.covered_branches,
+                missing_branches=self.state.missing_branches,
+            )
+            console.print(
+                f"[green][✓] Baseline Line Coverage: {cov_pct:.1f}% ({self.state.lines_covered}/{self.state.num_statements} lines covered) | "
+                f"Branch Coverage: {branch_cov:.1f}% ({self.state.covered_branches}/{self.state.total_branches} branches covered)[/green]\n"
+            )
             self.blackboard.save_checkpoint(
                 stage="BASELINE_VALIDATED",
                 job_id=self.job_id,
                 workflow_id=self.workflow_id,
                 status="IN_PROGRESS",
-                extra_meta={"coverage_pct": cov_pct}
+                extra_meta={
+                    "coverage_pct": cov_pct,
+                    "branch_coverage_pct": branch_cov,
+                    "total_branches": self.state.total_branches,
+                    "covered_branches": self.state.covered_branches,
+                }
             )
         else:
             console.print(f"[bold cyan]⏩ Restored from checkpoint: Skipping Step 2 & 3 Sandbox Baseline Validation & Line Coverage[/bold cyan]")
@@ -1064,6 +1445,8 @@ class TestForgeOrchestrator:
             if critic_directive and self.state.surviving_mutant_diffs:
                 self._sync_lifecycle(TaskLifecycleState.PLANNING, metadata={"iteration": iteration, "step": "hardening_plan"})
                 self._sync_lifecycle(TaskLifecycleState.GENERATING_TESTS, metadata={"iteration": iteration, "step": "hardening_generation"})
+                if hasattr(self, "supervisor") and self.supervisor:
+                    self.supervisor.set_agent_executing("ReflectionRepairAgent", True)
                 console.print(f"  [cyan]• Hardening test assertions based on Critic reasoning...[/cyan]")
                 hardened_tests = ""
                 provider_used = self.generator.active_provider
@@ -1074,26 +1457,31 @@ class TestForgeOrchestrator:
                             for m in self.state.mutants if m.status == "SURVIVED"
                         ]
                         req = A2AMessage(
-                            correlation_id=f"iter_{iteration}_{uuid.uuid4().hex[:8]}",
+                            correlation_id=f"refl_{iteration}_{uuid.uuid4().hex[:8]}",
                             sender="agent:orchestrator",
-                            recipient="agent:google-adk:generator",
+                            recipient="agent:google-adk:reflection-repair",
                             performative=A2APerformative.REQUEST,
-                            action="generate_tests",
+                            action="repair_tests",
                             payload={
                                 "target_source_code": self.state.target_source_code,
                                 "existing_test_code": self.state.current_test_code,
                                 "surviving_diffs": self.state.surviving_mutant_diffs,
                                 "surviving_mutants": surviving_records,
-                                "critic_directive": critic_directive,
                                 "iteration": iteration,
+                                "max_iterations": self.state.max_iterations,
+                                "target_mutation_score": self.state.target_mutation_score,
+                                "task_id": self.state.task_id,
                             }
                         )
                         resp = self.broker.send_message(req)
-                        if resp.performative == A2APerformative.INFORM and "test_code" in resp.payload:
-                            hardened_tests = resp.payload["test_code"]
-                            provider_used = "Google ADK Generator"
+                        if resp.performative == A2APerformative.INFORM and "retained_test_code" in resp.payload:
+                            retained = resp.payload["retained_test_code"]
+                            accepted = resp.payload.get("accepted", False)
+                            if accepted and retained:
+                                hardened_tests = retained
+                                provider_used = "Google ADK Reflection & Repair"
                     except Exception as exc:
-                        console.print(f"  [dim]ADK hardening failover: {exc}[/dim]")
+                        console.print(f"  [dim]ADK reflection repair failover: {exc}[/dim]")
 
                 surviving_mutants_list = [m for m in self.state.mutants if m.status in ("SURVIVED", "POTENTIALLY_EQUIVALENT")]
                 if not hardened_tests:
@@ -1155,20 +1543,75 @@ class TestForgeOrchestrator:
             self._sync_lifecycle(TaskLifecycleState.MUTATION_ANALYSIS, metadata={"iteration": iteration, "step": "ast_mutation"})
             mutants = ASTMutator.mutate(self.state.target_source_code, target_lines=self.target_lines)
             self.state.mutants = mutants
+
+            # CASE 3 / CASE 6: Baseline passes, but no mutants could be generated
+            if not mutants:
+                console.print(f"  [yellow]• No AST mutants could be generated from target code.[/yellow]")
+                self.state.mutants_generated = 0
+                self.state.mutants_executed = 0
+                self.state.mutants_killed = 0
+                self.state.mutants_survived = 0
+                self.state.final_mutation_score = None
+                self.state.terminated = True
+                self.state.final_hardening_status = "MUTATION_GENERATION_FAILED"
+                self.state.termination_reason = "Mutation Generation Failed: Target code yielded 0 AST mutants."
+                self._sync_lifecycle(TaskLifecycleState.FAILED, reason=self.state.termination_reason)
+                self.blackboard.update_mutant_space(
+                    mutants=[],
+                    mutants_generated=0,
+                    mutants_executed=0,
+                    mutants_killed=0,
+                    mutants_survived=0,
+                    current_mutation_score=None,
+                    raw_mutation_score=None,
+                    adjusted_mutation_score=None,
+                )
+                self.blackboard.update_metrics_space(
+                    terminated=True,
+                    termination_reason=self.state.termination_reason,
+                    final_hardening_status=self.state.final_hardening_status,
+                )
+                self.blackboard.sync_to_state(self.state)
+                self.logger.log_event("PIPELINE_COMPLETE", {
+                    "terminated": True,
+                    "reason": self.state.termination_reason,
+                    "final_score": None,
+                    "hardening_status": "MUTATION_GENERATION_FAILED"
+                })
+                return self.state
+
             if self.target_lines:
                 console.print(f"  [cyan]• Git Diff-Aware Mutation injected {len(mutants)} targeted faults across lines {self.target_lines}.[/cyan]")
             else:
                 console.print(f"  [cyan]• AST Mutator injected {len(mutants)} deterministic faults.[/cyan]")
 
-            # C. Evaluate mutants across parallel sandbox workers
+            # C. Evaluate mutants across parallel sandbox workers via TestExecutionAgent
             self.check_cancellation_or_timeout()
             self._sync_lifecycle(TaskLifecycleState.EXECUTING, metadata={"iteration": iteration, "step": "mutant_evaluation"})
-            console.print(f"  [cyan]• Parallel Sandbox evaluating mutants across {self.sandbox.max_workers} CPU workers...[/cyan]")
-            evaluated_mutants = self.sandbox.evaluate_mutants_parallel(
-                self.state.current_test_code,
-                mutants,
-                baseline_passed=self.state.baseline_passed
+            if hasattr(self, "supervisor") and self.supervisor:
+                self.supervisor.decide_next_step(
+                    WorkflowStage.BASELINE_EXECUTION,
+                    context={
+                        "job_id": self.job_id,
+                        "task_id": self.state.task_id,
+                        "baseline_passed": self.state.baseline_passed,
+                        "tests_passed": self.state.baseline_tests_passed,
+                        "iteration": iteration,
+                        "cancel_event": self.cancel_event,
+                    }
+                )
+                self.supervisor.set_agent_executing("TestExecutionAgent", True)
+            console.print(f"  [cyan]• TestExecutionAgent evaluating mutants across {self.sandbox.max_workers} CPU workers...[/cyan]")
+            evaluated_mutants = self.execution_agent.evaluate_mutants(
+                test_code=self.state.current_test_code,
+                mutants=mutants,
+                baseline_passed=self.state.baseline_passed,
+                cancel_event=self.cancel_event,
+                job_id=self.job_id,
+                workflow_id=self.workflow_id,
             )
+            if hasattr(self, "supervisor") and self.supervisor:
+                self.supervisor.set_agent_completed("TestExecutionAgent", success=True)
 
             # D. Compute score & surviving diffs with Milestone 2 equivalence analysis
             self._sync_lifecycle(TaskLifecycleState.EVALUATING, metadata={"iteration": iteration, "step": "score_evaluation"})
@@ -1184,7 +1627,47 @@ class TestForgeOrchestrator:
             mutants_executed = score_data["evaluable_mutants"]
             raw_score = score_data["raw_mutation_score"]
             adj_score = score_data["adjusted_mutation_score"]
+
+            # CASE 4: Mutants generated, but not executed
+            if mutants_executed == 0 and total > 0:
+                console.print(f"  [red]• Mutants generated ({total}) but none could be executed in sandbox.[/red]")
+                self.state.mutants_generated = total
+                self.state.mutants_executed = 0
+                self.state.mutants_killed = 0
+                self.state.mutants_survived = total
+                self.state.execution_errors = errors or 1
+                self.state.final_mutation_score = None
+                self.state.terminated = True
+                self.state.final_hardening_status = "MUTATION_EXECUTION_FAILED"
+                self.state.termination_reason = "Mutation Execution Failed: Mutants were generated but could not be evaluated in the sandbox."
+                self._sync_lifecycle(TaskLifecycleState.FAILED, reason=self.state.termination_reason)
+                self.blackboard.update_mutant_space(
+                    mutants=evaluated_mutants,
+                    mutants_generated=total,
+                    mutants_executed=0,
+                    mutants_killed=0,
+                    mutants_survived=total,
+                    current_mutation_score=None,
+                    raw_mutation_score=None,
+                    adjusted_mutation_score=None,
+                )
+                self.blackboard.update_metrics_space(
+                    terminated=True,
+                    termination_reason=self.state.termination_reason,
+                    final_hardening_status=self.state.final_hardening_status,
+                    execution_errors=self.state.execution_errors,
+                )
+                self.blackboard.sync_to_state(self.state)
+                self.logger.log_event("PIPELINE_COMPLETE", {
+                    "terminated": True,
+                    "reason": self.state.termination_reason,
+                    "final_score": None,
+                    "hardening_status": "MUTATION_EXECUTION_FAILED"
+                })
+                return self.state
+
             score = raw_score
+            self.state.final_mutation_score = raw_score
 
             # Exclude verified equivalent mutants from surviving diffs presented to the Critic
             surviving_diffs = [
@@ -1284,6 +1767,23 @@ class TestForgeOrchestrator:
 
             # E. Check Termination
             effective_score = max(raw_score, adj_score)
+            surviving_mutant_objs = [m for m in evaluated_mutants if m.status in ("SURVIVED", "POTENTIALLY_EQUIVALENT")]
+            if hasattr(self, "supervisor") and self.supervisor:
+                self.supervisor.decide_next_step(
+                    WorkflowStage.CRITIC_ASSESSMENT,
+                    context={
+                        "job_id": self.job_id,
+                        "task_id": self.state.task_id,
+                        "mutation_score": raw_score,
+                        "adjusted_mutation_score": adj_score,
+                        "target_mutation_score": self.state.target_mutation_score,
+                        "coverage_pct": cov_pct,
+                        "surviving_mutants_count": len(surviving_mutant_objs),
+                        "iteration": iteration,
+                        "max_iterations": self.state.max_iterations,
+                        "cancel_event": self.cancel_event,
+                    }
+                )
             if effective_score >= self.state.target_mutation_score and cov_pct > 0.0:
                 self.state.terminated = True
                 self.state.termination_reason = (
@@ -1338,6 +1838,8 @@ class TestForgeOrchestrator:
             # F. Adversarial Critic analyzes surviving mutants
             self.check_cancellation_or_timeout()
             self._sync_lifecycle(TaskLifecycleState.PLANNING, metadata={"iteration": iteration, "step": "critic_analysis"})
+            if hasattr(self, "supervisor") and self.supervisor:
+                self.supervisor.set_agent_executing("MutationQualityCriticAgent", True)
             console.print(f"  [magenta]• Adversarial Critic analyzing {survived} surviving mutant(s)...[/magenta]")
             critic_directive = ""
             critic_agent_name = "AdversarialCriticAgent"
@@ -1347,28 +1849,36 @@ class TestForgeOrchestrator:
                         {"mutant_id": m.mutant_id, "mutation_type": m.mutation_type, "line_number": m.line_number}
                         for m in evaluated_mutants if m.status == "SURVIVED"
                     ]
+                    mutant_dicts = [
+                        m.dict() if hasattr(m, "dict") else (m.model_dump() if hasattr(m, "model_dump") else m.__dict__)
+                        for m in evaluated_mutants
+                    ]
                     req = A2AMessage(
                         correlation_id=f"critique_{iteration}_{uuid.uuid4().hex[:8]}",
                         sender="agent:orchestrator",
-                        recipient="agent:crewai:critic",
+                        recipient="agent:crewai:mutation-critic",
                         performative=A2APerformative.REQUEST,
-                        action="diagnose_mutants",
+                        action="evaluate_quality",
                         payload={
                             "target_source_code": self.state.target_source_code,
+                            "current_test_code": self.state.current_test_code,
                             "surviving_diffs": surviving_diffs,
                             "surviving_mutants": surviving_records,
+                            "mutants": mutant_dicts,
                             "iteration": iteration,
+                            "target_mutation_score": self.state.target_mutation_score,
+                            "job_id": self.state.task_id or f"job_{uuid.uuid4().hex[:6]}",
                         }
                     )
                     resp = self.broker.send_message(req)
                     if resp.performative == A2APerformative.INFORM:
                         directive_data = resp.payload.get("directive") or resp.payload
-                        analysis = directive_data.get("analysis", "")
+                        analysis = directive_data.get("overall_quality_assessment") or directive_data.get("analysis", "")
                         directives_list = directive_data.get("directives", [])
                         critic_directive = analysis
                         if directives_list:
                             critic_directive += "\nDirectives:\n" + "\n".join(f"- {d}" for d in directives_list)
-                        critic_agent_name = "CrewAICriticAgent"
+                        critic_agent_name = "MutationQualityCriticAgent"
                 except Exception as exc:
                     console.print(f"  [dim]CrewAI critic failover: {exc}[/dim]")
 
@@ -1396,6 +1906,8 @@ class TestForgeOrchestrator:
                 failure_mechanisms=mechanisms,
                 semantic_guidance=guidance_dicts
             )
+            if hasattr(self, "supervisor") and self.supervisor:
+                self.supervisor.set_agent_completed("MutationQualityCriticAgent", success=True)
 
             self.logger.log_event("AGENT_HANDOFF", {
                 "from_agent": critic_agent_name,

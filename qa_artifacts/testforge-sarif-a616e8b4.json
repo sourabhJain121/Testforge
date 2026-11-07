@@ -1,0 +1,51 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "TestForge",
+          "version": "2.0.0",
+          "informationUri": "https://github.com/sourabh/TestForge",
+          "rules": [
+            {
+              "id": "MUTATION_SURVIVED",
+              "name": "SurvivingMutantWarning",
+              "shortDescription": {
+                "text": "Mutant survived candidate test suite without being detected"
+              },
+              "fullDescription": {
+                "text": "An artificial syntactic fault was injected into the target source code but survived test execution, indicating a deficiency in assertion strength or behavioral test coverage."
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              }
+            },
+            {
+              "id": "SECURITY_GUARDRAIL_ALERT",
+              "name": "SecurityGuardrailViolation",
+              "shortDescription": {
+                "text": "Prohibited or dangerous primitive detected by security guardrails"
+              },
+              "fullDescription": {
+                "text": "Security guardrails identified a prohibited operation such as unauthorized network access, OS manipulation, or credential exposure."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              }
+            }
+          ]
+        }
+      },
+      "artifacts": [
+        {
+          "location": {
+            "uri": "target.py"
+          }
+        }
+      ],
+      "results": []
+    }
+  ]
+}

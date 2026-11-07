@@ -7,17 +7,35 @@ services:
     restart: unless-stopped
     ports:
       - "8000:8000"
+    env_file:
+      - path: .env
+        required: false
     environment:
       - PYTHONUNBUFFERED=1
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://ollama:11434}
       - GITHUB_TOKEN=${GITHUB_TOKEN:-}
+    volumes:
+      - ./qa_artifacts:/app/qa_artifacts
+      - ./samples:/app/samples
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
       interval: 15s
       timeout: 5s
       retries: 3
       start_period: 10s
+    networks:
+      - testforge-net
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: testforge-ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_storage:/root/.ollama
     networks:
       - testforge-net
 
@@ -42,6 +60,9 @@ services:
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
     networks:
       - testforge-net
+
+volumes:
+  ollama_storage:
 
 networks:
   testforge-net:

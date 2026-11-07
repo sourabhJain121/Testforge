@@ -62,6 +62,11 @@ class TargetSpace(BaseModel):
     source_sha: str = ""
     line_count: int = 0
     dependencies: List[str] = Field(default_factory=list)
+    branches: List[Dict[str, Any]] = Field(default_factory=list)
+    exception_paths: List[str] = Field(default_factory=list)
+    complexity_risk: Dict[str, Any] = Field(default_factory=dict)
+    suggested_testing_targets: List[str] = Field(default_factory=list)
+    call_graph: Dict[str, List[str]] = Field(default_factory=dict)
     is_untrusted: bool = True
     provenance: str = "ingestion"
     injection_findings: List[Dict[str, Any]] = Field(default_factory=list)
@@ -79,9 +84,9 @@ class MutantSpace(BaseModel):
     mutants_equivalent: int = 0
     mutants_potentially_equivalent: int = 0
     mutation_execution_errors: int = 0
-    current_mutation_score: float = 0.0
-    raw_mutation_score: float = 0.0
-    adjusted_mutation_score: float = 0.0
+    current_mutation_score: Optional[float] = 0.0
+    raw_mutation_score: Optional[float] = 0.0
+    adjusted_mutation_score: Optional[float] = 0.0
     surviving_mutant_diffs: List[str] = Field(default_factory=list)
 
 
@@ -92,6 +97,19 @@ class CriticSpace(BaseModel):
     reflection_notes: List[str] = Field(default_factory=list)
     failure_mechanisms: Dict[str, str] = Field(default_factory=dict)
     semantic_guidance: List[Dict[str, Any]] = Field(default_factory=list)
+    # Phase 5: Mutation & Quality Critic Agent enhancements
+    job_id: Optional[str] = None
+    mutation_run_id: Optional[str] = None
+    mutation_score: Optional[float] = None
+    quality_assessment: Optional[str] = None
+    assertion_quality_findings: List[Dict[str, Any]] = Field(default_factory=list)
+    missing_scenario_findings: List[Dict[str, Any]] = Field(default_factory=list)
+    recommended_improvements: List[Dict[str, Any]] = Field(default_factory=list)
+    should_iterate: bool = False
+    overall_verdict: str = "PENDING"
+    critic_agent: str = "agent:crewai:critic"
+    evaluated_at: Optional[float] = None
+    react_trajectories: List[Dict[str, Any]] = Field(default_factory=list, description="Recorded ReAct Thought-Action-Observation trajectories")
 
 
 class SuiteSpace(BaseModel):
@@ -107,6 +125,12 @@ class SuiteSpace(BaseModel):
     baseline_passed: bool = False
     baseline_tests_passed: int = 0
     baseline_tests_failed: int = 0
+    baseline_execution_error: Optional[str] = None
+    baseline_tests_errors: int = 0
+    # Phase 6: Reflection & Repair enhancements
+    previous_test_code: str = ""
+    best_verified_test_code: str = ""
+    repair_history: List[Dict[str, Any]] = Field(default_factory=list)
 
 
 class MetricsSpace(BaseModel):
@@ -115,14 +139,20 @@ class MetricsSpace(BaseModel):
     max_iterations: int = 3
     target_mutation_score: float = 85.0
     baseline_line_coverage: float = 0.0
+    branch_coverage: float = 0.0
+    total_branches: int = 0
+    covered_branches: int = 0
+    missing_branches: List[Any] = Field(default_factory=list)
     lines_covered: int = 0
     num_statements: int = 0
     history: List[IterationMetrics] = Field(default_factory=list)
-    final_mutation_score: float = 0.0
-    raw_mutation_score: float = 0.0
-    adjusted_mutation_score: float = 0.0
+    final_mutation_score: Optional[float] = None
+    raw_mutation_score: Optional[float] = None
+    adjusted_mutation_score: Optional[float] = None
     equivalent_mutants: int = 0
     potentially_equivalent_mutants: int = 0
+    execution_errors: int = 0
+    baseline_execution_error: Optional[str] = None
     reflection_iterations_performed: int = 0
     final_hardening_status: str = "INITIALIZING"
     terminated: bool = False
@@ -132,7 +162,107 @@ class MetricsSpace(BaseModel):
     lifecycle_state: str = "CREATED"
     stage_durations: Dict[str, float] = Field(default_factory=dict)
     stage_history: List[Dict[str, Any]] = Field(default_factory=list)
+    # Phase 7: Supervisor Agent enhancements
+    supervisor_decisions: List[Dict[str, Any]] = Field(default_factory=list)
+    current_stage: str = "INITIALIZING"
 
+    @property
+    def statement_coverage(self) -> float:
+        return self.baseline_line_coverage
+
+    @statement_coverage.setter
+    def statement_coverage(self, val: float) -> None:
+        self.baseline_line_coverage = float(val)
+
+
+
+class PlanSpace(BaseModel):
+    """
+    Partition containing structured test planning artifacts and scenario definitions.
+    Formulated by the Test Planning Agent.
+    """
+    plan_id: str = Field(default_factory=lambda: f"plan_{uuid.uuid4().hex[:8]}")
+    task_id: Optional[str] = None
+    job_id: Optional[str] = None
+    planning_status: Literal["DRAFT", "PLANNED", "APPROVED", "REVISED", "COMPLETED"] = "DRAFT"
+    source_module: str = "target.py"
+    source_sha: str = ""
+    target_file_path: Optional[str] = None
+    target_callables: List[str] = Field(default_factory=list)
+    scenarios: List[Dict[str, Any]] = Field(default_factory=list)
+    boundary_conditions: List[str] = Field(default_factory=list)
+    test_categories: List[str] = Field(default_factory=list)
+    negative_cases: List[str] = Field(default_factory=list)
+    allocated_test_budget: int = 10
+    created_at: float = Field(default_factory=time.time)
+    updated_at: float = Field(default_factory=time.time)
+    planner_agent: str = "agent:google-adk:test-planner"
+    strategy_notes: str = ""
+    cot_reasoning_trace: List[Dict[str, Any]] = Field(default_factory=list, description="Step-by-step chain-of-thought boundary derivation trace")
+
+
+class ExecutionSpace(BaseModel):
+    """
+    Partition containing granular test execution outcomes, coverage maps, and logs.
+    Updated by the Test Execution Agent.
+    """
+    execution_id: str = Field(default_factory=lambda: f"exec_{uuid.uuid4().hex[:8]}")
+    job_id: Optional[str] = None
+    workflow_id: Optional[str] = None
+    task_id: Optional[str] = None
+    status: Literal["NOT_STARTED", "RUNNING", "PASSED", "FAILED", "ERROR", "TIMEOUT"] = "NOT_STARTED"
+    total_tests: int = 0
+    passed_tests: int = 0
+    failed_tests: int = 0
+    skipped_tests: int = 0
+    error_tests: int = 0
+    line_coverage_pct: float = 0.0
+    branch_coverage_pct: Optional[float] = None
+    branch_coverage: float = 0.0
+    total_branches: int = 0
+    covered_branches: int = 0
+    missing_branches: List[Any] = Field(default_factory=list)
+    lines_covered: int = 0
+    lines_total: int = 0
+    missing_lines: List[int] = Field(default_factory=list)
+    duration_seconds: float = 0.0
+    failures: List[Dict[str, Any]] = Field(default_factory=list)
+    quarantined_tests: List[str] = Field(default_factory=list)
+    stdout: str = ""
+    stderr: str = ""
+    log_path: Optional[str] = None
+    artifact_paths: List[str] = Field(default_factory=list)
+    sandbox_metadata: Dict[str, Any] = Field(default_factory=dict)
+    timeout_seconds: float = 5.0
+    worker_count: int = 1
+    last_executed_at: float = Field(default_factory=time.time)
+
+
+class SecuritySpace(BaseModel):
+    """
+    Partition containing continuous security assessments, findings, and remediation states.
+    Managed by the Security Agent.
+    """
+    assessment_id: str = Field(default_factory=lambda: f"sec_{uuid.uuid4().hex[:8]}")
+    task_id: Optional[str] = None
+    job_id: Optional[str] = None
+    status: Literal["PENDING", "PASSED", "WARNING", "BLOCKED", "REFUSED"] = "PENDING"
+    severity: Literal["INFO", "WARN", "BLOCK"] = "INFO"
+    risk_level: Literal["SAFE", "LOW", "MEDIUM", "HIGH", "CRITICAL"] = "SAFE"
+    allowed: bool = True
+    applied_policies: List[str] = Field(default_factory=list)
+    findings: List[Dict[str, Any]] = Field(default_factory=list)
+    defused_injection_count: int = 0
+    redacted_secret_count: int = 0
+    affected_locations: List[str] = Field(default_factory=list)
+    evidence: Dict[str, Any] = Field(default_factory=dict)
+    remediation_recommendations: List[str] = Field(default_factory=list)
+    reviewed: bool = False
+    reviewed_by: Optional[str] = None
+    review_notes: Optional[str] = None
+    is_false_positive: bool = False
+    last_evaluated_at: float = Field(default_factory=time.time)
+    evaluator_agent: str = "agent:google-adk:security"
 
 
 # ==============================================================================
@@ -143,7 +273,7 @@ class BlackboardEvent(BaseModel):
     """Typed event emitted on validated partition state changes."""
     event_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     revision: int
-    partition: Literal["target", "mutant", "critic", "suite", "metrics"]
+    partition: Literal["target", "mutant", "critic", "suite", "metrics", "plan", "execution", "security"]
     event_type: str = "UPDATE"
     timestamp: float = Field(default_factory=time.time)
     safe_metadata: Dict[str, Any] = Field(default_factory=dict)
@@ -158,6 +288,9 @@ class BlackboardSnapshot(BaseModel):
     critic: CriticSpace
     suite: SuiteSpace
     metrics: MetricsSpace
+    plan: PlanSpace = Field(default_factory=PlanSpace)
+    execution: ExecutionSpace = Field(default_factory=ExecutionSpace)
+    security: SecuritySpace = Field(default_factory=SecuritySpace)
 
 
 class BlackboardSubscription:
@@ -188,13 +321,30 @@ class BlackboardSubscription:
 def _extract_safe_change_metadata(partition: str, updates: Dict[str, Any]) -> Dict[str, Any]:
     meta: Dict[str, Any] = {"fields_modified": sorted(list(updates.keys()))}
     for k, v in updates.items():
-        if k in ("target_source_code", "current_test_code", "baseline_test_code", "hardened_test_code", "candidate_test_code"):
+        if k in (
+            "target_source_code", "current_test_code", "baseline_test_code",
+            "hardened_test_code", "candidate_test_code", "stdout", "stderr", "strategy_notes"
+        ):
             meta[f"{k}_len"] = len(v) if isinstance(v, str) else 0
-        elif k in ("mutants", "history", "critic_directives", "surviving_mutant_diffs", "functions", "classes"):
+        elif k in (
+            "mutants", "history", "critic_directives", "surviving_mutant_diffs",
+            "functions", "classes", "scenarios", "findings", "failures",
+            "quarantined_tests", "boundary_conditions", "negative_cases",
+            "remediation_recommendations", "applied_policies",
+            "assertion_quality_findings", "missing_scenario_findings", "recommended_improvements"
+        ):
             meta[f"{k}_count"] = len(v) if isinstance(v, (list, dict, set)) else 0
-        elif k in ("current_mutation_score", "final_mutation_score", "baseline_line_coverage"):
+        elif k in (
+            "current_mutation_score", "final_mutation_score", "baseline_line_coverage",
+            "line_coverage_pct", "duration_seconds", "mutation_score"
+        ):
             meta[k] = float(v) if isinstance(v, (int, float)) else 0.0
-        elif k in ("terminated", "final_hardening_status", "current_iteration", "active_provider", "blast_risk", "lifecycle_state", "task_id"):
+        elif k in (
+            "terminated", "final_hardening_status", "current_iteration", "active_provider",
+            "blast_risk", "lifecycle_state", "task_id", "status", "planning_status",
+            "risk_level", "severity", "allowed", "execution_id", "plan_id", "assessment_id",
+            "should_iterate", "overall_verdict", "critic_agent"
+        ):
             meta[k] = v
         elif isinstance(v, (int, float, bool, str)) and len(str(v)) <= 80:
             meta[k] = redact_sensitive_data(str(v))
@@ -211,7 +361,7 @@ class Blackboard:
     
     Guarantees:
       - Thread Safety: Guarded by threading.RLock.
-      - Strong Typing: All updates validated against Pydantic v2 schemas.
+      - Strong Typing: All updates validated against Pydantic v2 schemas across 8 partitions.
       - Atomic Updates: Validation failures never partially mutate state.
       - Defensive Copying: Reads return deep copies to prevent external in-place corruption.
       - Failure-Isolated Subscriptions: Observer exceptions never crash the pipeline.
@@ -224,6 +374,9 @@ class Blackboard:
         "critic": CriticSpace,
         "suite": SuiteSpace,
         "metrics": MetricsSpace,
+        "plan": PlanSpace,
+        "execution": ExecutionSpace,
+        "security": SecuritySpace,
     }
 
     def __init__(
@@ -248,12 +401,15 @@ class Blackboard:
         else:
             self._storage = None
 
-        # Partitions
+        # Partitions (8-Partition Architecture)
         self._target = TargetSpace()
         self._mutant = MutantSpace()
         self._critic = CriticSpace()
         self._suite = SuiteSpace()
         self._metrics = MetricsSpace()
+        self._plan = PlanSpace()
+        self._execution = ExecutionSpace()
+        self._security = SecuritySpace()
 
         # Provenance & subscriptions
         self._revision: int = 0
@@ -300,6 +456,18 @@ class Blackboard:
         with self._lock:
             return self._metrics.model_copy(deep=True)
 
+    def get_plan_space(self) -> PlanSpace:
+        with self._lock:
+            return self._plan.model_copy(deep=True)
+
+    def get_execution_space(self) -> ExecutionSpace:
+        with self._lock:
+            return self._execution.model_copy(deep=True)
+
+    def get_security_space(self) -> SecuritySpace:
+        with self._lock:
+            return self._security.model_copy(deep=True)
+
     def get_isolated_target_code(self, provenance: str = "target_space") -> str:
         """Returns the target source code safely wrapped in untrusted data delimiters."""
         from testforge.prompt_guard import wrap_untrusted_content, inspect_source_for_indirect_injections
@@ -333,8 +501,20 @@ class Blackboard:
     def metrics(self) -> MetricsSpace:
         return self.get_metrics_space()
 
+    @property
+    def plan(self) -> PlanSpace:
+        return self.get_plan_space()
+
+    @property
+    def execution(self) -> ExecutionSpace:
+        return self.get_execution_space()
+
+    @property
+    def security(self) -> SecuritySpace:
+        return self.get_security_space()
+
     def get_partition(
-        self, partition_name: Literal["target", "mutant", "critic", "suite", "metrics"]
+        self, partition_name: Literal["target", "mutant", "critic", "suite", "metrics", "plan", "execution", "security"]
     ) -> BaseModel:
         """Retrieves a deep copy of the requested partition model."""
         with self._lock:
@@ -348,6 +528,12 @@ class Blackboard:
                 return self.get_suite_space()
             elif partition_name == "metrics":
                 return self.get_metrics_space()
+            elif partition_name == "plan":
+                return self.get_plan_space()
+            elif partition_name == "execution":
+                return self.get_execution_space()
+            elif partition_name == "security":
+                return self.get_security_space()
             else:
                 raise ValueError(f"Unknown partition '{partition_name}'. Valid: {list(self.PARTITION_MODELS.keys())}")
 
@@ -370,9 +556,267 @@ class Blackboard:
     def update_metrics_space(self, **kwargs) -> MetricsSpace:
         return self.update_partition("metrics", kwargs)  # type: ignore
 
+    def update_plan_space(self, **kwargs) -> PlanSpace:
+        return self.update_partition("plan", kwargs)  # type: ignore
+
+    def update_execution_space(self, **kwargs) -> ExecutionSpace:
+        return self.update_partition("execution", kwargs)  # type: ignore
+
+    def update_security_space(self, **kwargs) -> SecuritySpace:
+        return self.update_partition("security", kwargs)  # type: ignore
+
+    def update_run(
+        self,
+        run_id: str,
+        status: str,
+        total: int,
+        passed: int,
+        failed: int,
+        duration: float,
+        error_tests: int = 0,
+        skipped_tests: int = 0,
+        line_coverage_pct: float = 0.0,
+        lines_covered: int = 0,
+        lines_total: int = 0,
+        branch_coverage: float = 0.0,
+        total_branches: int = 0,
+        covered_branches: int = 0,
+        missing_branches: Optional[List[Any]] = None,
+        stdout: str = "",
+        stderr: str = "",
+        sandbox_metadata: Optional[Dict[str, Any]] = None,
+        job_id: Optional[str] = None,
+        workflow_id: Optional[str] = None,
+    ) -> ExecutionSpace:
+        """Convenience method to update ExecutionSpace partition with run outcomes."""
+        update_dict: Dict[str, Any] = {
+            "execution_id": run_id,
+            "status": status,
+            "total_tests": total,
+            "passed_tests": passed,
+            "failed_tests": failed,
+            "error_tests": error_tests,
+            "skipped_tests": skipped_tests,
+            "duration_seconds": duration,
+            "line_coverage_pct": line_coverage_pct,
+            "lines_covered": lines_covered,
+            "lines_total": lines_total,
+            "branch_coverage": branch_coverage,
+            "branch_coverage_pct": branch_coverage,
+            "total_branches": total_branches,
+            "covered_branches": covered_branches,
+            "missing_branches": missing_branches or [],
+            "stdout": stdout,
+            "stderr": stderr,
+            "last_executed_at": time.time(),
+        }
+        if job_id:
+            update_dict["job_id"] = job_id
+            update_dict["task_id"] = job_id
+        if workflow_id:
+            update_dict["workflow_id"] = workflow_id
+        if sandbox_metadata:
+            update_dict["sandbox_metadata"] = sandbox_metadata
+        return self.update_partition("execution", update_dict)  # type: ignore
+
+    def record_coverage(
+        self,
+        line_coverage_pct: float = 0.0,
+        lines_covered: int = 0,
+        lines_total: int = 0,
+        branch_coverage: float = 0.0,
+        total_branches: int = 0,
+        covered_branches: int = 0,
+        missing_branches: Optional[List[Any]] = None,
+    ) -> ExecutionSpace:
+        """Convenience method to record line and branch coverage in ExecutionSpace and MetricsSpace."""
+        branch_val = float(branch_coverage)
+        missing_list = list(missing_branches or [])
+        self.update_metrics_space(
+            baseline_line_coverage=line_coverage_pct,
+            lines_covered=lines_covered,
+            num_statements=lines_total,
+            branch_coverage=branch_val,
+            total_branches=total_branches,
+            covered_branches=covered_branches,
+            missing_branches=missing_list,
+        )
+        return self.update_partition("execution", {
+            "line_coverage_pct": line_coverage_pct,
+            "lines_covered": lines_covered,
+            "lines_total": lines_total,
+            "branch_coverage": branch_val,
+            "branch_coverage_pct": branch_val,
+            "total_branches": total_branches,
+            "covered_branches": covered_branches,
+            "missing_branches": missing_list,
+        })  # type: ignore
+
+    def record_failure(
+        self,
+        test_id: str,
+        error_message: str,
+        traceback: str = "",
+    ) -> ExecutionSpace:
+        """Convenience method to record a test failure in ExecutionSpace."""
+        with self._lock:
+            current_failures = list(self._execution.failures)
+            current_failures.append({
+                "test_id": test_id,
+                "error_message": error_message,
+                "traceback": traceback,
+                "timestamp": time.time(),
+            })
+        return self.update_partition("execution", {"failures": current_failures})  # type: ignore
+
+    def record_quarantine(
+        self,
+        test_id: str,
+        reason: str = "",
+    ) -> ExecutionSpace:
+        """Convenience method to record a quarantined test in ExecutionSpace."""
+        with self._lock:
+            current_quarantine = list(self._execution.quarantined_tests)
+            if test_id not in current_quarantine:
+                current_quarantine.append(test_id)
+        return self.update_partition("execution", {"quarantined_tests": current_quarantine})  # type: ignore
+
+    def record_suite_execution(
+        self,
+        current_test_code: Optional[str] = None,
+        baseline_passed: Optional[bool] = None,
+        baseline_tests_generated: Optional[int] = None,
+        baseline_tests_executed: Optional[int] = None,
+        baseline_tests_passed: Optional[int] = None,
+        baseline_tests_failed: Optional[int] = None,
+        baseline_tests_errors: Optional[int] = None,
+        baseline_execution_error: Optional[str] = None,
+    ) -> SuiteSpace:
+        """Convenience method to update SuiteSpace partition with execution outcomes."""
+        update_dict: Dict[str, Any] = {}
+        if current_test_code is not None:
+            update_dict["current_test_code"] = current_test_code
+        if baseline_passed is not None:
+            update_dict["baseline_passed"] = baseline_passed
+        if baseline_tests_generated is not None:
+            update_dict["baseline_tests_generated"] = baseline_tests_generated
+        if baseline_tests_executed is not None:
+            update_dict["baseline_tests_executed"] = baseline_tests_executed
+        if baseline_tests_passed is not None:
+            update_dict["baseline_tests_passed"] = baseline_tests_passed
+        if baseline_tests_failed is not None:
+            update_dict["baseline_tests_failed"] = baseline_tests_failed
+        if baseline_tests_errors is not None:
+            update_dict["baseline_tests_errors"] = baseline_tests_errors
+        if baseline_execution_error is not None:
+            update_dict["baseline_execution_error"] = baseline_execution_error
+        return self.update_partition("suite", update_dict)  # type: ignore
+
+    def record_critic_evaluation(
+        self,
+        directives: Optional[List[str]] = None,
+        failure_mechanisms: Optional[Dict[str, str]] = None,
+        reflection_notes: Optional[List[str]] = None,
+        quality_assessment: Optional[str] = None,
+        assertion_quality_findings: Optional[List[Dict[str, Any]]] = None,
+        missing_scenario_findings: Optional[List[Dict[str, Any]]] = None,
+        recommended_improvements: Optional[List[Dict[str, Any]]] = None,
+        should_iterate: bool = False,
+        mutation_score: Optional[float] = None,
+        mutation_run_id: Optional[str] = None,
+        overall_verdict: str = "CRITIQUE_RECORDED",
+        critic_agent: str = "agent:crewai:critic",
+        job_id: Optional[str] = None,
+    ) -> CriticSpace:
+        """Convenience method to update CriticSpace partition with evaluation outcomes."""
+        update_dict: Dict[str, Any] = {
+            "should_iterate": should_iterate,
+            "overall_verdict": overall_verdict,
+            "critic_agent": critic_agent,
+            "evaluated_at": time.time(),
+        }
+        if directives is not None:
+            update_dict["critic_directives"] = directives
+            if directives:
+                update_dict["latest_directive"] = directives[-1]
+        if failure_mechanisms is not None:
+            update_dict["failure_mechanisms"] = failure_mechanisms
+        if reflection_notes is not None:
+            update_dict["reflection_notes"] = reflection_notes
+        if quality_assessment is not None:
+            update_dict["quality_assessment"] = quality_assessment
+        if assertion_quality_findings is not None:
+            update_dict["assertion_quality_findings"] = assertion_quality_findings
+        if missing_scenario_findings is not None:
+            update_dict["missing_scenario_findings"] = missing_scenario_findings
+        if recommended_improvements is not None:
+            update_dict["recommended_improvements"] = recommended_improvements
+        if mutation_score is not None:
+            update_dict["mutation_score"] = mutation_score
+        if mutation_run_id is not None:
+            update_dict["mutation_run_id"] = mutation_run_id
+        if job_id is not None:
+            update_dict["job_id"] = job_id
+        return self.update_partition("critic", update_dict)  # type: ignore
+
+    def record_repair_result(
+        self,
+        accepted: bool,
+        retained_test_code: str,
+        candidate_test_code: str = "",
+        candidate_mutation_score: float = 0.0,
+        previous_mutation_score: float = 0.0,
+        rejection_reason: Optional[str] = None,
+        iteration: int = 1,
+    ) -> SuiteSpace:
+        """Convenience method to record a reflection repair outcome into SuiteSpace."""
+        with self._lock:
+            existing = list(self._suite.repair_history)
+            existing.append({
+                "iteration": iteration,
+                "accepted": accepted,
+                "candidate_mutation_score": candidate_mutation_score,
+                "previous_mutation_score": previous_mutation_score,
+                "rejection_reason": rejection_reason,
+                "timestamp": time.time(),
+            })
+            update_dict: Dict[str, Any] = {
+                "repair_history": existing,
+                "candidate_test_code": candidate_test_code,
+            }
+            if accepted and retained_test_code:
+                update_dict["current_test_code"] = retained_test_code
+                update_dict["hardened_test_code"] = retained_test_code
+                update_dict["best_verified_test_code"] = retained_test_code
+            return self.update_partition("suite", update_dict)  # type: ignore
+
+    def record_supervisor_decision(
+        self,
+        decision: Union[Dict[str, Any], Any],
+        stage: Optional[str] = None,
+    ) -> MetricsSpace:
+        """Convenience method to record a Supervisor decision in MetricsSpace."""
+        with self._lock:
+            existing = list(self._metrics.supervisor_decisions)
+            if hasattr(decision, "model_dump"):
+                dec_dict = decision.model_dump()
+            elif isinstance(decision, dict):
+                dec_dict = dict(decision)
+            else:
+                dec_dict = {"decision": str(decision), "timestamp": time.time()}
+            existing.append(dec_dict)
+            update_dict: Dict[str, Any] = {
+                "supervisor_decisions": existing,
+            }
+            if stage:
+                update_dict["current_stage"] = stage
+            elif "current_stage" in dec_dict:
+                update_dict["current_stage"] = dec_dict["current_stage"]
+            return self.update_partition("metrics", update_dict)  # type: ignore
+
     def update_partition(
         self,
-        partition_name: Literal["target", "mutant", "critic", "suite", "metrics"],
+        partition_name: Literal["target", "mutant", "critic", "suite", "metrics", "plan", "execution", "security"],
         updates: Union[Dict[str, Any], BaseModel],
         event_type: str = "UPDATE"
     ) -> BaseModel:
@@ -509,6 +953,9 @@ class Blackboard:
                 critic=self._critic.model_copy(deep=True),
                 suite=self._suite.model_copy(deep=True),
                 metrics=self._metrics.model_copy(deep=True),
+                plan=self._plan.model_copy(deep=True),
+                execution=self._execution.model_copy(deep=True),
+                security=self._security.model_copy(deep=True),
             )
 
     def get_history(self) -> List[BlackboardEvent]:
@@ -616,12 +1063,27 @@ class Blackboard:
           - Dispatches CHECKPOINT_RESTORED lifecycle event if callback registry attached.
         """
         with self._lock:
-            # 1. Validate partitions
+            # 1. Validate partitions (safely defaulting new partitions when loading legacy snapshots)
             self._target = snapshot.target.model_copy(deep=True)
             self._mutant = snapshot.mutant.model_copy(deep=True)
             self._critic = snapshot.critic.model_copy(deep=True)
             self._suite = snapshot.suite.model_copy(deep=True)
             self._metrics = snapshot.metrics.model_copy(deep=True)
+            self._plan = (
+                snapshot.plan.model_copy(deep=True)
+                if hasattr(snapshot, "plan") and snapshot.plan is not None
+                else PlanSpace()
+            )
+            self._execution = (
+                snapshot.execution.model_copy(deep=True)
+                if hasattr(snapshot, "execution") and snapshot.execution is not None
+                else ExecutionSpace()
+            )
+            self._security = (
+                snapshot.security.model_copy(deep=True)
+                if hasattr(snapshot, "security") and snapshot.security is not None
+                else SecuritySpace()
+            )
 
             # 2. Advance revision monotonically
             self._revision = max(self._revision, snapshot.revision) + 1
@@ -776,6 +1238,10 @@ class Blackboard:
                 max_iterations=self._metrics.max_iterations,
                 target_mutation_score=self._metrics.target_mutation_score,
                 baseline_line_coverage=self._metrics.baseline_line_coverage,
+                baseline_branch_coverage=self._metrics.branch_coverage,
+                total_branches=self._metrics.total_branches,
+                covered_branches=self._metrics.covered_branches,
+                missing_branches=list(self._metrics.missing_branches),
                 lines_covered=self._metrics.lines_covered,
                 num_statements=self._metrics.num_statements,
                 baseline_tests_generated=self._suite.baseline_tests_generated,
@@ -783,6 +1249,8 @@ class Blackboard:
                 baseline_passed=self._suite.baseline_passed,
                 baseline_tests_passed=self._suite.baseline_tests_passed,
                 baseline_tests_failed=self._suite.baseline_tests_failed,
+                baseline_execution_error=self._suite.baseline_execution_error or self._metrics.baseline_execution_error,
+                execution_errors=self._metrics.execution_errors or self._suite.baseline_tests_errors,
                 mutants_generated=self._mutant.mutants_generated,
                 mutants_executed=self._mutant.mutants_executed,
                 mutants_killed=self._mutant.mutants_killed,
@@ -833,7 +1301,7 @@ class Blackboard:
                 mutants_killed=state.mutants_killed,
                 mutants_survived=state.mutants_survived,
                 mutation_execution_errors=state.mutation_execution_errors,
-                current_mutation_score=state.final_mutation_score,
+                current_mutation_score=state.final_mutation_score if state.final_mutation_score is not None else 0.0,
                 surviving_mutant_diffs=list(state.surviving_mutant_diffs),
             )
 
@@ -852,6 +1320,8 @@ class Blackboard:
                 baseline_passed=state.baseline_passed,
                 baseline_tests_passed=state.baseline_tests_passed,
                 baseline_tests_failed=state.baseline_tests_failed,
+                baseline_execution_error=state.baseline_execution_error,
+                baseline_tests_errors=state.execution_errors,
             )
 
             # 5. MetricsSpace
@@ -860,12 +1330,18 @@ class Blackboard:
                 max_iterations=state.max_iterations,
                 target_mutation_score=state.target_mutation_score,
                 baseline_line_coverage=state.baseline_line_coverage,
+                branch_coverage=getattr(state, "baseline_branch_coverage", 0.0),
+                total_branches=getattr(state, "total_branches", 0),
+                covered_branches=getattr(state, "covered_branches", 0),
+                missing_branches=list(getattr(state, "missing_branches", [])),
                 lines_covered=state.lines_covered,
                 num_statements=state.num_statements,
                 history=[h.model_copy(deep=True) for h in state.history],
                 final_mutation_score=state.final_mutation_score,
                 reflection_iterations_performed=state.reflection_iterations_performed,
                 final_hardening_status=state.final_hardening_status,
+                execution_errors=state.execution_errors,
+                baseline_execution_error=state.baseline_execution_error,
                 terminated=state.terminated,
                 termination_reason=state.termination_reason,
                 hardware_info=dict(state.hardware_info),
@@ -898,6 +1374,10 @@ class Blackboard:
             state.max_iterations = self._metrics.max_iterations
             state.target_mutation_score = self._metrics.target_mutation_score
             state.baseline_line_coverage = self._metrics.baseline_line_coverage
+            state.baseline_branch_coverage = self._metrics.branch_coverage
+            state.total_branches = self._metrics.total_branches
+            state.covered_branches = self._metrics.covered_branches
+            state.missing_branches = list(self._metrics.missing_branches)
             state.lines_covered = self._metrics.lines_covered
             state.num_statements = self._metrics.num_statements
             state.baseline_tests_generated = self._suite.baseline_tests_generated
@@ -905,6 +1385,8 @@ class Blackboard:
             state.baseline_passed = self._suite.baseline_passed
             state.baseline_tests_passed = self._suite.baseline_tests_passed
             state.baseline_tests_failed = self._suite.baseline_tests_failed
+            state.baseline_execution_error = self._suite.baseline_execution_error or self._metrics.baseline_execution_error
+            state.execution_errors = self._metrics.execution_errors or self._suite.baseline_tests_errors
             state.mutants_generated = self._mutant.mutants_generated
             state.mutants_executed = self._mutant.mutants_executed
             state.mutants_killed = self._mutant.mutants_killed
@@ -930,3 +1412,6 @@ class Blackboard:
                 except Exception:
                     pass
             state.stage_durations = dict(self._metrics.stage_durations)
+
+    to_state = to_testforge_state
+    from_state = from_testforge_state

@@ -79,9 +79,9 @@ class TestBenchmarkingDataModels:
             scenario_summaries={"baseline": summary},
         )
         md = report.to_markdown()
-        assert "# TestForge Benchmark & Ablation Study Report" in md
+        assert "Comparison of Deterministic Baseline, Local LLM Zero-Shot Generation, and Offline Multi-Agent Reflection" in md
         assert "test_target.py" in md
-        assert "Metric Integrity Disclosure" in md
+        assert "Metric Integrity Disclosure & Experimental Methodology" in md
         assert "50.0%" in md
 
         json_str = report.to_json()

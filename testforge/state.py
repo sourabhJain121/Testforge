@@ -465,6 +465,10 @@ class TestForgeState(BaseModel):
     baseline_line_coverage: float = 0.0
     lines_covered: int = 0
     num_statements: int = 0
+    baseline_branch_coverage: float = 0.0
+    total_branches: int = 0
+    covered_branches: int = 0
+    missing_branches: List[Any] = Field(default_factory=list)
 
     # Explicit baseline execution metrics
     baseline_tests_generated: int = 0
@@ -472,6 +476,8 @@ class TestForgeState(BaseModel):
     baseline_passed: bool = False
     baseline_tests_passed: int = 0
     baseline_tests_failed: int = 0
+    baseline_execution_error: Optional[str] = None
+    execution_errors: int = 0
 
     # Explicit mutation testing metrics
     mutants_generated: int = 0
@@ -479,7 +485,7 @@ class TestForgeState(BaseModel):
     mutants_killed: int = 0
     mutants_survived: int = 0
     mutation_execution_errors: int = 0
-    final_mutation_score: float = 0.0
+    final_mutation_score: Optional[float] = None
     reflection_iterations_performed: int = 0
     final_hardening_status: str = "INITIALIZING"
 

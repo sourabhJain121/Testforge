@@ -100,12 +100,12 @@
 
         <div class="form-row">
           <div class="form-group col">
-            <label for="slider-iterations">Max Reflection Iterations: <span id="val-iterations" class="val-badge">3</span></label>
-            <input type="range" id="slider-iterations" min="1" max="5" value="3" class="slider">
+            <label for="max-iterations-input">Max Reflection Iterations: <span id="val-iterations" class="val-badge">3</span></label>
+            <input type="range" id="max-iterations-input" min="1" max="10" value="3" class="slider">
           </div>
           <div class="form-group col">
-            <label for="slider-mutation-score">Target Mutation Score (%): <span id="val-mutation-score" class="val-badge">85%</span></label>
-            <input type="range" id="slider-mutation-score" min="50" max="100" step="5" value="85" class="slider">
+            <label for="target-score-input">Target Mutation Score (%): <span id="val-mutation-score" class="val-badge">85%</span></label>
+            <input type="range" id="target-score-input" min="50" max="100" step="5" value="85" class="slider">
           </div>
         </div>
 
@@ -288,19 +288,19 @@
       <button class="tab-btn" data-tab="tab-blast" id="nav-blast" role="tab" aria-selected="false">
         💥 Blast Radius & Call Graph
       </button>
-      <button class="tab-btn" data-tab="tab-hardening" id="nav-hardening" role="tab" aria-selected="false">
+      <button class="tab-btn" data-tab="tab-hardening" id="tab-btn-lab" data-alias="nav-hardening" role="tab" aria-selected="false">
         🔥 Hardening Lab & Results
       </button>
-      <button class="tab-btn" data-tab="tab-wiretap" id="nav-wiretap" role="tab" aria-selected="false">
+      <button class="tab-btn" data-tab="tab-wiretap" id="tab-btn-wiretap" data-alias="nav-wiretap" role="tab" aria-selected="false">
         🤖 Multi-Agent Wiretap
       </button>
       <button class="tab-btn" data-tab="tab-telemetry" id="nav-telemetry" role="tab" aria-selected="false">
         📊 Observability Trace
       </button>
-      <button class="tab-btn" data-tab="tab-benchmark" id="nav-benchmark" role="tab" aria-selected="false">
+      <button class="tab-btn" data-tab="tab-benchmark" id="tab-btn-benchmark" data-alias="nav-benchmark" role="tab" aria-selected="false">
         ⚡ Benchmarks & Ablation
       </button>
-      <button class="tab-btn" data-tab="tab-checkpoints" id="nav-checkpoints" role="tab" aria-selected="false">
+      <button class="tab-btn" data-tab="tab-checkpoints" id="tab-btn-history" data-alias="nav-checkpoints" role="tab" aria-selected="false">
         💾 Checkpoint Timeline & Diff
       </button>
     </nav>
@@ -329,9 +329,9 @@
 
             <!-- Built-in sample dropdown -->
             <div class="form-group" id="group-sample-select">
-              <label for="sample-file-select">Choose Sample Module:</label>
+              <label for="target-select">Choose Sample Module:</label>
               <div class="input-with-button">
-                <select id="sample-file-select" class="form-control">
+                <select id="target-select" data-alias="sample-file-select" class="form-control">
                   <option value="discount.py">discount.py (Tiered volume discount)</option>
                   <option value="banking.py">banking.py (Multi-tier overdraft transaction)</option>
                   <option value="inventory_pricing.py">inventory_pricing.py (SKU stock & tax calculator)</option>
@@ -700,10 +700,10 @@
               </div>
             </div>
             <div class="run-bar-right" style="display: flex; gap: 0.75rem; align-items: center;">
-              <button class="btn btn-primary btn-glow btn-lg" id="btn-run-hardening">
+              <button class="btn btn-primary btn-glow btn-lg" id="btn-start-hardening" data-alias="btn-run-hardening">
                 <span class="icon">⚡</span> Run TestForge Autonomous Hardening
               </button>
-              <button class="btn btn-danger btn-lg hidden" id="btn-cancel-hardening">
+              <button class="btn btn-danger btn-lg hidden" id="btn-cancel-job" data-alias="btn-cancel-hardening">
                 <span class="icon">🛑</span> Cancel Hardening
               </button>
             </div>
@@ -773,7 +773,11 @@
           </div>
 
           <!-- Hardening Verdict Banner -->
-          <div class="verdict-banner hidden" id="hardening-verdict-banner"></div>
+          <div class="verdict-banner hidden" id="hardening-verdict-banner">
+            <button class="btn btn-primary hidden" id="btn-resume-interrupted-job" style="box-shadow: 0 0 14px rgba(234, 88, 12, 0.45); background: #ea580c; border-color: #f97316;">
+              ▶ Resume Job Execution
+            </button>
+          </div>
 
           <!-- 3-ROW STRUCTURED METRICS BOARDS -->
           <div class="metrics-dashboard-grid" id="hardening-metrics-board">
@@ -807,8 +811,8 @@
 
             <!-- ROW 2: MUTATION & COVERAGE -->
             <div class="glass-panel panel-padded">
-              <h4 class="metric-row-title"><span class="icon">🧬</span> Mutation Hardening & Line Coverage Analysis</h4>
-              <div class="kpi-grid-7">
+              <h4 class="metric-row-title"><span class="icon">🧬</span> Mutation Hardening & Line / Branch Coverage Analysis</h4>
+              <div class="kpi-grid-8">
                 <div class="kpi-card">
                   <span class="kpi-val" id="kpi-lines-cov">0 / 0</span>
                   <span class="kpi-lbl">Lines Covered</span>
@@ -816,6 +820,12 @@
                 <div class="kpi-card">
                   <span class="kpi-val text-cyan" id="kpi-cov-pct">0.0%</span>
                   <span class="kpi-lbl">Line Coverage %</span>
+                </div>
+                <div class="kpi-card" id="kpi-branch-card" style="position: relative;">
+                  <span class="kpi-val text-cyan" id="kpi-branch-pct">0.0%</span>
+                  <span class="kpi-lbl">Branch Coverage %</span>
+                  <span class="kpi-sub" id="kpi-branch-sub">0 / 0 Arcs</span>
+                  <div id="kpi-missing-branches-dropdown" class="missing-branches-box hidden"></div>
                 </div>
                 <div class="kpi-card">
                   <span class="kpi-val" id="kpi-mut-gen">0</span>
@@ -842,11 +852,17 @@
 
             <!-- ROW 3: FINAL STATUS & REFLECTION -->
             <div class="glass-panel panel-padded">
-              <h4 class="metric-row-title"><span class="icon">🏁</span> Hardening Status & Reflection Cycles</h4>
-              <div class="kpi-grid-3">
+              <h4 class="metric-row-title"><span class="icon">🏁</span> Hardening Status, Calibrated TQS & Reflection Cycles</h4>
+              <div class="kpi-grid-4">
                 <div class="kpi-card highlight">
                   <span class="kpi-val text-glow" id="kpi-mut-score">0.0%</span>
                   <span class="kpi-lbl">Verified Mutation Score</span>
+                </div>
+                <div class="kpi-card highlight" id="kpi-tqs-card" style="position: relative; cursor: pointer;" title="Hover to view 5-dimension calibrated TQS breakdown (GAP-005)">
+                  <span class="kpi-val text-glow" id="kpi-tqs-score" style="color: #a78bfa;">--</span>
+                  <span class="kpi-lbl">Calibrated TQS Quality</span>
+                  <span class="kpi-sub" id="kpi-tqs-sub">5-Dim Calibrated</span>
+                  <div id="tqs-breakdown-tooltip" class="tqs-tooltip hidden"></div>
                 </div>
                 <div class="kpi-card">
                   <span class="kpi-val" id="kpi-cycles-done">0</span>
@@ -941,7 +957,9 @@
               </div>
               <div class="btn-group">
                 <button class="btn btn-secondary btn-icon" id="btn-copy-hardened-suite">📋 Copy Suite</button>
-                <button class="btn btn-outline btn-icon" id="btn-download-hardened-suite">💾 Download</button>
+                <button class="btn btn-outline btn-icon" id="btn-download-suite" data-alias="btn-download-hardened-suite">💾 Download</button>
+                <button class="btn btn-outline btn-icon" id="btn-download-junit" disabled title="Download standard JUnit XML test report (GAP-010)">⬇ JUnit XML</button>
+                <button class="btn btn-outline btn-icon" id="btn-download-sarif" disabled title="Download OASIS SARIF v2.1.0 security report (GAP-010)">⬇ SARIF Report</button>
               </div>
             </div>
             <pre class="code-block"><code id="hardened-suite-code">// Hardened tests will appear here after completion.</code></pre>
@@ -972,7 +990,7 @@
             </div>
             <div class="stat-card">
               <span class="stat-num" id="wiretap-kpi-agents">0</span>
-              <span class="stat-lbl">Active Agents</span>
+              <span class="stat-lbl" title="Entities observed participating in pipeline handoff events (8 Canonical Agents + Sandbox Tool)">Participating Agents</span>
             </div>
             <div class="stat-card">
               <span class="stat-num" id="wiretap-kpi-adk">0</span>
@@ -981,6 +999,19 @@
             <div class="stat-card">
               <span class="stat-num" id="wiretap-kpi-loops">0</span>
               <span class="stat-lbl">Reflection Loops</span>
+            </div>
+          </div>
+
+          <!-- Canonical Eight-Agent Dynamic Topology Grid -->
+          <div style="margin-top: 1.5rem; margin-bottom: 1.25rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+              <h4 style="font-size: 0.95rem; font-weight: 600; color: #f8fafc; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                <span>🏛️</span> Canonical Eight-Agent Architecture Topology & Runtime Status
+              </h4>
+              <span style="font-size: 0.75rem; color: #94a3b8;">Google ADK Primary Orchestration + CrewAI Quality Critic Specialist</span>
+            </div>
+            <div class="wiretap-agents-grid" id="wiretap-eight-agents-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.75rem;">
+              <!-- Dynamically populated by app.js -->
             </div>
           </div>
 
@@ -999,7 +1030,24 @@
               <h3 class="panel-title"><span class="icon">📊</span> Observability & Telemetry Trace Log</h3>
               <p class="panel-desc">Real-time telemetry captured from <code>testforge_trace.jsonl</code> detailing token consumption, LLM latency, and agent deliberation events.</p>
             </div>
-            <button class="btn btn-secondary btn-icon" id="btn-refresh-telemetry">🔄 Refresh Telemetry</button>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+              <select id="telem-scope-select" class="form-control" style="width: auto; min-width: 200px; font-size: 0.85rem; padding: 0.35rem 0.6rem;">
+                <option value="all">All Historical Records</option>
+                <option value="current">Current / Active Run</option>
+                <option value="wf_29dacc90bd25">Deterministic AST Run (wf_29dacc90bd25)</option>
+                <option value="wf_test_codellama_7e79a7">CodeLlama Local Run (wf_test_codellama_7e79a7)</option>
+                <option value="wf_test_qwen_616b46">Qwen2.5-Coder Local Run (wf_test_qwen_616b46)</option>
+              </select>
+              <button class="btn btn-secondary btn-icon" id="btn-refresh-telemetry">🔄 Refresh Telemetry</button>
+            </div>
+          </div>
+
+          <!-- Telemetry Context Bar separating Configuration, Availability, and Execution -->
+          <div style="display: flex; gap: 1rem; margin-bottom: 1rem; font-size: 0.8rem; background: rgba(15, 23, 42, 0.4); padding: 0.5rem 0.8rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); align-items: center; flex-wrap: wrap;">
+            <div><span style="color: var(--text-muted, #94a3b8);">Configured Model:</span> <code id="telem-configured-model" style="color: #38bdf8;">gemini-3.6-flash</code></div>
+            <div><span style="color: var(--text-muted, #94a3b8);">Active Provider:</span> <span id="telem-active-provider" class="badge badge-gray">Checking...</span></div>
+            <div><span style="color: var(--text-muted, #94a3b8);">Last Execution Model:</span> <span id="telem-last-model" class="badge badge-blue">-</span></div>
+            <div style="margin-left: auto; color: var(--text-muted, #94a3b8); font-size: 0.72rem;" title="The Execution Engine KPI strictly represents actual recorded execution telemetry, not configured availability.">KPI: Actual Execution Telemetry</div>
           </div>
 
           <div class="stats-row">
@@ -1008,24 +1056,37 @@
               <span class="stat-lbl">Total Events</span>
             </div>
             <div class="stat-card">
-              <span class="stat-num text-cyan" id="telem-kpi-tokens">0</span>
-              <span class="stat-lbl">Total LLM Tokens Used</span>
+              <span class="stat-num text-cyan" id="telem-kpi-actual-tokens">0</span>
+              <span class="stat-lbl">Actual LLM Tokens</span>
+              <span style="font-size: 0.72rem; color: var(--text-muted, #94a3b8); margin-top: 2px;">Provider-Reported Usage</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-num text-amber" id="telem-kpi-est-tokens">0</span>
+              <span class="stat-lbl">Estimated Tokens</span>
+              <span style="font-size: 0.72rem; color: var(--text-muted, #94a3b8); margin-top: 2px;">Offline Heuristic Calculation</span>
+            </div>
+            <div class="stat-card" id="card-telem-kpi-engine" title="Represents actual recorded execution telemetry for the selected scope, not merely configured provider availability.">
+              <span class="stat-num text-green" id="telem-kpi-engine">Deterministic Synthesizer</span>
+              <span class="stat-lbl">Execution Engine</span>
+              <span style="font-size: 0.72rem; color: var(--text-muted, #94a3b8); margin-top: 2px;" id="telem-kpi-engine-sub">Recorded Telemetry</span>
             </div>
           </div>
+          <!-- Hidden compatibility element for legacy scripts -->
+          <span id="telem-kpi-tokens" style="display: none;">0</span>
 
-          <h4 class="metric-row-title" style="margin-top: 1.5rem;"><span class="icon">⚡</span> Recent LLM Inference Telemetries</h4>
+          <h4 class="metric-row-title" style="margin-top: 1.5rem;"><span class="icon">⚡</span> Recent LLM & Synthesis Inference Telemetries</h4>
           <div class="table-responsive">
             <table class="data-table" id="telemetry-table">
               <thead>
                 <tr>
                   <th>Agent</th>
-                  <th>Model / Provider</th>
+                  <th>LLM Provider</th>
+                  <th>Execution Engine</th>
                   <th>Iteration</th>
-                  <th>Latency</th>
-                  <th>Prompt Tokens</th>
-                  <th>Completion Tokens</th>
-                  <th>Total Tokens</th>
-                  <th>AST Valid</th>
+                  <th>Execution Latency</th>
+                  <th>Actual LLM Tokens</th>
+                  <th>Estimated Tokens</th>
+                  <th>AST Validity</th>
                 </tr>
               </thead>
               <tbody id="telemetry-table-body">
@@ -1064,9 +1125,10 @@
               <div class="form-group col">
                 <label for="bench-repetitions">Repetitions per Scenario:</label>
                 <select id="bench-repetitions" class="form-control">
-                  <option value="1" selected>1 Repetition (Fast)</option>
-                  <option value="2">2 Repetitions (Mean ± StdDev)</option>
-                  <option value="3">3 Repetitions (Robust Statistical Sample)</option>
+                  <option value="1">1 Repetition (Quick Debugging)</option>
+                  <option value="3">3 Repetitions (Preliminary Evaluation)</option>
+                  <option value="5" selected>5 Repetitions (Final Evaluation)</option>
+                  <option value="10">10 Repetitions (Rigorous Statistical Sample)</option>
                 </select>
               </div>
               <div class="form-group col">
@@ -1090,17 +1152,18 @@
               <thead>
                 <tr>
                   <th>Scenario</th>
-                  <th>Runs Completed</th>
+                  <th>Execution Engine</th>
+                  <th>Runs</th>
                   <th>Mean Latency</th>
-                  <th>StdDev Latency</th>
+                  <th>StdDev</th>
                   <th>Mutation Score</th>
-                  <th>Line Coverage</th>
-                  <th>Total Tokens (Measured)</th>
-                  <th>Est. Cost USD (Estimated)</th>
+                  <th>Coverage</th>
+                  <th>Tokens</th>
+                  <th>Cost Accounting</th>
                 </tr>
               </thead>
               <tbody id="benchmark-summary-table-body">
-                <tr><td colspan="8" class="text-center text-muted">No benchmark results loaded. Click "Run Benchmark" or "Refresh Results".</td></tr>
+                <tr><td colspan="9" class="text-center text-muted">No benchmark results loaded. Click "Run Benchmark" or "Refresh Results".</td></tr>
               </tbody>
             </table>
           </div>
@@ -1140,6 +1203,46 @@
               <p class="text-muted" style="font-size: 0.85rem; margin: 0;">Run a benchmark to preview the generated statistical report.</p>
             </div>
             <pre class="code-block hidden" id="bench-raw-markdown-container" style="max-height: 250px;"><code id="bench-markdown-preview">Run a benchmark to preview the generated Markdown report.</code></pre>
+          </div>
+
+          <!-- GAP-009: Multi-Target Empirical Benchmark Panel -->
+          <div class="card" id="multi-target-benchmark-panel" style="margin-top: 1.75rem;">
+            <div class="card-header-flex">
+              <div>
+                <h4 class="metric-row-title" style="margin: 0;"><span class="icon">🌐</span> Empirical Multi-Target Evaluation Suite (GAP-009)</h4>
+                <p class="panel-desc" style="margin: 0.25rem 0 0 0;">Cross-target empirical validation across 4 distinct real-world Python modules (<code>discount.py</code>, <code>lru_cache.py</code>, <code>order_fsm.py</code>, <code>stats_calculator.py</code>).</p>
+              </div>
+              <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-refresh-multi-benchmark">🔄 Refresh Summary</button>
+                <button type="button" class="btn btn-primary btn-sm" id="btn-run-multi-benchmark">⚡ Run Multi-Target Benchmark</button>
+              </div>
+            </div>
+
+            <!-- Multi-Target Status Alert -->
+            <div id="multi-benchmark-status-alert" class="hidden alert info" style="margin-top: 1rem;"></div>
+
+            <!-- Multi-Target Comparison Table -->
+            <div class="table-responsive" style="margin-top: 1rem;">
+              <table class="data-table" id="multi-target-benchmark-table">
+                <thead>
+                  <tr>
+                    <th>Target Module</th>
+                    <th>LOC</th>
+                    <th>Callables</th>
+                    <th>Mutants</th>
+                    <th>Line Cov %</th>
+                    <th>Branch Cov %</th>
+                    <th>Raw MS %</th>
+                    <th>Adj MS %</th>
+                    <th>Latency</th>
+                  </tr>
+                </thead>
+                <tbody id="multi-target-benchmark-table-body">
+                  <tr><td colspan="9" class="text-center text-muted">Click "Refresh Summary" or "Run Multi-Target Benchmark" to load cross-target empirical data.</td></tr>
+                </tbody>
+                <tfoot id="multi-target-benchmark-table-foot" class="hidden"></tfoot>
+              </table>
+            </div>
           </div>
 
         </div>
@@ -1339,6 +1442,6 @@
     </div>
   </footer>
 
-  <script src="/static/app.js"></script>
+  <script src="/static/app.js?v=20261102_obs_final"></script>
 </body>
 </html>

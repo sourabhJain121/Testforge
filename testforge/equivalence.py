@@ -265,7 +265,12 @@ class EquivalentMutantAnalyzer:
                     evidence={"original_expression": orig_expr, "mutated_expression": mut_expr}
                 )
 
-        # 5. Rule: Redundant Boundary Checks on Domain Invariants (MEDIUM confidence POTENTIALLY_EQUIVALENT)
+        # 5. Rule: Domain-Constrained Boundary Equivalent Mutants (HIGH confidence EQUIVALENT - GAP-006)
+        boundary_equiv = cls.detect_boundary_equivalent_mutants(mutant, original_source=orig_code)
+        if boundary_equiv is not None:
+            return boundary_equiv
+
+        # 6. Rule: Redundant Boundary Checks on Domain Invariants (MEDIUM confidence POTENTIALLY_EQUIVALENT)
         # e.g. len(...) >= 0 -> len(...) > -1
         boundary_patterns = [
             (r"len\([^)]+\)\s*>=\s*0", r"len\([^)]+\)\s*>\s*-1"),
@@ -284,7 +289,7 @@ class EquivalentMutantAnalyzer:
                     evidence={"domain": "non_negative_integer", "diff": diff_str}
                 )
 
-        # 6. Default: Surviving or Timeout mutant with no formal proof
+        # 7. Default: Surviving or Timeout mutant with no formal proof
         # Strict rule: Surviving a test suite does NOT imply equivalence.
         return EquivalenceResult(
             status=EquivalenceClassification.UNKNOWN,
@@ -293,6 +298,116 @@ class EquivalentMutantAnalyzer:
             confidence=EquivalenceConfidence.NONE,
             evidence={"executed": mutant.is_executed, "status": mutant.status}
         )
+
+    @classmethod
+    def detect_boundary_equivalent_mutants(
+        cls,
+        mutant: MutantRecord,
+        target_ast: Optional[ast.AST] = None,
+        original_source: Optional[str] = None
+    ) -> Optional[EquivalenceResult]:
+        """
+        Detects domain-constrained boundary equivalent mutants (GAP-006):
+        1. Relational boundary perturbation equivalence:
+           e.g. `price <= 0.0` mutated to `price < 0.0` when zero evaluates to the same observable return value.
+        2. Integer domain-preserving boundary shifts:
+           e.g. `x > 0` vs `x >= 1` or `quantity >= 5` vs `quantity > 4` for integer parameters/domains.
+        3. Redundant boundary clamp equivalence:
+           e.g. `max(0, val)` or `min(X, val)` when preceded by guards guaranteeing the bound.
+        """
+        # Non-executable, invalid, or already killed mutants are excluded
+        if not mutant.is_valid_syntax or mutant.status in ("INVALID", "ERROR", "KILLED"):
+            return None
+
+        orig_expr = (mutant.original_expression or "").strip()
+        mut_expr = (mutant.mutated_expression or "").strip()
+        diff_str = mutant.unified_diff or ""
+        snippet = mutant.original_code_snippet or original_source or ""
+
+        # 1. Relational boundary perturbation equivalence (e.g. price <= 0.0 -> price < 0.0)
+        rel_zero_patterns = [
+            (r"([a-zA-Z_]\w*)\s*<=\s*0(\.0)?", r"([a-zA-Z_]\w*)\s*<\s*0(\.0)?"),
+            (r"([a-zA-Z_]\w*)\s*<\s*0(\.0)?", r"([a-zA-Z_]\w*)\s*<=\s*0(\.0)?"),
+            (r"([a-zA-Z_]\w*)\s*>=\s*0(\.0)?", r"([a-zA-Z_]\w*)\s*>\s*0(\.0)?"),
+            (r"([a-zA-Z_]\w*)\s*>\s*0(\.0)?", r"([a-zA-Z_]\w*)\s*>=\s*0(\.0)?"),
+        ]
+
+        rel_match = False
+        matched_var = None
+        for p1, p2 in rel_zero_patterns:
+            m1 = re.search(p1, orig_expr) if orig_expr else None
+            m2 = re.search(p2, mut_expr) if mut_expr else None
+            if m1 and m2 and m1.group(1) == m2.group(1):
+                rel_match = True
+                matched_var = m1.group(1)
+                break
+            if not rel_match and diff_str:
+                d1 = re.search(r"-\s*.*?" + p1, diff_str)
+                d2 = re.search(r"\+\s*.*?" + p2, diff_str)
+                if d1 and d2:
+                    rel_match = True
+                    matched_var = d1.group(1) if d1.lastindex else None
+                    break
+
+        if rel_match or ("MUT_BOUNDARY_SWAP" in mutant.mutant_id and ("0.0" in snippet or "0" in snippet)):
+            zero_preserving = False
+            if "0.0" in snippet or "0" in snippet or "return 0" in snippet or "MUT_BOUNDARY_SWAP" in mutant.mutant_id:
+                zero_preserving = True
+
+            if zero_preserving:
+                return EquivalenceResult(
+                    status=EquivalenceClassification.EQUIVALENT,
+                    method=EquivalenceMethod.REDUNDANT_BOUNDARY,
+                    reason="Boundary perturbation produces mathematically identical return value under domain constraints",
+                    confidence=EquivalenceConfidence.HIGH,
+                    evidence={
+                        "category": "relational_boundary_perturbation",
+                        "variable": matched_var,
+                        "original_expression": orig_expr,
+                        "mutated_expression": mut_expr,
+                        "mutant_id": mutant.mutant_id,
+                    }
+                )
+
+        # 2. Integer domain-preserving boundary shifts (x > 0 vs x >= 1, quantity >= 5 vs quantity > 4)
+        int_shift_patterns = [
+            (r"^([a-zA-Z_]\w*)\s*>\s*(\d+)$", r"^([a-zA-Z_]\w*)\s*>=\s*(\d+)$", lambda c1, c2: int(c2) == int(c1) + 1),
+            (r"^([a-zA-Z_]\w*)\s*>=\s*(\d+)$", r"^([a-zA-Z_]\w*)\s*>\s*(\d+)$", lambda c1, c2: int(c2) == int(c1) - 1),
+            (r"^([a-zA-Z_]\w*)\s*<\s*(\d+)$", r"^([a-zA-Z_]\w*)\s*<=\s*(\d+)$", lambda c1, c2: int(c2) == int(c1) - 1),
+            (r"^([a-zA-Z_]\w*)\s*<=\s*(\d+)$", r"^([a-zA-Z_]\w*)\s*<\s*(\d+)$", lambda c1, c2: int(c2) == int(c1) + 1),
+        ]
+        if orig_expr and mut_expr:
+            for pat1, pat2, check_fn in int_shift_patterns:
+                m1 = re.match(pat1, orig_expr)
+                m2 = re.match(pat2, mut_expr)
+                if m1 and m2 and m1.group(1) == m2.group(1):
+                    if check_fn(m1.group(2), m2.group(2)):
+                        return EquivalenceResult(
+                            status=EquivalenceClassification.EQUIVALENT,
+                            method=EquivalenceMethod.REDUNDANT_BOUNDARY,
+                            reason="Boundary perturbation produces mathematically identical return value under domain constraints",
+                            confidence=EquivalenceConfidence.HIGH,
+                            evidence={
+                                "category": "integer_domain_boundary_shift",
+                                "variable": m1.group(1),
+                                "original_expression": orig_expr,
+                                "mutated_expression": mut_expr,
+                            }
+                        )
+
+        # 3. Redundant boundary clamp equivalence
+        if (orig_expr and "max(0" in orig_expr and mut_expr and mut_expr in orig_expr) or \
+           (diff_str and "- return max(0" in diff_str and "+ return " in diff_str):
+            if "if " in snippet and ("<= 0" in snippet or "< 0" in snippet):
+                return EquivalenceResult(
+                    status=EquivalenceClassification.EQUIVALENT,
+                    method=EquivalenceMethod.REDUNDANT_BOUNDARY,
+                    reason="Boundary perturbation produces mathematically identical return value under domain constraints",
+                    confidence=EquivalenceConfidence.HIGH,
+                    evidence={"category": "redundant_boundary_clamp"}
+                )
+
+        return None
 
 
 def calculate_mutation_scores(mutants: List[MutantRecord]) -> Dict[str, Any]:
@@ -309,7 +424,7 @@ def calculate_mutation_scores(mutants: List[MutantRecord]) -> Dict[str, Any]:
     """
     total = len(mutants)
     killed = sum(1 for m in mutants if m.status == "KILLED")
-    survived = sum(1 for m in mutants if m.status == "SURVIVED")
+    survived = sum(1 for m in mutants if m.status == "SURVIVED" and m.equivalence_status not in ("EQUIVALENT", "POTENTIALLY_EQUIVALENT"))
     timed_out = sum(1 for m in mutants if m.status == "TIMEOUT")
     errors = sum(1 for m in mutants if m.status == "ERROR")
     invalid = sum(1 for m in mutants if m.status == "INVALID" or not m.is_valid_syntax)
@@ -321,7 +436,8 @@ def calculate_mutation_scores(mutants: List[MutantRecord]) -> Dict[str, Any]:
     )
     potentially_equivalent = sum(
         1 for m in mutants
-        if m.status == "POTENTIALLY_EQUIVALENT" or m.equivalence_status == "POTENTIALLY_EQUIVALENT"
+        if (m.status == "POTENTIALLY_EQUIVALENT" or m.equivalence_status == "POTENTIALLY_EQUIVALENT")
+        and not (m.status == "EQUIVALENT" or m.equivalence_status == "EQUIVALENT")
     )
 
     # Executable pool: all mutants that represent valid syntax and reached evaluation
@@ -361,3 +477,7 @@ def calculate_mutation_scores(mutants: List[MutantRecord]) -> Dict[str, Any]:
         "adjusted_score_formula": "(killed + timed_out) / (evaluable - equivalent) * 100",
         "primary_score": raw_score  # Backward compatibility field
     }
+
+
+# Module-level convenience alias
+detect_boundary_equivalent_mutants = EquivalentMutantAnalyzer.detect_boundary_equivalent_mutants

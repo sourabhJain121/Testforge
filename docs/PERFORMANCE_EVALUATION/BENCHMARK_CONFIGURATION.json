@@ -1,0 +1,89 @@
+{
+  "benchmark_metadata": {
+    "title": "TestForge End-to-End Performance Evaluation Configuration",
+    "version": "1.0.0",
+    "academic_criterion": "Criterion 10: End-to-End Performance Evaluation",
+    "execution_timestamp": "2026-11-02T10:44:54+05:30",
+    "execution_environment": {
+      "platform": "Darwin (macOS)",
+      "architecture": "arm64",
+      "python_version": "3.13.18",
+      "test_framework": "pytest-8.4.1",
+      "coverage_tool": "coverage.py",
+      "mutation_engine": "TestForge Native AST Mutator"
+    }
+  },
+  "experimental_design": {
+    "target_artifact": {
+      "filename": "samples/discount.py",
+      "description": "E-commerce tiered discounting & customer loyalty module",
+      "total_statements": 10,
+      "total_mutants": 19,
+      "equivalent_mutants": 1,
+      "viable_mutants": 18
+    },
+    "prompt_architectures": [
+      {
+        "id": "ZERO_SHOT",
+        "name": "Zero-Shot Direct Prompting",
+        "description": "Direct instruction without demonstration exemplars"
+      },
+      {
+        "id": "FEW_SHOT",
+        "name": "Few-Shot In-Context Prompting",
+        "description": "Multi-exemplar in-context learning with domain assertions"
+      },
+      {
+        "id": "REACT",
+        "name": "ReAct Reasoning and Action Loop",
+        "description": "Reasoning, thought trace, action, and observation cycle"
+      }
+    ],
+    "personas": [
+      {
+        "id": "BEGINNER",
+        "name": "Beginner Developer",
+        "focus": "Happy-path functional sanity and direct assert patterns"
+      },
+      {
+        "id": "EXPERIENCED",
+        "name": "Experienced Engineer",
+        "focus": "Defensive testing, edge cases, type validation, and boundary conditions"
+      },
+      {
+        "id": "QA_ENGINEER",
+        "name": "QA Specialist",
+        "focus": "Exhaustive equivalence partitioning, boundary value analysis, mutation killing"
+      },
+      {
+        "id": "SECURITY_CONSCIOUS",
+        "name": "Security-Conscious Engineer",
+        "focus": "Adversarial inputs, injection attacks, negative boundaries, overflow resistance"
+      }
+    ],
+    "repetitions_per_cell": 5,
+    "total_matrix_cells": 12,
+    "total_benchmark_runs": 60
+  },
+  "pricing_and_cost_model": {
+    "reference_model": "Google Gemini 1.5 Flash",
+    "published_pricing": {
+      "prompt_rate_per_1m_tokens_usd": 0.075,
+      "completion_rate_per_1m_tokens_usd": 0.30
+    },
+    "cost_formula": "estimated_cost_usd = (prompt_tokens * 0.075 / 1000000) + (completion_tokens * 0.30 / 1000000)",
+    "execution_mode": "Offline AST Synthesizer and Native Sandbox",
+    "actual_billed_api_cost_usd": 0.0
+  },
+  "metrics": {
+    "total_duration_sec": "End-to-end wall-clock time including prompt preparation, test generation, test execution, and mutation evaluation",
+    "prompt_prep_ms": "Time spent selecting persona and rendering prompt template",
+    "test_gen_ms": "Time spent synthesizing test suite AST and formatting",
+    "test_exec_ms": "Time spent executing generated tests against original target",
+    "mutation_eval_ms": "Time spent generating mutants and executing test suite against all mutants",
+    "raw_mutation_score": "(mutants_killed / total_mutants) * 100",
+    "adjusted_mutation_score": "(mutants_killed / (total_mutants - equivalent_mutants)) * 100",
+    "line_coverage_pct": "Statement coverage percentage achieved by generated test suite"
+  }
+}
+

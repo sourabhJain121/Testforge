@@ -21,7 +21,7 @@ Implements 10 deterministic, syntax-aware AST mutation categories:
 from __future__ import annotations
 import ast
 import difflib
-from typing import List, Dict, Type, Optional, Set
+from typing import List, Dict, Type, Optional, Set, Tuple
 from testforge.state import MutantRecord
 from testforge.equivalence import (
     EquivalentMutantAnalyzer,
@@ -344,6 +344,12 @@ class ASTMutator:
     High-level orchestrator for discovering mutation sites and generating
     deterministic, syntax-validated AST mutants with provenance and equivalence analysis.
     """
+    _MUTANT_CACHE: Dict[Tuple[int, Optional[Tuple[int, ...]]], List[MutantRecord]] = {}
+
+    @classmethod
+    def clear_cache(cls) -> None:
+        """Clears the in-memory AST mutant cache."""
+        cls._MUTANT_CACHE.clear()
 
     @staticmethod
     def inspect_mutation_points(source_code: str, target_lines: Optional[List[int]] = None) -> int:
@@ -372,6 +378,11 @@ class ASTMutator:
             ast.parse(source_code)
         except SyntaxError:
             return []
+
+        # Check in-memory AST cache for idempotent acceleration
+        cache_key = (hash(source_code), tuple(sorted(target_lines)) if target_lines else None)
+        if cache_key in cls._MUTANT_CACHE:
+            return [m.model_copy() for m in cls._MUTANT_CACHE[cache_key]]
 
         num_targets = cls.inspect_mutation_points(source_code, target_lines=target_lines)
         mutants: List[MutantRecord] = []
@@ -435,7 +446,6 @@ class ASTMutator:
                 # Early static equivalence check (e.g. dead code, algebraic identity)
                 eq_result = EquivalentMutantAnalyzer.analyze_mutant(record, original_source=source_code)
                 if eq_result.status == EquivalenceClassification.EQUIVALENT:
-                    record.status = "EQUIVALENT"
                     record.equivalence_status = eq_result.status.value
                     record.equivalence_method = eq_result.method.value
                     record.equivalence_reason = eq_result.reason
@@ -448,6 +458,7 @@ class ASTMutator:
 
                 mutants.append(record)
 
+        cls._MUTANT_CACHE[cache_key] = [m.model_copy() for m in mutants]
         return mutants
 
     @classmethod

@@ -1,0 +1,136 @@
+{
+  "timestamp": 1794046984.235641,
+  "date": "2026-11-07T15:53:04",
+  "repetitions": 1,
+  "fast_mode": true,
+  "scenarios": [
+    "baseline",
+    "zeroshot"
+  ],
+  "target_modules": [
+    "samples/discount.py",
+    "samples/lru_cache.py"
+  ],
+  "targets": {
+    "samples/discount.py": {
+      "module_path": "samples/discount.py",
+      "module_name": "discount.py",
+      "loc": 16,
+      "total_lines": 20,
+      "discovered_callables": 1,
+      "total_mutants": 19,
+      "operator_diversity": [
+        "ARITH_OP",
+        "BOUNDARY_SWAP",
+        "COMP_OP",
+        "COND_INV",
+        "CONST_VAL",
+        "MATH_FUNC",
+        "OFF_BY_ONE",
+        "RETURN_VAL"
+      ],
+      "scenarios": {
+        "baseline": {
+          "runs_completed": 1,
+          "runs_failed": 0,
+          "line_coverage_pct": 70.0,
+          "branch_coverage_pct": 60.0,
+          "raw_mutation_score": 25.0,
+          "adjusted_mutation_score": 25.0,
+          "mean_latency_sec": 0.002,
+          "stddev_latency_sec": null,
+          "total_tokens": 0,
+          "provider_category": "Deterministic AST",
+          "execution_engine": "Deterministic AST Baseline"
+        },
+        "zeroshot": {
+          "runs_completed": 1,
+          "runs_failed": 0,
+          "line_coverage_pct": 90.0,
+          "branch_coverage_pct": 85.0,
+          "raw_mutation_score": 60.0,
+          "adjusted_mutation_score": 60.0,
+          "mean_latency_sec": 0.002,
+          "stddev_latency_sec": null,
+          "total_tokens": 665,
+          "provider_category": "Mocked LLM",
+          "execution_engine": "Deterministic Mock Fixture (CI)"
+        }
+      }
+    },
+    "samples/lru_cache.py": {
+      "module_path": "samples/lru_cache.py",
+      "module_name": "lru_cache.py",
+      "loc": 91,
+      "total_lines": 109,
+      "discovered_callables": 7,
+      "total_mutants": 42,
+      "operator_diversity": [
+        "ARITH_OP",
+        "BOUNDARY_SWAP",
+        "COMP_OP",
+        "COND_INV",
+        "CONST_VAL",
+        "LOGICAL_CONN",
+        "MATH_FUNC",
+        "OFF_BY_ONE",
+        "RETURN_VAL"
+      ],
+      "scenarios": {
+        "baseline": {
+          "runs_completed": 1,
+          "runs_failed": 0,
+          "line_coverage_pct": 70.0,
+          "branch_coverage_pct": 60.0,
+          "raw_mutation_score": 25.0,
+          "adjusted_mutation_score": 25.0,
+          "mean_latency_sec": 0.002,
+          "stddev_latency_sec": null,
+          "total_tokens": 0,
+          "provider_category": "Deterministic AST",
+          "execution_engine": "Deterministic AST Baseline"
+        },
+        "zeroshot": {
+          "runs_completed": 1,
+          "runs_failed": 0,
+          "line_coverage_pct": 90.0,
+          "branch_coverage_pct": 85.0,
+          "raw_mutation_score": 60.0,
+          "adjusted_mutation_score": 60.0,
+          "mean_latency_sec": 0.002,
+          "stddev_latency_sec": null,
+          "total_tokens": 665,
+          "provider_category": "Mocked LLM",
+          "execution_engine": "Deterministic Mock Fixture (CI)"
+        }
+      }
+    }
+  },
+  "cross_target_summary": {
+    "scenarios": {
+      "baseline": {
+        "arithmetic_mean_line_coverage": 70.0,
+        "arithmetic_mean_branch_coverage": 60.0,
+        "geometric_mean_branch_coverage": 60.0,
+        "arithmetic_mean_raw_mutation_score": 25.0,
+        "geometric_mean_raw_mutation_score": 25.0,
+        "arithmetic_mean_adj_mutation_score": 25.0,
+        "geometric_mean_adj_mutation_score": 25.0,
+        "mean_latency_sec": 0.0,
+        "total_tokens_consumed": 0
+      },
+      "zeroshot": {
+        "arithmetic_mean_line_coverage": 90.0,
+        "arithmetic_mean_branch_coverage": 85.0,
+        "geometric_mean_branch_coverage": 85.0,
+        "arithmetic_mean_raw_mutation_score": 60.0,
+        "geometric_mean_raw_mutation_score": 60.0,
+        "arithmetic_mean_adj_mutation_score": 60.0,
+        "geometric_mean_adj_mutation_score": 60.0,
+        "mean_latency_sec": 0.0,
+        "total_tokens_consumed": 1330
+      }
+    },
+    "relative_gains": {}
+  }
+}

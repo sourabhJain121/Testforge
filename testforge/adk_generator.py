@@ -30,6 +30,11 @@ Features:
 
 from __future__ import annotations
 import os
+
+# Suppress OpenTelemetry detachment crashes across thread and async generator boundaries
+os.environ.setdefault("OTEL_PYTHON_CONTEXT", "contextvars_context")
+os.environ.setdefault("OTEL_SDK_DISABLED", "true")
+
 import re
 import ast
 import json
@@ -86,6 +91,25 @@ class WorkflowCycleResult(BaseModel):
     surviving_mutants_count: int = 0
     errors: List[str] = Field(default_factory=list)
     warnings: List[str] = Field(default_factory=list)
+
+
+class SelfConsistencyResult(BaseModel):
+    """
+    Structured outcome of Multi-Candidate Self-Consistency Test Generation (Handout Feature F2).
+    """
+    consensus_test_code: str
+    test_code: str
+    candidate_count: int = 3
+    valid_candidates: int = 3
+    consensus_assertions_retained: int = 0
+    candidates: List[str] = Field(default_factory=list)
+    telemetry: Dict[str, Any] = Field(default_factory=dict)
+
+    def __getitem__(self, item: str) -> Any:
+        return getattr(self, item)
+
+    def get(self, item: str, default: Any = None) -> Any:
+        return getattr(self, item, default)
 
 
 # ==============================================================================
@@ -287,9 +311,127 @@ class ADKModelBridge(BaseLlm):
                 "meaningful_assertions": synth_res.meaningful_assertions_count,
                 "boundary_tests": synth_res.boundary_tests_count,
                 "negative_tests": synth_res.negative_tests_count,
+                "property_tests": getattr(synth_res, "property_tests_count", 0),
             },
         }
         return json.dumps(payload)
+
+    def generate_tests_with_self_consistency(
+        self,
+        target_code: str,
+        sample_count: int = 3,
+        candidate_codes: Optional[List[str]] = None,
+    ) -> SelfConsistencyResult:
+        """
+        Synthesizes unit tests via Self-Consistency sampling and Reference Execution consensus:
+          1. Samples `sample_count` distinct candidate test suites.
+          2. Runs each candidate through ReferenceExecutor against clean reference code.
+          3. Extracts assertions that agree across candidates or validate without conflict against the reference oracle.
+          4. Filters out conflicting or non-deterministic assertions, producing a robust consensus test suite.
+          5. Logs telemetry: candidate_count, valid_candidates, consensus_assertions_retained.
+        """
+        from testforge.intelligent_generator import ReferenceExecutor, IntelligentASTSynthesizer
+
+        ref_executor = ReferenceExecutor(target_code)
+        candidates: List[str] = []
+
+        if candidate_codes and len(candidate_codes) >= 1:
+            candidates = list(candidate_codes[:sample_count])
+        else:
+            synthesizer = IntelligentASTSynthesizer()
+            for i in range(1, sample_count + 1):
+                try:
+                    res = synthesizer.synthesize_test_suite(
+                        source_code=target_code,
+                        iteration=i,
+                    )
+                    candidates.append(res.test_code)
+                except Exception as exc:
+                    logger.warning(f"Failed to synthesize candidate {i}: {exc}")
+                    candidates.append(f"import pytest\ndef test_nominal_{i}():\n    pass\n")
+
+        valid_candidates: List[str] = []
+        retained_test_functions: List[str] = []
+        seen_test_names: Set[str] = set()
+        assertions_retained_count = 0
+
+        import pytest
+
+        for idx, cand in enumerate(candidates, start=1):
+            cand_is_valid = True
+            cand_assertions = 0
+
+            try:
+                tree = ast.parse(cand)
+            except SyntaxError:
+                continue
+
+            test_funcs = [n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name.startswith("test_")]
+            if not test_funcs:
+                continue
+
+            valid_funcs_in_cand = []
+
+            for fn_node in test_funcs:
+                fn_assertions = [stmt for stmt in ast.walk(fn_node) if isinstance(stmt, ast.Assert)]
+                fn_code = ast.unparse(fn_node)
+
+                test_env = dict(ref_executor.env)
+                test_env["pytest"] = pytest
+                try:
+                    exec(compile(fn_code, f"<candidate_{idx}_{fn_node.name}>", "exec"), test_env)
+                    test_fn = test_env.get(fn_node.name)
+                    if callable(test_fn):
+                        test_fn()
+                        cand_assertions += len(fn_assertions)
+                        valid_funcs_in_cand.append((fn_node.name, fn_code, len(fn_assertions)))
+                except AssertionError:
+                    cand_is_valid = False
+                    logger.debug(f"Candidate {idx} test {fn_node.name} failed clean reference assertion.")
+                except Exception as exc:
+                    cand_is_valid = False
+                    logger.debug(f"Candidate {idx} test {fn_node.name} raised runtime exception: {exc}")
+
+            if cand_is_valid and valid_funcs_in_cand:
+                valid_candidates.append(cand)
+                for f_name, f_code, num_asserts in valid_funcs_in_cand:
+                    if f_name not in seen_test_names:
+                        seen_test_names.add(f_name)
+                        retained_test_functions.append(f_code)
+                        assertions_retained_count += num_asserts
+            elif valid_funcs_in_cand:
+                for f_name, f_code, num_asserts in valid_funcs_in_cand:
+                    if f_name not in seen_test_names:
+                        seen_test_names.add(f_name)
+                        retained_test_functions.append(f_code)
+                        assertions_retained_count += num_asserts
+
+        if not retained_test_functions and candidates:
+            retained_test_functions.append(candidates[0])
+            assertions_retained_count = 1
+
+        header = "import pytest\nimport math\n\n"
+        consensus_code = header + "\n\n".join(retained_test_functions) + "\n"
+
+        telemetry = {
+            "candidate_count": len(candidates),
+            "valid_candidates": len(valid_candidates) if valid_candidates else (1 if retained_test_functions else 0),
+            "consensus_assertions_retained": assertions_retained_count,
+        }
+        logger.info(
+            f"Self-Consistency Test Generation: {telemetry['candidate_count']} candidates sampled, "
+            f"{telemetry['valid_candidates']} valid, {telemetry['consensus_assertions_retained']} consensus assertions retained."
+        )
+
+        return SelfConsistencyResult(
+            consensus_test_code=consensus_code,
+            test_code=consensus_code,
+            candidate_count=telemetry["candidate_count"],
+            valid_candidates=telemetry["valid_candidates"],
+            consensus_assertions_retained=telemetry["consensus_assertions_retained"],
+            candidates=candidates,
+            telemetry=telemetry,
+        )
 
 
 # ==============================================================================
@@ -380,6 +522,7 @@ class GoogleADKTestGenerator:
         critic_directive: Optional[str] = None,
         iteration: int = 1,
         target_function: Optional[str] = None,
+        test_plan: Optional[Any] = None,
     ) -> GeneratedTestPayload:
         """
         Executes the official Google ADK Runner pipeline to generate unit tests.
@@ -423,6 +566,22 @@ class GoogleADKTestGenerator:
             _, sanitized_dir, _ = sanitize_critic_directive(critic_directive)
             wrapped_directive = wrap_untrusted_content(sanitized_dir, content_type="critic_directive", provenance="critic")
             prompt_sections.append(f"### Adversarial Critic Directives:\n{wrapped_directive}")
+        if test_plan:
+            plan_scenarios = getattr(test_plan, "scenarios", None) or (test_plan.get("scenarios") if isinstance(test_plan, dict) else [])
+            boundary_targets = getattr(test_plan, "boundary_targets", None) or (test_plan.get("boundary_targets") if isinstance(test_plan, dict) else [])
+            negative_cases = getattr(test_plan, "negative_cases", None) or (test_plan.get("negative_cases") if isinstance(test_plan, dict) else [])
+            plan_lines = ["### Formulated Test Plan & Target Scenarios:"]
+            if plan_scenarios:
+                for sc in plan_scenarios[:10]:
+                    name = sc.get("scenario_name", "unnamed")
+                    cat = sc.get("category", "nominal")
+                    desc = sc.get("description", "")
+                    plan_lines.append(f"- [{cat.upper()}] {name}: {desc}")
+            if boundary_targets:
+                plan_lines.append(f"Boundary conditions: {', '.join(str(b) for b in boundary_targets[:10])}")
+            if negative_cases:
+                plan_lines.append(f"Negative cases: {', '.join(str(n) for n in negative_cases[:10])}")
+            prompt_sections.append("\n".join(plan_lines))
 
         prompt_sections.append(
             "Instructions:\n"
@@ -511,6 +670,21 @@ class GoogleADKTestGenerator:
         payload.generation_metadata["ast_verified"] = True
         return payload
 
+    def generate_tests_with_self_consistency(
+        self,
+        target_code: str,
+        sample_count: int = 3,
+        candidate_codes: Optional[List[str]] = None,
+    ) -> SelfConsistencyResult:
+        """
+        Executes Self-Consistency multi-candidate sampling and Reference Execution consensus.
+        """
+        return self.model_bridge.generate_tests_with_self_consistency(
+            target_code=target_code,
+            sample_count=sample_count,
+            candidate_codes=candidate_codes,
+        )
+
     def handle_a2a_message(self, message: A2AMessage) -> A2AMessage:
         """
         Handler entry point for incoming A2A messages from A2ABroker.
@@ -545,6 +719,7 @@ class GoogleADKTestGenerator:
         critic_directive = message.payload.get("critic_directive")
         iteration = message.payload.get("iteration", 1)
         target_func = message.payload.get("target_function")
+        test_plan = message.payload.get("test_plan")
 
         try:
             test_payload = self.generate_tests(
@@ -555,6 +730,7 @@ class GoogleADKTestGenerator:
                 critic_directive=critic_directive,
                 iteration=iteration,
                 target_function=target_func,
+                test_plan=test_plan,
             )
             return message.create_response(
                 performative=A2APerformative.INFORM,

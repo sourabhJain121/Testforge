@@ -21,6 +21,7 @@ import re
 import ast
 import tempfile
 import subprocess
+import signal
 from dataclasses import dataclass, field
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from typing import Dict, Any, Tuple, List, Optional, Set
@@ -76,7 +77,188 @@ def parse_pytest_output(stdout: str, stderr: str, exit_code: int) -> Dict[str, A
     }
 
 
-def _run_single_test_task(test_code: str, target_code: str, timeout_seconds: int, enforce_security: bool = True) -> Dict[str, Any]:
+_SENSITIVE_ENV_SUBSTRINGS = (
+    "KEY", "SECRET", "TOKEN", "PASSW", "CRED", "AUTH", "PRIVATE",
+    "DATABASE", "AWS", "GENAI", "ANTHROPIC", "OPENAI", "GOOGLE", "AZURE"
+)
+
+
+def build_sanitized_sandbox_env(tmpdir: str, target_file_path: Optional[str] = None) -> Dict[str, str]:
+    """
+    Constructs a least-privilege, scrubbed environment dictionary for sandboxed test execution.
+    Strips caller credentials, API keys, and sensitive tokens while preserving essential paths.
+    """
+    pythonpath_entries = [tmpdir]
+    if target_file_path:
+        target_abs = os.path.abspath(target_file_path)
+        target_dir = os.path.dirname(target_abs)
+        if os.path.isdir(target_dir):
+            pythonpath_entries.append(target_dir)
+    pythonpath_entries.append(os.getcwd())
+
+    # Existing virtualenv and system paths
+    base_path = os.environ.get("PATH", "/usr/bin:/bin:/usr/sbin:/sbin")
+    virtual_env = os.path.dirname(os.path.dirname(sys.executable))
+
+    sub_env: Dict[str, str] = {
+        "PATH": base_path,
+        "PYTHONPATH": os.pathsep.join(pythonpath_entries),
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONIOENCODING": "utf-8",
+        "PYTHONUNBUFFERED": "1",
+        "VIRTUAL_ENV": virtual_env,
+        "TMPDIR": tmpdir,
+        "TEMP": tmpdir,
+        "TMP": tmpdir,
+        "HOME": tmpdir,
+    }
+
+    # Whitelisted safe OS environment variables to preserve platform stability
+    safe_keys = {
+        "SYSTEMROOT", "COMSPEC", "PATHEXT", "WINDIR",
+        "LANG", "LC_ALL", "LC_CTYPE", "TERM",
+        "USER", "LOGNAME"
+    }
+    for k in safe_keys:
+        if k in os.environ:
+            sub_env[k] = os.environ[k]
+
+    # Copy any existing non-sensitive env variables, rejecting anything matching sensitive keywords
+    for k, v in os.environ.items():
+        k_upper = k.upper()
+        if any(substr in k_upper for substr in _SENSITIVE_ENV_SUBSTRINGS):
+            continue  # Strictly scrub secrets, keys, and tokens
+        if k not in sub_env and not k_upper.startswith("SSH_"):
+            sub_env[k] = v
+
+    # Final enforce: ensure HOME and TMPDIR remain isolated
+    sub_env["HOME"] = tmpdir
+    sub_env["TMPDIR"] = tmpdir
+    return sub_env
+
+
+def get_sandbox_preexec_fn(timeout_seconds: Optional[int] = None):
+    """
+    Returns a POSIX preexec callable that places the child process in a new process group
+    and applies OS-level CPU and memory resource limits via the resource module.
+    """
+    if sys.platform == "win32":
+        return None
+
+    def _preexec():
+        try:
+            os.setsid()
+        except Exception:
+            pass
+        try:
+            import resource
+            if timeout_seconds and hasattr(resource, "RLIMIT_CPU"):
+                soft_cpu = max(int(timeout_seconds) + 4, 1)
+                hard_cpu = max(int(timeout_seconds) + 6, 2)
+                resource.setrlimit(resource.RLIMIT_CPU, (soft_cpu, hard_cpu))
+            if hasattr(resource, "RLIMIT_AS"):
+                max_as = 1536 * 1024 * 1024  # 1.5 GB memory cap
+                resource.setrlimit(resource.RLIMIT_AS, (max_as, max_as))
+        except Exception:
+            pass
+
+    return _preexec
+
+
+_NETWORK_GUARD_CONFTEST = '''# TestForge Execution-Time Sandbox Network Confinement Guard (GAP-001)
+import socket
+
+_orig_socket_connect = socket.socket.connect
+_orig_socket_connect_ex = socket.socket.connect_ex
+_orig_create_connection = getattr(socket, "create_connection", None)
+_orig_getaddrinfo = getattr(socket, "getaddrinfo", None)
+
+def _is_loopback(address):
+    if isinstance(address, (tuple, list)) and len(address) > 0:
+        h = str(address[0]).lower().strip()
+    elif isinstance(address, str):
+        h = address.lower().strip()
+    else:
+        return False
+    return h in ("127.0.0.1", "localhost", "::1", "0.0.0.0", "")
+
+def _guarded_connect(self, address):
+    if getattr(self, "family", None) == getattr(socket, "AF_UNIX", -999):
+        return _orig_socket_connect(self, address)
+    if not _is_loopback(address):
+        raise PermissionError("Outbound network access is strictly prohibited inside the TestForge sandbox.")
+    return _orig_socket_connect(self, address)
+
+def _guarded_connect_ex(self, address):
+    if getattr(self, "family", None) == getattr(socket, "AF_UNIX", -999):
+        return _orig_socket_connect_ex(self, address)
+    if not _is_loopback(address):
+        raise PermissionError("Outbound network access is strictly prohibited inside the TestForge sandbox.")
+    return _orig_socket_connect_ex(self, address)
+
+def _guarded_create_connection(address, *args, **kwargs):
+    if not _is_loopback(address):
+        raise PermissionError("Outbound network access is strictly prohibited inside the TestForge sandbox.")
+    if _orig_create_connection:
+        return _orig_create_connection(address, *args, **kwargs)
+    raise PermissionError("Outbound network access is strictly prohibited inside the TestForge sandbox.")
+
+def _guarded_getaddrinfo(host, port, *args, **kwargs):
+    if host and not _is_loopback(host):
+        raise PermissionError("Outbound network access is strictly prohibited inside the TestForge sandbox.")
+    if _orig_getaddrinfo:
+        return _orig_getaddrinfo(host, port, *args, **kwargs)
+    return []
+
+socket.socket.connect = _guarded_connect
+socket.socket.connect_ex = _guarded_connect_ex
+if _orig_create_connection:
+    socket.create_connection = _guarded_create_connection
+if _orig_getaddrinfo:
+    socket.getaddrinfo = _guarded_getaddrinfo
+
+try:
+    import urllib.request
+    _orig_urlopen = urllib.request.urlopen
+    def _guarded_urlopen(url, *args, **kwargs):
+        raise PermissionError("Outbound network access is strictly prohibited inside the TestForge sandbox.")
+    urllib.request.urlopen = _guarded_urlopen
+except Exception:
+    pass
+
+try:
+    import http.client
+    _orig_http_connect = http.client.HTTPConnection.connect
+    def _guarded_http_connect(self):
+        if not _is_loopback(self.host):
+            raise PermissionError("Outbound network access is strictly prohibited inside the TestForge sandbox.")
+        return _orig_http_connect(self)
+    http.client.HTTPConnection.connect = _guarded_http_connect
+except Exception:
+    pass
+'''
+
+
+def write_sandbox_network_guard(tmpdir: str) -> str:
+    """
+    Injects an execution-time network confinement guard into the sandbox directory.
+    Intercepts socket, urllib, and http connections so any outbound network connection
+    attempt immediately raises PermissionError while preserving local loopback and UNIX sockets.
+    """
+    conftest_path = os.path.join(tmpdir, "conftest.py")
+    mode = "a" if os.path.exists(conftest_path) else "w"
+    with open(conftest_path, mode, encoding="utf-8") as f:
+        f.write(_NETWORK_GUARD_CONFTEST)
+    return conftest_path
+
+
+def _run_single_test_task(
+    test_code: str,
+    target_code: str,
+    timeout_seconds: int,
+    enforce_security: bool = True,
+    target_file_path: Optional[str] = None
+) -> Dict[str, Any]:
     """
     Isolated worker function designed for ProcessPoolExecutor execution.
     Inspects test code against AST security policies before executing pytest in a sandbox directory.
@@ -113,16 +295,30 @@ def _run_single_test_task(test_code: str, target_code: str, timeout_seconds: int
         with open(test_file, "w", encoding="utf-8") as f:
             f.write(test_code)
 
+        # Inject execution-time network confinement guard (GAP-001)
+        write_sandbox_network_guard(tmpdir)
+
+        # Build clean sanitized environment inheriting virtualenv and setting isolated PYTHONPATH
+        sub_env = build_sanitized_sandbox_env(tmpdir, target_file_path=target_file_path)
+        preexec = get_sandbox_preexec_fn(timeout_seconds)
+
         # Use the virtualenv's python executable
         pytest_cmd = [sys.executable, "-m", "pytest", test_file, "-v", "--disable-warnings", "-p", "no:cacheprovider"]
+
+        run_kwargs: Dict[str, Any] = {
+            "cwd": tmpdir,
+            "env": sub_env,
+            "capture_output": True,
+            "text": True,
+            "timeout": timeout_seconds,
+        }
+        if preexec is not None:
+            run_kwargs["preexec_fn"] = preexec
 
         try:
             res = subprocess.run(
                 pytest_cmd,
-                cwd=tmpdir,
-                capture_output=True,
-                text=True,
-                timeout=timeout_seconds
+                **run_kwargs
             )
             elapsed_ms = (time.perf_counter() - start_time) * 1000.0
             parsed = parse_pytest_output(res.stdout, res.stderr, res.returncode)
@@ -175,12 +371,25 @@ class ParallelSandboxRunner:
     """
     High-throughput sandboxed runner designed to maximize multi-core CPU throughput.
     """
-    def __init__(self, timeout_seconds: int = 5, max_workers: Optional[int] = None, cancel_event: Optional[Any] = None):
+    def __init__(
+        self,
+        timeout_seconds: int = 5,
+        max_workers: Optional[int] = None,
+        cancel_event: Optional[Any] = None,
+        target_file_path: Optional[str] = None
+    ):
         self.timeout = timeout_seconds
         self.max_workers = max_workers or hw_profile.recommended_workers
         self.cancel_event = cancel_event
+        self.target_file_path = target_file_path
 
-    def run_single(self, test_code: str, target_code: str) -> Dict[str, Any]:
+    def run_single(
+        self,
+        test_code: str,
+        target_code: str,
+        target_file_path: Optional[str] = None,
+        enforce_security: bool = True
+    ) -> Dict[str, Any]:
         """Runs a single test synchronously (e.g. for baseline suite validation)."""
         if self.cancel_event and self.cancel_event.is_set():
             return {
@@ -197,7 +406,14 @@ class ParallelSandboxRunner:
                 "tests_errors": 0,
                 "has_exec_error": True
             }
-        return _run_single_test_task(test_code, target_code, self.timeout)
+        target_path = target_file_path or self.target_file_path
+        return _run_single_test_task(
+            test_code,
+            target_code,
+            self.timeout,
+            enforce_security=enforce_security,
+            target_file_path=target_path
+        )
 
     def evaluate_mutants_parallel(
         self,
@@ -217,15 +433,48 @@ class ParallelSandboxRunner:
         if self.cancel_event and self.cancel_event.is_set():
             return mutants
 
+        # Normalize any dict representations into MutantRecord instances
+        coerced_mutants: List[MutantRecord] = []
+        for item in mutants:
+            if isinstance(item, MutantRecord):
+                coerced_mutants.append(item)
+            elif isinstance(item, dict):
+                try:
+                    coerced_mutants.append(MutantRecord(**item))
+                except Exception:
+                    coerced_mutants.append(MutantRecord(
+                        mutant_id=item.get("mutant_id", "MUT"),
+                        mutation_type=item.get("mutation_type", "AOR"),
+                        line_number=item.get("line_number", 1),
+                        original_code_snippet=item.get("original_code_snippet", ""),
+                        mutated_code_snippet=item.get("mutated_code_snippet", ""),
+                        unified_diff=item.get("unified_diff", item.get("diff", "")),
+                        status=item.get("status", "PENDING"),
+                        is_valid_syntax=item.get("is_valid_syntax", True),
+                    ))
+            else:
+                coerced_mutants.append(item)
+        mutants = coerced_mutants
+
         executable_mutants: List[MutantRecord] = []
         for m in mutants:
-            if not m.is_valid_syntax or m.status == "INVALID":
-                m.status = "INVALID"
-                m.is_executed = False
-                m.equivalence_status = "NOT_EQUIVALENT"
-                m.equivalence_method = "NONE"
-                m.equivalence_confidence = "HIGH"
-                m.equivalence_reason = "Mutant rejected prior to execution: invalid Python AST syntax."
+            is_valid = m.get("is_valid_syntax", True) if isinstance(m, dict) else getattr(m, "is_valid_syntax", True)
+            m_status = m.get("status", "PENDING") if isinstance(m, dict) else getattr(m, "status", "PENDING")
+            if not is_valid or m_status == "INVALID":
+                if isinstance(m, dict):
+                    m["status"] = "INVALID"
+                    m["is_executed"] = False
+                    m["equivalence_status"] = "NOT_EQUIVALENT"
+                    m["equivalence_method"] = "NONE"
+                    m["equivalence_confidence"] = "HIGH"
+                    m["equivalence_reason"] = "Mutant rejected prior to execution: invalid Python AST syntax."
+                else:
+                    m.status = "INVALID"
+                    m.is_executed = False
+                    m.equivalence_status = "NOT_EQUIVALENT"
+                    m.equivalence_method = "NONE"
+                    m.equivalence_confidence = "HIGH"
+                    m.equivalence_reason = "Mutant rejected prior to execution: invalid Python AST syntax."
             else:
                 executable_mutants.append(m)
 
@@ -261,7 +510,9 @@ class ParallelSandboxRunner:
                     _run_single_test_task,
                     test_code,
                     m.mutated_code_snippet,
-                    self.timeout
+                    self.timeout,
+                    True,
+                    self.target_file_path
                 ): m for m in executable_mutants
             }
 
@@ -330,10 +581,11 @@ class ParallelSandboxRunner:
 
         return mutants
 
-    def measure_coverage(self, test_code: str, target_code: str) -> Tuple[float, Dict[str, Any]]:
+    def measure_coverage(self, test_code: str, target_code: str, target_file_path: Optional[str] = None) -> Tuple[float, Dict[str, Any]]:
         """
         Executes pytest-cov inside the sandbox and parses coverage percentage and statement counts.
         """
+        target_path = target_file_path or self.target_file_path
         with tempfile.TemporaryDirectory(prefix="testforge_cov_") as tmpdir:
             src_file = os.path.join(tmpdir, "target.py")
             test_file = os.path.join(tmpdir, "test_target.py")
@@ -345,21 +597,64 @@ class ParallelSandboxRunner:
             with open(test_file, "w", encoding="utf-8") as f:
                 f.write(test_code)
 
+            # Inject execution-time network confinement guard (GAP-001)
+            write_sandbox_network_guard(tmpdir)
+
+            sub_env = build_sanitized_sandbox_env(tmpdir, target_file_path=target_path)
+            preexec = get_sandbox_preexec_fn(self.timeout)
+
             cmd = [
                 sys.executable, "-m", "pytest",
                 "--cov=target",
+                "--cov-branch",
                 f"--cov-report=json:{cov_json_path}",
                 test_file,
                 "-p", "no:cacheprovider"
             ]
 
-            res = subprocess.run(cmd, cwd=tmpdir, capture_output=True, text=True, timeout=self.timeout)
+            run_kwargs: Dict[str, Any] = {
+                "cwd": tmpdir,
+                "env": sub_env,
+                "capture_output": True,
+                "text": True,
+                "timeout": self.timeout,
+            }
+            if preexec is not None:
+                run_kwargs["preexec_fn"] = preexec
+
+            try:
+                res = subprocess.run(cmd, **run_kwargs)
+            except subprocess.TimeoutExpired:
+                cov_info = {
+                    "percent_covered": 0.0,
+                    "line_coverage_pct": 0.0,
+                    "covered_lines": 0,
+                    "num_statements": 0,
+                    "missing_lines": 0,
+                    "branch_coverage_percent": 0.0,
+                    "branch_coverage": 0.0,
+                    "total_branches": 0,
+                    "covered_branches": 0,
+                    "missing_branches_count": 0,
+                    "missing_branches": [],
+                    "executed_branches": [],
+                    "raw_output": f"Coverage measurement timed out after {self.timeout}s (Safety Guardrail)"
+                }
+                return 0.0, cov_info
 
             cov_info = {
                 "percent_covered": 0.0,
+                "line_coverage_pct": 0.0,
                 "covered_lines": 0,
                 "num_statements": 0,
                 "missing_lines": 0,
+                "branch_coverage_percent": 0.0,
+                "branch_coverage": 0.0,
+                "total_branches": 0,
+                "covered_branches": 0,
+                "missing_branches_count": 0,
+                "missing_branches": [],
+                "executed_branches": [],
                 "raw_output": res.stdout or res.stderr
             }
 
@@ -368,11 +663,32 @@ class ParallelSandboxRunner:
                     with open(cov_json_path, "r", encoding="utf-8") as jf:
                         data = json.load(jf)
                         totals = data.get("totals", {})
-                        pct = float(totals.get("percent_covered", 0.0))
+                        pct = float(totals.get("percent_statements_covered", totals.get("percent_covered", 0.0)))
                         cov_info["percent_covered"] = pct
+                        cov_info["line_coverage_pct"] = pct
                         cov_info["covered_lines"] = int(totals.get("covered_lines", 0))
                         cov_info["num_statements"] = int(totals.get("num_statements", 0))
                         cov_info["missing_lines"] = int(totals.get("missing_lines", 0))
+
+                        num_branches = int(totals.get("num_branches", 0))
+                        covered_branches = int(totals.get("covered_branches", 0))
+                        missing_branches_count = int(totals.get("missing_branches", 0))
+                        branch_pct = round((covered_branches / num_branches * 100.0) if num_branches > 0 else 100.0, 2)
+
+                        files = data.get("files", {})
+                        missing_branch_details = []
+                        executed_branch_details = []
+                        for fmeta in files.values():
+                            missing_branch_details.extend(fmeta.get("missing_branches", []))
+                            executed_branch_details.extend(fmeta.get("executed_branches", []))
+
+                        cov_info["branch_coverage_percent"] = branch_pct
+                        cov_info["branch_coverage"] = branch_pct
+                        cov_info["total_branches"] = num_branches
+                        cov_info["covered_branches"] = covered_branches
+                        cov_info["missing_branches_count"] = missing_branches_count
+                        cov_info["missing_branches"] = missing_branch_details
+                        cov_info["executed_branches"] = executed_branch_details
                         return pct, cov_info
                 except Exception:
                     pass
@@ -890,8 +1206,8 @@ class GranularTestValidator:
         killed_mutant_ids: List[str] = []
         if surviving_mutants and retained_code:
             for m in surviving_mutants:
-                mut_code = getattr(m, "mutated_code_snippet", None)
-                mut_id = getattr(m, "mutant_id", "unknown")
+                mut_code = m.get("mutated_code_snippet") if isinstance(m, dict) else getattr(m, "mutated_code_snippet", None)
+                mut_id = m.get("mutant_id", "unknown") if isinstance(m, dict) else getattr(m, "mutant_id", "unknown")
                 if mut_code:
                     mut_run = runner.run_single(retained_code, mut_code)
                     if mut_run.get("status") == "FAIL" or mut_run.get("tests_failed", 0) > 0:

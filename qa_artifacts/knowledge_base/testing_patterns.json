@@ -1,0 +1,50 @@
+[
+  {
+    "doc_id": "pattern_approx_floats",
+    "text": "# Floating Point Approximate Comparison Recipe\nimport pytest\ndef test_floating_point_precision():\n    # Uses pytest.approx to handle IEEE 754 precision inaccuracies\n    result = calculate_discount(100.0)\n    assert result == pytest.approx(90.0, rel=1e-3, abs=1e-4)\n",
+    "metadata": {
+      "category": "floating_point",
+      "pattern_name": "pytest.approx",
+      "operator_type": "MATH_FUNC",
+      "source": "pytest_docs",
+      "created_at": "2026-11-07T05:30:46Z"
+    },
+    "created_at": 1794029446.3901272
+  },
+  {
+    "doc_id": "pattern_exception_guards",
+    "text": "# Negative Test Exception Guard Recipe\nimport pytest\ndef test_negative_input_exception():\n    # Asserts that invalid domain arguments raise expected ValueError or TypeError\n    with pytest.raises((ValueError, TypeError), match='.*invalid.*'):\n        process_transaction(-1)\n",
+    "metadata": {
+      "category": "exception_guard",
+      "pattern_name": "pytest.raises",
+      "operator_type": "NEGATIVE_INPUT",
+      "source": "pytest_docs",
+      "created_at": "2026-11-07T05:30:46Z"
+    },
+    "created_at": 1794029446.390239
+  },
+  {
+    "doc_id": "pattern_boundary_off_by_one",
+    "text": "# Boundary Testing for Relational Threshold Off-By-One Inversions\nimport pytest\ndef test_boundary_threshold_triplet():\n    # Evaluates exact threshold boundary T and adjacent neighbors T-1, T, T+1\n    # Prevents '<' vs '<=' and '>' vs '>=' boundary escapes\n    assert check_threshold(99) is False\n    assert check_threshold(100) is True\n    assert check_threshold(101) is True\n",
+    "metadata": {
+      "category": "boundary_testing",
+      "pattern_name": "boundary_triplet",
+      "operator_type": "BOUNDARY_SWAP",
+      "source": "qa_best_practices",
+      "created_at": "2026-11-07T05:30:46Z"
+    },
+    "created_at": 1794029446.390335
+  },
+  {
+    "doc_id": "pattern_parameterized_matrix",
+    "text": "# Parameterized Test Matrix Recipe for Domain Permutations\nimport pytest\n@pytest.mark.parametrize('input_val, expected', [\n    (0, 0),\n    (50, 50),\n    (100, 95.0),\n    (200, 180.0),\n])\ndef test_discount_matrix(input_val, expected):\n    assert calculate_discount(input_val) == pytest.approx(expected, rel=1e-3)\n",
+    "metadata": {
+      "category": "parameterized",
+      "pattern_name": "pytest.mark.parametrize",
+      "operator_type": "COMP_OP",
+      "source": "pytest_docs",
+      "created_at": "2026-11-07T05:30:46Z"
+    },
+    "created_at": 1794029446.3904262
+  }
+]

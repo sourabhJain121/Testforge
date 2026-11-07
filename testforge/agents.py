@@ -23,9 +23,12 @@ import re
 import ast
 import time
 import json
+import logging
 import urllib.request
 import urllib.error
 from typing import List, Dict, Any, Optional, Tuple
+
+logger = logging.getLogger("testforge.agents")
 from testforge.logger import TraceLogger
 from testforge.llm_client import HybridLLMClient, call_openrouter_api
 from testforge.adk_engine import ADKToolRegistry, ADKContext
@@ -545,12 +548,16 @@ class TestGeneratorAgent:
     Autonomous Test Generator Agent with HybridLLMClient.
     Synthesizes initial Pytest suites and iteratively hardens assertions.
     """
+    __test__ = False
+
     def __init__(
         self,
         model_name: str = "gemini-3.6-flash",
         logger: Optional[TraceLogger] = None,
         api_key: Optional[str] = None,
-        llm_client: Optional[HybridLLMClient] = None
+        llm_client: Optional[HybridLLMClient] = None,
+        mutant_memory: Optional[Any] = None,
+        rag_retriever: Optional[Any] = None,
     ):
         self.model_name = "gemini-3.6-flash" if "2.5" in model_name or "1.5" in model_name else model_name
         self.logger = logger
@@ -567,6 +574,8 @@ class TestGeneratorAgent:
             else "AST Deterministic Synthesizer"
         )
         self.adk_registry = ADKToolRegistry(logger=self.logger)
+        self.mutant_memory = mutant_memory
+        self.rag_retriever = rag_retriever
 
     def generate_tests(
         self,
@@ -576,7 +585,8 @@ class TestGeneratorAgent:
         critic_feedback: Optional[str] = None,
         iteration: int = 1,
         surviving_guidance: Optional[List[Any]] = None,
-        quarantined_tests: Optional[List[Any]] = None
+        quarantined_tests: Optional[List[Any]] = None,
+        test_plan: Optional[Any] = None,
     ) -> str:
         """
         Synthesizes Pytest assertions matching the exact function signatures in source_code.
@@ -642,6 +652,23 @@ class TestGeneratorAgent:
             if guidance_text:
                 prompt_parts.append(guidance_text)
 
+        if test_plan:
+            plan_scenarios = getattr(test_plan, "scenarios", None) or (test_plan.get("scenarios") if isinstance(test_plan, dict) else [])
+            boundary_targets = getattr(test_plan, "boundary_targets", None) or (test_plan.get("boundary_targets") if isinstance(test_plan, dict) else [])
+            negative_cases = getattr(test_plan, "negative_cases", None) or (test_plan.get("negative_cases") if isinstance(test_plan, dict) else [])
+            plan_lines = ["### Formulated Test Plan & Target Scenarios:"]
+            if plan_scenarios:
+                for sc in plan_scenarios[:10]:
+                    name = sc.get("scenario_name", "unnamed")
+                    cat = sc.get("category", "nominal")
+                    desc = sc.get("description", "")
+                    plan_lines.append(f"- [{cat.upper()}] {name}: {desc}")
+            if boundary_targets:
+                plan_lines.append(f"Boundary conditions to test: {', '.join(str(b) for b in boundary_targets[:10])}")
+            if negative_cases:
+                plan_lines.append(f"Negative / Exception cases to test: {', '.join(str(n) for n in negative_cases[:10])}")
+            prompt_parts.append("\n".join(plan_lines))
+
         if surviving_diffs:
             self.adk_registry.execute_tool(
                 "tool_ast_audit",
@@ -654,6 +681,32 @@ class TestGeneratorAgent:
             )
             wrapped_diffs = wrap_untrusted_content(diffs_str, content_type="mutant_diffs", provenance="mutation_engine")
             prompt_parts.append(f"### Surviving Mutant AST Diffs (Faults Your Previous Tests Failed to Kill):\n{wrapped_diffs}")
+
+        # Agentic RAG (Handout Feature F1): Inject historical mutant fixes from Mutant Memory
+        if self.mutant_memory and surviving_diffs:
+            try:
+                recalled_fixes = []
+                for diff in surviving_diffs[:3]:
+                    fix = self.mutant_memory.query_similar_fix(operator_name="MUTATION", mutant_diff=diff, min_score=0.3)
+                    if fix and fix.get("killing_test_code"):
+                        recalled_fixes.append(fix["killing_test_code"])
+                if recalled_fixes:
+                    prompt_parts.append(
+                        "### Relevant Historical Test Patches (From Mutant Memory Knowledge Base):\n"
+                        + "\n\n".join(f"```python\n{f}\n```" for f in recalled_fixes)
+                    )
+            except Exception as exc:
+                logger.debug(f"Mutant memory query in generator failed: {exc}")
+
+        # Agentic RAG (Handout Feature F1): Inject testing pattern recipes from RAG retriever
+        if self.rag_retriever and source_code:
+            try:
+                pattern_res = self.rag_retriever.retrieve(query=source_code[:200], collection_name="testing_patterns", top_k=2)
+                if pattern_res.chunks:
+                    recipes_text = "\n\n".join(c["text"] for c in pattern_res.chunks)
+                    prompt_parts.append(f"### Recommended Pytest Recipes & Invariant Patterns:\n{recipes_text}")
+            except Exception as exc:
+                logger.debug(f"RAG pattern retrieval in generator failed: {exc}")
 
         if quarantined_tests:
             err_items = []
@@ -724,7 +777,10 @@ class TestGeneratorAgent:
                 latency_sec=latency_sec,
                 iteration=iteration,
                 is_valid_ast=is_valid,
-                validation_error=err
+                validation_error=err,
+                provider_type="Deterministic Synthesizer",
+                is_actual_llm=False,
+                token_accounting_source="offline_heuristic_estimate"
             )
 
         return sanitized_code
@@ -1158,6 +1214,23 @@ from target import *
 {body}
 ```"""
 
+    def generate_tests_with_self_consistency(
+        self,
+        target_code: str,
+        sample_count: int = 3,
+        candidate_codes: Optional[List[str]] = None,
+    ) -> Any:
+        """
+        Executes Multi-Candidate Self-Consistency sampling and Reference Execution consensus (Handout Feature F2).
+        """
+        from testforge.adk_generator import ADKModelBridge
+        bridge = ADKModelBridge(llm_client=self.llm_client, api_key=self.api_key)
+        return bridge.generate_tests_with_self_consistency(
+            target_code=target_code,
+            sample_count=sample_count,
+            candidate_codes=candidate_codes,
+        )
+
 
 class AdversarialCriticAgent:
     """
@@ -1289,7 +1362,10 @@ class AdversarialCriticAgent:
                 total_tokens=est_p_tokens + est_c_tokens,
                 latency_sec=latency_sec,
                 iteration=iteration,
-                is_valid_ast=True
+                is_valid_ast=True,
+                provider_type="Deterministic Synthesizer",
+                is_actual_llm=False,
+                token_accounting_source="offline_heuristic_estimate"
             )
         return analysis_text
 

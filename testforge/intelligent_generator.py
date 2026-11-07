@@ -100,6 +100,7 @@ class SynthesizedSuiteResult:
     invariant_assertions_count: int = 0
     boundary_tests_count: int = 0
     negative_tests_count: int = 0
+    property_tests_count: int = 0
     mutants_targeted: List[str] = field(default_factory=list)
     warnings: List[str] = field(default_factory=list)
 
@@ -453,17 +454,23 @@ class IntelligentASTSynthesizer:
         arg_types: Dict[str, str] = {}
         for a in node.args.args + node.args.kwonlyargs:
             if a.annotation:
-                if isinstance(a.annotation, ast.Name):
-                    arg_types[a.arg] = a.annotation.id
-                elif isinstance(a.annotation, ast.Constant):
-                    arg_types[a.arg] = str(a.annotation.value)
+                try:
+                    arg_types[a.arg] = ast.unparse(a.annotation).strip()
+                except Exception:
+                    if isinstance(a.annotation, ast.Name):
+                        arg_types[a.arg] = a.annotation.id
+                    elif isinstance(a.annotation, ast.Constant):
+                        arg_types[a.arg] = str(a.annotation.value)
 
         ret_type = None
         if node.returns:
-            if isinstance(node.returns, ast.Name):
-                ret_type = node.returns.id
-            elif isinstance(node.returns, ast.Constant):
-                ret_type = str(node.returns.value)
+            try:
+                ret_type = ast.unparse(node.returns).strip()
+            except Exception:
+                if isinstance(node.returns, ast.Name):
+                    ret_type = node.returns.id
+                elif isinstance(node.returns, ast.Constant):
+                    ret_type = str(node.returns.value)
 
         qual_name = f"{parent_class}.{node.name}" if parent_class else node.name
 
@@ -806,6 +813,258 @@ class IntelligentASTSynthesizer:
                         if is_mean:
                             result.meaningful_assertions_count += 1
 
+        # 7. Extreme Boundary Partitions (zero, negatives, empty collections)
+        extreme_tests = self._generate_extreme_boundary_partitions(sig, ref, result, nominal_pos, nominal_kw)
+        tests.extend(extreme_tests)
+
+        # 8. Property-Based Invariant Tests (algebraic idempotence, range bounds, monotonicity)
+        property_tests = self._generate_property_invariants(sig, ref, result, nominal_pos, nominal_kw)
+        tests.extend(property_tests)
+
+        return tests
+
+    def _generate_extreme_boundary_partitions(
+        self,
+        sig: CallableInfo,
+        ref: ReferenceExecutor,
+        result: SynthesizedSuiteResult,
+        nominal_pos: List[Any],
+        nominal_kw: Dict[str, Any]
+    ) -> List[str]:
+        """Synthesizes explicit zero, negative, and empty collection boundary partition tests."""
+        tests: List[str] = []
+        fn_name = sig.name
+        tested_params = set()
+
+        all_params = sig.pos_args + sig.kwonly_args
+        for p_idx, param in enumerate(all_params):
+            if param in tested_params:
+                continue
+            tested_params.add(param)
+
+            # Determine nominal value to identify parameter type
+            nom_val = None
+            if p_idx < len(nominal_pos):
+                nom_val = nominal_pos[p_idx]
+            elif param in nominal_kw:
+                nom_val = nominal_kw[param]
+
+            extreme_candidates = []
+            if isinstance(nom_val, (int, float)) and not isinstance(nom_val, bool):
+                extreme_candidates = [
+                    (0, "zero"),
+                    (-1, "negative_one"),
+                    (-100, "negative_large"),
+                    (10000, "large_positive"),
+                ]
+            elif isinstance(nom_val, str):
+                extreme_candidates = [
+                    ("", "empty_string"),
+                    ("a", "single_char"),
+                    ("   ", "whitespace_string"),
+                ]
+            elif isinstance(nom_val, list):
+                extreme_candidates = [
+                    ([], "empty_list"),
+                    ([nom_val[0]] if nom_val else [1], "single_element_list"),
+                ]
+            elif isinstance(nom_val, dict):
+                extreme_candidates = [
+                    ({}, "empty_dict"),
+                    ({"key": "val"}, "single_entry_dict"),
+                ]
+
+            for cand_val, cand_label in extreme_candidates:
+                c_pos = list(nominal_pos)
+                c_kw = dict(nominal_kw)
+                if self._set_param_value(sig, param, cand_val, c_pos, c_kw):
+                    c_args_str = self._format_call_args(sig, c_pos, c_kw)
+                    c_ok, c_exp, c_exc = ref.evaluate_call(fn_name, c_pos, c_kw)
+                    if c_ok:
+                        test_lines = [
+                            f"def test_{fn_name}_extreme_{param}_{cand_label}():",
+                            f"    result = {fn_name}({c_args_str})",
+                        ]
+                        assert_code, is_mean = self._build_value_assertion("result", c_exp)
+                        test_lines.append(f"    {assert_code}")
+                        tests.append("\n".join(test_lines))
+                        result.boundary_tests_count += 1
+                        if is_mean:
+                            result.meaningful_assertions_count += 1
+                        else:
+                            result.invariant_assertions_count += 1
+                    elif c_exc and c_exc not in ("CompileError", "ClassNotFound", "MethodNotFound"):
+                        test_lines = [
+                            f"def test_{fn_name}_extreme_{param}_{cand_label}_raises_{c_exc}():",
+                            f"    with pytest.raises({c_exc}):",
+                            f"        {fn_name}({c_args_str})",
+                        ]
+                        tests.append("\n".join(test_lines))
+                        result.negative_tests_count += 1
+                        result.meaningful_assertions_count += 1
+
+        return tests
+
+    def _is_numeric_type(self, type_str: Optional[str]) -> bool:
+        """Determines if an AST type annotation represents a numeric domain."""
+        if not type_str:
+            return False
+        clean = type_str.lower().replace(" ", "")
+        return any(k in clean for k in ("int", "float", "real", "number", "decimal"))
+
+    def _generate_property_invariants(
+        self,
+        sig: CallableInfo,
+        ref: ReferenceExecutor,
+        result: SynthesizedSuiteResult,
+        nominal_pos: List[Any],
+        nominal_kw: Dict[str, Any]
+    ) -> List[str]:
+        """
+        Synthesizes algebraic and range invariant property tests verified against clean reference code.
+        Enforces AST type binding, multi-sample verification passes, and confidence scoring (GAP-002).
+        """
+        tests: List[str] = []
+        fn_name = sig.name
+
+        # 1. Non-negativity / Range Bound Invariant
+        nom_ok, nom_exp, _ = ref.evaluate_call(fn_name, nominal_pos, nominal_kw)
+        if nom_ok and isinstance(nom_exp, (int, float)) and not isinstance(nom_exp, bool):
+            if nom_exp >= 0:
+                is_int = isinstance(nom_exp, int) and not isinstance(nom_exp, float)
+                probe_vals = [0, 1, 5, 20, 100] if is_int else [0.0, 1.0, 5.0, 20.0, 100.0]
+                all_non_neg = True
+                if sig.pos_args:
+                    p0 = sig.pos_args[0]
+                    for pv in probe_vals:
+                        p_pos = list(nominal_pos)
+                        p_kw = dict(nominal_kw)
+                        if self._set_param_value(sig, p0, pv, p_pos, p_kw):
+                            p_ok, p_val, _ = ref.evaluate_call(fn_name, p_pos, p_kw)
+                            if not p_ok or not isinstance(p_val, (int, float)) or isinstance(p_val, bool) or p_val < 0:
+                                all_non_neg = False
+                                break
+                        else:
+                            all_non_neg = False
+                            break
+                    if all_non_neg:
+                        conf = "HIGH" if self._is_numeric_type(sig.return_type) else "MEDIUM"
+                        p_lines = [
+                            f"def test_{fn_name}_property_non_negative_range():",
+                            f'    """[Property Invariant] Non-negative range invariant across probe space. property_confidence="{conf}"."""',
+                            f"    for test_val in {probe_vals}:",
+                        ]
+                        if len(sig.pos_args) == 1:
+                            p_lines.append(f"        res = {fn_name}(test_val)")
+                        else:
+                            tail_args = self._format_call_args(sig, [None] + nominal_pos[1:], nominal_kw)
+                            tail_str = ", ".join(tail_args.split(", ")[1:]) if ", " in tail_args else ""
+                            call_str = f"test_val, {tail_str}" if tail_str else "test_val"
+                            p_lines.append(f"        res = {fn_name}({call_str})")
+                        p_lines.append(f"        assert res >= 0")
+                        tests.append("\n".join(p_lines))
+                        result.property_tests_count += 1
+                        result.meaningful_assertions_count += 1
+                        result.invariant_assertions_count += 1
+
+        # 2. Idempotence Invariant: fn(fn(x)) == fn(x)
+        if nom_ok and len(sig.pos_args) == 1 and not sig.required_kwonly:
+            p0 = sig.pos_args[0]
+            ret_t = sig.return_type
+            arg_t = sig.arg_types.get(p0)
+            
+            # Check domain parity compatibility
+            type_parity_compatible = True
+            if ret_t and arg_t:
+                ret_is_num = self._is_numeric_type(ret_t)
+                arg_is_num = self._is_numeric_type(arg_t)
+                ret_is_str = "str" in ret_t.lower()
+                arg_is_str = "str" in arg_t.lower()
+                if (ret_is_num and not arg_is_num) or (ret_is_str and not arg_is_str):
+                    type_parity_compatible = False
+
+            if type_parity_compatible:
+                # Multi-sample verification pass
+                idem_samples = [nom_exp]
+                if isinstance(nom_exp, str):
+                    idem_samples.extend(["sample_token", "  clean  text  ", "already_cleaned"])
+                elif isinstance(nom_exp, (int, float)) and not isinstance(nom_exp, bool):
+                    idem_samples.extend([0, 1, 10] if isinstance(nom_exp, int) else [0.0, 1.0, 10.0])
+
+                all_idem_pass = True
+                tested_samples = 0
+                for s in idem_samples:
+                    ok_1, res_1, _ = ref.evaluate_call(fn_name, [s], {})
+                    if ok_1:
+                        ok_2, res_2, _ = ref.evaluate_call(fn_name, [res_1], {})
+                        if ok_2 and res_2 == res_1:
+                            tested_samples += 1
+                        else:
+                            all_idem_pass = False
+                            break
+                    else:
+                        all_idem_pass = False
+                        break
+
+                if all_idem_pass and tested_samples >= 1:
+                    conf = "HIGH" if (ret_t and arg_t and ret_t == arg_t) else "MEDIUM"
+                    i_lines = [
+                        f"def test_{fn_name}_property_idempotent():",
+                        f'    """[Property Invariant] Idempotence invariant: fn(fn(x)) == fn(x). property_confidence="{conf}"."""',
+                        f"    first = {fn_name}({self._format_call_args(sig, nominal_pos, nominal_kw)})",
+                        f"    second = {fn_name}(first)",
+                        f"    assert second == first",
+                    ]
+                    tests.append("\n".join(i_lines))
+                    result.property_tests_count += 1
+                    result.meaningful_assertions_count += 1
+                    result.invariant_assertions_count += 1
+
+        # 3. Monotonicity Invariant (e.g. discount, pricing, scores)
+        if nom_ok and isinstance(nom_exp, (int, float)) and not isinstance(nom_exp, bool) and len(sig.pos_args) >= 1:
+            p0 = sig.pos_args[0]
+            is_int_domain = sig.arg_types.get(p0) == "int" or (nominal_pos and isinstance(nominal_pos[0], int))
+            m_probe_vals = [1, 5, 10, 50, 100] if is_int_domain else [1.0, 5.0, 10.0, 50.0, 100.0]
+            
+            m_results: List[Union[int, float]] = []
+            all_m_ok = True
+            for mv in m_probe_vals:
+                pos_m = list(nominal_pos); kw_m = dict(nominal_kw)
+                if self._set_param_value(sig, p0, mv, pos_m, kw_m):
+                    ok_m, r_m, _ = ref.evaluate_call(fn_name, pos_m, kw_m)
+                    if ok_m and isinstance(r_m, (int, float)) and not isinstance(r_m, bool):
+                        m_results.append(r_m)
+                    else:
+                        all_m_ok = False
+                        break
+                else:
+                    all_m_ok = False
+                    break
+
+            if all_m_ok and len(m_results) == len(m_probe_vals):
+                monotonic_increasing = all(m_results[i] <= m_results[i + 1] for i in range(len(m_results) - 1))
+                monotonic_decreasing = all(m_results[i] >= m_results[i + 1] for i in range(len(m_results) - 1))
+                has_variance = any(m_results[i] != m_results[0] for i in range(1, len(m_results)))
+
+                if has_variance and (monotonic_increasing or monotonic_decreasing):
+                    conf = "HIGH" if (self._is_numeric_type(sig.return_type) and self._is_numeric_type(sig.arg_types.get(p0))) else "MEDIUM"
+                    m_lines = [
+                        f"def test_{fn_name}_property_monotonicity():",
+                        f'    """[Property Invariant] Monotonicity invariant across ordered sample inputs. property_confidence="{conf}"."""',
+                    ]
+                    c1_str = self._format_call_args(sig, [m_probe_vals[0]] + nominal_pos[1:], nominal_kw)
+                    c2_str = self._format_call_args(sig, [m_probe_vals[-1]] + nominal_pos[1:], nominal_kw)
+                    m_lines.append(f"    r1 = {fn_name}({c1_str})")
+                    m_lines.append(f"    r2 = {fn_name}({c2_str})")
+                    if monotonic_increasing:
+                        m_lines.append(f"    assert r1 <= r2")
+                    else:
+                        m_lines.append(f"    assert r1 >= r2")
+                    tests.append("\n".join(m_lines))
+                    result.property_tests_count += 1
+                    result.meaningful_assertions_count += 1
+                    result.invariant_assertions_count += 1
+
         return tests
 
     def _generate_class_tests(
@@ -1103,17 +1362,30 @@ class IntelligentASTSynthesizer:
                     pos_vals.append("http://example.com")
                 elif "data" in p_low:
                     pos_vals.append("test_data")
+                elif "state" in p_low:
+                    pos_vals.append("CREATED")
+                elif "role" in p_low:
+                    pos_vals.append("CUSTOMER")
+                elif "order" in p_low:
+                    pos_vals.append("ORD-001")
+                elif "key" in p_low:
+                    pos_vals.append("key_1")
                 else:
                     pos_vals.append("test")
-            elif t in ("list", "sequence"):
-                pos_vals.append([{"unit_price": 50.0, "quantity": 2, "weight_kg": 1.0}])
-            elif t in ("dict", "mapping"):
+            elif t in ("list", "sequence") or t.startswith("list") or "list[" in t or t.startswith("sequence") or "sequence[" in t or p_low in ("values", "items", "numbers"):
+                if any(x in t for x in ("float", "int", "number")) or any(x in p_low for x in ("val", "num", "point", "score")):
+                    pos_vals.append([10.0, 20.0, 30.0, 40.0, 50.0])
+                else:
+                    pos_vals.append([{"unit_price": 50.0, "quantity": 2, "weight_kg": 1.0}])
+            elif t in ("dict", "mapping") or t.startswith("dict") or "dict[" in t or t.startswith("mapping"):
                 if "stock" in p_low:
                     pos_vals.append({"SKU-001": 20})
                 elif "files" in p_low:
                     pos_vals.append({"file": ("test.txt", b"data")})
                 else:
-                    pos_vals.append({})
+                    pos_vals.append({"key_1": "val_1"})
+            elif t.startswith("set") or "set[" in t:
+                pos_vals.append({"item1", "item2"})
             # Heuristic fallbacks when t is not explicitly typed
             elif any(x in p_low for x in ("price", "amount", "cost", "weight", "distance", "fee", "rate")):
                 pos_vals.append(100.0 if "price" in p_low or "amount" in p_low else 10.0)

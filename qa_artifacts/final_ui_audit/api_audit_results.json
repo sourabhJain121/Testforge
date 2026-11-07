@@ -1,0 +1,194 @@
+[
+  {
+    "method": "GET",
+    "path": "/healthz",
+    "expected_status": 200,
+    "actual_status": 200,
+    "passed": true,
+    "response_preview": "{\"status\":\"healthy\",\"service\":\"testforge-backend\",\"version\":\"2.0.0\",\"timestamp\":1793598872.507204}"
+  },
+  {
+    "method": "GET",
+    "path": "/readyz",
+    "expected_status": 200,
+    "actual_status": 200,
+    "passed": true,
+    "response_preview": "{\"status\":\"ready\",\"service\":\"testforge-backend\",\"subsystems\":{\"ast_mutator\":\"operational\",\"blackboard\":\"operational\",\"sa"
+  },
+  {
+    "method": "GET",
+    "path": "/api/ready",
+    "expected_status": 200,
+    "actual_status": 200,
+    "passed": true,
+    "response_preview": "{\"status\":\"ready\",\"service\":\"testforge-backend\",\"subsystems\":{\"ast_mutator\":\"operational\",\"blackboard\":\"operational\",\"sa"
+  },
+  {
+    "method": "GET",
+    "path": "/api/status",
+    "expected_status": 200,
+    "actual_status": 200,
+    "passed": true,
+    "response_preview": "{\"hardware\":{\"machine\":\"arm64\",\"os_system\":\"Darwin\",\"cpu_count\":10,\"recommended_workers\":8,\"total_memory_gb\":16.0},\"prov"
+  },
+  {
+    "method": "GET",
+    "path": "/api/ws/status",
+    "expected_status": 200,
+    "actual_status": 200,
+    "passed": true,
+    "response_preview": "{\"active_clients\":2,\"total_events_broadcast\":189,\"dropped_events_count\":0,\"max_queue_size_per_client\":100}"
+  },
+  {
+    "method": "GET",
+    "path": "/api/mcp/status",
+    "expected_status": 200,
+    "actual_status": 200,
+    "passed": true,
+    "response_preview": "{\"status\":\"operational\",\"protocol\":\"Model Context Protocol (MCP)\",\"sdk\":\"FastMCP / mcp-python v1.28.0\",\"transport\":\"stdi"
+  },
+  {
+    "method": "POST",
+    "path": "/api/mcp/test",
+    "expected_status": 200,
+    "actual_status": 200,
+    "passed": true,
+    "response_preview": "{\"status\":\"success\",\"protocol\":\"Model Context Protocol (FastMCP)\",\"sdk\":\"mcp-python / FastMCP v1.28.0\",\"transport\":\"stdi"
+  },
+  {
+    "method": "POST",
+    "path": "/api/mcp/test",
+    "expected_status": 422,
+    "actual_status": 422,
+    "passed": true,
+    "response_preview": "{\"detail\":[{\"type\":\"literal_error\",\"loc\":[\"body\",\"tool_name\"],\"msg\":\"Input should be 'list_directory' or 'get_file_info'"
+  },
+  {
+    "method": "GET",
+    "path": "/.well-known/agent.json",
+    "expected_status": 200,
+    "actual_status": 200,
+    "passed": true,
+    "response_preview": "{\"capabilities\":{\"pushNotifications\":false,\"streaming\":false},\"defaultInputModes\":[\"text\",\"json\"],\"defaultOutputModes\":["
+  },
+  {
+    "method": "GET",
+    "path": "/.well-known/agent-card.json",
+    "expected_status": 200,
+    "actual_status": 200,
+    "passed": true,
+    "response_preview": "{\"capabilities\":{\"pushNotifications\":false,\"streaming\":false},\"defaultInputModes\":[\"text\",\"json\"],\"defaultOutputModes\":["
+  },
+  {
+    "method": "POST",
+    "path": "/api/a2a/test",
+    "expected_status": 200,
+    "actual_status": 200,
+    "passed": true,
+    "response_preview": "{\"status\":\"success\",\"protocol\":\"Agent2Agent (A2A) Protocol\",\"protocol_version\":\"0.3.0\",\"agent_name\":\"testforge-agent-sys"
+  },
+  {
+    "method": "GET",
+    "path": "/api/samples",
+    "expected_status": 200,
+    "actual_status": 200,
+    "passed": true,
+    "response_preview": "{\"samples\":[\"banking.py\",\"currency_converter.py\",\"discount.py\",\"inventory_pricing.py\",\"rate_limiter.py\",\"state_machine.p"
+  },
+  {
+    "method": "POST",
+    "path": "/api/ingest/sample",
+    "expected_status": 200,
+    "actual_status": 200,
+    "passed": true,
+    "response_preview": "{\"status\":\"success\",\"mode\":\"Mode A\",\"target_file_path\":\"/Users/sourabh/TestForge/samples/discount.py\",\"module_name\":\"sam"
+  },
+  {
+    "method": "POST",
+    "path": "/api/ingest/sample",
+    "expected_status": 404,
+    "actual_status": 404,
+    "passed": true,
+    "response_preview": "{\"detail\":\"Sample file 'non_existent.py' not found.\"}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/analysis/blast-radius",
+    "expected_status": 200,
+    "actual_status": 200,
+    "passed": true,
+    "response_preview": "{\"defined_functions\":[\"foo\",\"bar\"],\"selected_target\":\"foo\",\"impact\":{\"target_function\":\"foo\",\"upstream_callers\":[\"bar\"],"
+  },
+  {
+    "method": "GET",
+    "path": "/api/hardened-code",
+    "expected_status": 200,
+    "actual_status": 200,
+    "passed": true,
+    "response_preview": "{\"code\":\"import os\\nimport sys\\nsys.path.insert(0, os.path.abspath('.'))\\nsys.path.insert(0, os.path.abspath(os.path.dir"
+  },
+  {
+    "method": "GET",
+    "path": "/api/harden/status/invalid_job_999",
+    "expected_status": 404,
+    "actual_status": 404,
+    "passed": true,
+    "response_preview": "{\"detail\":\"Hardening job 'invalid_job_999' not found.\"}"
+  },
+  {
+    "method": "POST",
+    "path": "/api/harden/cancel/invalid_job_999",
+    "expected_status": 404,
+    "actual_status": 404,
+    "passed": true,
+    "response_preview": "{\"detail\":\"Hardening job 'invalid_job_999' not found.\"}"
+  },
+  {
+    "method": "GET",
+    "path": "/api/checkpoints",
+    "expected_status": 200,
+    "actual_status": 200,
+    "passed": true,
+    "response_preview": "{\"checkpoints\":[{\"checkpoint_id\":\"chk_989b6fcb7e9b\",\"schema_version\":1,\"job_id\":\"e3a52119\",\"workflow_id\":\"wf_1cef6d736c9"
+  },
+  {
+    "method": "GET",
+    "path": "/api/checkpoints/invalid_chk_999",
+    "expected_status": 404,
+    "actual_status": 404,
+    "passed": true,
+    "response_preview": "{\"detail\":\"Checkpoint 'invalid_chk_999' not found.\"}"
+  },
+  {
+    "method": "GET",
+    "path": "/api/telemetry",
+    "expected_status": 200,
+    "actual_status": 200,
+    "passed": true,
+    "response_preview": "{\"total_logged_events\":238224,\"total_tokens_used\":50875,\"recent_traces\":[{\"timestamp\":1793598781.629374,\"iso_time\":\"2026"
+  },
+  {
+    "method": "GET",
+    "path": "/api/wiretap",
+    "expected_status": 200,
+    "actual_status": 200,
+    "passed": true,
+    "response_preview": "{\"total_handoffs\":945,\"total_adk_calls\":61,\"participating_agents\":[\"AdversarialCriticAgent\",\"CrewAICriticAgent\",\"GoogleA"
+  },
+  {
+    "method": "GET",
+    "path": "/api/benchmark/results",
+    "expected_status": 200,
+    "actual_status": 200,
+    "passed": true,
+    "response_preview": "{\"exists\":true,\"report\":{\"target_file\":\"samples/discount.py\",\"timestamp\":1793597006.106081,\"repetitions\":1,\"hardware_sum"
+  },
+  {
+    "method": "GET",
+    "path": "/api/benchmark/markdown",
+    "expected_status": 200,
+    "actual_status": 200,
+    "passed": true,
+    "response_preview": "# TestForge Benchmark & Ablation Study Report\n- **Target File:** `samples/discount.py`\n- **Timestamp:** 2026-11-02 10:53"
+  }
+]

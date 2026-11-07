@@ -1143,7 +1143,13 @@ body {
   font-size: 1.15rem;
 }
 
-/* Grid Layouts for 5, 7, and 3 Columns */
+/* Grid Layouts for 8, 7, 5, 4, and 3 Columns */
+.kpi-grid-8 {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 0.75rem;
+}
+
 .kpi-grid-5 {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -1156,20 +1162,33 @@ body {
   gap: 0.85rem;
 }
 
+.kpi-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.1rem;
+}
+
 .kpi-grid-3 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1.25rem;
 }
 
+@media (max-width: 1400px) {
+  .kpi-grid-8 { grid-template-columns: repeat(4, 1fr); }
+}
+
 @media (max-width: 1200px) {
   .kpi-grid-5 { grid-template-columns: repeat(3, 1fr); }
   .kpi-grid-7 { grid-template-columns: repeat(4, 1fr); }
+  .kpi-grid-4 { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 768px) {
+  .kpi-grid-8 { grid-template-columns: 1fr 1fr; }
   .kpi-grid-5 { grid-template-columns: 1fr 1fr; }
   .kpi-grid-7 { grid-template-columns: 1fr 1fr; }
+  .kpi-grid-4 { grid-template-columns: 1fr; }
   .kpi-grid-3 { grid-template-columns: 1fr; }
 }
 
@@ -1227,6 +1246,106 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.6px;
   color: var(--text-muted);
+}
+
+.kpi-sub {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  margin-top: 0.25rem;
+  font-family: var(--font-mono);
+  letter-spacing: 0.2px;
+}
+
+/* Missing Branches Dropdown Box */
+.missing-branches-box {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 8px;
+  background: rgba(15, 23, 42, 0.96);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  z-index: 100;
+  min-width: 220px;
+  max-height: 200px;
+  overflow-y: auto;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-align: left;
+}
+
+.missing-branches-box h5 {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #38bdf8;
+  margin: 0 0 0.4rem 0;
+}
+
+.missing-branches-box ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.missing-branches-box li {
+  padding: 2px 0;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: #cbd5e1;
+}
+
+/* Calibrated TQS Tooltip */
+.tqs-tooltip {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 8px;
+  background: rgba(15, 23, 42, 0.98);
+  border: 1px solid rgba(167, 139, 250, 0.45);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1.1rem;
+  z-index: 100;
+  min-width: 290px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.65);
+  text-align: left;
+  font-family: var(--font-sans);
+}
+
+.tqs-tooltip h5 {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #c4b5fd;
+  margin: 0 0 0.5rem 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tqs-dimension-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 3px 0;
+  font-size: 0.74rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.tqs-dimension-row:last-child {
+  border-bottom: none;
+}
+
+.tqs-dimension-lbl {
+  color: #94a3b8;
+}
+
+.tqs-dimension-val {
+  font-weight: 600;
+  font-family: var(--font-mono);
+  color: #e2e8f0;
 }
 
 /* ==========================================================================
@@ -1359,6 +1478,12 @@ body {
   background: linear-gradient(135deg, rgba(245, 158, 11, 0.18) 0%, rgba(30, 27, 75, 0.9) 100%);
   border-color: rgba(245, 158, 11, 0.4);
   box-shadow: 0 0 28px rgba(245, 158, 11, 0.2);
+}
+
+.verdict-banner.interrupted {
+  background: linear-gradient(135deg, rgba(234, 88, 12, 0.18) 0%, rgba(30, 27, 75, 0.9) 100%);
+  border-color: rgba(234, 88, 12, 0.5);
+  box-shadow: 0 0 28px rgba(234, 88, 12, 0.25);
 }
 
 .verdict-banner h3 {
@@ -1560,6 +1685,16 @@ body {
 .wiretap-step-card.step-adk::before {
   border-color: var(--amber);
   box-shadow: 0 0 10px var(--amber);
+}
+
+.wiretap-step-card.step-supervisor::before {
+  border-color: #a855f7;
+  box-shadow: 0 0 10px #a855f7;
+}
+
+.agent-topo-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.25) !important;
 }
 
 .wiretap-step-card.step-tool::before {

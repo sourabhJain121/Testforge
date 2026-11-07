@@ -93,7 +93,8 @@ def test_nominal():
         # 2. Result distinction verification
         assert final_state.mutants_generated > 0
         assert final_state.mutants_executed > 0
-        assert final_state.mutants_killed + final_state.mutants_survived == final_state.mutants_executed
+        equiv_count = bb.get_mutant_space().mutants_equivalent
+        assert final_state.mutants_killed + final_state.mutants_survived + equiv_count == final_state.mutants_executed
         assert isinstance(final_state.final_mutation_score, float)
 
         # 3. Blackboard synchronization verification

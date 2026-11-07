@@ -199,7 +199,9 @@ class HybridLLMClient:
                             total_tokens=tokens["total_tokens"],
                             latency_sec=latency,
                             iteration=iteration,
-                            provider_type="Cloud Gemini"
+                            provider_type="Cloud Gemini",
+                            is_actual_llm=True,
+                            token_accounting_source="provider_reported"
                         )
 
                     return raw_text
@@ -294,7 +296,9 @@ class HybridLLMClient:
                             total_tokens=tokens["total_tokens"],
                             latency_sec=latency,
                             iteration=iteration,
-                            provider_type="OpenRouter Cloud"
+                            provider_type="OpenRouter Cloud",
+                            is_actual_llm=True,
+                            token_accounting_source="provider_reported"
                         )
                     return raw_text
 
@@ -324,6 +328,11 @@ class HybridLLMClient:
         if self.engine_mode == "openrouter":
             raise RuntimeError("HybridLLMClient: Tier 4 Fallback Engaged - OpenRouter failed in force-openrouter mode.")
 
+        # ======================================================================
+        # TIER 3: LOCAL OLLAMA INFERENCE (Offline Mode on Apple Silicon / Local)
+        # ======================================================================
+        should_try_local = self.engine_mode in ("auto", "local")
+        if should_try_local:
             tags_url = self.local_url.replace("/api/generate", "/api/tags") if "/api/generate" in self.local_url else "http://localhost:11434/api/tags"
             if is_ollama_running(tags_url, timeout=0.8):
                 ollama_timeout = float(os.environ.get("TESTFORGE_OLLAMA_TIMEOUT", "60.0"))
@@ -378,7 +387,9 @@ class HybridLLMClient:
                                 total_tokens=tokens["total_tokens"],
                                 latency_sec=latency,
                                 iteration=iteration,
-                                provider_type="Local Ollama"
+                                provider_type="Local Ollama",
+                                is_actual_llm=True,
+                                token_accounting_source="provider_reported"
                             )
 
                         return raw_text

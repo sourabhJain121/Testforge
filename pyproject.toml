@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "testforge"
+version = "2.0.0"
+description = "Autonomous Agentic Unit Test Hardening and Mutation Analysis System"
+readme = "README.md"
+authors = [
+    { name = "Sourabh", email = "sourabh@example.com" },
+    { name = "Shreshth", email = "shreshth@example.com" }
+]
+license = { text = "MIT" }
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.0",
+    "rich>=13.0",
+    "fastapi>=0.100.0",
+    "uvicorn>=0.23.0",
+    "google-genai>=1.0.0",
+    "pytest>=8.0.0",
+    "pytest-cov>=4.1.0",
+    "coverage>=7.0.0",
+]
+
+[project.scripts]
+testforge = "testforge.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["testforge*"]
+

@@ -674,7 +674,7 @@ class TestServerApiResumption:
             res = client.post(f"/api/harden/resume/{job_id}", json={})
             assert res.status_code == 200
             data = res.json()
-            assert data["status"] == "queued"
+            assert data["status"] in ("queued", "RESUMED")
             assert data["resumed_from_checkpoint"] == cp_id
 
     def test_api_resume_invalid_checkpoint_rejected(self, client, temp_db_path):

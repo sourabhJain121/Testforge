@@ -1,20 +1,22 @@
-"""
-Auto-generated module based on specification:
-Create a simple math multiplier function with input type checks.
-"""
+from typing import Union
 
-def process_transaction(amount: float, balance: float, is_vip: bool) -> tuple[bool, float]:
+def multiply_numbers(a: Union[int, float], b: Union[int, float]) -> Union[int, float]:
     """
-    Executes a processed transaction with balance verification and VIP waivers.
+    Multiplies two numbers and returns the result.
+    
+    Parameters:
+    a (int, float): The first number to multiply.
+    b (int, float): The second number to multiply.
+    
+    Returns:
+    int, float: The product of the two numbers.
+    
+    Raises:
+    TypeError: If either of the inputs is not an integer or float.
+    ValueError: If either of the inputs is negative.
     """
-    if amount <= 0.0:
-        return (False, balance)
-
-    fee = 0.0 if is_vip else 2.50
-    total_needed = amount + fee
-
-    if balance >= total_needed:
-        new_balance = balance - total_needed
-        return (True, round(new_balance, 2))
-
-    return (False, balance)
+    if not isinstance(a, (int, float)) or not isinstance(b, (int, float)):
+        raise TypeError("Both inputs must be integers or floats.")
+    if a < 0 or b < 0:
+        raise ValueError("Both inputs must be non-negative.")
+    return a * b

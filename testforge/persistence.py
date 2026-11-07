@@ -35,7 +35,8 @@ from testforge.security import redact_sensitive_data
 
 logger = logging.getLogger("testforge.persistence")
 
-CURRENT_SCHEMA_VERSION = 1
+CURRENT_SCHEMA_VERSION = 2
+SUPPORTED_SCHEMA_VERSIONS = {1, 2}
 
 
 # ==============================================================================
@@ -310,6 +311,7 @@ class SQLiteBlackboardStorage:
                 "iteration": getattr(metrics_space, "current_iteration", 0),
                 "mutation_score": getattr(metrics_space, "final_mutation_score", 0.0),
                 "line_coverage": getattr(metrics_space, "baseline_line_coverage", 0.0),
+                "branch_coverage": getattr(metrics_space, "branch_coverage", 0.0),
                 "terminated": getattr(metrics_space, "terminated", False),
                 "termination_reason": getattr(metrics_space, "termination_reason", ""),
             }
@@ -434,11 +436,11 @@ class SQLiteBlackboardStorage:
         if not row:
             raise CheckpointNotFoundError(f"Checkpoint '{checkpoint_id}' not found.")
 
-        # Check schema version
+        # Check schema version (supports backwards-compatible schema 1 and current schema 2)
         ver = row["schema_version"]
-        if ver != CURRENT_SCHEMA_VERSION:
+        if ver not in SUPPORTED_SCHEMA_VERSIONS:
             raise IncompatibleSchemaError(
-                f"Checkpoint '{checkpoint_id}' has schema version {ver}, but engine requires {CURRENT_SCHEMA_VERSION}."
+                f"Checkpoint '{checkpoint_id}' has schema version {ver}, but engine requires one of {sorted(list(SUPPORTED_SCHEMA_VERSIONS))}."
             )
 
         try:

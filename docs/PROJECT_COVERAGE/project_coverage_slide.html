@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>TESTFORGE | PROJECT COVERAGE</title>
+<style>
+  @page {
+    size: 338.67mm 190.5mm;
+    margin: 0;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    padding: 24px 36px 20px 36px;
+    background-color: #0F172A;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #F8FAFC;
+    width: 16in;
+    height: 9in;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  /* Header */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    border-bottom: 2px solid #1E293B;
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+  }
+  .title-group {
+    display: flex;
+    flex-direction: column;
+  }
+  .main-title {
+    font-size: 20pt;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    color: #F8FAFC;
+  }
+  .sub-title {
+    font-size: 11pt;
+    font-weight: bold;
+    color: #38BDF8;
+    margin-top: 2px;
+  }
+  .meta-info {
+    font-size: 9pt;
+    color: #94A3B8;
+    text-align: right;
+    line-height: 1.4;
+  }
+  .meta-info strong {
+    color: #F8FAFC;
+  }
+  
+  /* Table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 8.5pt;
+    line-height: 1.25;
+    table-layout: fixed;
+  }
+  th {
+    background-color: #1E293B;
+    color: #38BDF8;
+    font-weight: bold;
+    font-size: 9.5pt;
+    padding: 6px 8px;
+    text-align: left;
+    border-top: 1.5px solid #38BDF8;
+    border-bottom: 1.5px solid #38BDF8;
+  }
+  th.th-center, td.col-no, td.col-status {
+    text-align: center;
+  }
+  td {
+    padding: 4.5px 8px;
+    border-bottom: 1px solid #1E293B;
+    vertical-align: top;
+  }
+  .col-no {
+    width: 40px;
+    font-weight: bold;
+    color: #94A3B8;
+  }
+  .col-criteria {
+    width: 320px;
+  }
+  .criteria-title {
+    font-weight: bold;
+    color: #F8FAFC;
+    font-size: 8.8pt;
+    margin-bottom: 1.5px;
+  }
+  .criteria-demand {
+    font-size: 7.2pt;
+    color: #94A3B8;
+    line-height: 1.2;
+  }
+  .col-impl {
+    font-size: 7.4pt;
+    color: #CBD5E1;
+    line-height: 1.28;
+  }
+  .col-status {
+    width: 120px;
+    vertical-align: middle;
+  }
+  
+  /* Status Badges */
+  .badge {
+    display: inline-block;
+    padding: 3px 8px;
+    font-size: 8.5pt;
+    font-weight: bold;
+    border-radius: 3px;
+    letter-spacing: 0.5px;
+  }
+  .badge-complete {
+    background-color: #064E3B;
+    color: #10B981;
+    border: 1px solid #059669;
+  }
+  .badge-partial {
+    background-color: #78350F;
+    color: #F59E0B;
+    border: 1px solid #D97706;
+  }
+  .badge-pending {
+    background-color: #7F1D1D;
+    color: #EF4444;
+    border: 1px solid #DC2626;
+  }
+  
+  /* Footer */
+  .footer {
+    border-top: 2px solid #1E293B;
+    padding-top: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .footer-summary {
+    font-size: 9.5pt;
+    font-weight: bold;
+  }
+  .stat-badge {
+    padding: 2px 7px;
+    border-radius: 3px;
+    margin: 0 4px;
+    font-size: 9pt;
+  }
+  .stat-comp {
+    background-color: #064E3B;
+    color: #10B981;
+  }
+  .stat-part {
+    background-color: #78350F;
+    color: #F59E0B;
+  }
+  .stat-pend {
+    background-color: #7F1D1D;
+    color: #EF4444;
+  }
+  .footer-remaining {
+    font-size: 8.5pt;
+    color: #94A3B8;
+    text-align: right;
+  }
+  .footer-remaining strong {
+    color: #38BDF8;
+  }
+</style>
+</head>
+<body>
+
+  <!-- Top Header -->
+  <div class="header">
+    <div class="title-group">
+      <div class="main-title">TESTFORGE &nbsp;|&nbsp; PROJECT COVERAGE</div>
+      <div class="sub-title">Evaluation Criteria vs Actual Implementation Status (Till Date)</div>
+    </div>
+    <div class="meta-info">
+      <strong>BML Munjal University &bull; Agentic AI</strong><br>
+      Repository: <code>github.com/sourabhJain121/Testforge</code> &bull; Commit: <code>ee8f765</code> &bull; <strong>542 Tests Passed (0 Failed)</strong>
+    </div>
+  </div>
+
+  <!-- Main Table -->
+  <table>
+    <thead>
+      <tr>
+        <th class="col-no th-center">#</th>
+        <th class="col-criteria">Evaluation Criteria / Mandatory Demand</th>
+        <th class="col-impl">Actual Implementation &amp; Evidence in TestForge Repository</th>
+        <th class="col-status th-center">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+    <tr style="background-color: #0F172A;">
+      <td class="col-no">1</td>
+      <td class="col-criteria">
+        <div class="criteria-title">Context Sharing & State Updates</div>
+        <div class="criteria-demand">Intermediate output from one agent feeds into another; state used for sharing context; messaging architectures considered; Blackboard architecture mandatory.</div>
+      </td>
+      <td class="col-impl">testforge/blackboard.py:Blackboard manages 5 typed partitions (TargetSpace, SuiteSpace, MutantSpace, CriticSpace, MetricsSpace) with threading.RLock(). Target AST feeds Generator -> Suite feeds Sandbox Evaluator -> Mutant diffs feed Critic -> Critic directives feed Refinement. SQLite persistence (testforge_checkpoints.db) stores 1,104 atomic snapshots. Messaging architectures evaluated (Blackboard pub/sub vs A2A broker). Verified in tests/test_blackboard.py (18) and tests/test_blackboard_persistence.py (22).</td>
+      <td class="col-status"><span class="badge badge-complete">COMPLETE</span></td>
+    </tr>
+    
+    <tr style="background-color: #151F32;">
+      <td class="col-no">2</td>
+      <td class="col-criteria">
+        <div class="criteria-title">Tool Integration using MCP</div>
+        <div class="criteria-demand">At least two external or custom tools must be used (e.g. web search API, database lookup, file parser, calculator).</div>
+      </td>
+      <td class="col-impl">FastMCP server (testforge/mcp_server.py) exposes 3 verified local tools: read_text_file (custom file parser with path validation), list_directory, and get_repository_info. GitHub MCP client (testforge/github_service.py) provides repository search and file fetching with deterministic offline test doubles when token is unset. Verified in tests/test_mcp.py (22), tests/test_mcp_network_security.py (12), and tests/test_orchestration_mcp.py (16).</td>
+      <td class="col-status"><span class="badge badge-complete">COMPLETE</span></td>
+    </tr>
+    
+    <tr style="background-color: #0F172A;">
+      <td class="col-no">3</td>
+      <td class="col-criteria">
+        <div class="criteria-title">Structured Output using Pydantic</div>
+        <div class="criteria-demand">Final output must be generated in a structured form such as Markdown, Table or JSON.</div>
+      </td>
+      <td class="col-impl">Strict Pydantic V2 models across all subsystems (testforge/models.py, a2a.py, adk_engine.py): HardeningRequest, HardeningResponse, MutantResult, SynthesizedSuiteResult. Final outputs generated deterministically as JSON (benchmark_results.json, API payloads), GitHub-flavored Markdown (benchmark_results.md, test summaries), and SQLite relational table schema with JSON state blobs. Verified in tests/test_pydantic_models.py (14) and tests/test_contract_schemas.py (16).</td>
+      <td class="col-status"><span class="badge badge-complete">COMPLETE</span></td>
+    </tr>
+    
+    <tr style="background-color: #151F32;">
+      <td class="col-no">4</td>
+      <td class="col-criteria">
+        <div class="criteria-title">Suitable Agentic Design Patterns</div>
+        <div class="criteria-demand">Implement suitable and relevant agentic design patterns. Evaluate them against other agentic patterns.</div>
+      </td>
+      <td class="col-impl">Multi-agent cognitive decomposition (testforge/orchestrator.py): TargetManager (ingestion), Generator (synthesis), Evaluator (sandbox execution), and Critic (adversarial reflection). Implements multi-turn reflection loop (1-3 iterations) guided by surviving mutants. Evaluated against linear single-prompt generation: Baseline achieved 5.26% on Discount and 3.10% on Logistics; agentic reflection achieved 94.44% and 75.21% adjusted mutation scores. Verified in tests/test_agentic_pipeline.py (16).</td>
+      <td class="col-status"><span class="badge badge-complete">COMPLETE</span></td>
+    </tr>
+    
+    <tr style="background-color: #0F172A;">
+      <td class="col-no">5</td>
+      <td class="col-criteria">
+        <div class="criteria-title">Task Monitoring & Logging (Callbacks)</div>
+        <div class="criteria-demand">Track intermediate outputs, execution flows and errors for transparency and debugging.</div>
+      </td>
+      <td class="col-impl">testforge/callbacks.py:CallbackRegistry manages subscriptions across 14 typed lifecycle event types (STAGE_STARTED, MUTANT_EVALUATED, ERROR, SECURITY_REFUSAL, etc.). testforge/logger.py:TraceLogger records append-only structured JSONL event records (testforge_trace.jsonl, 101 MB) with microsecond timestamps and credential redaction. WebSocket hub (/ws/telemetry) broadcasts live pipeline events. Verified in tests/test_callbacks.py (16) and tests/test_observability.py (14).</td>
+      <td class="col-status"><span class="badge badge-complete">COMPLETE</span></td>
+    </tr>
+    
+    <tr style="background-color: #151F32;">
+      <td class="col-no">6</td>
+      <td class="col-criteria">
+        <div class="criteria-title">Agent-to-Agent Communication (A2A)</div>
+        <div class="criteria-demand">Use A2A protocol for interoperability (e.g. one agent defined using ADK and another using CrewAI).</div>
+      </td>
+      <td class="col-impl">A2A Protocol v0.3.0 implemented in testforge/a2a.py and testforge/a2a_protocol.py. Agent Card published at /.well-known/agent.json. In-process A2ABroker coordinates FIPA-compliant JSON-RPC performatives (REQUEST, INFORM, AGREE) bridging Google ADK Generator agent with CrewAI Critic agent. Verified in tests/test_a2a.py (16), tests/test_a2a_protocol.py (15), and tests/test_a2a_card_ui_and_endpoint.py (5). Active HTTP 200 endpoint response verified.</td>
+      <td class="col-status"><span class="badge badge-complete">COMPLETE</span></td>
+    </tr>
+    
+    <tr style="background-color: #0F172A;">
+      <td class="col-no">7</td>
+      <td class="col-criteria">
+        <div class="criteria-title">Mandatory Agentic Frameworks</div>
+        <div class="criteria-demand">Both CrewAI and Google ADK MUST be used. Do not use another agentic framework.</div>
+      </td>
+      <td class="col-impl">Google ADK implemented in testforge/adk_generator.py and testforge/adk_engine.py using LlmAgent, Runner, InMemorySessionService, and ADKModelBridge for structured candidate test synthesis. CrewAI implemented in testforge/crew_critic.py using crewai.Agent, Task, Crew, and custom CrewAILlmAdapter for adversarial surviving-mutant critique. Zero third-party frameworks used. Verified in tests/test_adk_generator.py (15) and tests/test_crew_critic.py (12).</td>
+      <td class="col-status"><span class="badge badge-complete">COMPLETE</span></td>
+    </tr>
+    
+    <tr style="background-color: #151F32;">
+      <td class="col-no">8</td>
+      <td class="col-criteria">
+        <div class="criteria-title">Security Guardrails</div>
+        <div class="criteria-demand">Validation of agent/tool outputs; callback validation; user prompt parsing for toxic/abusive language; prompt-injection protection; prompt variations (ReAct vs few-shot).</div>
+      </td>
+      <td class="col-impl">AST safety visitor (testforge/security.py) blocks os.system, subprocess, socket, eval, exec. Prompt-injection defense (testforge/prompt_guard.py) uses XML delimiters and defuses injections in comments/docstrings (10/10 tests passed). Toxic/abusive language filtering verified (INJ_TOXIC_ABUSIVE rule in tests/test_security.py). Output/callback validation enforced. Gaps: ReAct vs. few-shot prompt architecture comparison and persona variations were not formally benchmarked.</td>
+      <td class="col-status"><span class="badge badge-partial">PARTIAL</span></td>
+    </tr>
+    
+    <tr style="background-color: #0F172A;">
+      <td class="col-no">9</td>
+      <td class="col-criteria">
+        <div class="criteria-title">Observability, Auditability & Provenance</div>
+        <div class="criteria-demand">Implement a suitable observability mechanism for tracing, auditability and provenance.</div>
+      </td>
+      <td class="col-impl">Microsecond-timestamped JSONL execution tracing (TraceLogger). SQLite persistence (testforge_checkpoints.db) storing 1,104 atomic state snapshots with replay engine (load_checkpoint_from_db). End-to-end cryptographic SHA-256 provenance chain matches hashes across Ingestion (source_sha), Generation (candidate_suite_hash), Validation (validated_suite_hash), and Export (exported_suite_hash). Verified in Phase 3 clean-room audit (eaa41e0b... / c3e17c4d...) and tests/test_observability.py (14).</td>
+      <td class="col-status"><span class="badge badge-complete">COMPLETE</span></td>
+    </tr>
+    
+    <tr style="background-color: #151F32;">
+      <td class="col-no">10</td>
+      <td class="col-criteria">
+        <div class="criteria-title">End-to-End Performance Evaluation</div>
+        <div class="criteria-demand">Evaluate performance across multiple runs; include running-time and cost estimates; evaluate variations in prompts, architecture and content/personas.</div>
+      </td>
+      <td class="col-impl">testforge/benchmarking.py:BenchmarkRunner executes multi-run trials (5 repetitions) with statistical aggregation (mean, median, IQR, stddev); hardware duration measurement; token and USD cost estimation based on published Gemini pricing models (benchmark_results.json, benchmark_results.md). Evaluated 3 architectural ablation strategies (Baseline vs Zero-Shot vs Reflection). Gaps: Prompt variations (ReAct vs few-shot) and diverse persona variations were not evaluated.</td>
+      <td class="col-status"><span class="badge badge-partial">PARTIAL</span></td>
+    </tr>
+    
+    <tr style="background-color: #0F172A;">
+      <td class="col-no">11</td>
+      <td class="col-criteria">
+        <div class="criteria-title">Cloud Deployment</div>
+        <div class="criteria-demand">Deploy the project on a cloud platform.</div>
+      </td>
+      <td class="col-impl">Local execution verified on port 8000 via ./start_testforge.sh. Production multi-stage Dockerfile (python:3.13-slim, non-root user UID 10001) and docker-compose.yml verified locally with passing health probes (tests/test_deployment.py, 10/10 passed). Gaps: Live deployment to a public cloud hyperscaler (AWS ECS, Google Cloud Run, or Azure App Service) has not been performed; public cloud hosting remains planned.</td>
+      <td class="col-status"><span class="badge badge-pending">PENDING</span></td>
+    </tr>
+    
+    </tbody>
+  </table>
+
+  <!-- Footer Summary -->
+  <div class="footer">
+    <div class="footer-summary">
+      OVERALL STATUS:
+      <span class="stat-badge stat-comp">COMPLETE: 8</span>
+      <span class="stat-badge stat-part">PARTIAL: 2</span>
+      <span class="stat-badge stat-pend">PENDING: 1</span>
+      &nbsp;&nbsp;<span style="font-weight:normal; color:#94A3B8; font-size:8.5pt;">(Total 11 Evaluation Criteria &bull; 100% Core Pipeline Operational)</span>
+    </div>
+    <div class="footer-remaining">
+      <strong>Key Remaining Work:</strong> Public-cloud deployment (AWS/GCP/Azure) and formal prompt variation study (ReAct vs Few-Shot).
+    </div>
+  </div>
+
+</body>
+</html>
