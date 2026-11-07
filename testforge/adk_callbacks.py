@@ -154,3 +154,182 @@ def adk_after_model_callback(
 
     return resp
 
+
+class ADKSecurityPolicy:
+    """
+    Configurable security policy for Google ADK tool execution and agent lifecycle guards.
+    """
+    def __init__(
+        self,
+        allowed_root_dir: Optional[str] = None,
+        forbidden_files: Optional[Tuple[str, ...]] = None,
+        forbidden_paths: Optional[Tuple[str, ...]] = None,
+        max_iterations: int = 5,
+        max_token_budget: int = 500_000,
+        max_cost_usd: float = 5.0,
+    ):
+        import os
+        self.allowed_root_dir = os.path.abspath(allowed_root_dir or os.getcwd())
+        self.forbidden_files = forbidden_files or (
+            ".env",
+            ".git",
+            "id_rsa",
+            "id_ed25519",
+            "credentials",
+            "service_account.json",
+            "master_key",
+        )
+        self.forbidden_paths = forbidden_paths or (
+            "/etc",
+            "/root",
+            "/proc",
+            "/sys",
+            "/dev",
+            "/private/etc",
+        )
+        self.max_iterations = max_iterations
+        self.max_token_budget = max_token_budget
+        self.max_cost_usd = max_cost_usd
+
+
+_DEFAULT_POLICY = ADKSecurityPolicy()
+
+
+def adk_before_tool_callback(
+    arg1: Any,
+    arg2: Any = None,
+    arg3: Any = None,
+    policy: Optional[ADKSecurityPolicy] = None,
+) -> Any:
+    """
+    Native Google ADK before_tool_callback.
+    Enforces path containment policy and blocks directory traversal or sensitive file access
+    prior to tool invocation.
+
+    Supported invocation protocols:
+    1. Direct functional: adk_before_tool_callback(tool_name: str, tool_args: dict, context=None)
+    2. ADK Runner callback: adk_before_tool_callback(callback_context: Any, tool: Any, tool_input: Any)
+    """
+    import os
+    pol = policy or _DEFAULT_POLICY
+
+    # Extract tool_name and tool_args based on protocol
+    tool_name = ""
+    tool_args: dict[str, Any] = {}
+
+    if isinstance(arg1, str):
+        # Case 1: Direct functional invocation (tool_name, tool_args)
+        tool_name = arg1
+        tool_args = arg2 if isinstance(arg2, dict) else {}
+    elif hasattr(arg2, "name") or hasattr(arg1, "tool_name"):
+        # Case 2: ADK Runner protocol (callback_context, tool, tool_input)
+        tool_name = getattr(arg2, "name", "") or getattr(arg1, "tool_name", "")
+        if isinstance(arg3, dict):
+            tool_args = arg3
+        elif hasattr(arg3, "dict"):
+            tool_args = arg3.dict()
+        elif hasattr(arg3, "model_dump"):
+            tool_args = arg3.model_dump()
+        elif isinstance(arg2, dict):
+            tool_args = arg2
+
+    # Scan tool arguments for path-like values
+    path_keys = {"path", "file_path", "target_path", "directory", "filename", "filepath", "source_path"}
+    for key, val in tool_args.items():
+        if not isinstance(val, str):
+            continue
+
+        val_lower = val.lower()
+
+        # Check for forbidden sensitive files
+        for bad_file in pol.forbidden_files:
+            if bad_file in val_lower or os.path.basename(val).lower() == bad_file.lower():
+                err_msg = f"ADK Path Policy Violation: Access to sensitive file '{val}' is forbidden by before_tool_callback."
+                logger.error(err_msg)
+                raise PermissionError(err_msg)
+
+        # Check for traversal syntax
+        if ".." in val:
+            # Check resolved containment
+            resolved = os.path.abspath(val)
+            if not resolved.startswith(pol.allowed_root_dir):
+                err_msg = f"ADK Path Policy Violation: Directory traversal outside allowed root in '{val}'."
+                logger.error(err_msg)
+                raise PermissionError(err_msg)
+
+        # Check for forbidden absolute paths
+        for bad_prefix in pol.forbidden_paths:
+            if val.startswith(bad_prefix):
+                err_msg = f"ADK Path Policy Violation: Access to system directory '{val}' is forbidden by before_tool_callback."
+                logger.error(err_msg)
+                raise PermissionError(err_msg)
+
+    # Return valid status
+    if isinstance(arg1, str):
+        return True, None
+    return arg3 if arg3 is not None else arg1
+
+
+def adk_before_agent_callback(
+    arg1: Any,
+    arg2: Any = None,
+    arg3: Any = None,
+    policy: Optional[ADKSecurityPolicy] = None,
+) -> Any:
+    """
+    Native Google ADK before_agent_callback.
+    Enforces iteration caps, token consumption budgets, and cost ceilings before an agent turn begins.
+
+    Supported invocation protocols:
+    1. Direct functional: adk_before_agent_callback(agent_name: str, context: dict, state: dict)
+    2. ADK Runner callback: adk_before_agent_callback(callback_context: Any, agent: Any)
+    """
+    pol = policy or _DEFAULT_POLICY
+
+    agent_name = ""
+    state_dict: dict[str, Any] = {}
+
+    if isinstance(arg1, str):
+        # Case 1: Direct functional invocation (agent_name, context, state)
+        agent_name = arg1
+        if isinstance(arg3, dict):
+            state_dict = arg3
+        elif isinstance(arg2, dict):
+            state_dict = arg2
+    else:
+        # Case 2: ADK Runner protocol (callback_context, agent)
+        agent_obj = arg2 if arg2 is not None else arg1
+        agent_name = getattr(agent_obj, "name", str(agent_obj))
+        ctx = arg1
+        if hasattr(ctx, "state") and isinstance(ctx.state, dict):
+            state_dict = ctx.state
+        elif hasattr(ctx, "session") and hasattr(ctx.session, "state"):
+            state_dict = ctx.session.state
+
+    # 1. Check Iteration Budget
+    current_iter = state_dict.get("iteration") or state_dict.get("current_iteration") or 0
+    if current_iter >= pol.max_iterations:
+        err_msg = f"ADK Agent Budget Guard: Maximum iteration limit ({pol.max_iterations}) reached for agent '{agent_name}'."
+        logger.error(err_msg)
+        raise RuntimeError(err_msg)
+
+    # 2. Check Token Budget
+    tokens_consumed = state_dict.get("tokens_consumed") or state_dict.get("total_tokens") or 0
+    if tokens_consumed >= pol.max_token_budget:
+        err_msg = f"ADK Agent Budget Guard: Token budget limit ({pol.max_token_budget}) exceeded for agent '{agent_name}' (consumed: {tokens_consumed})."
+        logger.error(err_msg)
+        raise RuntimeError(err_msg)
+
+    # 3. Check Cost Budget
+    cost_usd = state_dict.get("cost_usd") or state_dict.get("estimated_cost_usd") or 0.0
+    if cost_usd >= pol.max_cost_usd:
+        err_msg = f"ADK Agent Budget Guard: Cost ceiling (${pol.max_cost_usd}) exceeded for agent '{agent_name}' (accumulated: ${cost_usd:.4f})."
+        logger.error(err_msg)
+        raise RuntimeError(err_msg)
+
+    # Return valid status
+    if isinstance(arg1, str):
+        return True, None
+    return arg2 if arg2 is not None else arg1
+
+
