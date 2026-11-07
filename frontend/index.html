@@ -1009,6 +1009,54 @@
             </div>
           </div>
 
+          <!-- Suite Minimizer & Kill Matrix Panel (Sub-Task 5.1) -->
+          <div class="glass-panel panel-padded" id="minimizer-panel" style="margin-top: 1.5rem;">
+            <div class="panel-header-flex">
+              <div>
+                <h4 class="metric-row-title"><span class="icon">✂️</span> Test Suite Minimization (Greedy Set Cover & Kill Matrix)</h4>
+                <p class="panel-desc">Eliminates redundant test cases while mathematically guaranteeing 100% mutation score retention.</p>
+              </div>
+              <div class="btn-group">
+                <button class="btn btn-secondary btn-sm" id="btn-load-minimizer-summary">📊 Load Benchmark Summary</button>
+                <button class="btn btn-primary btn-sm" id="btn-run-minimizer">⚡ Minimize Suite</button>
+              </div>
+            </div>
+            
+            <div class="stats-row" style="margin-top: 1rem;">
+              <div class="stat-card">
+                <span class="stat-num" id="min-kpi-original-tests">-</span>
+                <span class="stat-lbl">Original Tests</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-num text-green" id="min-kpi-retained-tests">-</span>
+                <span class="stat-lbl">Minimized Tests</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-num text-cyan" id="min-kpi-reduction-pct">-</span>
+                <span class="stat-lbl">Suite Reduction</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-num text-purple" id="min-kpi-retention-pct">-</span>
+                <span class="stat-lbl">Score Retained</span>
+              </div>
+            </div>
+
+            <div id="minimizer-status-alert" class="hidden alert info" style="margin-top: 1rem;"></div>
+
+            <div id="minimizer-details-container" class="hidden" style="margin-top: 1rem;">
+              <h5 style="margin-bottom: 0.5rem; font-size: 0.85rem; color: #94a3b8;">Retained Minimal Tests:</h5>
+              <div id="minimizer-retained-list" style="display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1rem;"></div>
+              
+              <h5 style="margin-bottom: 0.5rem; font-size: 0.85rem; color: #94a3b8;">Kill Matrix Heatmap Sample:</h5>
+              <div class="table-responsive" style="max-height: 240px; overflow-y: auto;">
+                <table class="data-table" id="kill-matrix-heatmap-table" style="font-size: 0.75rem;">
+                  <thead id="kill-matrix-head"></thead>
+                  <tbody id="kill-matrix-body"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
         </div>
       </section>
 
@@ -1137,6 +1185,61 @@
                 <tr><td colspan="8" class="text-center text-muted">No telemetry logged yet.</td></tr>
               </tbody>
             </table>
+          </div>
+
+          <!-- OpenTelemetry Distributed Spans (Sub-Task 3.4) -->
+          <div style="margin-top: 2rem;">
+            <div class="panel-header-flex">
+              <div>
+                <h4 class="metric-row-title"><span class="icon">🔍</span> OpenTelemetry Distributed Spans & Agent Trajectories</h4>
+                <p class="panel-desc">W3C Trace Context spans tracking duration, status, and attributes across multi-agent workflows.</p>
+              </div>
+              <button class="btn btn-secondary btn-sm" id="btn-refresh-otel-spans">🔄 Refresh OTel Spans</button>
+            </div>
+            <div class="table-responsive" style="margin-top: 0.75rem;">
+              <table class="data-table" id="otel-spans-table">
+                <thead>
+                  <tr>
+                    <th>Trace ID</th>
+                    <th>Span Name</th>
+                    <th>Kind</th>
+                    <th>Duration</th>
+                    <th>Status</th>
+                    <th>Attributes</th>
+                  </tr>
+                </thead>
+                <tbody id="otel-spans-table-body">
+                  <tr><td colspan="6" class="text-center text-muted">No OpenTelemetry spans loaded. Click "Refresh OTel Spans".</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Supervisor Orchestration Decisions (Sub-Task 3.4) -->
+          <div style="margin-top: 2rem;">
+            <div class="panel-header-flex">
+              <div>
+                <h4 class="metric-row-title"><span class="icon">🧠</span> Supervisor Orchestration Decision Logs</h4>
+                <p class="panel-desc">Autonomous reflection stopping decisions, convergence verdicts, and trajectory adjustments.</p>
+              </div>
+              <button class="btn btn-secondary btn-sm" id="btn-refresh-supervisor-decisions">🔄 Refresh Decisions</button>
+            </div>
+            <div class="table-responsive" style="margin-top: 0.75rem;">
+              <table class="data-table" id="supervisor-decisions-table">
+                <thead>
+                  <tr>
+                    <th>Job ID</th>
+                    <th>Iteration</th>
+                    <th>Decision</th>
+                    <th>Rationale</th>
+                    <th>Timestamp</th>
+                  </tr>
+                </thead>
+                <tbody id="supervisor-decisions-table-body">
+                  <tr><td colspan="5" class="text-center text-muted">No supervisor decisions logged. Click "Refresh Decisions".</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </section>
