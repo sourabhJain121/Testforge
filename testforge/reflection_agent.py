@@ -362,12 +362,14 @@ class ReflectionRepairAgent:
         critic_agent: Optional[MutationQualityCriticAgent] = None,
         sandbox: Optional[ParallelSandboxRunner] = None,
         mutant_memory: Optional[Any] = None,
+        feature_flags: Optional[Any] = None,
     ):
         self.api_key = api_key or os.environ.get("GEMINI_API_KEY", "").strip()
         self.blackboard = blackboard
         self.callbacks = callbacks
         self.logger_instance = logger_instance
         self.app_name = app_name
+        self.feature_flags = feature_flags
 
         # Delegated specialist components (reused, never duplicated)
         self.generator = generator or GoogleADKTestGenerator(api_key=self.api_key)
@@ -381,7 +383,9 @@ class ReflectionRepairAgent:
         self.critic_agent = critic_agent or MutationQualityCriticAgent(api_key=self.api_key, verbose=False)
 
         # Mutant Memory Subsystem (Handout Feature F1)
-        if mutant_memory is not None:
+        if self.feature_flags and not getattr(self.feature_flags, "memory", True):
+            self.mutant_memory = None
+        elif mutant_memory is not None:
             self.mutant_memory = mutant_memory
         else:
             try:
@@ -698,6 +702,17 @@ class ReflectionRepairAgent:
         Captures deliberation trace and logs to CriticSpace.
         """
         eff_task_id = task_id or f"react_{uuid.uuid4().hex[:8]}"
+        if self.feature_flags and not getattr(self.feature_flags, "react", True):
+            return {
+                "task_id": eff_task_id,
+                "status": "COMPLETED",
+                "total_steps": 0,
+                "steps": [],
+                "final_thought": "ReAct deliberation disabled via feature_flags.react=False.",
+                "candidate_test_code": current_test_code or "",
+                "branches_remaining": [],
+                "mutants_remaining": [],
+            }
         steps_log: List[Dict[str, Any]] = []
 
         active_survivors = surviving_mutants or []
@@ -812,7 +827,9 @@ class ReflectionRepairAgent:
 
         # Agentic RAG (Handout Feature F1): Recall historical killing test patches from Mutant Memory
         recalled_fix = None
-        if self.mutant_memory and survivors:
+        if self.feature_flags and not getattr(self.feature_flags, "rag", True):
+            recalled_fix = None
+        elif self.mutant_memory and survivors:
             for s in survivors[:3]:
                 op = s.get("operator", "") if isinstance(s, dict) else getattr(s, "operator", "")
                 diff = s.get("diff", "") if isinstance(s, dict) else getattr(s, "diff", "")
@@ -848,6 +865,10 @@ class ReflectionRepairAgent:
                 "sim_delta_branch": 25.0 if gaps else 10.0,
             },
         ]
+
+        if self.feature_flags and not getattr(self.feature_flags, "tot", True):
+            # Restrict ToT to single default branch
+            branches = branches[:1]
 
         if recalled_fix:
             exemplar_note = f"\n[Mutant Memory Recall - Score: {recalled_fix.get('score', 0.0)}]: Prior killing patch:\n{recalled_fix.get('killing_test_code', '')}"

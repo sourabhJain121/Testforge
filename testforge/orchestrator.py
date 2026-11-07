@@ -42,6 +42,7 @@ from testforge.callbacks import (
     default_callback_registry,
 )
 from testforge.equivalence import calculate_mutation_scores
+from testforge.feature_flags import FeatureFlags
 from testforge.guidance import derive_guidance_for_surviving_mutants
 from testforge.logger import TraceLogger
 from testforge.mcp_client import ToolSelectionDecision
@@ -161,11 +162,13 @@ class TestForgeOrchestrator:
         checkpoint_db_path: Optional[str] = None,
         github_repo: Optional[str] = None,
         resume_checkpoint_id: Optional[str] = None,
+        feature_flags: Optional[FeatureFlags] = None,
     ):
         self.target_file_path = target_file_path
         self.engine_mode = engine_mode
         self.target_lines = target_lines
         self.callbacks = callbacks or default_callback_registry
+        self.feature_flags = feature_flags or FeatureFlags.from_env()
         self.mcp_client = mcp_client
         if self.mcp_client and getattr(self.mcp_client, "callbacks", None) is None:
             self.mcp_client.callbacks = self.callbacks
@@ -305,6 +308,7 @@ class TestForgeOrchestrator:
             execution_agent=self.execution_agent,
             critic_agent=self.crew_critic,
             sandbox=self.sandbox,
+            feature_flags=self.feature_flags,
         )
         self.broker.register_handler(
             "agent:google-adk:reflection-repair",
@@ -658,6 +662,10 @@ class TestForgeOrchestrator:
         Public method to resume an existing or new orchestrator from a checkpoint ID.
         """
         self.resume_checkpoint_id = checkpoint_id
+        return self.run()
+
+    def harden(self) -> TestForgeState:
+        """Alias for run() - executes the autonomous test hardening pipeline."""
         return self.run()
 
     def run(self) -> TestForgeState:
@@ -1618,11 +1626,16 @@ class TestForgeOrchestrator:
             timeouts = score_data["timed_out_mutants"]
             errors = score_data["execution_errors"]
             invalid = score_data["invalid_mutants"]
-            equivalent = score_data["equivalent_mutants"]
-            potentially_equivalent = score_data["potentially_equivalent_mutants"]
+            if getattr(self.feature_flags, "equivalence", True):
+                equivalent = score_data["equivalent_mutants"]
+                potentially_equivalent = score_data["potentially_equivalent_mutants"]
+                adj_score = score_data["adjusted_mutation_score"]
+            else:
+                equivalent = 0
+                potentially_equivalent = 0
+                adj_score = score_data["raw_mutation_score"]
             mutants_executed = score_data["evaluable_mutants"]
             raw_score = score_data["raw_mutation_score"]
-            adj_score = score_data["adjusted_mutation_score"]
 
             # CASE 4: Mutants generated, but not executed
             if mutants_executed == 0 and total > 0:
@@ -1797,6 +1810,19 @@ class TestForgeOrchestrator:
                 console.print(f"[bold green]✔ SUCCESS: {self.state.termination_reason}[/bold green]\n")
                 break
 
+            if not getattr(self.feature_flags, "reflection", True):
+                self.state.terminated = True
+                self.state.termination_reason = "Iterative reflection loop disabled via feature_flags.reflection=False."
+                self.state.final_hardening_status = "SUCCESS" if effective_score >= self.state.target_mutation_score else "COMPLETED_WITHOUT_REFLECTION"
+                self.blackboard.update_metrics_space(
+                    terminated=self.state.terminated,
+                    termination_reason=self.state.termination_reason,
+                    final_hardening_status=self.state.final_hardening_status,
+                )
+                self.blackboard.sync_to_state(self.state)
+                console.print(f"[yellow]⏩ Feature flag 'reflection=False': exiting after initial evaluation pass.[/yellow]\n")
+                break
+
             if iteration == self.state.max_iterations:
                 self.state.terminated = True
                 self.state.termination_reason = "Maximum allowed reflection iterations reached."
@@ -1839,7 +1865,11 @@ class TestForgeOrchestrator:
             console.print(f"  [magenta]• Adversarial Critic analyzing {survived} surviving mutant(s)...[/magenta]")
             critic_directive = ""
             critic_agent_name = "AdversarialCriticAgent"
-            if self.engine_mode != "legacy":
+            if not getattr(self.feature_flags, "critic", True):
+                console.print("  [yellow]• Critic disabled via feature_flags.critic=False: using direct patch directive.[/yellow]")
+                critic_directive = "Direct test patch generation: assert exact boundary outputs to kill surviving mutants."
+                critic_agent_name = "BypassedCritic"
+            elif self.engine_mode != "legacy":
                 try:
                     surviving_records = [
                         {"mutant_id": m.mutant_id, "mutation_type": m.mutation_type, "line_number": m.line_number}

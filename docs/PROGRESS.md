@@ -25,7 +25,7 @@
 ### Stage 1: Evidence (Viva Package)
 | Sub-Task ID | Description | Status | Last Commit | Next Step / Notes |
 | :--- | :--- | :---: | :---: | :--- |
-| **1.1** | Feature flags for every capability with behavioral tests | TODO | - | Configurable toggles: ref_exec, reflection, self_consistency, tot, react, rag, memory, critic, equivalence |
+| **1.1** | Feature flags for every capability with behavioral tests | DONE | `efec359` | Implemented `testforge/feature_flags.py` with 9 modular capability toggles (`ref_exec`, `reflection`, `self_consistency`, `tot`, `react`, `rag`, `memory`, `critic`, `equivalence`). Integrated into `TestForgeOrchestrator` and `ReflectionRepairAgent`. Added `tests/test_feature_flags.py` (9 passed). |
 | **1.2** | Parallel mutant execution (ProcessPoolExecutor) with score parity verification | TODO | - | Report speedup vs serial |
 | **1.3** | 4 extra real-world-style targets (50-150 LOC) with permissive licenses | TODO | - | Tokenizer, rate limiter, interval utility, bank/inventory |
 | **1.4** | E1 Ablation matrix (7 configurations, 3 seeds, 8 targets, metrics & PNG chart) | TODO | - | Zero-shot -> +ref -> +refl -> +SC -> +ToT/ReAct -> +RAG/memory -> +3-critic |
