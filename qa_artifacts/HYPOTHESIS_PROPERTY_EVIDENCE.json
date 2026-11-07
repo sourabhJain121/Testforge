@@ -1,0 +1,54 @@
+{
+  "timestamp": "2026-11-07T15:42:25Z",
+  "sub_task": "5.5",
+  "description": "Hypothesis Property-Based Test Generation & Property-Only Mutation Kills",
+  "total_property_only_kills": 9,
+  "targets": [
+    {
+      "target": "discount.py",
+      "total_mutants": 19,
+      "synthesized_property_tests": 4,
+      "example_kills": 19,
+      "property_kills": 14,
+      "property_only_kills": 0,
+      "property_only_mutant_ids": [],
+      "example_mutation_score": 100.0,
+      "combined_mutation_score": 100.0,
+      "score_lift_pct": 0.0,
+      "invariants_tested": [
+        "Boundedness: Discounted total <= Gross Total",
+        "Non-positivity guard: Price <= 0 yields 0.0",
+        "Monotonicity: Member price <= Non-member price",
+        "Volume monotonicity: Larger volume yields <= per-unit price"
+      ],
+      "duration_sec": 5.923
+    },
+    {
+      "target": "order_fsm.py",
+      "total_mutants": 106,
+      "synthesized_property_tests": 2,
+      "example_kills": 19,
+      "property_kills": 12,
+      "property_only_kills": 9,
+      "property_only_mutant_ids": [
+        "MUT_BOUNDARY_SWAP_066",
+        "MUT_COMP_OP_064",
+        "MUT_COMP_OP_065",
+        "MUT_COMP_OP_069",
+        "MUT_CONST_VAL_044",
+        "MUT_CONST_VAL_071",
+        "MUT_OFF_BY_ONE_067",
+        "MUT_RETURN_VAL_043",
+        "MUT_RETURN_VAL_070"
+      ],
+      "example_mutation_score": 17.9,
+      "combined_mutation_score": 26.4,
+      "score_lift_pct": 8.5,
+      "invariants_tested": [
+        "Terminal Invariance: Terminal states never transition across arbitrary inputs",
+        "High-value Guard: Customer cannot confirm transactions >= $5000"
+      ],
+      "duration_sec": 24.676
+    }
+  ]
+}

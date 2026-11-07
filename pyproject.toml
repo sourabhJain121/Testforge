@@ -29,6 +29,7 @@ dependencies = [
     "aiohttp>=3.9.0",
     "mcp>=1.2.0,<2.0.0",
     "crewai>=1.15.0; python_version < '3.14'",
+    "hypothesis>=6.0.0",
 ]
 
 [project.optional-dependencies]
