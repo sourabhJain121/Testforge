@@ -205,7 +205,7 @@ TestForge implements 6 cutting-edge software engineering capabilities beyond the
 
 4. **Diff-Incremental CI/CD Mutation Mode (`testforge/diff_incremental.py`)**:
    - Extracts modified and added line numbers from unified git diffs (`git diff -U0`).
-   - Restricts AST mutation operator injection exclusively to modified lines. Eliminates **88.3% of redundant mutants** (240 down to 28), accelerating CI runtime by **5.39x (15.08s down to 2.80s)** while maintaining 100% diff-line defect detection.
+   - Restricts AST mutation operator injection exclusively to modified lines. Eliminates **88.3% of redundant mutants** (240 down to 28), accelerating CI runtime by **5.39x (15.08s down to 2.80s)** while confining mutation analysis strictly to PR change boundaries.
 
 5. **Recursive Bytecode Instruction Normalization (`testforge/equivalence.py`)**:
    - Disassembles AST mutants using Python's `dis` module and recursively normalizes bytecode instructions to detect compilation-equivalent mutants.
