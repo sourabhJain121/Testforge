@@ -5,8 +5,9 @@ Ensures running TestForge tests does not mutate tracked repository files
 or leave un-ignored temporary scratch files in the working tree.
 """
 
-import subprocess
 import shutil
+import subprocess
+
 import pytest
 
 

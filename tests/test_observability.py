@@ -18,18 +18,19 @@ and Lifecycle Observability:
 
 import json
 import os
+
 import pytest
 from starlette.testclient import TestClient
 
 from server import app
-from testforge.observability import TestForgeOtelTracer
 from testforge.callbacks import (
     CallbackRegistry,
-    LifecycleEvent,
     EventType,
+    LifecycleEvent,
     TraceLoggerCallbackAdapter,
 )
 from testforge.logger import TraceLogger
+from testforge.observability import TestForgeOtelTracer
 from testforge.orchestrator import TestForgeOrchestrator
 
 
