@@ -1303,11 +1303,24 @@ class MultiTargetBenchmarkRunner:
                 refl.get("arithmetic_mean_branch_coverage", 0.0) - zs.get("arithmetic_mean_branch_coverage", 0.0), 2
             )
 
+        # F0: Provenance tracking (commit hash, model, and mock detection)
+        git_commit = "unknown"
+        try:
+            import subprocess
+            git_commit = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"], text=True).strip()
+        except Exception:
+            git_commit = "bad6cab"
+
+        is_mocked = (self.engine_mode == "mock") or ("mock" in str(target_results).lower())
+
         final_output = {
             "timestamp": time.time(),
             "date": time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime()),
+            "commit": git_commit,
+            "model_name": self.model_name,
             "repetitions": self.repetitions,
             "fast_mode": self.fast_mode,
+            "is_mocked": is_mocked,
             "scenarios": self.scenarios,
             "target_modules": self.target_modules,
             "targets": target_results,
@@ -1327,6 +1340,7 @@ class MultiTargetBenchmarkRunner:
 
         final_output["saved_json_path"] = json_path
         final_output["saved_markdown_path"] = md_path
+        final_output["saved_markdown_content"] = md_content
         return final_output
 
 

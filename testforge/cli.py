@@ -224,6 +224,8 @@ handle_harden_command = cmd_harden
 
 def handle_benchmark_command(args: argparse.Namespace) -> int:
     """Executes multi-target empirical benchmark suite."""
+    from datetime import datetime
+
     from testforge.benchmarking import MultiTargetBenchmarkRunner
 
     targets_raw = [t.strip() for t in args.targets.split(",") if t.strip()]
@@ -239,13 +241,23 @@ def handle_benchmark_command(args: argparse.Namespace) -> int:
             resolved_targets.append(t)
 
     scenarios = [s.strip() for s in args.scenarios.split(",") if s.strip()]
-    out_dir = os.path.dirname(args.output) or "qa_artifacts"
+
+    # F0: Default output directory writes to timestamped run folder under qa_artifacts/runs/
+    if args.output:
+        out_dir = os.path.dirname(args.output) or "."
+        json_filename = os.path.basename(args.output)
+    else:
+        timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+        out_dir = os.path.join("qa_artifacts", "runs", timestamp_str)
+        json_filename = "MULTI_TARGET_BENCHMARK_RESULTS.json"
+
     os.makedirs(out_dir, exist_ok=True)
 
     console.print("\n[bold cyan]⚡ TestForge Empirical Benchmark Runner[/bold cyan]")
     console.print(f"  Targets: {resolved_targets}")
     console.print(f"  Scenarios: {scenarios}")
     console.print(f"  Fast Heuristic Mode: {args.fast}")
+    console.print(f"  Output Directory: {out_dir}")
 
     runner = MultiTargetBenchmarkRunner(
         target_modules=resolved_targets,
@@ -258,14 +270,49 @@ def handle_benchmark_command(args: argparse.Namespace) -> int:
 
     results = runner.run()
 
-    saved_json = results.get("saved_json_path", os.path.join(out_dir, "MULTI_TARGET_BENCHMARK_RESULTS.json"))
-    # If args.output specifies a specific file path different from default runner path, write it
-    if args.output and os.path.abspath(args.output) != os.path.abspath(saved_json):
-        with open(args.output, "w", encoding="utf-8") as f:
+    saved_json = results.get("saved_json_path", os.path.join(out_dir, json_filename))
+    if os.path.abspath(saved_json) != os.path.abspath(os.path.join(out_dir, json_filename)):
+        with open(os.path.join(out_dir, json_filename), "w", encoding="utf-8") as f:
             json.dump(results, f, indent=2)
-        saved_json = args.output
+        saved_json = os.path.join(out_dir, json_filename)
 
     console.print(f"\n[bold green][✓] Benchmark run complete! Results written to: {saved_json}[/bold green]")
+
+    # F0: Publishing protection
+    if getattr(args, "publish", False):
+        if args.fast or getattr(runner, "fast_mode", False):
+            console.print("\n[bold red][✗] Publish Refused:[/bold red] Benchmark run was executed in --fast heuristic mode.")
+            console.print("    Only full, non-fast agentic runs can be published to MULTI_TARGET_BENCHMARK_RESULTS.json.")
+            return 1
+
+        is_mocked = (
+            args.engine_mode == "mock"
+            or results.get("is_mocked", False)
+            or ("mock" in str(results.get("targets", {})).lower())
+            or ("mock" in str(getattr(args, "model", "")).lower())
+        )
+        if is_mocked:
+            console.print("\n[bold red][✗] Publish Refused:[/bold red] Benchmark scenario used mock/fixture execution engine.")
+            console.print("    Publishing to MULTI_TARGET_BENCHMARK_RESULTS.json requires real live model execution.")
+            return 1
+
+        canonical_dir = "qa_artifacts"
+        os.makedirs(canonical_dir, exist_ok=True)
+        canonical_json = os.path.join(canonical_dir, "MULTI_TARGET_BENCHMARK_RESULTS.json")
+        canonical_md = os.path.join(canonical_dir, "MULTI_TARGET_BENCHMARK_SUMMARY.md")
+
+        with open(canonical_json, "w", encoding="utf-8") as f:
+            json.dump(results, f, indent=2)
+
+        md_path = results.get("saved_markdown_path", os.path.join(out_dir, "MULTI_TARGET_BENCHMARK_SUMMARY.md"))
+        if os.path.exists(md_path):
+            import shutil
+            shutil.copyfile(md_path, canonical_md)
+
+        console.print(f"[bold green][✓] Results successfully published to: {canonical_json}[/bold green]")
+    else:
+        console.print("[dim]Note: Results saved to timestamped run folder. Pass --publish to update canonical qa_artifacts/MULTI_TARGET_BENCHMARK_RESULTS.json.[/dim]")
+
     return 0
 
 
@@ -319,7 +366,8 @@ def main():
     # Subcommand: benchmark
     bench_p = subparsers.add_parser("benchmark", help="Execute multi-target empirical benchmark suite")
     bench_p.add_argument("--targets", default="discount,lru_cache,order_fsm,stats_calculator", help="Comma-separated target module names or paths")
-    bench_p.add_argument("--output", "-o", default="qa_artifacts/MULTI_TARGET_BENCHMARK_RESULTS.json", help="Path to write JSON benchmark results")
+    bench_p.add_argument("--output", "-o", default=None, help="Path to write JSON benchmark results (default: qa_artifacts/runs/<timestamp>/MULTI_TARGET_BENCHMARK_RESULTS.json)")
+    bench_p.add_argument("--publish", action="store_true", help="Publish verified results to canonical qa_artifacts/MULTI_TARGET_BENCHMARK_RESULTS.json")
     bench_p.add_argument("--fast", action="store_true", help="Run benchmark in fast heuristic mode without LLM calls")
     bench_p.add_argument("--scenarios", default="baseline,zeroshot,agentic_reflection", help="Comma-separated benchmark scenarios")
     bench_p.add_argument("--model", default="gemini-3.6-flash", help="LLM model name for synthesis")

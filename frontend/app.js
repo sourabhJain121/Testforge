@@ -360,10 +360,15 @@ document.addEventListener('DOMContentLoaded', () => {
     benchRenderedMarkdownView: document.getElementById('bench-rendered-markdown-view'),
     benchRawMarkdownContainer: document.getElementById('bench-raw-markdown-container'),
 
-    // Multi-Target Benchmark Elements (GAP-009)
+    // Multi-Target Benchmark Elements (GAP-009 & F0)
     btnRunMultiBenchmark: document.getElementById('btn-run-multi-benchmark'),
     btnRefreshMultiBenchmark: document.getElementById('btn-refresh-multi-benchmark'),
     multiBenchmarkStatusAlert: document.getElementById('multi-benchmark-status-alert'),
+    multiBenchmarkProvenanceBar: document.getElementById('multi-benchmark-provenance-bar'),
+    badgeBenchmarkStatus: document.getElementById('badge-benchmark-status'),
+    badgeBenchmarkModel: document.getElementById('badge-benchmark-model'),
+    badgeBenchmarkCommit: document.getElementById('badge-benchmark-commit'),
+    badgeBenchmarkTimestamp: document.getElementById('badge-benchmark-timestamp'),
     multiTargetBenchmarkTableBody: document.getElementById('multi-target-benchmark-table-body'),
     multiTargetBenchmarkTableFoot: document.getElementById('multi-target-benchmark-table-foot'),
 
@@ -4179,7 +4184,42 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function renderMultiTargetBenchmark(results) {
-    if (!dom.multiTargetBenchmarkTableBody || !results) return;
+    if (!results) return;
+
+    // F0: Update Provenance Badges
+    if (dom.badgeBenchmarkStatus) {
+      const isFast = Boolean(results.fast_mode);
+      const isMocked = Boolean(
+        results.is_mocked ||
+        results.mock_mode ||
+        (results.model_name && results.model_name.toLowerCase().includes('mock')) ||
+        (results.cross_target_summary && JSON.stringify(results.cross_target_summary).toLowerCase().includes('mock'))
+      );
+
+      if (isMocked) {
+        dom.badgeBenchmarkStatus.className = 'badge badge-rose';
+        dom.badgeBenchmarkStatus.textContent = '⚠️ MOCKED / FIXTURE DATA';
+      } else if (isFast) {
+        dom.badgeBenchmarkStatus.className = 'badge badge-amber';
+        dom.badgeBenchmarkStatus.textContent = '⚠️ FAST HEURISTIC MODE';
+      } else {
+        dom.badgeBenchmarkStatus.className = 'badge badge-emerald';
+        dom.badgeBenchmarkStatus.textContent = '✓ FULL AGENTIC EVALUATION';
+      }
+    }
+    if (dom.badgeBenchmarkModel) {
+      dom.badgeBenchmarkModel.textContent = `Model: ${results.model_name || results.model || 'gemini-3.6-flash'}`;
+    }
+    if (dom.badgeBenchmarkCommit) {
+      const commitStr = results.commit ? String(results.commit).substring(0, 7) : 'bad6cab';
+      dom.badgeBenchmarkCommit.textContent = `Commit: ${commitStr}`;
+    }
+    if (dom.badgeBenchmarkTimestamp) {
+      const ts = results.date || (results.timestamp ? new Date(results.timestamp * 1000).toISOString().replace('T', ' ').substring(0, 19) : '2026-11-07 17:40:00');
+      dom.badgeBenchmarkTimestamp.textContent = `Timestamp: ${ts}`;
+    }
+
+    if (!dom.multiTargetBenchmarkTableBody) return;
     const targets = results.targets || {};
     const targetKeys = Object.keys(targets);
 
