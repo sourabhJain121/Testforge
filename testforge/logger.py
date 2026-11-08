@@ -424,46 +424,64 @@ class TraceLogger:
         Reads all events logged in the session with high-performance stat-based file caching.
         Avoids redundant multi-second JSON deserialization of large historical logs.
         """
-        if not os.path.exists(self.log_path):
-            return []
+        file_traces: list[Dict[str, Any]] = []
+        if os.path.exists(self.log_path):
+            abs_path = os.path.abspath(self.log_path)
+            try:
+                stat = os.stat(abs_path)
+                current_mtime = stat.st_mtime
+                current_size = stat.st_size
+            except OSError:
+                current_mtime = 0.0
+                current_size = 0
 
-        abs_path = os.path.abspath(self.log_path)
-        try:
-            stat = os.stat(abs_path)
-            current_mtime = stat.st_mtime
-            current_size = stat.st_size
-        except OSError:
-            current_mtime = 0.0
-            current_size = 0
+            cached = TraceLogger._FILE_CACHES.get(abs_path)
+            if cached and cached.get("mtime") == current_mtime and cached.get("size") == current_size:
+                file_traces = list(cached.get("traces", []))
+            else:
+                traces = list(cached.get("traces", [])) if (cached and current_size > cached.get("size", 0) and cached.get("size", 0) > 0) else []
+                seek_pos = cached.get("size", 0) if traces else 0
 
-        cached = TraceLogger._FILE_CACHES.get(abs_path)
-        if cached and cached.get("mtime") == current_mtime and cached.get("size") == current_size:
-            return cached.get("traces", [])
+                try:
+                    with open(abs_path, "r", encoding="utf-8") as f:
+                        if seek_pos > 0:
+                            f.seek(seek_pos)
+                        for line in f:
+                            line = line.strip()
+                            if line:
+                                try:
+                                    traces.append(json.loads(line))
+                                except json.JSONDecodeError:
+                                    pass
+                except OSError:
+                    pass
 
-        # If cache exists and file only grew, incrementally read new lines
-        traces = list(cached.get("traces", [])) if (cached and current_size > cached.get("size", 0) and cached.get("size", 0) > 0) else []
-        seek_pos = cached.get("size", 0) if traces else 0
+                if len(traces) > 10000:
+                    traces = traces[-10000:]
 
-        with open(abs_path, "r", encoding="utf-8") as f:
-            if seek_pos > 0:
-                f.seek(seek_pos)
-            for line in f:
-                line = line.strip()
-                if line:
-                    try:
-                        traces.append(json.loads(line))
-                    except json.JSONDecodeError:
-                        pass
+                TraceLogger._FILE_CACHES[abs_path] = {
+                    "traces": traces,
+                    "mtime": current_mtime,
+                    "size": current_size
+                }
+                file_traces = list(traces)
 
-        if len(traces) > 10000:
-            traces = traces[-10000:]
+        # Merge in-memory session events for this logger instance so recent events are never missed
+        session_events = getattr(self, "_session_events", None)
+        if session_events:
+            seen_ids = set()
+            combined = []
+            for t in file_traces:
+                k = (t.get("timestamp"), t.get("event_type"), t.get("workflow_id"), t.get("correlation_id"))
+                seen_ids.add(k)
+                combined.append(t)
+            for s in session_events:
+                k = (s.get("timestamp"), s.get("event_type"), s.get("workflow_id"), s.get("correlation_id"))
+                if k not in seen_ids:
+                    combined.append(s)
+            return combined
 
-        TraceLogger._FILE_CACHES[abs_path] = {
-            "traces": traces,
-            "mtime": current_mtime,
-            "size": current_size
-        }
-        return traces
+        return file_traces
 
     def get_events_by_correlation_id(self, correlation_id: str) -> list[Dict[str, Any]]:
         """Returns all events sharing the given correlation ID in chronological order."""

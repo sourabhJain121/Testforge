@@ -74,3 +74,4 @@ Updated `pyproject.toml` to declare all runtime dependencies explicitly:
 - `a2a-sdk>=0.3.0`
 
 **Verdict:** The TestForge repository is 100% reproducible, hygienically clean, and compliant with enterprise open-source standards.
+
