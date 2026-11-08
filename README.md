@@ -143,6 +143,10 @@ Evaluated under frozen git tag `sealed-v2-freeze` across 5 conditions and 3 seed
 | **`textwrap_algo.py`** | Paragraph Wrapping & Filling | 23 | 0.0% MS (0.0% Cov) | **39.1% MS** (72.2% Cov) | **39.1% MS** (72.2% Cov) | `BLOCKED` (API Quota) |
 | **Overall Macro Summary** | **6 Pure Stdlib Modules** | **259** | **6.1% ± 14.1% MS** | **63.5% ± 29.8% MS** | **30.2% ± 25.8% MS** | **59.5% ± 47.1% MS** (partial) |
 
+> [!NOTE]
+> **Fair Paired Evaluation Summary:**  
+> On the paired Sealed V2 comparison where all conditions completed ($n=4$), `TestForge Deterministic` achieved **80.5% ± 39.1% MS** vs **44.2% ± 51.9% MS** for Gemini Zero-Shot. Across all 18 runs with local `qwen2.5-coder:7b`, zero-shot achieved **91.5% ± 25.7% MS** vs **62.8% ± 29.6% MS** for TestForge Deterministic (with 0.003s latency and 0 tokens). The Never-Regress Guard (`testforge/orchestrator.py`) ensures that iterative reflection never regresses below the peak suite discovered. Complete paired breakdown in [`docs/SEALED_V2_EVALUATION.md`](file:///Users/sourabh/TestForge/docs/SEALED_V2_EVALUATION.md) and diagnosis in [`docs/AGENTIC_REGRESSION_DIAGNOSIS.md`](file:///Users/sourabh/TestForge/docs/AGENTIC_REGRESSION_DIAGNOSIS.md).
+
 ---
 
 ## 5. Quickstart & One-Command Demo
