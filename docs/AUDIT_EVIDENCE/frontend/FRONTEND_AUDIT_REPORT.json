@@ -1,0 +1,22 @@
+{
+  "timestamp": 1794111511.609157,
+  "base_url": "http://127.0.0.1:56549",
+  "pass1_results": {
+    "status": "PASS",
+    "score_rendered": "94.7%\nTarget: 85%",
+    "agent_topo_nodes": 8,
+    "diff_inspector_verified": true,
+    "suite_download_verified": true,
+    "no_malformed_values": true
+  },
+  "pass2_results": {
+    "status": "PASS",
+    "score_rendered": "94.7%\nTarget: 85%",
+    "no_malformed_values": true,
+    "no_dom_leak": true
+  },
+  "console_errors_count": 0,
+  "page_errors": [],
+  "verdict": "PASS",
+  "console_messages_count": 0
+}

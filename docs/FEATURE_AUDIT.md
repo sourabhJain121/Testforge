@@ -43,3 +43,4 @@ The equivalence analyzer utilizes Python's built-in `dis` module to compile and 
 
 ### 6. W3C OpenTelemetry Header Propagation
 The observability layer implements W3C TraceContext propagation using `TraceContextTextMapPropagator`. During inter-agent handoffs, outgoing messages inject standard `traceparent` headers (`00-{trace_id}-{span_id}-01`), enabling end-to-end distributed trace reconstruction across agents.
+
