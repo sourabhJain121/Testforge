@@ -181,6 +181,35 @@ def inspect_source_for_indirect_injections(
                     rule_names = ", ".join(f.rule_id for f in sec_res.findings)
                     defused_comment = f"# [DEFUSED_PROMPT_INJECTION: {rule_names}]\n"
                     defused_lines[line_idx] = orig_line[:s_col] + defused_comment
+
+        # Multi-line comment block inspection for fragmented evasion payloads
+        comment_tokens = [tok for tok in tokens if tok.type == tokenize.COMMENT]
+        if comment_tokens and len(findings) == 0:
+            cleaned_comments = []
+            for tok in comment_tokens:
+                c = re.sub(r"^#+\s*", "", tok.string)
+                c = re.sub(r"^(?:step\s*\d+\s*:\s*|/\*|\*/)", "", c, flags=re.IGNORECASE)
+                cleaned_comments.append(c.strip())
+            for joined_text in (" ".join(cleaned_comments), "".join(cleaned_comments)):
+                if joined_text.strip():
+                    sec_res = guard.inspect_prompt(joined_text)
+                    if not sec_res.allowed or sec_res.risk_level in (SecurityRiskLevel.HIGH, SecurityRiskLevel.CRITICAL):
+                        for f in sec_res.findings:
+                            findings.append(
+                                InjectionFinding(
+                                    rule_id=f.rule_id,
+                                    risk_level=sec_res.risk_level.name,
+                                    location_type="comment_multiline_block",
+                                    line_number=comment_tokens[0].start[0],
+                                    explanation=f"Fragmented injection across comment lines: {f.message}",
+                                    snippet=joined_text[:100]
+                                )
+                            )
+                        # Defuse comment block lines
+                        for tok in comment_tokens:
+                            l_idx = tok.start[0] - 1
+                            defused_lines[l_idx] = "# [DEFUSED_PROMPT_INJECTION: FRAGMENTED_BLOCK]\n"
+                        break
     except Exception as tok_err:
         logger.debug(f"Tokenize inspection encountered non-standard tokens: {tok_err}")
         # Fallback regex comment scan
@@ -226,6 +255,45 @@ def inspect_source_for_indirect_injections(
                 if id(node) not in seen_nodes and len(node.value) > 15:
                     seen_nodes.add(id(node))
                     doc_nodes.append((node, "string_literal", getattr(node, "lineno", 1)))
+            elif isinstance(node, ast.BinOp) and isinstance(node.op, ast.Add):
+                # Check for concatenated string expressions (e.g. 'ign' + 'ore')
+                if isinstance(node.left, ast.Constant) and isinstance(node.left.value, str) and \
+                   isinstance(node.right, ast.Constant) and isinstance(node.right.value, str):
+                    concat_val = node.left.value + node.right.value
+                    sec_res = guard.inspect_prompt(concat_val)
+                    if not sec_res.allowed or sec_res.risk_level in (SecurityRiskLevel.HIGH, SecurityRiskLevel.CRITICAL):
+                        for f in sec_res.findings:
+                            findings.append(
+                                InjectionFinding(
+                                    rule_id=f.rule_id,
+                                    risk_level=sec_res.risk_level.name,
+                                    location_type="binop_string_concat",
+                                    line_number=getattr(node, "lineno", 1),
+                                    explanation=f.message,
+                                    snippet=concat_val[:100]
+                                )
+                            )
+
+        # Check all string literals concatenated across the AST
+        if len(findings) == 0:
+            all_strs = [n.value for n in ast.walk(tree) if isinstance(n, ast.Constant) and isinstance(n.value, str) and n.value.strip()]
+            if len(all_strs) > 1:
+                for sep in (" ", ""):
+                    joined_s = sep.join(all_strs)
+                    sec_res = guard.inspect_prompt(joined_s)
+                    if not sec_res.allowed or sec_res.risk_level in (SecurityRiskLevel.HIGH, SecurityRiskLevel.CRITICAL):
+                        for f in sec_res.findings:
+                            findings.append(
+                                InjectionFinding(
+                                    rule_id=f.rule_id,
+                                    risk_level=sec_res.risk_level.name,
+                                    location_type="ast_string_fragments",
+                                    line_number=1,
+                                    explanation=f"Fragmented injection across string literals: {f.message}",
+                                    snippet=joined_s[:100]
+                                )
+                            )
+                        break
 
         # Process nodes in reverse line order to preserve coordinate integrity
         doc_nodes.sort(key=lambda x: getattr(x[0], "lineno", 0), reverse=True)

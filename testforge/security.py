@@ -19,6 +19,7 @@ Features:
 from __future__ import annotations
 
 import ast
+import base64
 import re
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
@@ -94,8 +95,8 @@ _PROMPT_INJECTION_PATTERNS = [
     (
         "INJ_SYSTEM_OVERRIDE",
         re.compile(
-            r"\b(?:ignore|disregard|forget|override|bypass)\s+(?:all\s+|the\s+)*(?:(?:previous|prior|above|system|developer|safety)\s+)*(?:instructions|prompts|rules|constraints|directives|boundaries|guidelines|policies|evaluation)\b|"
-            r"\bsystem\s*:\s*(?:override|bypass|ignore|instruction|directive)\b",
+            r"\b(?:ignore|dis\s*regard|forget|override|bypass)\s+(?:all\s+|the\s+)*(?:(?:previous|prior|above|system|developer|safety)\s+)*(?:instructions?|prompts?|rules?|constraints?|directives?|boundaries|guidelines?|policies|policy|evaluations?)\b|"
+            r"\bsystem\s*:\s*(?:override|bypass|ignore|instruction|directive|grant|return|output)\b",
             re.IGNORECASE,
         ),
         SecurityRiskLevel.CRITICAL,
@@ -114,23 +115,23 @@ _PROMPT_INJECTION_PATTERNS = [
     (
         "INJ_SECRET_LEAK",
         re.compile(
-            r"(?i)\b(?:reveal|output|print|show|leak|expose|dump)\s+(?:the\s+)?(?:system\s+prompt|hidden\s+prompt|api\s*key|credentials|secret|passwords?|env\s*variables?)\b"
+            r"(?i)\b(?:reveal|output|print|show|leak|expose|dump)\s+(?:the\s+)?(?:system\s+prompt|hidden\s+prompt|api\s*key|credentials|secret|passwords?|env\s*variables?|raw\s*flag)\b"
         ),
         SecurityRiskLevel.CRITICAL,
-        "Attempt to exfiltrate system prompt, API keys, or credentials.",
+        "Attempt to exfiltrate system prompt, API keys, credentials, or flags.",
     ),
     (
         "INJ_SECURITY_DISABLE",
         re.compile(
-            r"(?i)\b(?:disable|turn\s+off|bypass|circumvent|ignore)\s+(?:the\s+)?(?:guardrails|security\s*checks?|safety\s*filters?|ast\s*validation)\b"
+            r"(?i)\b(?:disable|turn\s+off|bypass|circumvent|ignore)\s+(?:the\s+)?(?:guardrails|security\s*checks?|safety\s*filters?|ast\s*validation|assertion\s*generation|all\s+(?:assertion|security|rules|safety|checks))\b"
         ),
         SecurityRiskLevel.HIGH,
-        "Attempt to disable safety guardrails or security checks.",
+        "Attempt to disable safety guardrails, assertions, or security checks.",
     ),
     (
         "INJ_SYSTEM_DELIMITER_ESCAPE",
         re.compile(
-            r"(?i)(?:<\s*/?\s*system\s*>|\[\s*system\s*\]|===\s*system\s*override\s*===)"
+            r"(?i)(?:<\s*/?\s*system\s*>|\[\s*system\s*\]|===\s*system\s*override\s*===|<\|im_start\|>|<\|im_end\|>|\[INST\]|\[/INST\]|<<SYS>>|<</SYS>>|(?:^|\n)\s*(?:###|\*\*\*|===|---|___)\s*(?:system|developer|admin|assistant)\s*(?:directive|instruction|prompt|override|mode|role)\b|(?:^|\n)\s*(?:Human|Assistant|System)\s*:\s*(?:ignore|bypass|override|you\s+are|debug|execute))"
         ),
         SecurityRiskLevel.HIGH,
         "Attempt to forge or escape system instruction boundaries.",
@@ -138,15 +139,15 @@ _PROMPT_INJECTION_PATTERNS = [
     (
         "INJ_TOOL_BYPASS",
         re.compile(
-            r"(?i)\b(?:bypass|override|ignore|elevate)\s+(?:tool\s+)?(?:permissions?|sandbox\s+restrictions?|tool\s+whitelists?)\b"
+            r"(?i)\b(?:bypass|override|ignore|elevate)\s+(?:tool\s+)?(?:permissions?|sandbox\s+restrictions?|tool\s+whitelists?)\b|\b(?:grant\s+(?:admin|access|root|privileges))\b"
         ),
         SecurityRiskLevel.HIGH,
-        "Attempt to bypass tool permissions or sandbox restrictions.",
+        "Attempt to bypass tool permissions or escalate sandbox privileges.",
     ),
     (
         "INJ_EMBEDDED_INSTRUCTION",
         re.compile(
-            r"(?i)(?:\binstruction:\s*(?:ignore|override|bypass|reveal|disregard)\b|\[\s*(?:override|bypass)\s*\])"
+            r"(?i)(?:\binstruction:\s*(?:ignore|override|bypass|reveal|disregard)\b|\[\s*(?:override|bypass)\s*\]|\b(?:return\s+(?:100%|max)\s*(?:mutation\s*)?score)\b|\b(?:output\s+only\s+def\s+test_pass)\b|^\s*ignore\s+all\s*$|\bignore\s+all\s+(?:instructions?|prompts?|rules?|directives?|constraints?|guards?|checks?|assertions?|security)\b)"
         ),
         SecurityRiskLevel.HIGH,
         "Attempt to embed unauthorized prompt override instructions in source or comments.",
@@ -154,7 +155,7 @@ _PROMPT_INJECTION_PATTERNS = [
     (
         "INJ_SHELL_EXECUTION",
         re.compile(
-            r"(?i)\b(?:execute|run|spawn)\s+(?:a\s+)?(?:arbitrary\s+)?(?:shell\s+command|bash\s+script|system\s+command|cmd\.exe|powershell|sh\s+-c)\b|\b(?:rm\s+-rf\s+/|(?:curl|wget)\s+(?:-\S+\s+)*https?://\S+\s*\|\s*(?:bash|sh))\b"
+            r"(?i)\b(?:execute|run|spawn)\s+(?:a\s+)?(?:arbitrary\s+)?(?:shell\s+command|bash\s+script|system\s+command|cmd\.exe|powershell|sh\s+-c)\b|\b(?:(?:sudo\s+)?rm\s+-rf|\bos\.system\s*\(|(?:curl|wget)\s+(?:-\S+\s+)*https?://\S+)\b"
         ),
         SecurityRiskLevel.CRITICAL,
         "Attempt to instruct the model to execute arbitrary shell or OS commands.",
@@ -193,6 +194,77 @@ _PROMPT_INJECTION_PATTERNS = [
         "Detection of toxic, abusive, threatening, or harassing content.",
     ),
 ]
+
+_HOMOGLYPH_MAP = str.maketrans({
+    '\u0430': 'a', '\u0441': 'c', '\u0435': 'e', '\u043e': 'o', '\u0440': 'p',
+    '\u0455': 's', '\u0456': 'i', '\u0458': 'j', '\u0443': 'y', '\u0445': 'x',
+    '\u0410': 'A', '\u0421': 'C', '\u0415': 'E', '\u041e': 'O', '\u0420': 'P',
+    '\u0405': 'S', '\u0406': 'I', '\u0408': 'J', '\u0423': 'Y', '\u0425': 'X',
+})
+
+_LEET_MAP = str.maketrans({
+    '0': 'o', '1': 'i', '3': 'e', '4': 'a', '5': 's', '7': 't', '@': 'a', '$': 's'
+})
+
+
+def _generate_prompt_variants(text: str) -> List[Tuple[str, str]]:
+    """
+    Generates normalized and decoded variants of an input prompt to counteract
+    adversarial evasion attacks (Unicode homoglyphs, zero-width spaces, leetspeak,
+    separator obfuscation, and base64 payloads).
+    Returns list of (variant_text, technique_label).
+    """
+    variants: List[Tuple[str, str]] = [(text, "raw")]
+
+    # 1. Unicode homoglyphs and normalization
+    u_text = text.translate(_HOMOGLYPH_MAP)
+    u_text = "".join(chr(ord(c) - 0xfee0) if 0xff01 <= ord(c) <= 0xff5e else c for c in u_text)
+    u_text = re.sub(r"[\u200b\u200c\u200d\u200e\u200f\ufeff]", "", u_text)
+    if "\u202e" in text:
+        variants.append((u_text.replace("\u202e", "")[::-1], "rlo_reverse"))
+    variants.append((u_text, "unicode_normalized"))
+
+    # 2. Leetspeak
+    leet_text = u_text.translate(_LEET_MAP)
+    variants.append((leet_text, "leetspeak"))
+
+    # 3. Separator collapse (dot-separated, underscore, space-separated, CamelCase)
+    despaced_single = re.sub(r"(?<=\b[a-zA-Z0-9])\s(?=[a-zA-Z0-9]\b)", "", u_text)
+    despaced_all = re.sub(r"(?<=\b[a-zA-Z0-9])\s+(?=[a-zA-Z0-9]\b)", "", u_text)
+    dedotted = re.sub(r"\s+", " ", u_text.replace(".", ""))
+    deunderscored = u_text.replace("_", " ")
+    decamel = re.sub(r"([a-z])([A-Z])", r"\1 \2", u_text)
+
+    for cand, lbl in [
+        (despaced_single, "despaced_single"),
+        (despaced_single.translate(_LEET_MAP), "despaced_single_leet"),
+        (despaced_all, "despaced_all"),
+        (despaced_all.translate(_LEET_MAP), "despaced_all_leet"),
+        (dedotted, "dedotted"),
+        (deunderscored, "deunderscored"),
+        (decamel, "decamel"),
+    ]:
+        variants.append((cand, lbl))
+
+    # 4. Base64 payload extraction & recursive decode
+    b64_cands = re.findall(r"[A-Za-z0-9+/=]{16,}", text)
+    for b in b64_cands:
+        try:
+            dec = base64.b64decode(b).decode("utf-8", errors="ignore")
+            if len(dec.strip()) > 3:
+                variants.append((dec, "base64_payload"))
+                # Check nested double base64
+                for b2 in re.findall(r"[A-Za-z0-9+/=]{16,}", dec):
+                    try:
+                        dec2 = base64.b64decode(b2).decode("utf-8", errors="ignore")
+                        if len(dec2.strip()) > 3:
+                            variants.append((dec2, "base64_nested_payload"))
+                    except Exception:
+                        pass
+        except Exception:
+            pass
+
+    return variants
 
 
 class SecurityPolicy:
@@ -280,20 +352,28 @@ class SecurityGuardrail:
             SecurityRiskLevel.CRITICAL: 4,
         }
 
-        # Check prompt against injection patterns
-        for rule_id, pattern, risk, explanation in _PROMPT_INJECTION_PATTERNS:
-            match = pattern.search(prompt)
-            if match:
-                findings.append(
-                    RuleFinding(
-                        rule_id=rule_id,
-                        severity=SecuritySeverity.BLOCK if risk in (SecurityRiskLevel.HIGH, SecurityRiskLevel.CRITICAL) else SecuritySeverity.WARN,
-                        message=explanation,
-                        node_type="PROMPT_PATTERN",
+        # Check prompt and normalized variants against injection patterns
+        seen_rules: Set[str] = set()
+        variants = _generate_prompt_variants(prompt)
+
+        for var_text, var_lbl in variants:
+            for rule_id, pattern, risk, explanation in _PROMPT_INJECTION_PATTERNS:
+                if rule_id in seen_rules:
+                    continue
+                match = pattern.search(var_text)
+                if match:
+                    seen_rules.add(rule_id)
+                    rule_msg = explanation if var_lbl == "raw" else f"{explanation} (Evasion defused via {var_lbl})"
+                    findings.append(
+                        RuleFinding(
+                            rule_id=rule_id,
+                            severity=SecuritySeverity.BLOCK if risk in (SecurityRiskLevel.HIGH, SecurityRiskLevel.CRITICAL) else SecuritySeverity.WARN,
+                            message=rule_msg,
+                            node_type="PROMPT_PATTERN",
+                        )
                     )
-                )
-                if risk_order[risk] > risk_order[highest_risk]:
-                    highest_risk = risk
+                    if risk_order[risk] > risk_order[highest_risk]:
+                        highest_risk = risk
 
         # Evaluate against configured threshold
         is_blocked = risk_order[highest_risk] > risk_order[self.policy.max_prompt_risk]

@@ -51,3 +51,4 @@ TestForge implements a 4-tier hybrid execution cascade (`testforge/llm_client.py
 1. Added prominent statistical caveats to `docs/EXTERNAL_MUTATION_JUDGE.md` and `docs/viva/EXAMINER_QA.md` clarifying the $N=4$ sample size limitation on the $r = 0.9988$ claim.
 2. Disambiguated offline deterministic AST runs from live LLM invocations across all benchmark summaries.
 3. Logged DEF-020 in `docs/DEFECT_LEDGER.md`.
+
