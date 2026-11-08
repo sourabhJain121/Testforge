@@ -1,0 +1,925 @@
+{
+  "timestamp": 1794098000.0,
+  "frozen_hashes": {
+    "testforge/security.py": "9fd9a8cf6ba2c6be313fa84551e4eaab2157bd0bc7ab50cdfc832b2d223c0378",
+    "testforge/prompt_guard.py": "1b387d96ad46b52d4f5795e67591b09b6a7415cfbc2c7e56694cf438028a1f77"
+  },
+  "development_set_tuned": {
+    "benign_fpr": "0.0% (0/100 stdlib files)",
+    "adversarial_tpr": "100.0% (30/30 evasions blocked)",
+    "status": "DEVELOPMENT_SET_TUNED"
+  },
+  "holdout_test_set_untuned": {
+    "total_files": 150,
+    "unique_packages": 49,
+    "false_positives": 0,
+    "false_positive_rate_pct": 0.0,
+    "files": [
+      {
+        "package": "PIL",
+        "path": ".venv-release/lib/python3.13/site-packages/PIL/AvifImagePlugin.py",
+        "sha256": "7d5c9addebc40cdbb6d9d7643e303c388bb9fd302838a750319565f6090dddb9",
+        "lines": 299
+      },
+      {
+        "package": "PIL",
+        "path": ".venv-release/lib/python3.13/site-packages/PIL/BdfFontFile.py",
+        "sha256": "77ca2d9ac0cfd7fe08f70cb82298f743ccc546f478cd28feecbbe55056dc4556",
+        "lines": 122
+      },
+      {
+        "package": "PIL",
+        "path": ".venv-release/lib/python3.13/site-packages/PIL/BufrStubImagePlugin.py",
+        "sha256": "20cd04cee3c05601e94ff56ea735dc397269c504fa667dc68a6740d05cb9b618",
+        "lines": 70
+      },
+      {
+        "package": "PIL",
+        "path": ".venv-release/lib/python3.13/site-packages/PIL/ContainerIO.py",
+        "sha256": "b90898580337cba237436dacf897048e414d3d96e009a80877c441046b514d3c",
+        "lines": 177
+      },
+      {
+        "package": "a2a",
+        "path": ".venv-release/lib/python3.13/site-packages/a2a/_base.py",
+        "sha256": "58e4d22bc2f8ecc4302bd82dc479c6281d9549a3e2c965e55554e74150186fd3",
+        "lines": 38
+      },
+      {
+        "package": "a2a",
+        "path": ".venv-release/lib/python3.13/site-packages/a2a/auth/user.py",
+        "sha256": "7579bc19d2ecb482ff53165b0af82658cd5fea264b1a646a9a1c61e129d8b825",
+        "lines": 31
+      },
+      {
+        "package": "a2a",
+        "path": ".venv-release/lib/python3.13/site-packages/a2a/client/__init__.py",
+        "sha256": "8bf75750dd0298aa9d9414ec90c1d0b2655be8a28758c94b416a96e640f9ee96",
+        "lines": 67
+      },
+      {
+        "package": "a2a",
+        "path": ".venv-release/lib/python3.13/site-packages/a2a/client/auth/credentials.py",
+        "sha256": "4b20aeaf10e4d6a709a84de556505a29be8fe69f4ffefec1f4bc8949b8fa1d1f",
+        "lines": 55
+      },
+      {
+        "package": "abs_imports.py",
+        "path": ".venv-release/lib/python3.13/site-packages/abs_imports.py",
+        "sha256": "c35d440d9b06b5a46953f94946b6b39b1eaf7a5714fcd0c9ef662a7824b50547",
+        "lines": 86
+      },
+      {
+        "package": "absolufy_imports.py",
+        "path": ".venv-release/lib/python3.13/site-packages/absolufy_imports.py",
+        "sha256": "dc103a3cd2f661ec172b775059aa8e8a7a071da1da78002d51ff8388baf072db",
+        "lines": 178
+      },
+      {
+        "package": "aiofiles",
+        "path": ".venv-release/lib/python3.13/site-packages/aiofiles/base.py",
+        "sha256": "ce8d058240aa6796a8b23bf1a88bc37f6b7e4458352dce97f0feab679ea9e9f4",
+        "lines": 69
+      },
+      {
+        "package": "aiofiles",
+        "path": ".venv-release/lib/python3.13/site-packages/aiofiles/os.py",
+        "sha256": "d03aec1be787e21ef1473825bfda485ac42ecea7bb661558c391504b5f1f232b",
+        "lines": 58
+      },
+      {
+        "package": "aiofiles",
+        "path": ".venv-release/lib/python3.13/site-packages/aiofiles/ospath.py",
+        "sha256": "59a61e973fe4eb29001512d2b6be1ba9821f09543ee461b322a222cf291b6364",
+        "lines": 30
+      },
+      {
+        "package": "aiofiles",
+        "path": ".venv-release/lib/python3.13/site-packages/aiofiles/tempfile/__init__.py",
+        "sha256": "04921c408556858dc180de89430dddf3cadc4edd84722d1948934b6b10a4afd0",
+        "lines": 357
+      },
+      {
+        "package": "aiohappyeyeballs",
+        "path": ".venv-release/lib/python3.13/site-packages/aiohappyeyeballs/_staggered.py",
+        "sha256": "6a3ddc4b01c40d7f3c50c7cef5b51abbdb5fad102cce18e0f7d76910c8803863",
+        "lines": 197
+      },
+      {
+        "package": "aiohappyeyeballs",
+        "path": ".venv-release/lib/python3.13/site-packages/aiohappyeyeballs/impl.py",
+        "sha256": "eb32b7ba4aa27993fe187deb56cf16af8dfcb4fbfe63b4f5846802ca02a64bb2",
+        "lines": 247
+      },
+      {
+        "package": "aiohappyeyeballs",
+        "path": ".venv-release/lib/python3.13/site-packages/aiohappyeyeballs/utils.py",
+        "sha256": "c051d5f1ea4632a22b0bda6aa1f4cee2a968065775e063ef55be52a5bdb91c92",
+        "lines": 82
+      },
+      {
+        "package": "aiohttp",
+        "path": ".venv-release/lib/python3.13/site-packages/aiohttp/__init__.py",
+        "sha256": "7ddd3da8369592dbd4a04d9ada4629ce54d38779fc05ecef6cbeeb7a3e26d46e",
+        "lines": 283
+      },
+      {
+        "package": "aiohttp",
+        "path": ".venv-release/lib/python3.13/site-packages/aiohttp/_cookie_helpers.py",
+        "sha256": "13a1c5cfede8d86eb9e5d110ae2eb9379d591efa8d228c28072ce64943bfd1b5",
+        "lines": 426
+      },
+      {
+        "package": "aiohttp",
+        "path": ".venv-release/lib/python3.13/site-packages/aiohttp/_websocket/helpers.py",
+        "sha256": "94c0dba6265e7e61d318dc63a5ee8ad3d665174e3c2b1cdc3af6e1f9962abe0d",
+        "lines": 148
+      },
+      {
+        "package": "aiohttp",
+        "path": ".venv-release/lib/python3.13/site-packages/aiohttp/_websocket/models.py",
+        "sha256": "8092ec93191429a91816c54c76339c9528ede35ad059108be117d107fc26c0ed",
+        "lines": 107
+      },
+      {
+        "package": "aiosignal",
+        "path": ".venv-release/lib/python3.13/site-packages/aiosignal/__init__.py",
+        "sha256": "4c8926506f474c1b7875fab69c8498062662441db1c2f16d119c9d2cfd073cbe",
+        "lines": 59
+      },
+      {
+        "package": "aiosqlite",
+        "path": ".venv-release/lib/python3.13/site-packages/aiosqlite/__init__.py",
+        "sha256": "92364a7183f6799dc86c11074340ff3b0b24ffe16544612341695bc9b3acf239",
+        "lines": 44
+      },
+      {
+        "package": "aiosqlite",
+        "path": ".venv-release/lib/python3.13/site-packages/aiosqlite/context.py",
+        "sha256": "bb5095bcc1594080fe3a486cd6b6d1adcbc73cdbe953e5252cbfbe62caa3787c",
+        "lines": 56
+      },
+      {
+        "package": "aiosqlite",
+        "path": ".venv-release/lib/python3.13/site-packages/aiosqlite/core.py",
+        "sha256": "fc76d2237aa5c6bd24561bc5eb879fac755d4b3ea7d9628c2ac9d23e20f7e2dd",
+        "lines": 384
+      },
+      {
+        "package": "aiosqlite",
+        "path": ".venv-release/lib/python3.13/site-packages/aiosqlite/cursor.py",
+        "sha256": "5f793681825ea37c81f38b1c0c400f159a6c0bfaf38d3f1d4f8a7a5b731e7b33",
+        "lines": 110
+      },
+      {
+        "package": "alembic",
+        "path": ".venv-release/lib/python3.13/site-packages/alembic/autogenerate/compare/__init__.py",
+        "sha256": "b0cd39e0e6046cb7a635ff704beaf59dcd8746e0b2c5953810fc1d091b9f558d",
+        "lines": 70
+      },
+      {
+        "package": "alembic",
+        "path": ".venv-release/lib/python3.13/site-packages/alembic/autogenerate/compare/comments.py",
+        "sha256": "b1f0b3175c4488c38fda560eb8d120b82c222fbe474a1f6f6439f27a38230c63",
+        "lines": 114
+      },
+      {
+        "package": "alembic",
+        "path": ".venv-release/lib/python3.13/site-packages/alembic/autogenerate/compare/schema.py",
+        "sha256": "79e8904d8b7e85800a1efd468d4d2c6c4d6bf830c64377f3ce0b0e15296061dd",
+        "lines": 60
+      },
+      {
+        "package": "alembic",
+        "path": ".venv-release/lib/python3.13/site-packages/alembic/autogenerate/compare/server_defaults.py",
+        "sha256": "bbef185dc05e0ab9c7cc65525b33df773460cad529bfa4ae0bfe55b8c5497e91",
+        "lines": 332
+      },
+      {
+        "package": "altair",
+        "path": ".venv-release/lib/python3.13/site-packages/altair/_magics.py",
+        "sha256": "7825d823bd6b24f4d09ec0cf17eaa22704ee033ecbf1b797c31056512d1e0655",
+        "lines": 109
+      },
+      {
+        "package": "altair",
+        "path": ".venv-release/lib/python3.13/site-packages/altair/datasets/__init__.py",
+        "sha256": "f2eafca3e064a48e88f236543b6d31aa16899a55d25963183e854c857fcaad34",
+        "lines": 178
+      },
+      {
+        "package": "altair",
+        "path": ".venv-release/lib/python3.13/site-packages/altair/datasets/_cache.py",
+        "sha256": "f14aba156b3bee38f9b2fa61d959fd577ecc527cfbf72de4f0bc64fbd63f5ee1",
+        "lines": 457
+      },
+      {
+        "package": "altair",
+        "path": ".venv-release/lib/python3.13/site-packages/altair/datasets/_constraints.py",
+        "sha256": "3fce640f30b983f42a3a57e99812ff5832a320a15cb23af8d3413531a6764336",
+        "lines": 118
+      },
+      {
+        "package": "annotated_doc",
+        "path": ".venv-release/lib/python3.13/site-packages/annotated_doc/main.py",
+        "sha256": "e597efc6ff344b0c0baa9456ef7019c99ca23386d699af505916e9fdc803db4b",
+        "lines": 36
+      },
+      {
+        "package": "annotated_types",
+        "path": ".venv-release/lib/python3.13/site-packages/annotated_types/__init__.py",
+        "sha256": "a7104a4d439b27a9f74fc0be236b9ba1b7831e6044026802a205abc1298a9bc8",
+        "lines": 416
+      },
+      {
+        "package": "anyio",
+        "path": ".venv-release/lib/python3.13/site-packages/anyio/__init__.py",
+        "sha256": "39fae86118c8530fc9163d19c21d4901a6a331083856ab6802dd17a0e1c34701",
+        "lines": 154
+      },
+      {
+        "package": "anyio",
+        "path": ".venv-release/lib/python3.13/site-packages/anyio/_core/_asyncio_selector_thread.py",
+        "sha256": "d8f77114cddcb34d8aa7a052a696ef9914fbabb6acade4d6e45801c44b1f941a",
+        "lines": 167
+      },
+      {
+        "package": "anyio",
+        "path": ".venv-release/lib/python3.13/site-packages/anyio/_core/_concurrency_utils.py",
+        "sha256": "92f45732b9c3aa041306465cf9fdbbf7e9419d933861b493a17aa19c05027d27",
+        "lines": 156
+      },
+      {
+        "package": "anyio",
+        "path": ".venv-release/lib/python3.13/site-packages/anyio/_core/_contextmanagers.py",
+        "sha256": "6089c109a6e211e4be51a3ff25dc5ad426850bbd444cf5bc1d94c720cf11b1cf",
+        "lines": 200
+      },
+      {
+        "package": "attr",
+        "path": ".venv-release/lib/python3.13/site-packages/attr/__init__.py",
+        "sha256": "7ce608bedd5e192a90adee2e092dec256299d26c00b82f140faa9b6b9392f7f5",
+        "lines": 104
+      },
+      {
+        "package": "attr",
+        "path": ".venv-release/lib/python3.13/site-packages/attr/_cmp.py",
+        "sha256": "dcd9f54e3c659546225ff9c9a159c4917a0393484cd4360a8f90c4ec665ee22d",
+        "lines": 160
+      },
+      {
+        "package": "attr",
+        "path": ".venv-release/lib/python3.13/site-packages/attr/_compat.py",
+        "sha256": "c7483b88450e9c15490bbdb3c850a06f578aab2c52fbb7f62c69cdc99febf79b",
+        "lines": 99
+      },
+      {
+        "package": "attr",
+        "path": ".venv-release/lib/python3.13/site-packages/attr/_config.py",
+        "sha256": "746ab7c51e9f819105e9406dfcbd13f9e507201e22e37911987d0fdbcb09570f",
+        "lines": 31
+      },
+      {
+        "package": "attrs",
+        "path": ".venv-release/lib/python3.13/site-packages/attrs/__init__.py",
+        "sha256": "47168064dc1888487e7dcbc72d936943f0d62a78bbdccfe3c443c47ed8aad597",
+        "lines": 72
+      },
+      {
+        "package": "authlib",
+        "path": ".venv-release/lib/python3.13/site-packages/authlib/_joserfc_helpers.py",
+        "sha256": "3b902d8978eae40ef4e1eba28856ff8814817222f809da8e8b006186bd142938",
+        "lines": 48
+      },
+      {
+        "package": "authlib",
+        "path": ".venv-release/lib/python3.13/site-packages/authlib/common/encoding.py",
+        "sha256": "4bcd04921555240052b5d12e66f415d5ce3b8109eedf9f5f80b0050e6a8b68fd",
+        "lines": 66
+      },
+      {
+        "package": "authlib",
+        "path": ".venv-release/lib/python3.13/site-packages/authlib/common/errors.py",
+        "sha256": "2f8fc20c243b334f25ae7335ed0256acb5e821ea9ab73453e967059e8e052ad1",
+        "lines": 62
+      },
+      {
+        "package": "authlib",
+        "path": ".venv-release/lib/python3.13/site-packages/authlib/common/security.py",
+        "sha256": "55f17be2c3d0ea3cb978435300f080e2e0174b31bceca80c4a727da4d8023e89",
+        "lines": 48
+      },
+      {
+        "package": "bcrypt",
+        "path": ".venv-release/lib/python3.13/site-packages/bcrypt/__init__.py",
+        "sha256": "72ff8dba9217e8fee8e80e0f2bf174babe886680ebdc69efcb314ef64d7ac0a4",
+        "lines": 43
+      },
+      {
+        "package": "build",
+        "path": ".venv-release/lib/python3.13/site-packages/build/__init__.py",
+        "sha256": "e2509f5428e076bccd14ff80070dcebf763aa38675cd96789d422b1dab4aa4b0",
+        "lines": 47
+      },
+      {
+        "package": "build",
+        "path": ".venv-release/lib/python3.13/site-packages/build/_builder.py",
+        "sha256": "7e34fad7d625706a150321eb293afcab76bb31de7a4b28a84aea45b7e36a794e",
+        "lines": 417
+      },
+      {
+        "package": "build",
+        "path": ".venv-release/lib/python3.13/site-packages/build/_compat/tarfile.py",
+        "sha256": "fb27b279d1875fd03c5577df41482558e0499cbc16bcb6cd6b01be68bd29e348",
+        "lines": 63
+      },
+      {
+        "package": "build",
+        "path": ".venv-release/lib/python3.13/site-packages/build/_ctx.py",
+        "sha256": "1c6928b26cfba5323b77fc3355542daaa1104a5fcdc4aa79700ecadce3fc8d18",
+        "lines": 95
+      },
+      {
+        "package": "celpy",
+        "path": ".venv-release/lib/python3.13/site-packages/celpy/__init__.py",
+        "sha256": "10b7d4a345bf8bfcdc2285ee2a560544acf03c929c29150b7c44a9ed7df80618",
+        "lines": 351
+      },
+      {
+        "package": "celpy",
+        "path": ".venv-release/lib/python3.13/site-packages/celpy/adapter.py",
+        "sha256": "57ad8ebb2e1645f3f29b1caad36c97e3dbb2ae9a9f38e761d136449fd56cca2f",
+        "lines": 163
+      },
+      {
+        "package": "celpy",
+        "path": ".venv-release/lib/python3.13/site-packages/celpy/celparser.py",
+        "sha256": "3cb20b83cc308c747814b010c4ffd42f75d9c8508082965b7a47ec195b79f86a",
+        "lines": 411
+      },
+      {
+        "package": "certifi",
+        "path": ".venv-release/lib/python3.13/site-packages/certifi/core.py",
+        "sha256": "5c55f2727746e697f7edac9e17c377d8752e0da7ecca191531b3b80403d61dad",
+        "lines": 83
+      },
+      {
+        "package": "cffi",
+        "path": ".venv-release/lib/python3.13/site-packages/cffi/_cffi_gen_src.py",
+        "sha256": "c94479de91526ec6b7b2c17bfd53aa5d368a78be402531ccfddc99f48198f6cc",
+        "lines": 216
+      },
+      {
+        "package": "cffi",
+        "path": ".venv-release/lib/python3.13/site-packages/cffi/_imp_emulation.py",
+        "sha256": "4714441bccc06c8d913c6070c3dd2eff97e2f2c59d6a1a5d8a93a83f3929ec2d",
+        "lines": 83
+      },
+      {
+        "package": "cffi",
+        "path": ".venv-release/lib/python3.13/site-packages/cffi/_shimmed_dist_utils.py",
+        "sha256": "0638f6c26f3265bbc5bd6131e4011f9aa6aa6726458587e8c8b2d01e45d9b9aa",
+        "lines": 45
+      },
+      {
+        "package": "cffi",
+        "path": ".venv-release/lib/python3.13/site-packages/cffi/cffi_opcode.py",
+        "sha256": "e7ed5c53aa691c6cecb2d17f7a88250fff2d08393bebf6619338f77d6e1289cd",
+        "lines": 187
+      },
+      {
+        "package": "charset_normalizer",
+        "path": ".venv-release/lib/python3.13/site-packages/charset_normalizer/__init__.py",
+        "sha256": "997c6fda6b13aee46c685bb1f96e6ee0d37c06702ac4cc38bfb30acce0f1f5b6",
+        "lines": 48
+      },
+      {
+        "package": "charset_normalizer",
+        "path": ".venv-release/lib/python3.13/site-packages/charset_normalizer/cd.py",
+        "sha256": "e9d24e66f774aeb1045af931e78900132f6a00ffee22e8963008b9c17f0e66c6",
+        "lines": 467
+      },
+      {
+        "package": "charset_normalizer",
+        "path": ".venv-release/lib/python3.13/site-packages/charset_normalizer/cli/__main__.py",
+        "sha256": "34f2b7c980245d713b52fb3a22a8a39206734ba1ba7e0b9116e297ce0a5ff147",
+        "lines": 363
+      },
+      {
+        "package": "charset_normalizer",
+        "path": ".venv-release/lib/python3.13/site-packages/charset_normalizer/legacy.py",
+        "sha256": "6e091d12fb9b4c238f94c28ecee10d5c73226ab877e956866d1bd64a522bd4a0",
+        "lines": 79
+      },
+      {
+        "package": "chromadb",
+        "path": ".venv-release/lib/python3.13/site-packages/chromadb/__init__.py",
+        "sha256": "f116512bf27479d4b51bb4b229315cd117382fbad45dfbd7aa0c5adfcbfb78f6",
+        "lines": 467
+      },
+      {
+        "package": "chromadb",
+        "path": ".venv-release/lib/python3.13/site-packages/chromadb/api/base_http_client.py",
+        "sha256": "ae3776344aad7005222e4cd720f3d5134c9140113af8f426655be10c0a9ce300",
+        "lines": 145
+      },
+      {
+        "package": "chromadb",
+        "path": ".venv-release/lib/python3.13/site-packages/chromadb/api/configuration.py",
+        "sha256": "da5b60c7b225bd397a8b676edb7c8c9747fe62f898f4989bf7177b473e27fbcd",
+        "lines": 410
+      },
+      {
+        "package": "chromadb",
+        "path": ".venv-release/lib/python3.13/site-packages/chromadb/api/functions.py",
+        "sha256": "fb4cd1ab10605a11c45d7a6f45165ef9efc76bf02dc6af05b4f234bb2cdd49da",
+        "lines": 33
+      },
+      {
+        "package": "click",
+        "path": ".venv-release/lib/python3.13/site-packages/click/__init__.py",
+        "sha256": "5abfc54d37d47cc788b7e7a05e9514787f8c5a0b7db429d0f24d748ac89964ca",
+        "lines": 144
+      },
+      {
+        "package": "click",
+        "path": ".venv-release/lib/python3.13/site-packages/click/_textwrap.py",
+        "sha256": "ed9d0ded59a7fbae933524d4c29e8e5c96dc5174666044fd87d736b9c0fca104",
+        "lines": 188
+      },
+      {
+        "package": "click",
+        "path": ".venv-release/lib/python3.13/site-packages/click/_utils.py",
+        "sha256": "782642b7026db180f941892435627c318ffc001223cbc31cce030cc95637dab4",
+        "lines": 36
+      },
+      {
+        "package": "click",
+        "path": ".venv-release/lib/python3.13/site-packages/click/_winconsole.py",
+        "sha256": "292c5f35b3256116ba18e26e08b82c8363dbddd56480934fa8b24f69ef8f6b5d",
+        "lines": 297
+      },
+      {
+        "package": "contourpy",
+        "path": ".venv-release/lib/python3.13/site-packages/contourpy/__init__.py",
+        "sha256": "c9e3bd9d310f6f6af363d0f4653d0aa080e9eb03aa3d7d61ce03f20a70ad6722",
+        "lines": 285
+      },
+      {
+        "package": "contourpy",
+        "path": ".venv-release/lib/python3.13/site-packages/contourpy/array.py",
+        "sha256": "e16c0bba265edf4ae2ce7feb6b29a6635dcecc4ea1942b0338ef24b9514e3f5f",
+        "lines": 261
+      },
+      {
+        "package": "contourpy",
+        "path": ".venv-release/lib/python3.13/site-packages/contourpy/chunk.py",
+        "sha256": "f278c342a969b83db646369a0b203be455d0b124036398591894abc45a6f1865",
+        "lines": 95
+      },
+      {
+        "package": "contourpy",
+        "path": ".venv-release/lib/python3.13/site-packages/contourpy/dechunk.py",
+        "sha256": "bcc8343792a803cc2a407b62e45ecc9dcc36e828a63c8d06ca7d2dbd52a8503a",
+        "lines": 207
+      },
+      {
+        "package": "coverage",
+        "path": ".venv-release/lib/python3.13/site-packages/coverage/__init__.py",
+        "sha256": "6786a80e474605e54f6eb5c13563cfa60b4ce3106301e253e07a187ea33d2563",
+        "lines": 41
+      },
+      {
+        "package": "coverage",
+        "path": ".venv-release/lib/python3.13/site-packages/coverage/annotate.py",
+        "sha256": "f78919f1e110de31bfb482a1d0f093cb7aa7ad559ac3d746be140d9bee8b7cc5",
+        "lines": 117
+      },
+      {
+        "package": "coverage",
+        "path": ".venv-release/lib/python3.13/site-packages/coverage/bytecode.py",
+        "sha256": "6aa0d46cef6e7994d2dfb19e6aabe6887fcff57dd67f49919401bc070e79cf2a",
+        "lines": 214
+      },
+      {
+        "package": "coverage",
+        "path": ".venv-release/lib/python3.13/site-packages/coverage/collector.py",
+        "sha256": "7b13f8125ec97d5654ccba76f374baed272a9333a2258bf481f0c2e4227b24e1",
+        "lines": 498
+      },
+      {
+        "package": "crewai",
+        "path": ".venv-release/lib/python3.13/site-packages/crewai/__init__.py",
+        "sha256": "309af8ed4cabf9723f479648bc2a7c1e5e73b47f1cd3c695c997afa159e37b58",
+        "lines": 205
+      },
+      {
+        "package": "crewai",
+        "path": ".venv-release/lib/python3.13/site-packages/crewai/a2a/auth/__init__.py",
+        "sha256": "c2ecb3137c48d1ecb25d36707478d5fb4aa943b9989a5eb754b672eba0bd882c",
+        "lines": 38
+      },
+      {
+        "package": "crewai",
+        "path": ".venv-release/lib/python3.13/site-packages/crewai/a2a/auth/schemas.py",
+        "sha256": "587be570da952a00ec89cbee7cad26dade32183e3fc9e84c155f9f9bf0d10a77",
+        "lines": 71
+      },
+      {
+        "package": "crewai",
+        "path": ".venv-release/lib/python3.13/site-packages/crewai/a2a/auth/utils.py",
+        "sha256": "e9495212cd2a98e4bd283d5b8fd4095f1fdf780f8909d9d98640d54fd83d0019",
+        "lines": 273
+      },
+      {
+        "package": "crewai_cli",
+        "path": ".venv-release/lib/python3.13/site-packages/crewai_cli/add_crew_to_flow.py",
+        "sha256": "1bbd4985a004e138c3cc1262c30570b243521314c67504bab207f081a5263fdc",
+        "lines": 96
+      },
+      {
+        "package": "crewai_cli",
+        "path": ".venv-release/lib/python3.13/site-packages/crewai_cli/authentication/main.py",
+        "sha256": "db41b4f955036a3e0bfeda840ef77044e353141b1473264435a2463d8645d24f",
+        "lines": 60
+      },
+      {
+        "package": "crewai_cli",
+        "path": ".venv-release/lib/python3.13/site-packages/crewai_cli/command.py",
+        "sha256": "0437a82bb9f085b9b5a6c092470a9556bfe0498c7c4e66117cbef74fd944683a",
+        "lines": 81
+      },
+      {
+        "package": "crewai_cli",
+        "path": ".venv-release/lib/python3.13/site-packages/crewai_cli/config.py",
+        "sha256": "96e904e23dc7c4c6a365e231da46809a45d8d3a2a18fc0b0d5740cd53e34fa45",
+        "lines": 30
+      },
+      {
+        "package": "crewai_core",
+        "path": ".venv-release/lib/python3.13/site-packages/crewai_core/auth/oauth2.py",
+        "sha256": "44a22374db45dd25e132403d3dc51ef3a602f76adac29608824e2c6253593832",
+        "lines": 186
+      },
+      {
+        "package": "crewai_core",
+        "path": ".venv-release/lib/python3.13/site-packages/crewai_core/auth/providers/auth0.py",
+        "sha256": "7d56e1cdc4acd45234779efe74a5ed0459981ec33556a648908bd7cd5db63ba7",
+        "lines": 40
+      },
+      {
+        "package": "crewai_core",
+        "path": ".venv-release/lib/python3.13/site-packages/crewai_core/auth/providers/base_provider.py",
+        "sha256": "aa60ddeb2057c921ee241024cf4d1e2e61cb67d894b43a244305a236730a0606",
+        "lines": 46
+      },
+      {
+        "package": "crewai_core",
+        "path": ".venv-release/lib/python3.13/site-packages/crewai_core/auth/providers/entra_id.py",
+        "sha256": "8c5e86788bf41bc235d92c602e57604142941920b0e354d724f4388642ff72de",
+        "lines": 49
+      },
+      {
+        "package": "cryptography",
+        "path": ".venv-release/lib/python3.13/site-packages/cryptography/exceptions.py",
+        "sha256": "f37e445882dcd9fc31c3e83214cae27220b64aa8558844c1d742c14b2b670c87",
+        "lines": 52
+      },
+      {
+        "package": "cryptography",
+        "path": ".venv-release/lib/python3.13/site-packages/cryptography/fernet.py",
+        "sha256": "dac2c23ce99e8e13956ee75c4b742c3353c8b876f109e45c46d5a49dc437982a",
+        "lines": 240
+      },
+      {
+        "package": "cryptography",
+        "path": ".venv-release/lib/python3.13/site-packages/cryptography/hazmat/_oid.py",
+        "sha256": "3a17b69d413a5e32b1d5417a4c0b06532daff06509f958bd0d2e32c52ba4b795",
+        "lines": 373
+      },
+      {
+        "package": "cryptography",
+        "path": ".venv-release/lib/python3.13/site-packages/cryptography/hazmat/asn1/__init__.py",
+        "sha256": "62a613a071858cb38a8a0442d341c68fa86b8c4c1bbb548fa408aeebebbe7daa",
+        "lines": 47
+      },
+      {
+        "package": "dateutil",
+        "path": ".venv-release/lib/python3.13/site-packages/dateutil/_common.py",
+        "sha256": "efbc34cb2b64af19586d29fefa50d53d431a6d45d147d237941bffbd0454a946",
+        "lines": 43
+      },
+      {
+        "package": "dateutil",
+        "path": ".venv-release/lib/python3.13/site-packages/dateutil/easter.py",
+        "sha256": "772062fa52af8a61f5bbf93aa7b6742492bbd9086a56d541b2a072be910f2af7",
+        "lines": 89
+      },
+      {
+        "package": "dateutil",
+        "path": ".venv-release/lib/python3.13/site-packages/dateutil/parser/__init__.py",
+        "sha256": "c1693a185bb14e98e8820086b6091c789a2d8b8a558e5e3f7c7417a4d39a4988",
+        "lines": 61
+      },
+      {
+        "package": "dateutil",
+        "path": ".venv-release/lib/python3.13/site-packages/dateutil/parser/isoparser.py",
+        "sha256": "f05cbdf7d6e709dd5fad274e62e3ab6967c94ed7795bba90e7537036e1ff8573",
+        "lines": 416
+      },
+      {
+        "package": "deprecation.py",
+        "path": ".venv-release/lib/python3.13/site-packages/deprecation.py",
+        "sha256": "67ca8f542fa36a701fecfa68735c184e24d6bc649d4a312b395d630e19c73746",
+        "lines": 290
+      },
+      {
+        "package": "distro",
+        "path": ".venv-release/lib/python3.13/site-packages/distro/__init__.py",
+        "sha256": "d9f1e317e49f80fbe3c8d67588787fc23a96751fd8a393831f0642d232c13e17",
+        "lines": 54
+      },
+      {
+        "package": "docstring_parser",
+        "path": ".venv-release/lib/python3.13/site-packages/docstring_parser/__init__.py",
+        "sha256": "efc58aa12b5da3bcef09c114d529b6ccbbd4fc14462b24d88e549c144075e279",
+        "lines": 34
+      },
+      {
+        "package": "docstring_parser",
+        "path": ".venv-release/lib/python3.13/site-packages/docstring_parser/attrdoc.py",
+        "sha256": "82b6b32d6f64a852059af8cff70698b538e0504bab96bcc16413cc103e3244d9",
+        "lines": 126
+      },
+      {
+        "package": "docstring_parser",
+        "path": ".venv-release/lib/python3.13/site-packages/docstring_parser/common.py",
+        "sha256": "5ae6b5e94a6f64bf27aa6ad1330a61d8f3cd0f1efbe1a2b75859d29e3bd53cfc",
+        "lines": 229
+      },
+      {
+        "package": "docstring_parser",
+        "path": ".venv-release/lib/python3.13/site-packages/docstring_parser/epydoc.py",
+        "sha256": "a8e03bedca4e01bbaa1250c0fc5020fe4e08452e0a360860fa2eae2ffb4bd4b6",
+        "lines": 284
+      },
+      {
+        "package": "docx",
+        "path": ".venv-release/lib/python3.13/site-packages/docx/__init__.py",
+        "sha256": "fcda35a3fee0a7c9e2b09713a74b274cea562a2b28dcc2f9250d4e05bd074012",
+        "lines": 65
+      },
+      {
+        "package": "docx",
+        "path": ".venv-release/lib/python3.13/site-packages/docx/api.py",
+        "sha256": "d77539ea23d2336b4c44311bd373a64994240c03e6c068dfc68b189164b6b5c7",
+        "lines": 37
+      },
+      {
+        "package": "docx",
+        "path": ".venv-release/lib/python3.13/site-packages/docx/blkcntnr.py",
+        "sha256": "ff17bb533dd1042cf84cf297a48cd1c6d1a0fb560f6f78001bd62fb12532a0b5",
+        "lines": 101
+      },
+      {
+        "package": "docx",
+        "path": ".venv-release/lib/python3.13/site-packages/docx/comments.py",
+        "sha256": "32668fed4f6664e505b1185a64d21b5dab6a38e03cfa9382e9496a580b931ec7",
+        "lines": 163
+      },
+      {
+        "package": "dotenv",
+        "path": ".venv-release/lib/python3.13/site-packages/dotenv/__init__.py",
+        "sha256": "6e163e88aeb0c0765a996208e9e482b820165d435d9f64d016610eb97494ed23",
+        "lines": 51
+      },
+      {
+        "package": "dotenv",
+        "path": ".venv-release/lib/python3.13/site-packages/dotenv/cli.py",
+        "sha256": "11f52f3c0cbbb3b7c59ab337281a120be9ccfb38f3546b41b16f49c290cf142c",
+        "lines": 246
+      },
+      {
+        "package": "dotenv",
+        "path": ".venv-release/lib/python3.13/site-packages/dotenv/ipython.py",
+        "sha256": "74740177d3dc7425298466faed7c32dc6914a8c49d7fd5d4522358c53677b585",
+        "lines": 50
+      },
+      {
+        "package": "dotenv",
+        "path": ".venv-release/lib/python3.13/site-packages/dotenv/main.py",
+        "sha256": "697eb33eee75d78b73db61eaf96bf9a6547548c1811c93501b67e056e5470dea",
+        "lines": 487
+      },
+      {
+        "package": "durationpy",
+        "path": ".venv-release/lib/python3.13/site-packages/durationpy/duration.py",
+        "sha256": "6d4e9eba7d7f4b504f263797bcbc24dd3686885faf0e58016c6c6d9562340aa3",
+        "lines": 157
+      },
+      {
+        "package": "et_xmlfile",
+        "path": ".venv-release/lib/python3.13/site-packages/et_xmlfile/xmlfile.py",
+        "sha256": "e9077106ad8fd027f7e51fa8c978cb979c0e22d7c9278632e8094817d457ec18",
+        "lines": 158
+      },
+      {
+        "package": "execnet",
+        "path": ".venv-release/lib/python3.13/site-packages/execnet/__init__.py",
+        "sha256": "3b962eb4963760c96488d0f4efbdbb96ca768b4c121ae7359892db582e6135b0",
+        "lines": 52
+      },
+      {
+        "package": "execnet",
+        "path": ".venv-release/lib/python3.13/site-packages/execnet/_version.py",
+        "sha256": "d477d4e57e309c99a2bb395e8cac12aae28cde973abff1d4a000f553df1e08ec",
+        "lines": 34
+      },
+      {
+        "package": "execnet",
+        "path": ".venv-release/lib/python3.13/site-packages/execnet/gateway.py",
+        "sha256": "894230c6d098575c8aa5b8b6f9a3a53a21d28e3b887d743d26ab5e266739f24a",
+        "lines": 232
+      },
+      {
+        "package": "execnet",
+        "path": ".venv-release/lib/python3.13/site-packages/execnet/gateway_bootstrap.py",
+        "sha256": "728b9d7771e04e7058af037f7b290b15e2c9afcd9f1d6b2494a60c2ded1dc62b",
+        "lines": 96
+      },
+      {
+        "package": "fastapi",
+        "path": ".venv-release/lib/python3.13/site-packages/fastapi/_compat/__init__.py",
+        "sha256": "3d8391fbcbc9e6f6b842397cd7415c42625baa6a72c9e40ca19f51f3a09e1365",
+        "lines": 40
+      },
+      {
+        "package": "fastapi",
+        "path": ".venv-release/lib/python3.13/site-packages/fastapi/_compat/shared.py",
+        "sha256": "96fd33958e524adf20c7e4c3a472fd34d1b2f507f5e910442b7f8e5dceff2ce4",
+        "lines": 222
+      },
+      {
+        "package": "fastapi",
+        "path": ".venv-release/lib/python3.13/site-packages/fastapi/_compat/v2.py",
+        "sha256": "376497a5d40a789f93913c529c5d60777e657226239a60c6898a6260da86ad4b",
+        "lines": 500
+      },
+      {
+        "package": "fastapi",
+        "path": ".venv-release/lib/python3.13/site-packages/fastapi/background.py",
+        "sha256": "bbe04cc9ed1fe7c8b378241eeffbc6b63a318eeea2c4bec7b36b0c85e12696a9",
+        "lines": 67
+      },
+      {
+        "package": "filelock",
+        "path": ".venv-release/lib/python3.13/site-packages/filelock/__init__.py",
+        "sha256": "2da5e009b744ae9fae81baf7a396f3a5824c0708b5860d3f84ee3fbebc0fd659",
+        "lines": 174
+      },
+      {
+        "package": "filelock",
+        "path": ".venv-release/lib/python3.13/site-packages/filelock/_async_read_write.py",
+        "sha256": "4ece8dfe9e7e5102c3a181c9284ebb35f155e99a487295f472ebb74b9e5d5f34",
+        "lines": 413
+      },
+      {
+        "package": "filelock",
+        "path": ".venv-release/lib/python3.13/site-packages/filelock/_descriptor.py",
+        "sha256": "67cd71f7c47b45b37968781a473bb8f22edcd0ab6c85ecdee98839baf5ab5346",
+        "lines": 76
+      },
+      {
+        "package": "filelock",
+        "path": ".venv-release/lib/python3.13/site-packages/filelock/_error.py",
+        "sha256": "b1935f155df069c9eb182ae73a2a6e70f6e71cdefc34fb752039e58359ce3759",
+        "lines": 90
+      },
+      {
+        "package": "flatbuffers",
+        "path": ".venv-release/lib/python3.13/site-packages/flatbuffers/compat.py",
+        "sha256": "8a1052a560c248bfaf80b4b266d72ef0b5f7648df0cfd2e1b6a22d6361906608",
+        "lines": 91
+      },
+      {
+        "package": "flatbuffers",
+        "path": ".venv-release/lib/python3.13/site-packages/flatbuffers/encode.py",
+        "sha256": "d8eaf79a05910242625a0f868186ac0d4e33207a505375b4e9f9888706f3e6e3",
+        "lines": 45
+      },
+      {
+        "package": "flatbuffers",
+        "path": ".venv-release/lib/python3.13/site-packages/flatbuffers/number_types.py",
+        "sha256": "8a33b441c262bb19507a0a0139e774bfd9b40ddcd36475b1a5305952acec5870",
+        "lines": 182
+      },
+      {
+        "package": "flatbuffers",
+        "path": ".venv-release/lib/python3.13/site-packages/flatbuffers/packer.py",
+        "sha256": "2cd5b29bc620151a878dc3de1a9618de29c21961fa5e76e440ab403ed14455ab",
+        "lines": 41
+      },
+      {
+        "package": "fontTools",
+        "path": ".venv-release/lib/python3.13/site-packages/fontTools/__main__.py",
+        "sha256": "563906875503fa2d734c3035757a35b9e712b3a3f11dd190e6f94293f982098b",
+        "lines": 35
+      },
+      {
+        "package": "fontTools",
+        "path": ".venv-release/lib/python3.13/site-packages/fontTools/afmLib.py",
+        "sha256": "ae6a7e71740c18b279c7f6ed992f6050a5398ba6123106b59cc251c9404623bb",
+        "lines": 439
+      },
+      {
+        "package": "fontTools",
+        "path": ".venv-release/lib/python3.13/site-packages/fontTools/annotations.py",
+        "sha256": "05d208ae23580f305f8278b058583fbbbd6a2d99d5d2c09c9f8f950245e460d3",
+        "lines": 30
+      },
+      {
+        "package": "fontTools",
+        "path": ".venv-release/lib/python3.13/site-packages/fontTools/cffLib/CFF2ToCFF.py",
+        "sha256": "ca570946745fdf879328afb98c669012baca3d0caaa944949d749a9803f37c44",
+        "lines": 273
+      },
+      {
+        "package": "frozenlist",
+        "path": ".venv-release/lib/python3.13/site-packages/frozenlist/__init__.py",
+        "sha256": "c40204daef677006e30131883df9e8fce25f7bc010fb587bcffb9cef7758b040",
+        "lines": 86
+      },
+      {
+        "package": "fsspec",
+        "path": ".venv-release/lib/python3.13/site-packages/fsspec/__init__.py",
+        "sha256": "c457281c10f5edf73929a98a510008034ade3c68cba8837558101df4d028022f",
+        "lines": 75
+      },
+      {
+        "package": "fsspec",
+        "path": ".venv-release/lib/python3.13/site-packages/fsspec/archive.py",
+        "sha256": "f51b0f9df23973858d0dd722b010449da2176b8f0c27080f927290366da40ec4",
+        "lines": 81
+      },
+      {
+        "package": "fsspec",
+        "path": ".venv-release/lib/python3.13/site-packages/fsspec/callbacks.py",
+        "sha256": "0432302f32baaebff4579721e79edf4b3b22bc2125a5daa15ebe5d67d4def841",
+        "lines": 324
+      },
+      {
+        "package": "fsspec",
+        "path": ".venv-release/lib/python3.13/site-packages/fsspec/compression.py",
+        "sha256": "deffc57b7f60cd14567da797a733630063ea813ce61136110a8dea1d5a83de9a",
+        "lines": 185
+      },
+      {
+        "package": "google",
+        "path": ".venv-release/lib/python3.13/site-packages/google/_async_resumable_media/__init__.py",
+        "sha256": "aa1678d498c73d306ead2f39fdaccea2247bb26d4485a8f66ce599012ef1abb6",
+        "lines": 61
+      },
+      {
+        "package": "google",
+        "path": ".venv-release/lib/python3.13/site-packages/google/_async_resumable_media/_helpers.py",
+        "sha256": "79b03d5c1fa9525fbcec5e072bc874cb15debca593e3da359c06e88ab3905d29",
+        "lines": 195
+      },
+      {
+        "package": "google",
+        "path": ".venv-release/lib/python3.13/site-packages/google/_async_resumable_media/requests/_request_helpers.py",
+        "sha256": "231111d9fa6c0e7d95de0d32163b1e9270c98a3b3a1c92d59fc737638dca7f5e",
+        "lines": 154
+      },
+      {
+        "package": "google",
+        "path": ".venv-release/lib/python3.13/site-packages/google/_async_resumable_media/requests/download.py",
+        "sha256": "05d4831fed94a077a3679c315520f327d1b2c857e14ad07aae8ee7e97b4197d4",
+        "lines": 469
+      },
+      {
+        "package": "google_auth_httplib2.py",
+        "path": ".venv-release/lib/python3.13/site-packages/google_auth_httplib2.py",
+        "sha256": "cc55c06e78b160816c683a98a4750e484139878389e9a171d03f48864b1e626c",
+        "lines": 302
+      },
+      {
+        "package": "google_crc32c",
+        "path": ".venv-release/lib/python3.13/site-packages/google_crc32c/__config__.py",
+        "sha256": "f434a520061f1e64e43222fdec637263960ae08ab85b54e4c234e0d5d12eccce",
+        "lines": 38
+      },
+      {
+        "package": "google_crc32c",
+        "path": ".venv-release/lib/python3.13/site-packages/google_crc32c/__init__.py",
+        "sha256": "3da197d1e73117daa96769105b26d8e5e5b0342f7617ed597cb099bfcfeed2ed",
+        "lines": 40
+      }
+    ],
+    "fp_details": []
+  },
+  "human_holdout_evasions": {
+    "status": "NOT RUN",
+    "reason": "File qa_artifacts/security_holdout/evasions_human.json not supplied"
+  }
+}

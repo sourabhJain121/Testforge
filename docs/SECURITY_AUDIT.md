@@ -1,23 +1,25 @@
 # TestForge Security Evaluation & Zero-Egress Integrity Audit Report
 
-> **Audit Objective:** Rigorous empirical evaluation of prompt injection guardrails on 100 never-tuned real production files, testing 30 adversarial evasion vectors, and verifying OS-level sandbox network egress controls.
+> **Dataset Disambiguation:**  
+> - **Development Set (Tuned):** Sections 1 and 2 below report on the 100 stdlib production files and 30 adversarial evasion variants used during Prompt Guard refinement.  
+> - **Holdout Test Set (Un-Tuned):** See [`docs/SECURITY_HOLDOUT.md`](file:///Users/sourabh/TestForge/docs/SECURITY_HOLDOUT.md) for independent evaluation on 150 never-seen pure-Python files across 49 packages in `site-packages` (0.00% FPR, 0/150) with frozen code.
 
 ---
 
-## 1. False Positive Rate on 100 Fresh, Never-Tuned Production Files
+## 1. False Positive Rate on 100 Production Files (Development Set, Tuned)
 
 Evaluated against 100 production Python files drawn directly from the local Python stdlib (excluding tests and private mocks):
 
 - **Total Production Files Evaluated:** 100
 - **False Positives Detected:** 0
-- **Measured False Positive Rate (FPR):** **0.0%**
+- **Measured False Positive Rate (FPR):** **0.0% (Development Set, Tuned)**
 
 > [!NOTE]
 > All 100 production stdlib files passed prompt injection inspection without triggering false alarms, empirically verifying that PromptGuard does not over-generalize or flag standard programming constructs.
 
 ---
 
-## 2. 30 Adversarial Evasion Matrix
+## 2. 30 Adversarial Evasion Matrix (Development Set, Tuned)
 
 Evaluated against 30 adversarial attack categories designed to evade heuristic pattern matchers:
 
