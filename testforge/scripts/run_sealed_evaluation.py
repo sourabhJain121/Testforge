@@ -11,15 +11,15 @@ import os
 import sys
 import tempfile
 import time
-from typing import Dict, List, Any
+from typing import Any, Dict, List
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
 
-from testforge.orchestrator import TestForgeOrchestrator
 from testforge.intelligent_generator import IntelligentASTSynthesizer
 from testforge.mutator import ASTMutator
+from testforge.orchestrator import TestForgeOrchestrator
 from testforge.sandbox import SubprocessSandbox
 
 DOMAINS = {
@@ -180,7 +180,7 @@ def run_sealed_eval():
         json.dump(output_data, f, indent=2)
 
     # Generate Markdown summary
-    md_content = f"""# TestForge Sealed Generalization Evaluation Report
+    md_content = """# TestForge Sealed Generalization Evaluation Report
 
 > **Freeze Tag:** `sealed-eval-freeze`  
 > **Evaluation Mode:** Single-pass evaluation on 6 never-seen domain modules (0 prior exposure)  
@@ -196,7 +196,7 @@ def run_sealed_eval():
     for r in results:
         md_content += f"| `{r['target']}` | {r['domain']} | {r['loc']} | {r['total_mutants']} | Discovered | \n"
 
-    md_content += f"""
+    md_content += """
 ---
 
 ## 2. Empirical Performance Scorecard
@@ -243,8 +243,8 @@ def run_sealed_eval():
         f.write(md_content)
 
     print("\n[✓] Sealed evaluation complete!")
-    print(f"    Saved JSON: qa_artifacts/SEALED_EVALUATION_RESULTS.json")
-    print(f"    Saved Report: docs/SEALED_EVALUATION.md")
+    print("    Saved JSON: qa_artifacts/SEALED_EVALUATION_RESULTS.json")
+    print("    Saved Report: docs/SEALED_EVALUATION.md")
 
 
 if __name__ == "__main__":

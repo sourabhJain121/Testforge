@@ -85,8 +85,9 @@ def audit_feature_1_a2a_wire_protocol() -> Dict[str, Any]:
 
     # 2. Official A2A SDK Protocol Interoperability Layer (v0.3.0)
     try:
-        from a2a.types import AgentCard, AgentSkill, AgentCapabilities
-        from testforge.a2a_protocol import build_testforge_agent_card, TestForgeA2AExecutor
+        from a2a.types import AgentCapabilities, AgentCard, AgentSkill
+
+        from testforge.a2a_protocol import TestForgeA2AExecutor, build_testforge_agent_card
 
         card: AgentCard = build_testforge_agent_card(rpc_url="http://127.0.0.1:8000/")
         assert "testforge" in card.name.lower()
@@ -119,6 +120,7 @@ def audit_feature_1_a2a_wire_protocol() -> Dict[str, Any]:
 def audit_feature_2_fastmcp_tool_server() -> Dict[str, Any]:
     print("[2/11] Checking FastMCP Tool Server...")
     import anyio
+
     from testforge.mcp_client import create_testforge_client
 
     evidence: Dict[str, Any] = {
@@ -160,8 +162,9 @@ def audit_feature_2_fastmcp_tool_server() -> Dict[str, Any]:
 def audit_feature_3_sqlite_wal_checkpointing() -> Dict[str, Any]:
     print("[3/11] Checking SQLite WAL Checkpointing & Crash Resumption...")
     import sqlite3
-    from testforge.blackboard import Blackboard, TargetSpace, SuiteSpace, MutantSpace
-    from testforge.persistence import SQLiteBlackboardStorage, CURRENT_SCHEMA_VERSION
+
+    from testforge.blackboard import Blackboard, MutantSpace, SuiteSpace, TargetSpace
+    from testforge.persistence import CURRENT_SCHEMA_VERSION, SQLiteBlackboardStorage
 
     evidence: Dict[str, Any] = {
         "feature": "SQLite WAL Checkpointing & Crash Resumption",
@@ -218,11 +221,11 @@ def audit_feature_3_sqlite_wal_checkpointing() -> Dict[str, Any]:
 def audit_feature_4_docker_vs_subprocess() -> Dict[str, Any]:
     print("[4/11] Checking Docker vs Subprocess Sandboxing...")
     from testforge.sandbox import (
-        SubprocessSandboxBackend,
         DockerSandboxBackend,
+        SubprocessSandboxBackend,
+        _run_single_test_task,
         get_sandbox_backend,
         is_docker_available,
-        _run_single_test_task,
     )
 
     evidence: Dict[str, Any] = {
@@ -325,9 +328,9 @@ def process_order(price: float, quantity: int, is_vip: bool) -> float:
 def audit_feature_6_multimodal_vision_fsm() -> Dict[str, Any]:
     print("[6/11] Checking Multimodal Vision FSM Parsing...")
     from testforge.multimodal_fsm import (
-        generate_fsm_diagram,
-        MultimodalFSMDeriver,
         FSMExtractionResult,
+        MultimodalFSMDeriver,
+        generate_fsm_diagram,
     )
 
     evidence: Dict[str, Any] = {
@@ -398,7 +401,7 @@ def audit_feature_7_hypothesis_invariant_generator() -> Dict[str, Any]:
 
 def audit_feature_8_greedy_set_cover_minimization() -> Dict[str, Any]:
     print("[8/11] Checking Greedy Set Cover Test Suite Minimization...")
-    from testforge.minimizer import TestSuiteMinimizer, MinimizationResult
+    from testforge.minimizer import MinimizationResult, TestSuiteMinimizer
 
     evidence: Dict[str, Any] = {
         "feature": "Greedy Set Cover Test Suite Minimization",
@@ -497,10 +500,10 @@ def audit_feature_9_diff_incremental_confinement() -> Dict[str, Any]:
 def audit_feature_10_bytecode_equivalence_filtering() -> Dict[str, Any]:
     print("[10/11] Checking Bytecode Instruction Disassembly & Equivalence Filtering...")
     from testforge.equivalence import (
-        compare_bytecode_instructions,
-        EquivalentMutantAnalyzer,
         EquivalenceClassification,
         EquivalenceMethod,
+        EquivalentMutantAnalyzer,
+        compare_bytecode_instructions,
     )
 
     evidence: Dict[str, Any] = {
@@ -574,8 +577,8 @@ def audit_feature_11_opentelemetry_tracing() -> Dict[str, Any]:
     print("[11/11] Checking W3C OpenTelemetry Distributed Tracing...")
     from testforge.observability import (
         TestForgeOtelTracer,
-        inject_traceparent,
         extract_traceparent,
+        inject_traceparent,
     )
 
     evidence: Dict[str, Any] = {

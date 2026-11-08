@@ -17,16 +17,16 @@ import json
 import os
 import sys
 import time
-import urllib.request
 import urllib.error
+import urllib.request
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
 
-from testforge.security import SecurityGuardrail
 from testforge.prompt_guard import inspect_source_for_indirect_injections
 from testforge.sandbox import SubprocessSandbox
+from testforge.security import SecurityGuardrail
 
 
 def run_security_audit():
@@ -38,9 +38,29 @@ def run_security_audit():
     # PART 1: 100 Un-Tuned Stdlib & Site-Packages Files for FPR
     # ---------------------------------------------------------
     print("\n[Part 1] Evaluating False Positive Rate on 100 fresh, never-tuned Python files...")
+    import email
+    import html
+    import http
     import inspect
-    import email, http, html, json as json_mod, logging, mailbox, mimetypes, netrc, optparse
-    import pathlib, pdb, pydoc, queue, reprlib, sched, selectors, shutil, tarfile, tempfile, textwrap, trace, zipfile
+    import json as json_mod
+    import logging
+    import mailbox
+    import mimetypes
+    import netrc
+    import optparse
+    import pathlib
+    import pdb
+    import pydoc
+    import queue
+    import reprlib
+    import sched
+    import selectors
+    import shutil
+    import tarfile
+    import tempfile
+    import textwrap
+    import trace
+    import zipfile
 
     stdlib_dir = os.path.dirname(os.__file__)
     candidate_files = sorted(glob.glob(os.path.join(stdlib_dir, "*.py"))) + sorted(glob.glob(os.path.join(stdlib_dir, "**/*.py"), recursive=True))
@@ -279,8 +299,8 @@ TestForge enforces defense-in-depth network confinement using two independent se
         f.write(md_content)
 
     print("\n[✓] Security audit complete!")
-    print(f"    Saved JSON: qa_artifacts/SECURITY_AUDIT_RESULTS.json")
-    print(f"    Saved Report: docs/SECURITY_AUDIT.md")
+    print("    Saved JSON: qa_artifacts/SECURITY_AUDIT_RESULTS.json")
+    print("    Saved Report: docs/SECURITY_AUDIT.md")
 
 
 if __name__ == "__main__":

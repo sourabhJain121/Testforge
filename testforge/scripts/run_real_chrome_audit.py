@@ -21,8 +21,8 @@ import threading
 import time
 from typing import Any, Dict, List
 
-from playwright.sync_api import sync_playwright
 import uvicorn
+from playwright.sync_api import sync_playwright
 
 REPO_ROOT = pathlib.Path(__file__).resolve().parent.parent.parent
 if str(REPO_ROOT) not in sys.path:
