@@ -12,8 +12,8 @@
 | :--- | :--- | :---: | :---: | :--- |
 | **A0** | Baseline and Test-Suite Integrity | DONE | `f8fc0b8` | Serial 987 passed (618s), xdist -n 4: 987 passed (361s), 0 failed. DEF-014 (1.1GB trace hang), DEF-015 (side-effect isolation), DEF-016 (restored 7 Phase-2 tests) fixed. Clean tree guard verified. |
 | **A1** | Claims Register | DONE | `573259b` | 20 claims cataloged in `docs/CLAIMS_REGISTER.md` with real audit commands. Discovered and filed DEF-017 (diff detection claim corrected in README) and DEF-018 (pipeline_plus_manual duplicate in benchmark JSON). |
-| **A2** | Score Provenance and Real Pipeline | DONE | (pending) | Clean-start reproduction across 4 targets verified: discount 18/19 (94.7%), order_fsm 103/106 (97.2%), lru_cache 13/42 (31.0%), stats_calc 36/73 (49.3%). Zero overfit logic in intelligent_generator. Mode disambiguation and provenance documented. |
-| **A3** | Sealed Generalization Test | TODO | - | 6 new sealed target modules (60-200 LOC), freeze tag `sealed-eval-freeze`, single run across configs with honest metrics. |
+| **A2** | Score Provenance and Real Pipeline | DONE | `5b99816` | Clean-start reproduction across 4 targets verified: discount 18/19 (94.7%), order_fsm 103/106 (97.2%), lru_cache 13/42 (31.0%), stats_calc 36/73 (49.3%). Zero overfit logic in intelligent_generator. Mode disambiguation and provenance documented. |
+| **A3** | Sealed Generalization Test | DONE | `03c086b` | 6 new modules frozen under tag `sealed-eval-freeze`. Single evaluation pass executed: 409 mutants, +151 kills added (+36.2% raw score lift). DEF-019 fixed (nominal list synthesis overfit). Documented in `docs/SEALED_EVALUATION.md`. |
 | **A4** | Baselines and External Judge Integrity | TODO | - | Verify actual models (Gemini/Ollama), audit mutmut per-mutant agreement, remove/caveat spurious claims. |
 | **A5** | Security Evaluation Integrity | TODO | - | 100 fresh un-tuned stdlib/site-packages files for FPR, re-test attack corpus + 30 evasions, OS-level zero-egress audit. |
 | **A6** | Feature-by-Feature Reality Check | TODO | - | Empirical verification of all 11 features with evidence in `docs/AUDIT_EVIDENCE/`. |
