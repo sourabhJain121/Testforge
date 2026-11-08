@@ -204,6 +204,83 @@
           "duration_sec": 130.188,
           "iterations": 2
         }
+      ],
+      "zeroshot_qwen_local": [
+        {
+          "seed": 42,
+          "status": "PASS",
+          "line_cov": 16.0,
+          "branch_cov": 0.0,
+          "raw_ms": 100.0,
+          "adj_ms": 100.0,
+          "killed": 70,
+          "total_mutants": 70,
+          "duration_sec": 34.825,
+          "model": "qwen2.5-coder:7b"
+        },
+        {
+          "seed": 43,
+          "status": "ERROR",
+          "error": "TimeoutError: timed out",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 70,
+          "duration_sec": 90.003,
+          "model": "qwen2.5-coder:7b"
+        },
+        {
+          "seed": 44,
+          "status": "PASS",
+          "line_cov": 16.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 70,
+          "duration_sec": 47.654,
+          "model": "qwen2.5-coder:7b"
+        }
+      ],
+      "zeroshot_retry_qwen_local": [
+        {
+          "seed": 42,
+          "status": "PASS",
+          "line_cov": 16.0,
+          "branch_cov": 0.0,
+          "raw_ms": 100.0,
+          "adj_ms": 100.0,
+          "killed": 70,
+          "total_mutants": 70,
+          "duration_sec": 47.321000000000005,
+          "model": "qwen2.5-coder:7b"
+        },
+        {
+          "seed": 43,
+          "status": "FAIL",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 70,
+          "duration_sec": 94.316,
+          "model": "qwen2.5-coder:7b"
+        },
+        {
+          "seed": 44,
+          "status": "PASS",
+          "line_cov": 16.0,
+          "branch_cov": 0.0,
+          "raw_ms": 100.0,
+          "adj_ms": 100.0,
+          "killed": 70,
+          "total_mutants": 70,
+          "duration_sec": 60.514,
+          "model": "qwen2.5-coder:7b"
+        }
       ]
     },
     "fractions_algo": {
@@ -386,6 +463,82 @@
           "total_mutants": 57,
           "duration_sec": 40.35,
           "iterations": 2
+        }
+      ],
+      "zeroshot_qwen_local": [
+        {
+          "seed": 42,
+          "status": "PASS",
+          "line_cov": 93.54838709677419,
+          "branch_cov": 66.67,
+          "raw_ms": 100.0,
+          "adj_ms": 100.0,
+          "killed": 55,
+          "total_mutants": 57,
+          "duration_sec": 18.709,
+          "model": "qwen2.5-coder:7b"
+        },
+        {
+          "seed": 43,
+          "status": "PASS",
+          "line_cov": 93.54838709677419,
+          "branch_cov": 66.67,
+          "raw_ms": 100.0,
+          "adj_ms": 100.0,
+          "killed": 55,
+          "total_mutants": 57,
+          "duration_sec": 17.939,
+          "model": "qwen2.5-coder:7b"
+        },
+        {
+          "seed": 44,
+          "status": "PASS",
+          "line_cov": 96.7741935483871,
+          "branch_cov": 83.33,
+          "raw_ms": 67.27,
+          "adj_ms": 68.52,
+          "killed": 37,
+          "total_mutants": 57,
+          "duration_sec": 30.78,
+          "model": "qwen2.5-coder:7b"
+        }
+      ],
+      "zeroshot_retry_qwen_local": [
+        {
+          "seed": 42,
+          "status": "PASS",
+          "line_cov": 96.7741935483871,
+          "branch_cov": 83.33,
+          "raw_ms": 100.0,
+          "adj_ms": 100.0,
+          "killed": 55,
+          "total_mutants": 57,
+          "duration_sec": 31.09,
+          "model": "qwen2.5-coder:7b"
+        },
+        {
+          "seed": 43,
+          "status": "PASS",
+          "line_cov": 96.7741935483871,
+          "branch_cov": 83.33,
+          "raw_ms": 100.0,
+          "adj_ms": 100.0,
+          "killed": 55,
+          "total_mutants": 57,
+          "duration_sec": 27.767,
+          "model": "qwen2.5-coder:7b"
+        },
+        {
+          "seed": 44,
+          "status": "PASS",
+          "line_cov": 96.7741935483871,
+          "branch_cov": 83.33,
+          "raw_ms": 67.27,
+          "adj_ms": 68.52,
+          "killed": 37,
+          "total_mutants": 57,
+          "duration_sec": 42.186,
+          "model": "qwen2.5-coder:7b"
         }
       ]
     },
@@ -571,6 +724,82 @@
           "total_mutants": 49,
           "duration_sec": 269.119,
           "iterations": 0
+        }
+      ],
+      "zeroshot_qwen_local": [
+        {
+          "seed": 42,
+          "status": "PASS",
+          "line_cov": 94.0,
+          "branch_cov": 85.71,
+          "raw_ms": 100.0,
+          "adj_ms": 100.0,
+          "killed": 49,
+          "total_mutants": 49,
+          "duration_sec": 18.869,
+          "model": "qwen2.5-coder:7b"
+        },
+        {
+          "seed": 43,
+          "status": "PASS",
+          "line_cov": 92.0,
+          "branch_cov": 78.57,
+          "raw_ms": 100.0,
+          "adj_ms": 100.0,
+          "killed": 49,
+          "total_mutants": 49,
+          "duration_sec": 12.298,
+          "model": "qwen2.5-coder:7b"
+        },
+        {
+          "seed": 44,
+          "status": "PASS",
+          "line_cov": 94.0,
+          "branch_cov": 85.71,
+          "raw_ms": 100.0,
+          "adj_ms": 100.0,
+          "killed": 49,
+          "total_mutants": 49,
+          "duration_sec": 12.152,
+          "model": "qwen2.5-coder:7b"
+        }
+      ],
+      "zeroshot_retry_qwen_local": [
+        {
+          "seed": 42,
+          "status": "PASS",
+          "line_cov": 94.0,
+          "branch_cov": 85.71,
+          "raw_ms": 100.0,
+          "adj_ms": 100.0,
+          "killed": 49,
+          "total_mutants": 49,
+          "duration_sec": 25.173000000000002,
+          "model": "qwen2.5-coder:7b"
+        },
+        {
+          "seed": 43,
+          "status": "PASS",
+          "line_cov": 92.0,
+          "branch_cov": 78.57,
+          "raw_ms": 100.0,
+          "adj_ms": 100.0,
+          "killed": 49,
+          "total_mutants": 49,
+          "duration_sec": 18.576999999999998,
+          "model": "qwen2.5-coder:7b"
+        },
+        {
+          "seed": 44,
+          "status": "PASS",
+          "line_cov": 94.0,
+          "branch_cov": 85.71,
+          "raw_ms": 100.0,
+          "adj_ms": 100.0,
+          "killed": 49,
+          "total_mutants": 49,
+          "duration_sec": 16.823999999999998,
+          "model": "qwen2.5-coder:7b"
         }
       ]
     },
@@ -758,6 +987,82 @@
           "duration_sec": 24.617,
           "iterations": 2
         }
+      ],
+      "zeroshot_qwen_local": [
+        {
+          "seed": 42,
+          "status": "PASS",
+          "line_cov": 91.66666666666667,
+          "branch_cov": 81.82,
+          "raw_ms": 100.0,
+          "adj_ms": 100.0,
+          "killed": 23,
+          "total_mutants": 23,
+          "duration_sec": 14.68,
+          "model": "qwen2.5-coder:7b"
+        },
+        {
+          "seed": 43,
+          "status": "PASS",
+          "line_cov": 94.44444444444444,
+          "branch_cov": 86.36,
+          "raw_ms": 100.0,
+          "adj_ms": 100.0,
+          "killed": 23,
+          "total_mutants": 23,
+          "duration_sec": 33.109,
+          "model": "qwen2.5-coder:7b"
+        },
+        {
+          "seed": 44,
+          "status": "PASS",
+          "line_cov": 91.66666666666667,
+          "branch_cov": 81.82,
+          "raw_ms": 100.0,
+          "adj_ms": 100.0,
+          "killed": 23,
+          "total_mutants": 23,
+          "duration_sec": 13.454,
+          "model": "qwen2.5-coder:7b"
+        }
+      ],
+      "zeroshot_retry_qwen_local": [
+        {
+          "seed": 42,
+          "status": "PASS",
+          "line_cov": 91.66666666666667,
+          "branch_cov": 81.82,
+          "raw_ms": 100.0,
+          "adj_ms": 100.0,
+          "killed": 23,
+          "total_mutants": 23,
+          "duration_sec": 21.862000000000002,
+          "model": "qwen2.5-coder:7b"
+        },
+        {
+          "seed": 43,
+          "status": "PASS",
+          "line_cov": 94.44444444444444,
+          "branch_cov": 90.91,
+          "raw_ms": 100.0,
+          "adj_ms": 100.0,
+          "killed": 6,
+          "total_mutants": 23,
+          "duration_sec": 67.459,
+          "model": "qwen2.5-coder:7b"
+        },
+        {
+          "seed": 44,
+          "status": "PASS",
+          "line_cov": 91.66666666666667,
+          "branch_cov": 81.82,
+          "raw_ms": 100.0,
+          "adj_ms": 100.0,
+          "killed": 23,
+          "total_mutants": 23,
+          "duration_sec": 18.439,
+          "model": "qwen2.5-coder:7b"
+        }
       ]
     },
     "statistics_algo": {
@@ -944,6 +1249,82 @@
           "duration_sec": 29.242,
           "iterations": 2
         }
+      ],
+      "zeroshot_qwen_local": [
+        {
+          "seed": 42,
+          "status": "PASS",
+          "line_cov": 95.45454545454545,
+          "branch_cov": 87.5,
+          "raw_ms": 100.0,
+          "adj_ms": 100.0,
+          "killed": 37,
+          "total_mutants": 37,
+          "duration_sec": 21.576,
+          "model": "qwen2.5-coder:7b"
+        },
+        {
+          "seed": 43,
+          "status": "PASS",
+          "line_cov": 95.45454545454545,
+          "branch_cov": 87.5,
+          "raw_ms": 100.0,
+          "adj_ms": 100.0,
+          "killed": 37,
+          "total_mutants": 37,
+          "duration_sec": 14.817,
+          "model": "qwen2.5-coder:7b"
+        },
+        {
+          "seed": 44,
+          "status": "PASS",
+          "line_cov": 95.45454545454545,
+          "branch_cov": 87.5,
+          "raw_ms": 97.3,
+          "adj_ms": 97.3,
+          "killed": 36,
+          "total_mutants": 37,
+          "duration_sec": 16.736,
+          "model": "qwen2.5-coder:7b"
+        }
+      ],
+      "zeroshot_retry_qwen_local": [
+        {
+          "seed": 42,
+          "status": "PASS",
+          "line_cov": 100.0,
+          "branch_cov": 100.0,
+          "raw_ms": 100.0,
+          "adj_ms": 100.0,
+          "killed": 37,
+          "total_mutants": 37,
+          "duration_sec": 29.779,
+          "model": "qwen2.5-coder:7b"
+        },
+        {
+          "seed": 43,
+          "status": "PASS",
+          "line_cov": 100.0,
+          "branch_cov": 100.0,
+          "raw_ms": 100.0,
+          "adj_ms": 100.0,
+          "killed": 37,
+          "total_mutants": 37,
+          "duration_sec": 23.68,
+          "model": "qwen2.5-coder:7b"
+        },
+        {
+          "seed": 44,
+          "status": "PASS",
+          "line_cov": 100.0,
+          "branch_cov": 100.0,
+          "raw_ms": 97.3,
+          "adj_ms": 97.3,
+          "killed": 36,
+          "total_mutants": 37,
+          "duration_sec": 25.177,
+          "model": "qwen2.5-coder:7b"
+        }
       ]
     },
     "textwrap_algo": {
@@ -1129,6 +1510,83 @@
           "total_mutants": 23,
           "duration_sec": 26.465,
           "iterations": 2
+        }
+      ],
+      "zeroshot_qwen_local": [
+        {
+          "seed": 42,
+          "status": "PASS",
+          "line_cov": 97.22222222222223,
+          "branch_cov": 71.43,
+          "raw_ms": 100.0,
+          "adj_ms": 100.0,
+          "killed": 23,
+          "total_mutants": 23,
+          "duration_sec": 14.663,
+          "model": "qwen2.5-coder:7b"
+        },
+        {
+          "seed": 43,
+          "status": "PASS",
+          "line_cov": 97.22222222222223,
+          "branch_cov": 85.71,
+          "raw_ms": 100.0,
+          "adj_ms": 100.0,
+          "killed": 23,
+          "total_mutants": 23,
+          "duration_sec": 26.023,
+          "model": "qwen2.5-coder:7b"
+        },
+        {
+          "seed": 44,
+          "status": "ERROR",
+          "error": "TimeoutError: timed out",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 23,
+          "duration_sec": 90.003,
+          "model": "qwen2.5-coder:7b"
+        }
+      ],
+      "zeroshot_retry_qwen_local": [
+        {
+          "seed": 42,
+          "status": "PASS",
+          "line_cov": 100.0,
+          "branch_cov": 100.0,
+          "raw_ms": 100.0,
+          "adj_ms": 100.0,
+          "killed": 23,
+          "total_mutants": 23,
+          "duration_sec": 21.939,
+          "model": "qwen2.5-coder:7b"
+        },
+        {
+          "seed": 43,
+          "status": "PASS",
+          "line_cov": 97.22222222222223,
+          "branch_cov": 85.71,
+          "raw_ms": 100.0,
+          "adj_ms": 100.0,
+          "killed": 23,
+          "total_mutants": 23,
+          "duration_sec": 36.397999999999996,
+          "model": "qwen2.5-coder:7b"
+        },
+        {
+          "seed": 44,
+          "status": "FAIL",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 23,
+          "duration_sec": 94.342,
+          "model": "qwen2.5-coder:7b"
         }
       ]
     }
@@ -1543,6 +2001,138 @@
         "duration_std": 71.27,
         "blocked_runs": 0
       }
+    }
+  },
+  "paired_summary": {
+    "gemini_paired": {
+      "n": 4,
+      "pairs": [
+        [
+          "bisect_algo",
+          42
+        ],
+        [
+          "bisect_algo",
+          43
+        ],
+        [
+          "bisect_algo",
+          44
+        ],
+        [
+          "fractions_algo",
+          43
+        ]
+      ],
+      "developer_baseline": [
+        0.0,
+        0.0
+      ],
+      "zeroshot_llm": [
+        44.23,
+        51.93
+      ],
+      "zeroshot_retry": [
+        69.71,
+        47.53
+      ],
+      "testforge_deterministic": [
+        80.45,
+        39.09
+      ],
+      "testforge_full_agentic": [
+        5.46,
+        10.91
+      ]
+    },
+    "qwen_paired": {
+      "n": 16,
+      "pairs": [
+        [
+          "bisect_algo",
+          42
+        ],
+        [
+          "bisect_algo",
+          44
+        ],
+        [
+          "fractions_algo",
+          42
+        ],
+        [
+          "fractions_algo",
+          43
+        ],
+        [
+          "fractions_algo",
+          44
+        ],
+        [
+          "heapq_algo",
+          42
+        ],
+        [
+          "heapq_algo",
+          43
+        ],
+        [
+          "heapq_algo",
+          44
+        ],
+        [
+          "shlex_algo",
+          42
+        ],
+        [
+          "shlex_algo",
+          43
+        ],
+        [
+          "shlex_algo",
+          44
+        ],
+        [
+          "statistics_algo",
+          42
+        ],
+        [
+          "statistics_algo",
+          43
+        ],
+        [
+          "statistics_algo",
+          44
+        ],
+        [
+          "textwrap_algo",
+          42
+        ],
+        [
+          "textwrap_algo",
+          43
+        ]
+      ],
+      "developer_baseline": [
+        6.89,
+        14.81
+      ],
+      "zeroshot_qwen_local": [
+        91.54,
+        25.73
+      ],
+      "zeroshot_retry_qwen_local": [
+        97.79,
+        8.17
+      ],
+      "testforge_deterministic": [
+        62.79,
+        29.58
+      ],
+      "testforge_full_agentic": [
+        31.54,
+        26.19
+      ]
     }
   }
 }

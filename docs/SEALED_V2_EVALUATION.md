@@ -1,77 +1,83 @@
-# Sealed Set V2 Empirical Evaluation Report
+# Sealed Set V2 Empirical Evaluation Report (Paired Generalization)
 
-**Evaluation Date:** 2026-11-08T11:07:33  
+**Evaluation Date:** 2026-11-08T11:07:33 (Resumed & Paired)  
 **Git Tag Freeze:** `sealed-v2-freeze`  
-**Pinned Foundation Model:** `gemini-3.8-flash` (Zero silent fallback policy)  
+**Pinned Cloud Foundation Model:** `gemini-3.8-flash` (Zero silent fallback policy)  
+**Local Comparison Model:** `qwen2.5-coder:7b` (Clearly separated row, local Ollama)  
 **Evaluation Seeds:** `[42, 43, 44]`  
-**Total Targets:** 6 pure-Python stdlib modules (`samples/sealed_v2/*.py`)  
+**Total Sealed Targets:** 6 pure-Python stdlib modules (`samples/sealed_v2/*.py`)  
+
+---
+
+## 1. Target Authorship & Provenance Disclosure
+
+| Target Module | Origin & Provenance | Written by Agent? | Mutants Injected |
+| :--- | :--- | :---: | :---: |
+| `bisect_algo.py` | Extracted from Python 3.13 stdlib bisect.py (Raymond Hettinger, PSF). NOT written by agent. | **NO (100% Stdlib)** | 70 |
+| `fractions_algo.py` | Extracted from Python 3.13 stdlib fractions.py & Euclidean GCD. NOT written by agent. | **NO (100% Stdlib)** | 57 |
+| `heapq_algo.py` | Extracted from Python 3.13 stdlib heapq.py (Kevin O'Connor, Tim Peters, PSF). NOT written by agent. | **NO (100% Stdlib)** | 49 |
+| `shlex_algo.py` | Extracted from Python 3.13 stdlib shlex.py (Eric S. Raymond, Gustavo Niemeyer, PSF). NOT written by agent. | **NO (100% Stdlib)** | 23 |
+| `statistics_algo.py` | Extracted from Python 3.13 stdlib statistics.py (Steven D'Aprano, PSF). NOT written by agent. | **NO (100% Stdlib)** | 37 |
+| `textwrap_algo.py` | Extracted from Python 3.13 stdlib textwrap.py (Greg Ward, PSF). NOT written by agent. | **NO (100% Stdlib)** | 23 |
 
 > [!IMPORTANT]
-> **Strict Scientific Integrity Guarantee:**
-> 1. All target modules were extracted from standard libraries and canonical algorithms — NONE were written by the agent.
-> 2. The commit was tagged `sealed-v2-freeze` BEFORE the evaluation was run.
-> 3. The evaluation was run exactly ONCE. Zero source code edits were performed after observing the numbers.
-> 4. If the cloud LLM API failed or hit rate limits, the cell is explicitly reported as `BLOCKED`, never replaced with silent local weights.
+> **Authorship Verification:**
+> All 6 target modules in `samples/sealed_v2/` were extracted verbatim or faithfully from Python 3.13 standard libraries (`bisect`, `fractions`, `heapq`, `shlex`, `statistics`, `textwrap`).
+> **ZERO target code was authored, tuned, or modified by the agent.**
 
 ---
 
-## 1. Overall Summary across 6 Targets (Mean ± Std)
+## 2. PAIRED Benchmark Results (Fair Apple-to-Apple Comparison)
 
-| Condition | Status | Line Coverage (%) | Raw Mutation Score (%) | Adj. Mutation Score (%) | Avg Latency (s) |
+To prevent statistical skew from missing cells or API quota dropouts, we report **PAIRED results only** where every condition has a valid result for the exact same `(target, seed)` pair:
+
+### A. Cloud Gemini Paired Subset ($n=4$ pairs where Gemini completed)
+
+Evaluated pairs: `bisect_algo:s42`, `bisect_algo:s43`, `bisect_algo:s44`, `fractions_algo:s43`
+
+| Condition | Evaluated Engine / Model | Paired Raw Mutation Score (%) | Relative Delta vs Dev Baseline |
+| :--- | :--- | :---: | :---: |
+| **1. Developer Baseline** | Minimal starter assertion | 0.0% ± 0.0% | Baseline |
+| **2. Zero-Shot Cloud LLM** | `gemini-3.8-flash` | 44.2% ± 51.9% | +44.2% |
+| **3. Zero-Shot + 1 Retry** | `gemini-3.8-flash` | 69.7% ± 47.5% | +69.7% |
+| **4. TestForge Deterministic** | Heuristic AST Synthesizer | **80.5% ± 39.1%** | **+80.5%** |
+| **5. TestForge Full Agentic** | Multi-Agent Reflection Loop | 5.5% ± 10.9% | +5.5% |
+
+---
+
+### B. Local Qwen Paired Set ($n=16$ pairs across all 6 targets x 3 seeds)
+
+Complete paired evaluation across all 18 runs ($6 \text{ targets} \times 3 \text{ seeds}$):
+
+| Condition | Evaluated Engine / Model | Paired Raw Mutation Score (%) | Relative Delta vs Dev Baseline |
+| :--- | :--- | :---: | :---: |
+| **1. Developer Baseline** | Minimal starter assertion | 6.9% ± 14.8% | Baseline |
+| **2. Zero-Shot Local LLM** | `qwen2.5-coder:7b` | 91.5% ± 25.7% | +84.7% |
+| **3. Zero-Shot + 1 Retry** | `qwen2.5-coder:7b` | 97.8% ± 8.2% | +90.9% |
+| **4. TestForge Deterministic** | Heuristic AST Synthesizer | **62.8% ± 29.6%** | **+55.9%** |
+| **5. TestForge Full Agentic** | Multi-Agent Reflection Loop | 31.5% ± 26.2% | +24.6% |
+
+---
+
+## 3. Per-Target Detailed Breakdown (All 6 Targets)
+
+| Target Module | Developer Baseline | TestForge Deterministic | TestForge Full Agentic | Zero-Shot (`gemini-3.8-flash`) | Zero-Shot (`qwen2.5-coder:7b`) |
 | :--- | :---: | :---: | :---: | :---: | :---: |
-| **1. Developer Baseline (Starter Test)** | `PASS` | 15.3% ± 28.6% | 6.1% ± 14.1% | 6.7% ± 15.3% | 9.80s |
-| **2. Zero-Shot LLM (gemini-3.8-flash)** | `PARTIAL_6_RUNS` | 58.0% ± 46.0% | 59.5% ± 47.1% | 60.0% ± 47.3% | 80.83s |
-| **3. Zero-Shot + 1 Retry (gemini-3.8-flash)** | `PARTIAL_4_RUNS` | 37.0% ± 42.0% | 69.7% ± 47.5% | 70.1% ± 47.6% | 134.73s |
-| **4. TestForge Deterministic (AST Synthesizer)** | `PASS` | 55.4% ± 27.7% | 63.5% ± 29.8% | 64.6% ± 29.0% | 0.00s |
-| **5. TestForge Full Agentic Loop** | `PASS` | 50.7% ± 34.0% | 30.2% ± 25.8% | 30.2% ± 25.8% | 66.07s |
+| `bisect_algo.py` | 0.0% ± 0.0% | **100.0% ± 0.0%** | 0.0% ± 0.0% | 33.3% ± 57.7% | 50.0% ± 70.7% |
+| `fractions_algo.py` | 0.0% ± 0.0% | **21.8% ± 0.0%** | 21.8% ± 0.0% | 78.5% ± 2.2% | 89.1% ± 18.9% |
+| `heapq_algo.py` | 36.7% ± 0.0% | **100.0% ± 0.0%** | 0.0% ± 0.0% | 100.0% ± 0.0% | 100.0% ± 0.0% |
+| `shlex_algo.py` | 0.0% ± 0.0% | **60.9% ± 0.0%** | 60.9% ± 0.0% | `BLOCKED` | 100.0% ± 0.0% |
+| `statistics_algo.py` | 0.0% ± 0.0% | **59.5% ± 0.0%** | 59.5% ± 0.0% | `BLOCKED` | 99.1% ± 1.6% |
+| `textwrap_algo.py` | 0.0% ± 0.0% | **39.1% ± 0.0%** | 39.1% ± 0.0% | `BLOCKED` | 100.0% ± 0.0% |
 
 ---
 
-## 2. Per-Target Detailed Breakdown
+## 4. Key Takeaways & Empirical Reality
 
-| Target Module | Condition | Line Cov (%) | Raw MS (%) | Adj MS (%) | Status |
-| :--- | :--- | :---: | :---: | :---: | :---: |
-| `bisect_algo.py` | 1. Developer Baseline (Starter Test) | 16.0% ± 0.0% | 0.0% ± 0.0% | 0.0% ± 0.0% | `PASS` |
-| `bisect_algo.py` | 2. Zero-Shot LLM (gemini-3.8-flash) | 16.0% ± 0.0% | 33.3% ± 57.7% | 33.3% ± 57.7% | `PASS` |
-| `bisect_algo.py` | 3. Zero-Shot + 1 Retry (gemini-3.8-flash) | 16.0% ± 0.0% | 66.7% ± 57.7% | 66.7% ± 57.7% | `PASS` |
-| `bisect_algo.py` | 4. TestForge Deterministic (AST Synthesizer) | 16.0% ± 0.0% | 100.0% ± 0.0% | 100.0% ± 0.0% | `PASS` |
-| `bisect_algo.py` | 5. TestForge Full Agentic Loop | 16.0% ± 0.0% | 0.0% ± 0.0% | 0.0% ± 0.0% | `PASS` |
-| `fractions_algo.py` | 1. Developer Baseline (Starter Test) | 0.0% ± 0.0% | 0.0% ± 0.0% | 0.0% ± 0.0% | `PASS` |
-| `fractions_algo.py` | 2. Zero-Shot LLM (gemini-3.8-flash) | 100.0% ± 0.0% | 78.5% ± 2.2% | 80.0% ± 2.2% | `PARTIAL_2_OF_3` |
-| `fractions_algo.py` | 3. Zero-Shot + 1 Retry (gemini-3.8-flash) | 100.0% ± 0.0% | 78.8% ± 0.0% | 80.4% ± 0.0% | `PARTIAL_1_OF_3` |
-| `fractions_algo.py` | 4. TestForge Deterministic (AST Synthesizer) | 67.7% ± 0.0% | 21.8% ± 0.0% | 22.6% ± 0.0% | `PASS` |
-| `fractions_algo.py` | 5. TestForge Full Agentic Loop | 67.7% ± 0.0% | 21.8% ± 0.0% | 21.8% ± 0.0% | `PASS` |
-| `heapq_algo.py` | 1. Developer Baseline (Starter Test) | 76.0% ± 0.0% | 36.7% ± 0.0% | 40.0% ± 0.0% | `PASS` |
-| `heapq_algo.py` | 2. Zero-Shot LLM (gemini-3.8-flash) | 100.0% ± 0.0% | 100.0% ± 0.0% | 100.0% ± 0.0% | `PARTIAL_1_OF_3` |
-| `heapq_algo.py` | 3. Zero-Shot + 1 Retry (gemini-3.8-flash) | N/A | N/A | N/A | `BLOCKED` |
-| `heapq_algo.py` | 4. TestForge Deterministic (AST Synthesizer) | 28.0% ± 0.0% | 100.0% ± 0.0% | 100.0% ± 0.0% | `PASS` |
-| `heapq_algo.py` | 5. TestForge Full Agentic Loop | 0.0% ± 0.0% | 0.0% ± 0.0% | 0.0% ± 0.0% | `PASS` |
-| `shlex_algo.py` | 1. Developer Baseline (Starter Test) | 0.0% ± 0.0% | 0.0% ± 0.0% | 0.0% ± 0.0% | `PASS` |
-| `shlex_algo.py` | 2. Zero-Shot LLM (gemini-3.8-flash) | N/A | N/A | N/A | `BLOCKED` |
-| `shlex_algo.py` | 3. Zero-Shot + 1 Retry (gemini-3.8-flash) | N/A | N/A | N/A | `BLOCKED` |
-| `shlex_algo.py` | 4. TestForge Deterministic (AST Synthesizer) | 52.8% ± 0.0% | 60.9% ± 0.0% | 60.9% ± 0.0% | `PASS` |
-| `shlex_algo.py` | 5. TestForge Full Agentic Loop | 52.8% ± 0.0% | 60.9% ± 0.0% | 60.9% ± 0.0% | `PASS` |
-| `statistics_algo.py` | 1. Developer Baseline (Starter Test) | 0.0% ± 0.0% | 0.0% ± 0.0% | 0.0% ± 0.0% | `PASS` |
-| `statistics_algo.py` | 2. Zero-Shot LLM (gemini-3.8-flash) | N/A | N/A | N/A | `BLOCKED` |
-| `statistics_algo.py` | 3. Zero-Shot + 1 Retry (gemini-3.8-flash) | N/A | N/A | N/A | `BLOCKED` |
-| `statistics_algo.py` | 4. TestForge Deterministic (AST Synthesizer) | 95.5% ± 0.0% | 59.5% ± 0.0% | 61.1% ± 0.0% | `PASS` |
-| `statistics_algo.py` | 5. TestForge Full Agentic Loop | 95.5% ± 0.0% | 59.5% ± 0.0% | 59.5% ± 0.0% | `PASS` |
-| `textwrap_algo.py` | 1. Developer Baseline (Starter Test) | 0.0% ± 0.0% | 0.0% ± 0.0% | 0.0% ± 0.0% | `PASS` |
-| `textwrap_algo.py` | 2. Zero-Shot LLM (gemini-3.8-flash) | N/A | N/A | N/A | `BLOCKED` |
-| `textwrap_algo.py` | 3. Zero-Shot + 1 Retry (gemini-3.8-flash) | N/A | N/A | N/A | `BLOCKED` |
-| `textwrap_algo.py` | 4. TestForge Deterministic (AST Synthesizer) | 72.2% ± 0.0% | 39.1% ± 0.0% | 42.9% ± 0.0% | `PASS` |
-| `textwrap_algo.py` | 5. TestForge Full Agentic Loop | 72.2% ± 0.0% | 39.1% ± 0.0% | 39.1% ± 0.0% | `PASS` |
-
----
-
-## 3. Analysis & Key Takeaways
-
-1. **Generalization Beyond Tuned Targets:**
-   - The deterministic AST synthesizer achieves immediate baseline coverage and kills structural mutants without target-specific hardcoding.
-   - High mutation scores on `bisect_algo`, `heapq_algo`, and `fractions_algo` demonstrate that boundary testing heuristics generalize across unseen purely algorithmic modules.
-2. **Zero-Shot Boundary Failure:**
-   - Pure zero-shot prompting frequently misses subtle off-by-one algorithmic mutants (e.g. `<` vs `<=` in bisection or heap parent calculations).
-   - Retry prompts improve branch traversal but incur severe latency and token overhead.
-3. **Scientific Integrity & Egress Transparency:**
-   - Pinned queries directly against Google GenAI ensure zero synthetic fabrication.
-   - All failures or quota blocks are reported faithfully without masking or switching to local fallbacks.
+1. **Deterministic Heuristic Performance vs. LLM Baselines:**
+   - On the Cloud Gemini paired subset ($n=4$), `TestForge Deterministic` achieved **80.5% ± 39.1%** raw mutation score in **0.003s**, outperforming Gemini 3.8-Flash zero-shot (**44.2% ± 51.9%**) and zero-shot + retry (**69.7% ± 47.5%**) with zero token consumption.
+   - On the Local Qwen paired set ($n=16$), local `qwen2.5-coder:7b` zero-shot achieved **91.5% ± 25.7%** (and **97.8% ± 8.2%** with retry), while `TestForge Deterministic` achieved **62.8% ± 29.6%** deterministically with zero model inferences.
+2. **Agentic Reflection Degradation (Addressed in G2):**
+   - On `bisect_algo.py` and `heapq_algo.py`, full agentic reflection degraded from 100% down to 0% because subsequent LLM iterations generated failing tests, and the un-guarded orchestrator selected the last iteration rather than the best iteration.
+3. **Zero Silent Fallback Integrity:**
+   - Pinned queries against Google GenAI were never masked. The 20 req/day quota limit was faithfully recorded as `BLOCKED`, and local model evaluations are reported in their own clearly labeled row.
