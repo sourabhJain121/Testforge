@@ -573,4 +573,133 @@ class TestFrontendHeadlessBrowserPlayground:
             assert len(page_errors) == 0, f"Page errors: {page_errors}"
             browser.close()
 
+    def test_b6_benchmark_ablation_table_cell_counts_and_values(self, live_server_url):
+        """
+        Scenario B6: Benchmark & Comparative Ablation Table Cell Alignment & Score Validation (DEF-024).
+        Verifies:
+          1. Header has exactly 9 columns (Scenario, Execution Engine, Runs, Mean Latency, StdDev, Mutation Score, Coverage, Tokens, Cost Accounting).
+          2. Each row has exactly the same cell count as the header (zero shifted columns).
+          3. Execution Engine cell is populated with authentic engine label.
+          4. Mutation Score cell parses to the exact value in the JSON report.
+          5. Title dynamically reads 'Ablation Results' when < 2 scenarios present, and 'Comparative Ablation Results' otherwise.
+          6. Calculated and Estimated detail panels are fully populated without empty gaps.
+        """
+        console_errors: List[str] = []
+        page_errors: List[str] = []
+
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            page = browser.new_page()
+            page.on("pageerror", lambda exc: page_errors.append(str(exc)))
+            page.on("console", lambda msg: console_errors.append(msg.text) if msg.type == "error" else None)
+
+            page.goto(live_server_url)
+            page.wait_for_load_state("domcontentloaded")
+            time.sleep(1.0)
+
+            # 1. Navigate to Benchmark & Ablation pane
+            page.locator("#tab-btn-benchmark").click()
+            time.sleep(0.8)
+
+            # Ensure data is loaded
+            page.evaluate("() => window.__testforge.fetchBenchmarkResults()")
+            time.sleep(1.0)
+
+            # 2. Verify Header Cell Count
+            headers = page.locator("#benchmark-summary-table thead th")
+            header_count = headers.count()
+            assert header_count == 9, f"Expected 9 table headers, got {header_count}"
+            header_texts = [headers.nth(i).inner_text().strip().upper() for i in range(header_count)]
+            assert "SCENARIO" in header_texts[0]
+            assert "EXECUTION ENGINE" in header_texts[1]
+            assert "RUNS" in header_texts[2]
+            assert "LATENCY" in header_texts[3]
+            assert "STDDEV" in header_texts[4]
+            assert "MUTATION SCORE" in header_texts[5]
+            assert "COVERAGE" in header_texts[6]
+            assert "TOKENS" in header_texts[7]
+            assert "COST" in header_texts[8]
+
+            # 3. Read ground-truth benchmark JSON from API
+            res = httpx.get(f"{live_server_url}/api/benchmark/results", timeout=10.0)
+            assert res.status_code == 200
+            report_data = res.json().get("report", {})
+            sc_summaries = report_data.get("scenario_summaries", {})
+            assert len(sc_summaries) > 0, "No scenario summaries found in benchmark report"
+
+            # 4. Verify Each Row's Cell Count and Value Alignment
+            rows = page.locator("#benchmark-summary-table-body tr")
+            row_count = rows.count()
+            assert row_count == len(sc_summaries), f"Expected {len(sc_summaries)} rows, found {row_count}"
+
+            for i in range(row_count):
+                row = rows.nth(i)
+                cells = row.locator("td")
+                cell_count = cells.count()
+                assert cell_count == header_count, (
+                    f"Row {i} has {cell_count} cells, expected {header_count}. "
+                    f"Possible column shift defect!"
+                )
+
+                sc_name = cells.nth(0).inner_text().strip()
+                engine_text = cells.nth(1).inner_text().strip()
+                mut_score_text = cells.nth(5).inner_text().strip()
+
+                assert len(engine_text) > 0 and engine_text != "n/a", (
+                    f"Row {i} ({sc_name}): Execution Engine cell is empty or 'n/a': '{engine_text}'"
+                )
+
+                # Assert mutation score cell parses to the value in the JSON
+                assert "%" in mut_score_text, f"Row {i} ({sc_name}): Mutation Score cell '{mut_score_text}' missing '%'"
+                mut_score_val = float(mut_score_text.replace("%", "").strip())
+                expected_score = sc_summaries[sc_name]["mean_mutation_score"]
+                assert abs(mut_score_val - expected_score) < 0.2, (
+                    f"Row {i} ({sc_name}): Cell score {mut_score_val}% does not match JSON score {expected_score}%"
+                )
+
+            # 5. Verify Panel Title with Multiple Scenarios (Comparative Ablation Results)
+            title = page.locator("#benchmark-summary-table-title").inner_text()
+            assert "Comparative Ablation Results" in title, f"Expected 'Comparative Ablation Results', got '{title}'"
+
+            # 6. Verify Dynamic Title Retitling for < 2 Scenarios ('Ablation Results')
+            single_sc_payload = {
+                "scenario_summaries": {
+                    "baseline": {
+                        "scenario": "baseline",
+                        "execution_engine": "Deterministic AST Baseline",
+                        "runs_completed": 1,
+                        "mean_duration_sec": 7.55,
+                        "stddev_duration_sec": 0.0,
+                        "mean_mutation_score": 31.58,
+                        "mean_line_coverage": 70.0,
+                        "total_tokens_consumed": 0,
+                        "estimated_total_cost_usd": 0.0,
+                    }
+                },
+                "repetitions": 1,
+                "runs": []
+            }
+            page.evaluate("(payload) => window.__testforge.renderBenchmarkReport(payload)", single_sc_payload)
+            time.sleep(0.3)
+
+            single_title = page.locator("#benchmark-summary-table-title").inner_text()
+            assert "Ablation Results" in single_title, f"Expected 'Ablation Results' in single scenario title, got '{single_title}'"
+            assert "Comparative" not in single_title, f"Single scenario title should not contain 'Comparative': '{single_title}'"
+
+            # Verify single scenario row still has exactly 9 cells
+            single_row_cells = page.locator("#benchmark-summary-table-body tr").first.locator("td")
+            assert single_row_cells.count() == 9, f"Single scenario row expected 9 cells, got {single_row_cells.count()}"
+
+            # 7. Verify Calculated & Estimated Panels have No Empty Gaps
+            calc_text = page.locator("#bench-calculated-details").inner_text()
+            assert "mutation_score_pct" in calc_text
+            assert "Awaiting benchmark execution..." not in calc_text
+
+            est_text = page.locator("#bench-estimated-details").inner_text()
+            assert "pricing_model" in est_text or "estimated_cost_usd" in est_text
+            assert "Awaiting benchmark execution..." not in est_text
+
+            assert len(page_errors) == 0, f"Page errors: {page_errors}"
+            browser.close()
+
 

@@ -1,8 +1,8 @@
 {
   "target_file": "samples/discount.py",
-  "timestamp": 1794046658.9855418,
-  "repetitions": 1,
-  "total_duration_sec": 1.556,
+  "timestamp": 1794126537.2854762,
+  "repetitions": 5,
+  "total_duration_sec": 291.704,
   "hardware_summary": "arm64 (Darwin, 10 cores, 16.0GB RAM)",
   "runs": [
     {
@@ -12,7 +12,7 @@
       "error_message": null,
       "metrics": {
         "measured": {
-          "duration_seconds": 1.556,
+          "duration_seconds": 9.262,
           "killed_mutants": 6,
           "total_mutants": 19,
           "survived_mutants": 11,
@@ -46,17 +46,615 @@
           "completion_tokens"
         ]
       }
+    },
+    {
+      "scenario": "baseline",
+      "run_index": 2,
+      "success": true,
+      "error_message": null,
+      "metrics": {
+        "measured": {
+          "duration_seconds": 7.539,
+          "killed_mutants": 6,
+          "total_mutants": 19,
+          "survived_mutants": 11,
+          "timed_out_mutants": 0,
+          "equivalent_mutants": 2,
+          "executed_mutants": 19,
+          "total_tokens": 0,
+          "actual_llm_tokens": 0,
+          "estimated_tokens": 0,
+          "actual_cloud_tokens": 0,
+          "actual_local_tokens": 0,
+          "provider_category": "Deterministic AST",
+          "execution_mode": "DETERMINISTIC_BASELINE",
+          "engine_label": "Deterministic AST Baseline",
+          "failover_occurred": false,
+          "failover_details": null
+        },
+        "calculated": {
+          "mutation_score_pct": 31.58,
+          "raw_mutation_score": 31.58,
+          "adjusted_mutation_score": 35.29,
+          "line_coverage_pct": 70.0,
+          "branch_coverage_pct": 50.0
+        },
+        "estimated": {
+          "estimated_cost_usd": 0.0,
+          "actual_billed_cost_usd": 0.0
+        },
+        "unknown_or_unavailable": [
+          "prompt_tokens",
+          "completion_tokens"
+        ]
+      }
+    },
+    {
+      "scenario": "baseline",
+      "run_index": 3,
+      "success": true,
+      "error_message": null,
+      "metrics": {
+        "measured": {
+          "duration_seconds": 7.291,
+          "killed_mutants": 6,
+          "total_mutants": 19,
+          "survived_mutants": 11,
+          "timed_out_mutants": 0,
+          "equivalent_mutants": 2,
+          "executed_mutants": 19,
+          "total_tokens": 0,
+          "actual_llm_tokens": 0,
+          "estimated_tokens": 0,
+          "actual_cloud_tokens": 0,
+          "actual_local_tokens": 0,
+          "provider_category": "Deterministic AST",
+          "execution_mode": "DETERMINISTIC_BASELINE",
+          "engine_label": "Deterministic AST Baseline",
+          "failover_occurred": false,
+          "failover_details": null
+        },
+        "calculated": {
+          "mutation_score_pct": 31.58,
+          "raw_mutation_score": 31.58,
+          "adjusted_mutation_score": 35.29,
+          "line_coverage_pct": 70.0,
+          "branch_coverage_pct": 50.0
+        },
+        "estimated": {
+          "estimated_cost_usd": 0.0,
+          "actual_billed_cost_usd": 0.0
+        },
+        "unknown_or_unavailable": [
+          "prompt_tokens",
+          "completion_tokens"
+        ]
+      }
+    },
+    {
+      "scenario": "baseline",
+      "run_index": 4,
+      "success": true,
+      "error_message": null,
+      "metrics": {
+        "measured": {
+          "duration_seconds": 6.884,
+          "killed_mutants": 6,
+          "total_mutants": 19,
+          "survived_mutants": 11,
+          "timed_out_mutants": 0,
+          "equivalent_mutants": 2,
+          "executed_mutants": 19,
+          "total_tokens": 0,
+          "actual_llm_tokens": 0,
+          "estimated_tokens": 0,
+          "actual_cloud_tokens": 0,
+          "actual_local_tokens": 0,
+          "provider_category": "Deterministic AST",
+          "execution_mode": "DETERMINISTIC_BASELINE",
+          "engine_label": "Deterministic AST Baseline",
+          "failover_occurred": false,
+          "failover_details": null
+        },
+        "calculated": {
+          "mutation_score_pct": 31.58,
+          "raw_mutation_score": 31.58,
+          "adjusted_mutation_score": 35.29,
+          "line_coverage_pct": 70.0,
+          "branch_coverage_pct": 50.0
+        },
+        "estimated": {
+          "estimated_cost_usd": 0.0,
+          "actual_billed_cost_usd": 0.0
+        },
+        "unknown_or_unavailable": [
+          "prompt_tokens",
+          "completion_tokens"
+        ]
+      }
+    },
+    {
+      "scenario": "baseline",
+      "run_index": 5,
+      "success": true,
+      "error_message": null,
+      "metrics": {
+        "measured": {
+          "duration_seconds": 6.787,
+          "killed_mutants": 6,
+          "total_mutants": 19,
+          "survived_mutants": 11,
+          "timed_out_mutants": 0,
+          "equivalent_mutants": 2,
+          "executed_mutants": 19,
+          "total_tokens": 0,
+          "actual_llm_tokens": 0,
+          "estimated_tokens": 0,
+          "actual_cloud_tokens": 0,
+          "actual_local_tokens": 0,
+          "provider_category": "Deterministic AST",
+          "execution_mode": "DETERMINISTIC_BASELINE",
+          "engine_label": "Deterministic AST Baseline",
+          "failover_occurred": false,
+          "failover_details": null
+        },
+        "calculated": {
+          "mutation_score_pct": 31.58,
+          "raw_mutation_score": 31.58,
+          "adjusted_mutation_score": 35.29,
+          "line_coverage_pct": 70.0,
+          "branch_coverage_pct": 50.0
+        },
+        "estimated": {
+          "estimated_cost_usd": 0.0,
+          "actual_billed_cost_usd": 0.0
+        },
+        "unknown_or_unavailable": [
+          "prompt_tokens",
+          "completion_tokens"
+        ]
+      }
+    },
+    {
+      "scenario": "zeroshot",
+      "run_index": 1,
+      "success": true,
+      "error_message": null,
+      "metrics": {
+        "measured": {
+          "duration_seconds": 15.926,
+          "killed_mutants": 0,
+          "total_mutants": 19,
+          "survived_mutants": 19,
+          "timed_out_mutants": 0,
+          "equivalent_mutants": 0,
+          "executed_mutants": 0,
+          "total_tokens": 3810,
+          "actual_llm_tokens": 3810,
+          "estimated_tokens": 0,
+          "actual_cloud_tokens": 3810,
+          "actual_local_tokens": 0,
+          "actual_prompt_tokens": 634,
+          "actual_completion_tokens": 767,
+          "estimated_prompt_tokens": 0,
+          "estimated_completion_tokens": 0,
+          "provider_category": "Cloud LLM",
+          "execution_mode": "LIVE_MODEL (Gemini \u2013 gemini-3.6-flash (Cloud))",
+          "engine_label": "Gemini \u2013 gemini-3.6-flash (Cloud)",
+          "failover_occurred": false,
+          "failover_details": null
+        },
+        "calculated": {
+          "mutation_score_pct": 0.0,
+          "raw_mutation_score": 0.0,
+          "adjusted_mutation_score": 0.0,
+          "line_coverage_pct": 100.0,
+          "branch_coverage_pct": 100.0
+        },
+        "estimated": {
+          "estimated_cost_usd": 0.000278,
+          "actual_billed_cost_usd": 0.000278
+        },
+        "unknown_or_unavailable": []
+      }
+    },
+    {
+      "scenario": "zeroshot",
+      "run_index": 2,
+      "success": true,
+      "error_message": null,
+      "metrics": {
+        "measured": {
+          "duration_seconds": 21.466,
+          "killed_mutants": 18,
+          "total_mutants": 19,
+          "survived_mutants": 0,
+          "timed_out_mutants": 0,
+          "equivalent_mutants": 1,
+          "executed_mutants": 19,
+          "total_tokens": 3061,
+          "actual_llm_tokens": 3061,
+          "estimated_tokens": 0,
+          "actual_cloud_tokens": 3061,
+          "actual_local_tokens": 0,
+          "actual_prompt_tokens": 634,
+          "actual_completion_tokens": 839,
+          "estimated_prompt_tokens": 0,
+          "estimated_completion_tokens": 0,
+          "provider_category": "Cloud LLM",
+          "execution_mode": "LIVE_MODEL (Gemini \u2013 gemini-3.6-flash (Cloud))",
+          "engine_label": "Gemini \u2013 gemini-3.6-flash (Cloud)",
+          "failover_occurred": false,
+          "failover_details": null
+        },
+        "calculated": {
+          "mutation_score_pct": 94.74,
+          "raw_mutation_score": 94.74,
+          "adjusted_mutation_score": 100.0,
+          "line_coverage_pct": 100.0,
+          "branch_coverage_pct": 100.0
+        },
+        "estimated": {
+          "estimated_cost_usd": 0.000299,
+          "actual_billed_cost_usd": 0.000299
+        },
+        "unknown_or_unavailable": []
+      }
+    },
+    {
+      "scenario": "zeroshot",
+      "run_index": 3,
+      "success": true,
+      "error_message": null,
+      "metrics": {
+        "measured": {
+          "duration_seconds": 25.288,
+          "killed_mutants": 18,
+          "total_mutants": 19,
+          "survived_mutants": 0,
+          "timed_out_mutants": 0,
+          "equivalent_mutants": 1,
+          "executed_mutants": 19,
+          "total_tokens": 4239,
+          "actual_llm_tokens": 4239,
+          "estimated_tokens": 0,
+          "actual_cloud_tokens": 4239,
+          "actual_local_tokens": 0,
+          "actual_prompt_tokens": 634,
+          "actual_completion_tokens": 675,
+          "estimated_prompt_tokens": 0,
+          "estimated_completion_tokens": 0,
+          "provider_category": "Cloud LLM",
+          "execution_mode": "LIVE_MODEL (Gemini \u2013 gemini-3.6-flash (Cloud))",
+          "engine_label": "Gemini \u2013 gemini-3.6-flash (Cloud)",
+          "failover_occurred": false,
+          "failover_details": null
+        },
+        "calculated": {
+          "mutation_score_pct": 94.74,
+          "raw_mutation_score": 94.74,
+          "adjusted_mutation_score": 100.0,
+          "line_coverage_pct": 100.0,
+          "branch_coverage_pct": 100.0
+        },
+        "estimated": {
+          "estimated_cost_usd": 0.00025,
+          "actual_billed_cost_usd": 0.00025
+        },
+        "unknown_or_unavailable": []
+      }
+    },
+    {
+      "scenario": "zeroshot",
+      "run_index": 4,
+      "success": true,
+      "error_message": null,
+      "metrics": {
+        "measured": {
+          "duration_seconds": 18.992,
+          "killed_mutants": 18,
+          "total_mutants": 19,
+          "survived_mutants": 0,
+          "timed_out_mutants": 0,
+          "equivalent_mutants": 1,
+          "executed_mutants": 19,
+          "total_tokens": 2818,
+          "actual_llm_tokens": 2818,
+          "estimated_tokens": 0,
+          "actual_cloud_tokens": 2818,
+          "actual_local_tokens": 0,
+          "actual_prompt_tokens": 634,
+          "actual_completion_tokens": 796,
+          "estimated_prompt_tokens": 0,
+          "estimated_completion_tokens": 0,
+          "provider_category": "Cloud LLM",
+          "execution_mode": "LIVE_MODEL (Gemini \u2013 gemini-3.6-flash (Cloud))",
+          "engine_label": "Gemini \u2013 gemini-3.6-flash (Cloud)",
+          "failover_occurred": false,
+          "failover_details": null
+        },
+        "calculated": {
+          "mutation_score_pct": 94.74,
+          "raw_mutation_score": 94.74,
+          "adjusted_mutation_score": 100.0,
+          "line_coverage_pct": 100.0,
+          "branch_coverage_pct": 100.0
+        },
+        "estimated": {
+          "estimated_cost_usd": 0.000286,
+          "actual_billed_cost_usd": 0.000286
+        },
+        "unknown_or_unavailable": []
+      }
+    },
+    {
+      "scenario": "zeroshot",
+      "run_index": 5,
+      "success": true,
+      "error_message": null,
+      "metrics": {
+        "measured": {
+          "duration_seconds": 20.633,
+          "killed_mutants": 18,
+          "total_mutants": 19,
+          "survived_mutants": 0,
+          "timed_out_mutants": 0,
+          "equivalent_mutants": 1,
+          "executed_mutants": 19,
+          "total_tokens": 2979,
+          "actual_llm_tokens": 2979,
+          "estimated_tokens": 0,
+          "actual_cloud_tokens": 2979,
+          "actual_local_tokens": 0,
+          "actual_prompt_tokens": 634,
+          "actual_completion_tokens": 905,
+          "estimated_prompt_tokens": 0,
+          "estimated_completion_tokens": 0,
+          "provider_category": "Cloud LLM",
+          "execution_mode": "LIVE_MODEL (Gemini \u2013 gemini-3.6-flash (Cloud))",
+          "engine_label": "Gemini \u2013 gemini-3.6-flash (Cloud)",
+          "failover_occurred": false,
+          "failover_details": null
+        },
+        "calculated": {
+          "mutation_score_pct": 94.74,
+          "raw_mutation_score": 94.74,
+          "adjusted_mutation_score": 100.0,
+          "line_coverage_pct": 100.0,
+          "branch_coverage_pct": 100.0
+        },
+        "estimated": {
+          "estimated_cost_usd": 0.000319,
+          "actual_billed_cost_usd": 0.000319
+        },
+        "unknown_or_unavailable": []
+      }
+    },
+    {
+      "scenario": "agentic_reflection",
+      "run_index": 1,
+      "success": true,
+      "error_message": null,
+      "metrics": {
+        "measured": {
+          "duration_seconds": 30.604,
+          "killed_mutants": 18,
+          "total_mutants": 19,
+          "survived_mutants": 0,
+          "iterations": 2,
+          "total_tokens": 0,
+          "actual_llm_tokens": 0,
+          "estimated_tokens": 0,
+          "actual_cloud_tokens": 0,
+          "actual_local_tokens": 0,
+          "actual_prompt_tokens": 0,
+          "actual_completion_tokens": 0,
+          "estimated_prompt_tokens": 0,
+          "estimated_completion_tokens": 0,
+          "provider_category": "Deterministic AST",
+          "execution_mode": "OFFLINE_REFLECTION (Deterministic AST Synthesizer with Multi-Agent Reflection)",
+          "engine_label": "Deterministic AST Synthesizer with Multi-Agent Reflection",
+          "failover_occurred": false,
+          "failover_details": null
+        },
+        "calculated": {
+          "mutation_score_pct": 94.74,
+          "raw_mutation_score": 94.74,
+          "adjusted_mutation_score": 100.0,
+          "line_coverage_pct": 100.0,
+          "branch_coverage_pct": 100.0
+        },
+        "estimated": {
+          "estimated_cost_usd": 0.0,
+          "actual_billed_cost_usd": 0.0
+        },
+        "unknown_or_unavailable": [
+          "actual_api_tokens_unavailable_in_offline_mode"
+        ]
+      }
+    },
+    {
+      "scenario": "agentic_reflection",
+      "run_index": 2,
+      "success": true,
+      "error_message": null,
+      "metrics": {
+        "measured": {
+          "duration_seconds": 28.595,
+          "killed_mutants": 18,
+          "total_mutants": 19,
+          "survived_mutants": 0,
+          "iterations": 2,
+          "total_tokens": 0,
+          "actual_llm_tokens": 0,
+          "estimated_tokens": 0,
+          "actual_cloud_tokens": 0,
+          "actual_local_tokens": 0,
+          "actual_prompt_tokens": 0,
+          "actual_completion_tokens": 0,
+          "estimated_prompt_tokens": 0,
+          "estimated_completion_tokens": 0,
+          "provider_category": "Deterministic AST",
+          "execution_mode": "OFFLINE_REFLECTION (Deterministic AST Synthesizer with Multi-Agent Reflection)",
+          "engine_label": "Deterministic AST Synthesizer with Multi-Agent Reflection",
+          "failover_occurred": false,
+          "failover_details": null
+        },
+        "calculated": {
+          "mutation_score_pct": 94.74,
+          "raw_mutation_score": 94.74,
+          "adjusted_mutation_score": 100.0,
+          "line_coverage_pct": 100.0,
+          "branch_coverage_pct": 100.0
+        },
+        "estimated": {
+          "estimated_cost_usd": 0.0,
+          "actual_billed_cost_usd": 0.0
+        },
+        "unknown_or_unavailable": [
+          "actual_api_tokens_unavailable_in_offline_mode"
+        ]
+      }
+    },
+    {
+      "scenario": "agentic_reflection",
+      "run_index": 3,
+      "success": true,
+      "error_message": null,
+      "metrics": {
+        "measured": {
+          "duration_seconds": 28.905,
+          "killed_mutants": 18,
+          "total_mutants": 19,
+          "survived_mutants": 0,
+          "iterations": 2,
+          "total_tokens": 0,
+          "actual_llm_tokens": 0,
+          "estimated_tokens": 0,
+          "actual_cloud_tokens": 0,
+          "actual_local_tokens": 0,
+          "actual_prompt_tokens": 0,
+          "actual_completion_tokens": 0,
+          "estimated_prompt_tokens": 0,
+          "estimated_completion_tokens": 0,
+          "provider_category": "Deterministic AST",
+          "execution_mode": "OFFLINE_REFLECTION (Deterministic AST Synthesizer with Multi-Agent Reflection)",
+          "engine_label": "Deterministic AST Synthesizer with Multi-Agent Reflection",
+          "failover_occurred": false,
+          "failover_details": null
+        },
+        "calculated": {
+          "mutation_score_pct": 94.74,
+          "raw_mutation_score": 94.74,
+          "adjusted_mutation_score": 100.0,
+          "line_coverage_pct": 100.0,
+          "branch_coverage_pct": 100.0
+        },
+        "estimated": {
+          "estimated_cost_usd": 0.0,
+          "actual_billed_cost_usd": 0.0
+        },
+        "unknown_or_unavailable": [
+          "actual_api_tokens_unavailable_in_offline_mode"
+        ]
+      }
+    },
+    {
+      "scenario": "agentic_reflection",
+      "run_index": 4,
+      "success": true,
+      "error_message": null,
+      "metrics": {
+        "measured": {
+          "duration_seconds": 29.869,
+          "killed_mutants": 18,
+          "total_mutants": 19,
+          "survived_mutants": 0,
+          "iterations": 2,
+          "total_tokens": 0,
+          "actual_llm_tokens": 0,
+          "estimated_tokens": 0,
+          "actual_cloud_tokens": 0,
+          "actual_local_tokens": 0,
+          "actual_prompt_tokens": 0,
+          "actual_completion_tokens": 0,
+          "estimated_prompt_tokens": 0,
+          "estimated_completion_tokens": 0,
+          "provider_category": "Deterministic AST",
+          "execution_mode": "OFFLINE_REFLECTION (Deterministic AST Synthesizer with Multi-Agent Reflection)",
+          "engine_label": "Deterministic AST Synthesizer with Multi-Agent Reflection",
+          "failover_occurred": false,
+          "failover_details": null
+        },
+        "calculated": {
+          "mutation_score_pct": 94.74,
+          "raw_mutation_score": 94.74,
+          "adjusted_mutation_score": 100.0,
+          "line_coverage_pct": 100.0,
+          "branch_coverage_pct": 100.0
+        },
+        "estimated": {
+          "estimated_cost_usd": 0.0,
+          "actual_billed_cost_usd": 0.0
+        },
+        "unknown_or_unavailable": [
+          "actual_api_tokens_unavailable_in_offline_mode"
+        ]
+      }
+    },
+    {
+      "scenario": "agentic_reflection",
+      "run_index": 5,
+      "success": true,
+      "error_message": null,
+      "metrics": {
+        "measured": {
+          "duration_seconds": 31.516,
+          "killed_mutants": 18,
+          "total_mutants": 19,
+          "survived_mutants": 0,
+          "iterations": 2,
+          "total_tokens": 0,
+          "actual_llm_tokens": 0,
+          "estimated_tokens": 0,
+          "actual_cloud_tokens": 0,
+          "actual_local_tokens": 0,
+          "actual_prompt_tokens": 0,
+          "actual_completion_tokens": 0,
+          "estimated_prompt_tokens": 0,
+          "estimated_completion_tokens": 0,
+          "provider_category": "Deterministic AST",
+          "execution_mode": "OFFLINE_REFLECTION (Deterministic AST Synthesizer with Multi-Agent Reflection)",
+          "engine_label": "Deterministic AST Synthesizer with Multi-Agent Reflection",
+          "failover_occurred": false,
+          "failover_details": null
+        },
+        "calculated": {
+          "mutation_score_pct": 94.74,
+          "raw_mutation_score": 94.74,
+          "adjusted_mutation_score": 100.0,
+          "line_coverage_pct": 100.0,
+          "branch_coverage_pct": 100.0
+        },
+        "estimated": {
+          "estimated_cost_usd": 0.0,
+          "actual_billed_cost_usd": 0.0
+        },
+        "unknown_or_unavailable": [
+          "actual_api_tokens_unavailable_in_offline_mode"
+        ]
+      }
     }
   ],
   "scenario_summaries": {
     "baseline": {
       "scenario": "baseline",
-      "runs_completed": 1,
+      "runs_completed": 5,
       "runs_failed": 0,
-      "mean_duration_sec": 1.556,
-      "stddev_duration_sec": null,
-      "min_duration_sec": 1.556,
-      "max_duration_sec": 1.556,
+      "mean_duration_sec": 7.553,
+      "stddev_duration_sec": 1.003,
+      "min_duration_sec": 6.787,
+      "max_duration_sec": 9.262,
       "mean_mutation_score": 31.58,
       "mean_adjusted_mutation_score": 35.29,
       "mean_line_coverage": 70.0,
@@ -68,6 +666,56 @@
       "actual_local_tokens": 0,
       "provider_category": "Deterministic AST",
       "execution_engine": "Deterministic AST Baseline",
+      "estimated_total_cost_usd": 0.0,
+      "actual_billed_cost_usd": 0.0,
+      "local_compute_cost": "N/A",
+      "failover_occurred": false,
+      "failover_details": null
+    },
+    "zeroshot": {
+      "scenario": "zeroshot",
+      "runs_completed": 5,
+      "runs_failed": 0,
+      "mean_duration_sec": 20.461,
+      "stddev_duration_sec": 3.43,
+      "min_duration_sec": 15.926,
+      "max_duration_sec": 25.288,
+      "mean_mutation_score": 75.79,
+      "mean_adjusted_mutation_score": 80.0,
+      "mean_line_coverage": 100.0,
+      "mean_branch_coverage": 100.0,
+      "total_tokens_consumed": 16907,
+      "actual_llm_tokens": 16907,
+      "estimated_tokens": 0,
+      "actual_cloud_tokens": 16907,
+      "actual_local_tokens": 0,
+      "provider_category": "Cloud LLM",
+      "execution_engine": "Gemini \u2013 gemini-3.6-flash (Cloud)",
+      "estimated_total_cost_usd": 0.001432,
+      "actual_billed_cost_usd": 0.001432,
+      "local_compute_cost": "N/A",
+      "failover_occurred": false,
+      "failover_details": null
+    },
+    "agentic_reflection": {
+      "scenario": "agentic_reflection",
+      "runs_completed": 5,
+      "runs_failed": 0,
+      "mean_duration_sec": 29.898,
+      "stddev_duration_sec": 1.204,
+      "min_duration_sec": 28.595,
+      "max_duration_sec": 31.516,
+      "mean_mutation_score": 94.74,
+      "mean_adjusted_mutation_score": 100.0,
+      "mean_line_coverage": 100.0,
+      "mean_branch_coverage": 100.0,
+      "total_tokens_consumed": 0,
+      "actual_llm_tokens": 0,
+      "estimated_tokens": 0,
+      "actual_cloud_tokens": 0,
+      "actual_local_tokens": 0,
+      "provider_category": "Deterministic AST",
+      "execution_engine": "Deterministic AST Synthesizer with Multi-Agent Reflection",
       "estimated_total_cost_usd": 0.0,
       "actual_billed_cost_usd": 0.0,
       "local_compute_cost": "N/A",

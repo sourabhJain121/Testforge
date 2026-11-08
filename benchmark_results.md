@@ -1,15 +1,17 @@
 # Comparison of Deterministic Baseline, Local LLM Zero-Shot Generation, and Offline Multi-Agent Reflection
 - **Target File:** `samples/discount.py`
-- **Timestamp:** 2026-11-07 15:47:38
-- **Repetitions per Scenario:** 1
-- **Total Benchmark Duration (Wall-Clock):** 1.56s
+- **Timestamp:** 2026-11-08 13:58:57
+- **Repetitions per Scenario:** 5
+- **Total Benchmark Duration (Wall-Clock):** 291.70s
 - **Hardware Platform:** arm64 (Darwin, 10 cores, 16.0GB RAM)
 
 ## Scenario Performance Summary
 
 | Scenario | Category | Execution Engine | Runs | Mean Latency (s) | StdDev (s) | Min/Max (s) | Mutation Score | Line Coverage | Local Tokens | Cloud Tokens | Cloud Cost (USD) | Local Compute Cost |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| **baseline** | Deterministic AST | Deterministic AST Baseline | 1/1 | 1.56s | N/A (1 obs) | 1.56s / 1.56s | 31.6% (Adj: 35.3%) | 70.0% | 0 | 0 | $0.00000 | N/A |
+| **baseline** | Deterministic AST | Deterministic AST Baseline | 5/5 | 7.55s | ±1.00s | 6.79s / 9.26s | 31.6% (Adj: 35.3%) | 70.0% | 0 | 0 | $0.00000 | N/A |
+| **zeroshot** | Cloud LLM | Gemini – gemini-3.6-flash (Cloud) | 5/5 | 20.46s | ±3.43s | 15.93s / 25.29s | 75.8% (Adj: 80.0%) | 100.0% | 0 | 16,907 | $0.00143 | N/A |
+| **agentic_reflection** | Deterministic AST | Deterministic AST Synthesizer with Multi-Agent Reflection | 5/5 | 29.90s | ±1.20s | 28.59s / 31.52s | 94.7% (Adj: 100.0%) | 100.0% | 0 | 0 | $0.00000 | N/A |
 
 ## Metric Integrity Disclosure & Experimental Methodology
 > [!NOTE]
