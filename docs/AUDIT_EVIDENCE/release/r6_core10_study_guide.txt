@@ -1,0 +1,76 @@
+/Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/google/cloud/aiplatform/models.py:52: FutureWarning: Support for google-cloud-storage < 3.0.0 will be removed in a future version of google-cloud-aiplatform. Please upgrade to google-cloud-storage >= 3.0.0.
+  from google.cloud.aiplatform.utils import gcs_utils
+Invalid config for agent reflection_repair_agent: output_schema cannot co-exist with agent transfer configurations. Setting disallow_transfer_to_parent=True, disallow_transfer_to_peers=True
+=== VERIFYING CORE-10 STUDY GUIDE EXERCISES ===
+
+[Exercise 1: Orchestrator]
+==========================================================
+       TESTFORGE: AUTONOMOUS TEST HARDENING ENGINE        
+Hardware: Apple Silicon M-Series | Cores: 10 | Workers: 8
+Foundation Model: Google GenAI Live (gemini-3.6-flash)
+==========================================================
+
+[Step 1/6] Synthesizing initial candidate test suite...
+[Step 2/6] Sandbox validating test suite against clean target (pass@1 check)...
+[✓] Candidate test suite passed on clean code (9/9 tests passed).
+[✓] Baseline Line Coverage: 100.0% (1/1 lines covered) | Branch Coverage: 100.0%
+(0/0 branches covered)
+
+▶ Iteration 1 of 1 (Target Score: 85.0%)
+  • AST Mutator injected 5 deterministic faults.
+  • TestExecutionAgent evaluating mutants across 8 CPU workers...
+                  Iteration 1 Benchmark (M2 AST & Equivalence)                  
+┏━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━┓
+┃  Total  ┃        ┃          ┃         ┃       ┃   Raw    ┃   Adj   ┃         ┃
+┃ Mutants ┃ Killed ┃ Survived ┃ Timeou… ┃ Equiv ┃  Score   ┃  Score  ┃ Elapsed ┃
+┡━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━┩
+│    5    │   5    │    0     │    0    │   0   │  100.0%  │ 100.0%  │  0.52s  │
+└─────────┴────────┴──────────┴─────────┴───────┴──────────┴─────────┴─────────┘
+✔ SUCCESS: Target mutation score achieved (Raw: 100.0%, Adjusted: 100.0% >= 
+85.0% with 100.0% line coverage, 0 verified equivalent mutants excluded).
+
+/Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/pydantic_settings/sources/utils.py:51: IncompleteFieldDefinitionWarning: Field 'lifespan' has an incomplete definition: its annotation contains an unresolved forward reference, so settings sources may fail to correctly resolve its value. Call `model_rebuild()` on the model where the field is defined, once all the referenced types are defined.
+  warnings.warn(  # noqa: B028  (called from many sources at differing depths, so no stacklevel is correct)
+[11/08/26 13:34:19] INFO     WebSocketEventHub attached to  websocket_hub.py:158
+                             CallbackRegistry                                   
+                             (sub_id=229256f8-69f9-4f21-857                     
+                             3-895ecaaba2db)                                    
+                    INFO     HTTP Request: GET                   _client.py:1025
+                             http://testserver/healthz "HTTP/1.1                
+                             200 OK"                                            
+Monotonic final score: 100.0
+
+[Exercise 2: AST Mutator]
+Generated 5 AST mutants:
+  [RETURN_VAL] line 1: def is_even(n): return n % 2 == 0 -> def is_even(n):
+    return None
+  [COMP_OP] line 1: def is_even(n): return n % 2 == 0 -> def is_even(n):
+    return n % 2 != 0
+  [OFF_BY_ONE] line 1: def is_even(n): return n % 2 == 0 -> def is_even(n):
+    return n % 2 == 1
+
+[Exercise 3: Blackboard]
+Checkpoints persisted: 2 | Latest ID: chk_6c8c3ff14956
+
+[Exercise 4: Sandbox]
+Baseline passed: True | Statements: 1
+
+[Exercise 5: Equivalence]
+Equivalence status: UNKNOWN | Confidence: NONE
+
+[Exercise 6: Intelligent Synthesizer]
+Synthesized 15 tests in 1598 chars of code.
+
+[Exercise 7: Security Guardrail]
+Allowed: False | Violations: ['SEC_AST_OS_COMMAND']
+
+[Exercise 8: A2A Broker]
+Registered A2A handlers: ['agent_alpha']
+
+[Exercise 9: FastMCP Server]
+MCP server name: testforge-mcp-server
+
+[Exercise 10: FastAPI Server]
+Server healthz status: {'status': 'healthy', 'service': 'testforge-backend', 'version': '2.0.0', 'timestamp': 1794125059.055843}
+
+=== ALL 10 CORE EXERCISES VERIFIED SUCCESSFULLY ===
