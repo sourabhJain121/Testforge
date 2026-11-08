@@ -56,7 +56,7 @@ We benchmarked TestForge's AST mutation engine against **`mutmut v3.8.1`** (the 
 - `order_fsm.py`: 90.7% mutmut vs 97.2% TestForge
 - `stats_calculator.py`: 50.7% mutmut vs 49.3% TestForge
 - Macro average: **66.02% mutmut vs 68.05% TestForge**.
-- Pearson correlation coefficient: **$r = 0.9988$**, proving that TestForge's deterministic AST mutator mirrors established industry engines with near-perfect fidelity.
+- Pearson correlation coefficient: **$r = 0.9988$** ($N=4$, $df=2$), demonstrating high ordinal agreement across benchmark complexity profiles (with the caveat that parametric power is limited by $N=4$).
 
 ---
 

@@ -19,8 +19,8 @@ To rigorously prove that TestForge mutation scores are not an artifact of intern
 | **TestForge (Raw)** | **68.05%** | Python AST | None (raw killed/total) | Parallel in-process / Docker sandbox |
 | **TestForge (Adjusted)** | **70.52%** | Python AST | Static & Bytecode Equivalence | Suppressed dead-code fallbacks |
 
-> **Pearson Correlation Coefficient**: $r = 0.9988$  
-> Demonstrates an extremely strong linear correlation between independent mutation systems.
+> **Pearson Correlation Coefficient**: $r = 0.9988$ ($N=4$, $df=2$)  
+> *Methodological Note:* While the Pearson correlation across the 4 canonical targets reflects high ordinal score concordance, sample size $N=4$ has limited parametric statistical power. The metric should be interpreted as an empirical demonstration of monotonic agreement across varied difficulty levels rather than asymptotic proof.
 
 ---
 
