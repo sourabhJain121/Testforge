@@ -112,6 +112,9 @@ class TraceLogger:
         self.log_path = log_path
         self.default_workflow_id: Optional[str] = None
         self.default_correlation_id: Optional[str] = None
+        self._session_actual_llm_tokens: int = 0
+        self._session_total_tokens: int = 0
+        self._session_events: list[Dict[str, Any]] = []
         log_dir = os.path.dirname(self.log_path)
         if log_dir and not os.path.exists(log_dir):
             os.makedirs(log_dir, exist_ok=True)
@@ -146,6 +149,21 @@ class TraceLogger:
             "data": data,
             "metadata": meta
         }
+        self._session_events.append(record)
+        if len(self._session_events) > 5000:
+            self._session_events.pop(0)
+
+        # Auto-rotate log if larger than 10MB to prevent unbounded disk & memory bloat
+        try:
+            if os.path.exists(self.log_path) and os.path.getsize(self.log_path) > 10 * 1024 * 1024:
+                old_path = self.log_path + ".old"
+                if os.path.exists(old_path):
+                    os.remove(old_path)
+                os.rename(self.log_path, old_path)
+                TraceLogger._FILE_CACHES.pop(os.path.abspath(self.log_path), None)
+        except Exception:
+            pass
+
         with open(self.log_path, "a", encoding="utf-8") as f:
             f.write(json.dumps(record) + "\n")
 
@@ -253,6 +271,9 @@ class TraceLogger:
             "prompt_excerpt": prompt[:300] + ("..." if len(prompt) > 300 else ""),
             "response_snippet": response_text[:300] + ("..." if len(response_text) > 300 else "")
         }
+        if is_actual_llm:
+            self._session_actual_llm_tokens += actual_t
+        self._session_total_tokens += (actual_t if is_actual_llm else est_t)
         self.log_event("LLM_INFERENCE_TELEMETRY", payload, correlation_id=correlation_id, workflow_id=workflow_id)
 
     def get_token_summary(
@@ -391,6 +412,8 @@ class TraceLogger:
         Calculates total tokens consumed. By default (actual_only=True),
         returns strictly genuine LLM provider tokens, excluding offline deterministic estimates.
         """
+        if traces is None and not correlation_id and not workflow_id and (self._session_actual_llm_tokens > 0 or self._session_total_tokens > 0):
+            return self._session_actual_llm_tokens if actual_only else self._session_total_tokens
         summary = self.get_token_summary(traces=traces, correlation_id=correlation_id, workflow_id=workflow_id)
         return summary["actual_llm_tokens"] if actual_only else summary["total_tokens"]
 
@@ -431,6 +454,9 @@ class TraceLogger:
                         traces.append(json.loads(line))
                     except json.JSONDecodeError:
                         pass
+
+        if len(traces) > 10000:
+            traces = traces[-10000:]
 
         TraceLogger._FILE_CACHES[abs_path] = {
             "traces": traces,

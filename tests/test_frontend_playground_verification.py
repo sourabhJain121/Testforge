@@ -332,7 +332,7 @@ class TestFrontendHeadlessBrowserPlayground:
             page.wait_for_selector("#hardening-progress-box:not(.hidden)", timeout=8000)
 
             # Wait for job completion (percent says FINALIZED)
-            page.wait_for_selector("#hardening-percent-text:has-text('FINALIZED')", timeout=120000)
+            page.wait_for_selector("#hardening-percent-text:has-text('FINALIZED')", timeout=45000)
             time.sleep(1.0)
 
             # Assert non-zero mutation score and coverage
@@ -407,7 +407,7 @@ class TestFrontendHeadlessBrowserPlayground:
 
             # Trigger hardening pipeline on custom target
             page.locator("#btn-start-hardening").click()
-            page.wait_for_selector("#hardening-percent-text:has-text('FINALIZED')", timeout=120000)
+            page.wait_for_selector("#hardening-percent-text:has-text('FINALIZED')", timeout=45000)
             time.sleep(1.0)
 
             # Check final mutation score
@@ -488,7 +488,7 @@ class TestFrontendHeadlessBrowserPlayground:
             page.locator("#tab-btn-lab").click()
             time.sleep(0.5)
             page.locator("#btn-start-hardening").click()
-            page.wait_for_selector("#hardening-percent-text:has-text('FINALIZED')", timeout=120000)
+            page.wait_for_selector("#hardening-percent-text:has-text('FINALIZED')", timeout=45000)
             time.sleep(1.0)
 
             # 1. Diff Inspector: Click on a mutant row in mutants table
