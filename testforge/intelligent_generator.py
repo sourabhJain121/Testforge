@@ -1665,8 +1665,13 @@ class IntelligentASTSynthesizer:
         result.mutants_targeted = targeted_mutants
         return tests
 
-    def _build_nominal_args_dict(self, sig: CallableInfo) -> Tuple[List[Any], Dict[str, Any]]:
+    def _build_nominal_args_dict(self, sig: CallableInfo, analyzer: Optional[Any] = None) -> Tuple[List[Any], Dict[str, Any]]:
         """Synthesizes type-appropriate nominal argument values for a signature."""
+        if analyzer is None and sig.node is not None:
+            analyzer = ASTCallableAnalyzer(sig.node, sig.pos_args + sig.kwonly_args)
+            analyzer.visit(sig.node)
+        str_sets = analyzer.string_sets if analyzer else {}
+
         pos_vals: List[Any] = []
         for p in sig.pos_args:
             t = sig.arg_types.get(p, "").lower()
@@ -1677,8 +1682,10 @@ class IntelligentASTSynthesizer:
                 pos_vals.append(2)
             elif t == "bool":
                 pos_vals.append(False)
-            elif t == "str":
-                if "country" in p_low:
+            elif t == "str" or t.startswith("str"):
+                if p in str_sets and str_sets[p]:
+                    pos_vals.append(sorted(list(str_sets[p]))[0])
+                elif "country" in p_low:
                     pos_vals.append("US")
                 elif "tier" in p_low:
                     pos_vals.append("REGULAR")
@@ -1698,13 +1705,21 @@ class IntelligentASTSynthesizer:
                     pos_vals.append("ORD-001")
                 elif "key" in p_low:
                     pos_vals.append("key_1")
+                elif "player" in p_low:
+                    pos_vals.append("X")
                 else:
                     pos_vals.append("test")
-            elif t in ("list", "sequence") or t.startswith("list") or "list[" in t or t.startswith("sequence") or "sequence[" in t or p_low in ("values", "items", "numbers"):
-                if any(x in t for x in ("float", "int", "number")) or any(x in p_low for x in ("val", "num", "point", "score")):
+            elif t in ("list", "sequence") or t.startswith("list") or "list[" in t or t.startswith("sequence") or "sequence[" in t or p_low in ("values", "items", "numbers", "leaves", "board"):
+                if "list[list" in t or any(x in p_low for x in ("board", "grid", "matrix")):
+                    pos_vals.append([[" " for _ in range(3)] for _ in range(3)])
+                elif any(x in t for x in ("float", "int", "number")) or any(x in p_low for x in ("val", "num", "point", "score")):
                     pos_vals.append([10.0, 20.0, 30.0, 40.0, 50.0])
-                else:
+                elif any(x in t for x in ("str", "text", "string")) or any(x in p_low for x in ("leaves", "tokens", "lines", "words", "tags")):
+                    pos_vals.append(["leaf_1", "leaf_2", "leaf_3", "leaf_4"])
+                elif "order" in p_low:
                     pos_vals.append([{"unit_price": 50.0, "quantity": 2, "weight_kg": 1.0}])
+                else:
+                    pos_vals.append(["item_1", "item_2"])
             elif t in ("dict", "mapping") or t.startswith("dict") or "dict[" in t or t.startswith("mapping"):
                 if "stock" in p_low:
                     pos_vals.append({"SKU-001": 20})
