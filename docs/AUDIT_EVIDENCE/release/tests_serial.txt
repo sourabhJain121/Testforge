@@ -1,0 +1,49 @@
+........................................................................ [  7%]
+........................................................................ [ 14%]
+........................................................................ [ 21%]
+........................................................................ [ 28%]
+........................==========================================================
+       TESTFORGE: AUTONOMOUS TEST HARDENING ENGINE        
+Hardware: Apple Silicon M-Series | Cores: 10 | Workers: 8
+Foundation Model: Google GenAI Live (gemini-3.6-flash)
+==========================================================
+
+⏩ Restored from checkpoint: Skipping Step 0 security inspection (already 
+validated)
+.....⏩ Restored from checkpoint: Skipping Ingestion & AST Extraction
+........................................... [ 36%]
+........................................................................ [ 43%]
+........................................................................ [ 50%]
+........................................................................ [ 57%]
+........................................................................ [ 65%]
+........................................................................ [ 72%]
+........................................................................ [ 79%]
+........................................................................ [ 86%]
+........................................................................ [ 94%]
+...........................................................              [100%]
+=============================== warnings summary ===============================
+.venv-release/lib/python3.13/site-packages/starlette/testclient.py:45
+  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/starlette/testclient.py:45: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+tests/test_adk_web_compatibility.py::TestADKWebCompatibility::test_get_fast_api_app_initialization
+  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/google/adk/cli/fast_api.py:175: UserWarning: [EXPERIMENTAL] InMemoryCredentialService: This feature is experimental and may change or be removed in future versions without notice. It may introduce breaking changes at any time.
+    credential_service = InMemoryCredentialService()
+
+tests/test_adk_web_compatibility.py::TestADKWebCompatibility::test_get_fast_api_app_initialization
+  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/google/adk/auth/credential_service/in_memory_credential_service.py:33: UserWarning: [EXPERIMENTAL] BaseCredentialService: This feature is experimental and may change or be removed in future versions without notice. It may introduce breaking changes at any time.
+    super().__init__()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+============================= slowest 10 durations =============================
+101.97s call     tests/test_mode_c_ingestion.py::test_hardening_pipeline_on_models
+46.93s call     tests/test_blast_and_adk.py::test_agent_handoff_contracts
+24.93s call     tests/test_orchestration_mcp.py::TestCrossTaskIsolation::test_no_cross_task_leakage_between_orchestrators
+14.31s call     tests/test_evaluation_corpus.py::TestBenchmarkStrategyRunner::test_missing_credentials_do_not_fabricate_tokens_or_cost
+13.82s call     tests/test_performance_evaluation.py::test_aggregate_run_statistics
+13.68s call     tests/test_performance_evaluation.py::test_evaluator_matrix_execution
+8.86s call     tests/test_frontend_playground_verification.py::TestFrontendHeadlessBrowserPlayground::test_b2_custom_target_hardening
+8.68s call     tests/test_frontend_playground_verification.py::TestFrontendHeadlessBrowserPlayground::test_b1_happy_path_hardening
+8.64s call     tests/test_frontend_playground_verification.py::TestFrontendHeadlessBrowserPlayground::test_b4_diff_inspector_and_artifact_downloads
+8.53s call     tests/test_frontend_playground_verification.py::TestFrontendHeadlessBrowserPlayground::test_headless_cockpit_full_interactive_verification
+995 passed, 3 warnings in 576.92s (0:09:36)

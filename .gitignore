@@ -23,4 +23,6 @@ scratch/
 *.egg-info/
 build/
 dist/
+.mutmut-cache/
+mutants/
 

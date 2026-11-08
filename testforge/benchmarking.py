@@ -45,6 +45,8 @@ class SuiteEvaluationResult(NamedTuple):
     branch_cov_pct: float = 0.0
     total_branches: int = 0
     covered_branches: int = 0
+    baseline_passed: bool = True
+    invalid_suite: bool = False
 
 
 # Official published Gemini 2.5/Flash model pricing rates (per 1,000,000 tokens)
@@ -284,6 +286,8 @@ class BenchmarkRunner:
         branch_cov = float(cov_info.get("branch_coverage_percent", 0.0) or cov_info.get("branch_coverage", 0.0))
         total_branches = int(cov_info.get("total_branches", 0))
         covered_branches = int(cov_info.get("covered_branches", 0))
+        baseline_passed = cov_info.get("baseline_passed", True)
+        executed_lines = cov_info.get("executed_lines", None)
 
         mutants = ASTMutator.generate_mutants(self.target_code)
         if not mutants:
@@ -299,10 +303,39 @@ class BenchmarkRunner:
                 executed=0,
                 branch_cov_pct=branch_cov,
                 total_branches=total_branches,
-                covered_branches=covered_branches
+                covered_branches=covered_branches,
+                baseline_passed=baseline_passed,
+                invalid_suite=not baseline_passed
             )
 
-        evaluated = self.sandbox.evaluate_mutants_parallel(test_code, mutants)
+        # STRICT HARNESS CONTRACT (Task 2):
+        # 1. Check clean target suite execution first (pass@1). If the suite fails on the
+        # un-mutated target, classify suite as INVALID_SUITE (0 kills, invalid suite).
+        if not baseline_passed:
+            total_m = len(mutants)
+            return SuiteEvaluationResult(
+                cov_pct=cov_pct,
+                score=0.0,
+                killed=0,
+                total=total_m,
+                adj_score=0.0,
+                equivalent=0,
+                survived=total_m,
+                timed_out=0,
+                executed=0,
+                branch_cov_pct=branch_cov,
+                total_branches=total_branches,
+                covered_branches=covered_branches,
+                baseline_passed=False,
+                invalid_suite=True
+            )
+
+        evaluated = self.sandbox.evaluate_mutants_parallel(
+            test_code,
+            mutants,
+            baseline_passed=True,
+            covered_lines=executed_lines
+        )
         try:
             from testforge.equivalence import EquivalentMutantAnalyzer, calculate_mutation_scores
             for m in evaluated:
@@ -327,7 +360,9 @@ class BenchmarkRunner:
                 executed=scores["evaluable_mutants"],
                 branch_cov_pct=branch_cov,
                 total_branches=total_branches,
-                covered_branches=covered_branches
+                covered_branches=covered_branches,
+                baseline_passed=True,
+                invalid_suite=False
             )
         except Exception:
             killed = sum(1 for m in evaluated if getattr(m, "status", None) in ("KILLED", "TIMEOUT"))
@@ -345,7 +380,9 @@ class BenchmarkRunner:
                 executed=total,
                 branch_cov_pct=branch_cov,
                 total_branches=total_branches,
-                covered_branches=covered_branches
+                covered_branches=covered_branches,
+                baseline_passed=True,
+                invalid_suite=False
             )
 
     def run_benchmark(

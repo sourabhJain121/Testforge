@@ -1,0 +1,126 @@
+commit ee991d7dbb5151f4cbd0ff0d1fd8fb32590a3327
+Author: Your Name <your-email@example.com>
+Date:   Sun Nov 8 12:19:57 2026 +0530
+
+    feat(eval): complete sealed v2 paired evaluation and authorship disclosure (G1)
+
+diff --git a/qa_artifacts/SEALED_V2_RESULTS.json b/qa_artifacts/SEALED_V2_RESULTS.json
+index ccda6d4..0ff8e6c 100644
+--- a/qa_artifacts/SEALED_V2_RESULTS.json
++++ b/qa_artifacts/SEALED_V2_RESULTS.json
+@@ -204,6 +204,83 @@
+           "duration_sec": 130.188,
+           "iterations": 2
+         }
++      ],
++      "zeroshot_qwen_local": [
++        {
++          "seed": 42,
++          "status": "PASS",
++          "line_cov": 16.0,
++          "branch_cov": 0.0,
++          "raw_ms": 100.0,
++          "adj_ms": 100.0,
++          "killed": 70,
++          "total_mutants": 70,
++          "duration_sec": 34.825,
++          "model": "qwen2.5-coder:7b"
++        },
++        {
++          "seed": 43,
++          "status": "ERROR",
++          "error": "TimeoutError: timed out",
++          "line_cov": 0.0,
++          "branch_cov": 0.0,
++          "raw_ms": 0.0,
++          "adj_ms": 0.0,
++          "killed": 0,
++          "total_mutants": 70,
++          "duration_sec": 90.003,
++          "model": "qwen2.5-coder:7b"
++        },
++        {
++          "seed": 44,
++          "status": "PASS",
++          "line_cov": 16.0,
++          "branch_cov": 0.0,
++          "raw_ms": 0.0,
++          "adj_ms": 0.0,
++          "killed": 0,
++          "total_mutants": 70,
++          "duration_sec": 47.654,
++          "model": "qwen2.5-coder:7b"
++        }
++      ],
++      "zeroshot_retry_qwen_local": [
++        {
++          "seed": 42,
++          "status": "PASS",
++          "line_cov": 16.0,
++          "branch_cov": 0.0,
++          "raw_ms": 100.0,
++          "adj_ms": 100.0,
++          "killed": 70,
++          "total_mutants": 70,
++          "duration_sec": 47.321000000000005,
++          "model": "qwen2.5-coder:7b"
++        },
++        {
++          "seed": 43,
++          "status": "FAIL",
++          "line_cov": 0.0,
++          "branch_cov": 0.0,
++          "raw_ms": 0.0,
++          "adj_ms": 0.0,
++          "killed": 0,
++          "total_mutants": 70,
++          "duration_sec": 94.316,
++          "model": "qwen2.5-coder:7b"
++        },
++        {
++          "seed": 44,
++          "status": "PASS",
++          "line_cov": 16.0,
++          "branch_cov": 0.0,
++          "raw_ms": 100.0,
++          "adj_ms": 100.0,
++          "killed": 70,
++          "total_mutants": 70,
++          "duration_sec": 60.514,
++          "model": "qwen2.5-coder:7b"
++        }
+       ]
+     },
+     "fractions_algo": {
+@@ -387,6 +464,82 @@
+           "duration_sec": 40.35,
+           "iterations": 2
+         }
++      ],
++      "zeroshot_qwen_local": [
++        {
++          "seed": 42,
++          "status": "PASS",
++          "line_cov": 93.54838709677419,
++          "branch_cov": 66.67,
++          "raw_ms": 100.0,
++          "adj_ms": 100.0,
++          "killed": 55,
++          "total_mutants": 57,
++          "duration_sec": 18.709,
++          "model": "qwen2.5-coder:7b"
++        },
++        {
++          "seed": 43,
++          "status": "PASS",
++          "line_cov": 93.54838709677419,
++          "branch_cov": 66.67,
++          "raw_ms": 100.0,
++          "adj_ms": 100.0,
++          "killed": 55,
+ee991d7 feat(eval): complete sealed v2 paired evaluation and authorship disclosure (G1)
+ qa_artifacts/SEALED_V2_RESULTS.json | 590 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 590 insertions(+)
+eac0cbd feat(eval): complete Sealed Set V2 evaluation across 6 stdlib targets and 5 conditions (F4)
+ qa_artifacts/SEALED_V2_RESULTS.json | 1548 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 1548 insertions(+)

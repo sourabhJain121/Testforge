@@ -424,6 +424,10 @@ class MutantRecord(BaseModel):
     is_valid_syntax: bool = Field(default=True, description="Whether AST unparse produces valid parseable Python")
     original_expression: Optional[str] = Field(default=None, description="Source expression prior to mutation")
     mutated_expression: Optional[str] = Field(default=None, description="Transformed expression post-mutation")
+    kill_classification: Optional[str] = Field(
+        default=None,
+        description="Detailed kill failure category: ASSERTION_FAIL, EXCEPTION_FAIL, TIMEOUT, SURVIVED, IMPORT_OR_SYNTAX_ERROR, UNCOVERED"
+    )
 
 
 class IterationMetrics(BaseModel):

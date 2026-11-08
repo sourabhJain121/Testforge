@@ -1,53 +1,43 @@
-# Sealed Set V2 Empirical Evaluation Report (Paired Generalization)
+# Sealed Set V2 Empirical Evaluation Report (Development Set Audit)
 
-**Evaluation Date:** 2026-11-08T11:07:33 (Resumed & Paired)  
-**Git Tag Freeze:** `sealed-v2-freeze`  
+**Evaluation Date:** 2026-11-08  
+**Audit & Reclassification:** Formally classified as a **DEVELOPMENT set** following post-results measurement harness audit (see [`docs/SEALED_V2_MEASUREMENT_AUDIT.md`](file:///Users/sourabh/TestForge/docs/SEALED_V2_MEASUREMENT_AUDIT.md)).  
 **Pinned Cloud Foundation Model:** `gemini-3.8-flash` (Zero silent fallback policy)  
-**Local Comparison Model:** `qwen2.5-coder:7b` (Clearly separated row, local Ollama)  
+**Local Comparison Model:** `qwen2.5-coder:7b` (Reported in dedicated local row)  
 **Evaluation Seeds:** `[42, 43, 44]`  
-**Total Sealed Targets:** 6 pure-Python stdlib modules (`samples/sealed_v2/*.py`)  
+**Target Set:** 6 pure-Python algorithms adapted from the Python Standard Library (`samples/sealed_v2/*.py`)  
 
 ---
 
-## 1. Target Authorship & Provenance Disclosure
+## 1. Target Provenance & Licensing Disclosure
 
-| Target Module | Origin & Provenance | Written by Agent? | Mutants Injected |
-| :--- | :--- | :---: | :---: |
-| `bisect_algo.py` | Extracted from Python 3.13 stdlib bisect.py (Raymond Hettinger, PSF). NOT written by agent. | **NO (100% Stdlib)** | 70 |
-| `fractions_algo.py` | Extracted from Python 3.13 stdlib fractions.py & Euclidean GCD. NOT written by agent. | **NO (100% Stdlib)** | 57 |
-| `heapq_algo.py` | Extracted from Python 3.13 stdlib heapq.py (Kevin O'Connor, Tim Peters, PSF). NOT written by agent. | **NO (100% Stdlib)** | 49 |
-| `shlex_algo.py` | Extracted from Python 3.13 stdlib shlex.py (Eric S. Raymond, Gustavo Niemeyer, PSF). NOT written by agent. | **NO (100% Stdlib)** | 23 |
-| `statistics_algo.py` | Extracted from Python 3.13 stdlib statistics.py (Steven D'Aprano, PSF). NOT written by agent. | **NO (100% Stdlib)** | 37 |
-| `textwrap_algo.py` | Extracted from Python 3.13 stdlib textwrap.py (Greg Ward, PSF). NOT written by agent. | **NO (100% Stdlib)** | 23 |
+All 6 targets in `samples/sealed_v2/` were adapted from the CPython Standard Library under the **Python Software Foundation (PSF) License Version 2**:
 
-> [!IMPORTANT]
-> **Authorship Verification:**
-> All 6 target modules in `samples/sealed_v2/` were extracted verbatim or faithfully from Python 3.13 standard libraries (`bisect`, `fractions`, `heapq`, `shlex`, `statistics`, `textwrap`).
-> **ZERO target code was authored, tuned, or modified by the agent.**
+| Target Module | CPython Stdlib Origin | Adaptation Details | License Notice | Mutants |
+| :--- | :--- | :--- | :---: | :---: |
+| `bisect_algo.py` | `Lib/bisect.py` | Pure-Python `bisect_left`, `bisect_right`, `insort_left`, `insort_right` | PSF v2 | 70 |
+| `fractions_algo.py` | `Lib/fractions.py` | Standalone object-oriented `FractionAlgo` with Euclidean GCD | PSF v2 | 57 |
+| `heapq_algo.py` | `Lib/heapq.py` | Pure-Python `heappush`, `heappop`, `heapreplace`, `heapify` | PSF v2 | 49 |
+| `shlex_algo.py` | `Lib/shlex.py` | Standalone POSIX tokenizer function `simple_shlex_split` | PSF v2 | 23 |
+| `statistics_algo.py` | `Lib/statistics.py` | Standalone functions `calculate_mean`, `median`, `variance`, `stdev` | PSF v2 | 37 |
+| `textwrap_algo.py` | `Lib/textwrap.py` | Standalone wrapping class `TextWrapAlgo` | PSF v2 | 23 |
 
----
-
-## 2. PAIRED Benchmark Results (Fair Apple-to-Apple Comparison)
-
-To prevent statistical skew from missing cells or API quota dropouts, we report **PAIRED results only** where every condition has a valid result for the exact same `(target, seed)` pair:
-
-### A. Cloud Gemini Paired Subset ($n=4$ pairs where Gemini completed)
-
-Evaluated pairs: `bisect_algo:s42`, `bisect_algo:s43`, `bisect_algo:s44`, `fractions_algo:s43`
-
-| Condition | Evaluated Engine / Model | Paired Raw Mutation Score (%) | Relative Delta vs Dev Baseline |
-| :--- | :--- | :---: | :---: |
-| **1. Developer Baseline** | Minimal starter assertion | 0.0% ± 0.0% | Baseline |
-| **2. Zero-Shot Cloud LLM** | `gemini-3.8-flash` | 44.2% ± 51.9% | +44.2% |
-| **3. Zero-Shot + 1 Retry** | `gemini-3.8-flash` | 69.7% ± 47.5% | +69.7% |
-| **4. TestForge Deterministic** | Heuristic AST Synthesizer | **80.5% ± 39.1%** | **+80.5%** |
-| **5. TestForge Full Agentic** | Multi-Agent Reflection Loop | 5.5% ± 10.9% | +5.5% |
+> [!NOTE]
+> Target code was adapted from the CPython standard library (PSF Licence Version 2) and simplified into standalone modules by the engineering team. Full license text and notices are archived in [`samples/sealed_v2/NOTICE`](file:///Users/sourabh/TestForge/samples/sealed_v2/NOTICE).
 
 ---
 
-### B. Local Qwen Paired Set ($n=16$ pairs across all 6 targets x 3 seeds)
+## 2. Benchmark Results & Measurement Audit
 
-Complete paired evaluation across all 18 runs ($6 \text{ targets} \times 3 \text{ seeds}$):
+### A. Pre-Training Contamination Caveat
+> [!WARNING]
+> **LLM Pre-Training Data Contamination Warning:**
+> Standard library algorithms (`bisect`, `heapq`, `shlex`, `fractions`, etc.) are widely represented in the pre-training corpora of modern foundation models (Gemini, Qwen, Claude). LLM zero-shot scores on stdlib targets are systematically higher than on novel, proprietary business logic because the model has memorized the algorithmic invariants.
+
+### B. Statistical Power Warning on Small-Sample Cloud Paired Subsets
+Earlier drafts highlighted a 4-pair Cloud Gemini subset ($n=4$ across only 2 targets). **This subset is statistically under-powered ($N=4$, $\pm 51.9\%$ variance)** and suffered selection bias caused by API quota exhaustion. We remove this as a headline claim. The primary reproducible cross-target comparison is the full 18-run local model evaluation below.
+
+### C. Local Model Evaluation ($n=16$ paired runs, $6 \text{ targets} \times 3 \text{ seeds}$)
 
 | Condition | Evaluated Engine / Model | Paired Raw Mutation Score (%) | Relative Delta vs Dev Baseline |
 | :--- | :--- | :---: | :---: |
@@ -59,25 +49,19 @@ Complete paired evaluation across all 18 runs ($6 \text{ targets} \times 3 \text
 
 ---
 
-## 3. Per-Target Detailed Breakdown (All 6 Targets)
+## 3. Audited Per-Target Breakdown (All 6 Targets)
 
-| Target Module | Developer Baseline | TestForge Deterministic | TestForge Full Agentic | Zero-Shot (`gemini-3.8-flash`) | Zero-Shot (`qwen2.5-coder:7b`) |
+The table below reflects the audited measurements following the correction of DEF-022 (Clean Reference False-Kill Defect) and DEF-023 (Statement Count Doubling):
+
+| Target Module | Developer Baseline (Audited) | TestForge Deterministic (Audited) | TestForge Full Agentic | Zero-Shot (`gemini-3.8-flash`) | Zero-Shot (`qwen2.5-coder:7b`) |
 | :--- | :---: | :---: | :---: | :---: | :---: |
-| `bisect_algo.py` | 0.0% ± 0.0% | **100.0% ± 0.0%** | 0.0% ± 0.0% | 33.3% ± 57.7% | 50.0% ± 70.7% |
-| `fractions_algo.py` | 0.0% ± 0.0% | **21.8% ± 0.0%** | 21.8% ± 0.0% | 78.5% ± 2.2% | 89.1% ± 18.9% |
-| `heapq_algo.py` | 36.7% ± 0.0% | **100.0% ± 0.0%** | 0.0% ± 0.0% | 100.0% ± 0.0% | 100.0% ± 0.0% |
-| `shlex_algo.py` | 0.0% ± 0.0% | **60.9% ± 0.0%** | 60.9% ± 0.0% | `BLOCKED` | 100.0% ± 0.0% |
-| `statistics_algo.py` | 0.0% ± 0.0% | **59.5% ± 0.0%** | 59.5% ± 0.0% | `BLOCKED` | 99.1% ± 1.6% |
-| `textwrap_algo.py` | 0.0% ± 0.0% | **39.1% ± 0.0%** | 39.1% ± 0.0% | `BLOCKED` | 100.0% ± 0.0% |
+| `bisect_algo.py` | 0.0% (Valid) | **0.0% (INVALID_SUITE)** | 0.0% | 33.3% ± 57.7% | 50.0% ± 70.7% |
+| `fractions_algo.py` | 14.6% (Valid) | **21.8% (Valid)** | 21.8% | 78.5% ± 2.2% | 89.1% ± 18.9% |
+| `heapq_algo.py` | 36.7% (Valid) | **0.0% (INVALID_SUITE)** | 0.0% | 100.0% ± 0.0% | 100.0% ± 0.0% |
+| `shlex_algo.py` | 56.5% (Valid) | **60.9% (Valid)** | 60.9% | `BLOCKED` (Quota) | 100.0% ± 0.0% |
+| `statistics_algo.py` | 29.7% (Valid) | **59.5% (Valid)** | 59.5% | `BLOCKED` (Quota) | 99.1% ± 1.6% |
+| `textwrap_algo.py` | 17.4% (Valid) | **39.1% (Valid)** | 39.1% | `BLOCKED` (Quota) | 100.0% ± 0.0% |
 
----
-
-## 4. Key Takeaways & Empirical Reality
-
-1. **Deterministic Heuristic Performance vs. LLM Baselines:**
-   - On the Cloud Gemini paired subset ($n=4$), `TestForge Deterministic` achieved **80.5% ± 39.1%** raw mutation score in **0.003s**, outperforming Gemini 3.8-Flash zero-shot (**44.2% ± 51.9%**) and zero-shot + retry (**69.7% ± 47.5%**) with zero token consumption.
-   - On the Local Qwen paired set ($n=16$), local `qwen2.5-coder:7b` zero-shot achieved **91.5% ± 25.7%** (and **97.8% ± 8.2%** with retry), while `TestForge Deterministic` achieved **62.8% ± 29.6%** deterministically with zero model inferences.
-2. **Agentic Reflection Degradation (Addressed in G2):**
-   - On `bisect_algo.py` and `heapq_algo.py`, full agentic reflection degraded from 100% down to 0% because subsequent LLM iterations generated failing tests, and the un-guarded orchestrator selected the last iteration rather than the best iteration.
-3. **Zero Silent Fallback Integrity:**
-   - Pinned queries against Google GenAI were never masked. The 20 req/day quota limit was faithfully recorded as `BLOCKED`, and local model evaluations are reported in their own clearly labeled row.
+> [!IMPORTANT]
+> **Audit Finding on Heuristic AST Synthesis:**
+> On `bisect_algo` and `heapq_algo`, AST synthesis generated type mismatches in nominal calls that failed on clean code. With our audited harness enforcing clean reference execution, invalid candidate suites are rigorously scored at **0.0% MS (0 kills)**, preventing false-positive mutant kill inflation.

@@ -60,14 +60,22 @@ def parse_pytest_output(stdout: str, stderr: str, exit_code: int) -> Dict[str, A
         or exit_code in (2, 3, 4)
     )
 
+    failure_type = "NONE"
     if exit_code == 0 and passed > 0:
         status = "PASS"
+        failure_type = "SURVIVED"
     elif exit_code == 1 and failed > 0 and not has_exec_error:
         status = "FAIL"
+        if "AssertionError" in combined or "assert " in combined:
+            failure_type = "ASSERTION_FAIL"
+        else:
+            failure_type = "EXCEPTION_FAIL"
     elif exit_code == -1:
         status = "TIMEOUT"
+        failure_type = "TIMEOUT"
     else:
         status = "ERROR"
+        failure_type = "IMPORT_OR_SYNTAX_ERROR"
 
     return {
         "collected": collected,
@@ -75,7 +83,8 @@ def parse_pytest_output(stdout: str, stderr: str, exit_code: int) -> Dict[str, A
         "failed": failed,
         "errors": errors,
         "status": status,
-        "has_exec_error": has_exec_error
+        "has_exec_error": has_exec_error,
+        "failure_type": failure_type,
     }
 
 
@@ -493,6 +502,7 @@ def _run_single_test_task(
                 "stdout": "",
                 "stderr": f"Subprocess timed out after {timeout_seconds}s (Safety Guardrail: Infinite loop caught)",
                 "status": "TIMEOUT",
+                "failure_type": "TIMEOUT",
                 "timed_out": True,
                 "duration_ms": elapsed_ms,
                 "tests_collected": 0,
@@ -508,6 +518,7 @@ def _run_single_test_task(
             "stdout": res_stdout,
             "stderr": res_stderr,
             "status": parsed["status"],
+            "failure_type": parsed.get("failure_type", "NONE"),
             "timed_out": False,
             "duration_ms": elapsed_ms,
             "tests_collected": parsed["collected"],
@@ -570,7 +581,8 @@ class ParallelSandboxRunner:
         self,
         test_code: str,
         mutants: List[MutantRecord],
-        baseline_passed: bool = True
+        baseline_passed: bool = True,
+        covered_lines: Optional[List[int]] = None
     ) -> List[MutantRecord]:
         """
         Runs the test suite against every mutant concurrently across CPU cores.
@@ -626,6 +638,22 @@ class ParallelSandboxRunner:
                     m.equivalence_method = "NONE"
                     m.equivalence_confidence = "HIGH"
                     m.equivalence_reason = "Mutant rejected prior to execution: invalid Python AST syntax."
+            elif covered_lines is not None and getattr(m, "line_number", None) not in covered_lines:
+                # Consistency check: mutant line was never executed by test suite
+                if isinstance(m, dict):
+                    m["status"] = "SURVIVED"
+                    m["is_executed"] = False
+                    m["kill_classification"] = "UNCOVERED"
+                    m["equivalence_status"] = "NOT_EQUIVALENT"
+                    m["equivalence_confidence"] = "HIGH"
+                    m["equivalence_reason"] = f"Mutant on line {m.get('line_number')} was not in executed statements (uncovered line); survives without execution."
+                else:
+                    m.status = "SURVIVED"
+                    m.is_executed = False
+                    m.kill_classification = "UNCOVERED"
+                    m.equivalence_status = "NOT_EQUIVALENT"
+                    m.equivalence_confidence = "HIGH"
+                    m.equivalence_reason = f"Mutant on line {m.line_number} was not in executed statements (uncovered line); survives without execution."
             else:
                 executable_mutants.append(m)
 
@@ -685,25 +713,44 @@ class ParallelSandboxRunner:
                     if not baseline_passed:
                         # Baseline didn't pass, cannot verify mutant kill
                         mutant.status = "ERROR"
+                        mutant.kill_classification = "IMPORT_OR_SYNTAX_ERROR"
                         mutant.equivalence_status = "UNKNOWN"
                         mutant.equivalence_reason = "Baseline test suite failed; cannot evaluate mutant."
                     elif result.get("timed_out"):
                         mutant.status = "TIMEOUT"
+                        mutant.kill_classification = "TIMEOUT"
                         mutant.equivalence_status = "NOT_EQUIVALENT"
                         mutant.equivalence_confidence = "HIGH"
                         mutant.equivalence_reason = "Execution timed out in sandbox (infinite loop or hang)."
                     elif result.get("has_exec_error") or result.get("status") == "ERROR":
                         # Infrastructure/import/syntax failure is NOT a kill
                         mutant.status = "ERROR"
+                        mutant.kill_classification = "IMPORT_OR_SYNTAX_ERROR"
                         mutant.equivalence_status = "NOT_EQUIVALENT"
                         mutant.equivalence_confidence = "HIGH"
                         mutant.equivalence_reason = "Subprocess suffered execution or environment error."
                     elif result.get("status") == "FAIL" and result.get("tests_failed", 0) > 0:
-                        mutant.status = "KILLED"
-                        mutant.equivalence_status = "NOT_EQUIVALENT"
-                        mutant.equivalence_confidence = "HIGH"
-                        mutant.equivalence_reason = "Detected and killed by failing test assertion."
+                        # Consistency check: If covered_lines is provided and mutant line was never covered,
+                        # it CANNOT be a valid kill!
+                        if covered_lines is not None and getattr(mutant, "line_number", None) not in covered_lines:
+                            mutant.status = "SURVIVED"
+                            mutant.kill_classification = "UNCOVERED"
+                            mutant.equivalence_status = "NOT_EQUIVALENT"
+                            mutant.equivalence_confidence = "HIGH"
+                            mutant.equivalence_reason = f"Mutant on line {mutant.line_number} was not in executed statements (uncovered line); kill rejected."
+                        else:
+                            mutant.status = "KILLED"
+                            fail_type = result.get("failure_type", "ASSERTION_FAIL")
+                            if fail_type == "EXCEPTION_FAIL":
+                                mutant.kill_classification = "EXCEPTION_FAIL"
+                                mutant.equivalence_reason = "Detected and killed by unhandled target exception."
+                            else:
+                                mutant.kill_classification = "ASSERTION_FAIL"
+                                mutant.equivalence_reason = "Detected and killed by failing test assertion."
+                            mutant.equivalence_status = "NOT_EQUIVALENT"
+                            mutant.equivalence_confidence = "HIGH"
                     elif result.get("status") == "PASS":
+                        mutant.kill_classification = "SURVIVED"
                         # Mutant survived test suite; run conservative equivalent-mutant analysis
                         eq_res = EquivalentMutantAnalyzer.analyze_mutant(mutant)
                         if eq_res.status == EquivalenceClassification.EQUIVALENT:
@@ -789,10 +836,14 @@ class ParallelSandboxRunner:
                     "missing_branches_count": 0,
                     "missing_branches": [],
                     "executed_branches": [],
+                    "executed_lines": [],
+                    "baseline_passed": False,
+                    "exit_code": -1,
                     "raw_output": f"Coverage measurement timed out after {self.timeout}s (Safety Guardrail)"
                 }
                 return 0.0, cov_info
 
+            baseline_passed = (res_code == 0) and not timed_out
             cov_info = {
                 "percent_covered": 0.0,
                 "line_coverage_pct": 0.0,
@@ -806,6 +857,9 @@ class ParallelSandboxRunner:
                 "missing_branches_count": 0,
                 "missing_branches": [],
                 "executed_branches": [],
+                "executed_lines": [],
+                "baseline_passed": baseline_passed,
+                "exit_code": res_code,
                 "raw_output": res_stdout or res_stderr
             }
 
@@ -813,34 +867,85 @@ class ParallelSandboxRunner:
                 try:
                     with open(cov_json_path, "r", encoding="utf-8") as jf:
                         data = json.load(jf)
-                        totals = data.get("totals", {})
-                        pct = float(totals.get("percent_statements_covered", totals.get("percent_covered", 0.0)))
-                        cov_info["percent_covered"] = pct
-                        cov_info["line_coverage_pct"] = pct
-                        cov_info["covered_lines"] = int(totals.get("covered_lines", 0))
-                        cov_info["num_statements"] = int(totals.get("num_statements", 0))
-                        cov_info["missing_lines"] = int(totals.get("missing_lines", 0))
-
-                        num_branches = int(totals.get("num_branches", 0))
-                        covered_branches = int(totals.get("covered_branches", 0))
-                        missing_branches_count = int(totals.get("missing_branches", 0))
-                        branch_pct = round((covered_branches / num_branches * 100.0) if num_branches > 0 else 100.0, 2)
-
                         files = data.get("files", {})
-                        missing_branch_details = []
-                        executed_branch_details = []
-                        for fmeta in files.values():
-                            missing_branch_details.extend(fmeta.get("missing_branches", []))
-                            executed_branch_details.extend(fmeta.get("executed_branches", []))
 
-                        cov_info["branch_coverage_percent"] = branch_pct
-                        cov_info["branch_coverage"] = branch_pct
-                        cov_info["total_branches"] = num_branches
-                        cov_info["covered_branches"] = covered_branches
-                        cov_info["missing_branches_count"] = missing_branches_count
-                        cov_info["missing_branches"] = missing_branch_details
-                        cov_info["executed_branches"] = executed_branch_details
-                        return pct, cov_info
+                        # Target File Disambiguation:
+                        # Avoid aggregating alias files created in tmpdir (e.g. target.py and samples/target.py).
+                        target_base = os.path.basename(target_path) if target_path else "target.py"
+                        selected_file_meta = None
+
+                        # Find candidates excluding __init__.py
+                        non_init_files = [
+                            (fname, fmeta) for fname, fmeta in files.items()
+                            if not fname.endswith("__init__.py")
+                        ]
+
+                        # Preference 1: Non-init candidate that was executed (covered_lines > 0)
+                        executed_candidates = [
+                            (fname, fmeta) for fname, fmeta in non_init_files
+                            if fmeta.get("summary", {}).get("covered_lines", 0) > 0
+                        ]
+
+                        if executed_candidates:
+                            # Prefer target.py or basename match if multiple
+                            matched = [
+                                (fn, fm) for fn, fm in executed_candidates
+                                if fn == "target.py" or os.path.basename(fn) == target_base
+                            ]
+                            selected_file_meta = matched[0][1] if matched else executed_candidates[0][1]
+                        elif non_init_files:
+                            # Preference 2: Non-init candidate matching target.py or basename
+                            matched = [
+                                (fn, fm) for fn, fm in non_init_files
+                                if fn == "target.py" or os.path.basename(fn) == target_base
+                            ]
+                            selected_file_meta = matched[0][1] if matched else non_init_files[0][1]
+
+                        if selected_file_meta:
+                            f_summary = selected_file_meta.get("summary", {})
+                            pct = float(f_summary.get("percent_statements_covered", f_summary.get("percent_covered", 0.0)))
+                            cov_info["percent_covered"] = pct
+                            cov_info["line_coverage_pct"] = pct
+                            cov_info["covered_lines"] = int(f_summary.get("covered_lines", 0))
+                            cov_info["num_statements"] = int(f_summary.get("num_statements", 0))
+                            cov_info["missing_lines"] = int(f_summary.get("missing_lines", 0))
+                            cov_info["executed_lines"] = selected_file_meta.get("executed_lines", [])
+
+                            num_branches = int(f_summary.get("num_branches", 0))
+                            covered_branches = int(f_summary.get("covered_branches", 0))
+                            missing_branches_count = int(f_summary.get("missing_branches", 0))
+                            branch_pct = float(f_summary.get("percent_branches_covered", round((covered_branches / num_branches * 100.0) if num_branches > 0 else 100.0, 2)))
+
+                            cov_info["branch_coverage_percent"] = branch_pct
+                            cov_info["branch_coverage"] = branch_pct
+                            cov_info["total_branches"] = num_branches
+                            cov_info["covered_branches"] = covered_branches
+                            cov_info["missing_branches_count"] = missing_branches_count
+                            cov_info["missing_branches"] = selected_file_meta.get("missing_branches", [])
+                            cov_info["executed_branches"] = selected_file_meta.get("executed_branches", [])
+                            return pct, cov_info
+                        else:
+                            # Fallback to totals if no non-init files entry
+                            totals = data.get("totals", {})
+                            pct = float(totals.get("percent_statements_covered", totals.get("percent_covered", 0.0)))
+                            cov_info["percent_covered"] = pct
+                            cov_info["line_coverage_pct"] = pct
+                            cov_info["covered_lines"] = int(totals.get("covered_lines", 0))
+                            cov_info["num_statements"] = int(totals.get("num_statements", 0))
+                            cov_info["missing_lines"] = int(totals.get("missing_lines", 0))
+                            cov_info["executed_lines"] = []
+
+                            num_branches = int(totals.get("num_branches", 0))
+                            covered_branches = int(totals.get("covered_branches", 0))
+                            missing_branches_count = int(totals.get("missing_branches", 0))
+                            branch_pct = round((covered_branches / num_branches * 100.0) if num_branches > 0 else 100.0, 2)
+
+                            cov_info["branch_coverage_percent"] = branch_pct
+                            cov_info["branch_coverage"] = branch_pct
+                            cov_info["total_branches"] = num_branches
+                            cov_info["covered_branches"] = covered_branches
+                            cov_info["missing_branches_count"] = missing_branches_count
+                            return pct, cov_info
                 except Exception:
                     pass
 

@@ -1,0 +1,33 @@
+=== GIT STATUS ===
+ M docs/AGENTIC_REGRESSION_DIAGNOSIS.md
+ M testforge/scripts/resume_sealed_v2.py
+?? docs/AUDIT_EVIDENCE/release/
+=== GIT DIFF docs/AGENTIC_REGRESSION_DIAGNOSIS.md ===
+diff --git a/docs/AGENTIC_REGRESSION_DIAGNOSIS.md b/docs/AGENTIC_REGRESSION_DIAGNOSIS.md
+index 3988950..85bb277 100644
+--- a/docs/AGENTIC_REGRESSION_DIAGNOSIS.md
++++ b/docs/AGENTIC_REGRESSION_DIAGNOSIS.md
+@@ -125,3 +125,4 @@ In dynamically typed Python programs lacking PEP 484 type annotations, functions
+ - When LLM generation is unavailable or fails pass@1, fallback synthesis requires either:
+   1. AST inspection of internal attribute accesses (e.g., `.insert()`, `.append()`, `len()`) to infer container types.
+   2. Or explicit type annotations in target code.
++
+=== GIT DIFF testforge/scripts/resume_sealed_v2.py ===
+diff --git a/testforge/scripts/resume_sealed_v2.py b/testforge/scripts/resume_sealed_v2.py
+index 2791562..6dd1cc5 100644
+--- a/testforge/scripts/resume_sealed_v2.py
++++ b/testforge/scripts/resume_sealed_v2.py
+@@ -497,3 +497,4 @@ def write_paired_markdown_report(data: Dict[str, Any], filepath: str):
+ 
+ if __name__ == "__main__":
+     resume_and_evaluate()
++
+=== GIT DIFF v1.0.0-rc2 --stat ===
+ docs/AGENTIC_REGRESSION_DIAGNOSIS.md  | 1 +
+ testforge/scripts/resume_sealed_v2.py | 1 +
+ 2 files changed, 2 insertions(+)
+=== GIT STATUS AFTER REVERT ===
+?? docs/AUDIT_EVIDENCE/release/
+=== GIT DIFF v1.0.0-rc2 --stat ===
+=== COMMIT AND TAG ===
+0391ef3 (HEAD -> final/release, tag: v1.0.0-rc2, final/close) docs: complete claims audit, update paired benchmarks, and finalize CLOSE_PROGRESS (G3)
