@@ -1,0 +1,47 @@
+{
+  "feature": "W3C OpenTelemetry Distributed Tracing",
+  "timestamp": 1794111095.414505,
+  "job_trace": {
+    "trace_id": "5e290d0ffc0d5cbb921b72008367ecf3",
+    "job_id": "job_audit_trace_01",
+    "root_span_id": "99da07f4b7cd4074",
+    "traceparent": "00-5e290d0ffc0d5cbb921b72008367ecf3-99da07f4b7cd4074-01",
+    "target_path": "samples/discount.py",
+    "duration_ms": 450.0,
+    "mutation_score": 94.7,
+    "tokens_consumed": 1500,
+    "cost_usd": 0.0015
+  },
+  "w3c_traceparent_carrier": {
+    "traceparent": "00-8ebe6ba34e8e625642c024e3aac6b6e2-57564151db827b80-03"
+  },
+  "traceparent_header_present": true,
+  "w3c_extracted_context_present": true,
+  "collected_spans_count": 2,
+  "sample_span": {
+    "name": "testforge.job.job_audit_trace_01",
+    "trace_id": "f9a3deb72765128a2dc020282685d5d4",
+    "span_id": "fdccd53f1f207a57",
+    "traceparent": "00-f9a3deb72765128a2dc020282685d5d4-fdccd53f1f207a57-01",
+    "status": "OK",
+    "duration_ms": 0.025,
+    "start_time": 1794111095415183000,
+    "end_time": 1794111095415208000,
+    "attributes": {
+      "testforge.job_id": "job_audit_trace_01",
+      "testforge.target_path": "samples/discount.py",
+      "testforge.iterations": 2,
+      "testforge.mutation_score": 94.7,
+      "testforge.total_mutants": 0,
+      "testforge.killed_mutants": 0,
+      "testforge.tokens_consumed": 1500,
+      "testforge.cost_usd": 0.0015,
+      "testforge.duration_ms": 450.0,
+      "service.name": "testforge-engine",
+      "service.version": "1.0.0"
+    },
+    "events_count": 0
+  },
+  "w3c_traceparent_valid_format": true,
+  "verdict": "PASS"
+}

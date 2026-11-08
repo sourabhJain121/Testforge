@@ -1,0 +1,33 @@
+{
+  "feature": "10 Deterministic AST Mutation Operator Classes",
+  "timestamp": 1794111090.579028,
+  "total_mutants_generated": 27,
+  "categories_discovered": [
+    "ARITH_OP",
+    "BOUNDARY_SWAP",
+    "COMP_OP",
+    "COND_INV",
+    "CONST_VAL",
+    "EXCEPTION_SWAP",
+    "EXCEPT_HANDLER",
+    "LOGICAL_CONN",
+    "MATH_FUNC",
+    "OFF_BY_ONE",
+    "RETURN_VAL"
+  ],
+  "sample_diffs": {
+    "COND_INV": "--- target.py (original)\n+++ target.py (mutant_1)\n@@ -1,17 +1,13 @@\n-\n\n def process_order(price: float, quantity: int, is_vip: bool) -> float:\n\n-    if price <= 0.0 or quantity < 1:\n\n-        raise ValueError(\"Invalid order parameters\")\n\n-    \n\n+    if not (price <= 0.0 or quantity < 1):\n\n+        raise ValueError('Invalid order parameters')\n\n     total = price * quantity\n\n     if is_vip and total",
+    "LOGICAL_CONN": "--- target.py (original)\n+++ target.py (mutant_2)\n@@ -1,17 +1,13 @@\n-\n\n def process_order(price: float, quantity: int, is_vip: bool) -> float:\n\n-    if price <= 0.0 or quantity < 1:\n\n-        raise ValueError(\"Invalid order parameters\")\n\n-    \n\n+    if price <= 0.0 and quantity < 1:\n\n+        raise ValueError('Invalid order parameters')\n\n     total = price * quantity\n\n     if is_vip and total > 10",
+    "COMP_OP": "--- target.py (original)\n+++ target.py (mutant_3)\n@@ -1,17 +1,13 @@\n-\n\n def process_order(price: float, quantity: int, is_vip: bool) -> float:\n\n-    if price <= 0.0 or quantity < 1:\n\n-        raise ValueError(\"Invalid order parameters\")\n\n-    \n\n+    if price > 0.0 or quantity < 1:\n\n+        raise ValueError('Invalid order parameters')\n\n     total = price * quantity\n\n     if is_vip and total > 100.",
+    "BOUNDARY_SWAP": "--- target.py (original)\n+++ target.py (mutant_4)\n@@ -1,17 +1,13 @@\n-\n\n def process_order(price: float, quantity: int, is_vip: bool) -> float:\n\n-    if price <= 0.0 or quantity < 1:\n\n-        raise ValueError(\"Invalid order parameters\")\n\n-    \n\n+    if price < 0.0 or quantity < 1:\n\n+        raise ValueError('Invalid order parameters')\n\n     total = price * quantity\n\n     if is_vip and total > 100.",
+    "OFF_BY_ONE": "--- target.py (original)\n+++ target.py (mutant_5)\n@@ -1,17 +1,13 @@\n-\n\n def process_order(price: float, quantity: int, is_vip: bool) -> float:\n\n-    if price <= 0.0 or quantity < 1:\n\n-        raise ValueError(\"Invalid order parameters\")\n\n-    \n\n+    if price <= 1.0 or quantity < 1:\n\n+        raise ValueError('Invalid order parameters')\n\n     total = price * quantity\n\n     if is_vip and total > 100",
+    "EXCEPTION_SWAP": "--- target.py (original)\n+++ target.py (mutant_11)\n@@ -1,17 +1,13 @@\n-\n\n def process_order(price: float, quantity: int, is_vip: bool) -> float:\n\n     if price <= 0.0 or quantity < 1:\n\n-        raise ValueError(\"Invalid order parameters\")\n\n-    \n\n+        raise TypeError('Invalid order parameters')\n\n     total = price * quantity\n\n     if is_vip and total > 100.0:\n\n         total = round(total * 0.9",
+    "CONST_VAL": "--- target.py (original)\n+++ target.py (mutant_12)\n@@ -1,17 +1,13 @@\n-\n\n def process_order(price: float, quantity: int, is_vip: bool) -> float:\n\n     if price <= 0.0 or quantity < 1:\n\n-        raise ValueError(\"Invalid order parameters\")\n\n-    \n\n+        raise ValueError('')\n\n     total = price * quantity\n\n     if is_vip and total > 100.0:\n\n         total = round(total * 0.9, 2)\n\n     else:\n\n     ",
+    "ARITH_OP": "--- target.py (original)\n+++ target.py (mutant_13)\n@@ -1,17 +1,13 @@\n-\n\n def process_order(price: float, quantity: int, is_vip: bool) -> float:\n\n     if price <= 0.0 or quantity < 1:\n\n-        raise ValueError(\"Invalid order parameters\")\n\n-    \n\n-    total = price * quantity\n\n+        raise ValueError('Invalid order parameters')\n\n+    total = price // quantity\n\n     if is_vip and total > 100.0:\n\n ",
+    "MATH_FUNC": "--- target.py (original)\n+++ target.py (mutant_20)\n@@ -1,17 +1,13 @@\n-\n\n def process_order(price: float, quantity: int, is_vip: bool) -> float:\n\n     if price <= 0.0 or quantity < 1:\n\n-        raise ValueError(\"Invalid order parameters\")\n\n-    \n\n+        raise ValueError('Invalid order parameters')\n\n     total = price * quantity\n\n     if is_vip and total > 100.0:\n\n-        total = round(total * 0.",
+    "EXCEPT_HANDLER": "--- target.py (original)\n+++ target.py (mutant_25)\n@@ -1,17 +1,13 @@\n-\n\n def process_order(price: float, quantity: int, is_vip: bool) -> float:\n\n     if price <= 0.0 or quantity < 1:\n\n-        raise ValueError(\"Invalid order parameters\")\n\n-    \n\n+        raise ValueError('Invalid order parameters')\n\n     total = price * quantity\n\n     if is_vip and total > 100.0:\n\n         total = round(total * 0.",
+    "RETURN_VAL": "--- target.py (original)\n+++ target.py (mutant_27)\n@@ -1,17 +1,13 @@\n-\n\n def process_order(price: float, quantity: int, is_vip: bool) -> float:\n\n     if price <= 0.0 or quantity < 1:\n\n-        raise ValueError(\"Invalid order parameters\")\n\n-    \n\n+        raise ValueError('Invalid order parameters')\n\n     total = price * quantity\n\n     if is_vip and total > 100.0:\n\n         total = round(total * 0."
+  },
+  "core_categories_covered": 10,
+  "verdict": "PASS"
+}

@@ -21,8 +21,22 @@ from opentelemetry.sdk.trace import ReadableSpan, TracerProvider
 from opentelemetry.sdk.trace.export import SimpleSpanProcessor, SpanExporter, SpanExportResult
 from opentelemetry.sdk.trace.sampling import ALWAYS_ON
 from opentelemetry.trace import Status, StatusCode
+from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
 
 logger = logging.getLogger("testforge.observability")
+
+
+def inject_traceparent(carrier: Dict[str, str], context: Optional[Any] = None) -> Dict[str, str]:
+    """Injects W3C traceparent header into the carrier dict."""
+    propagator = TraceContextTextMapPropagator()
+    propagator.inject(carrier, context=context)
+    return carrier
+
+
+def extract_traceparent(carrier: Dict[str, str]) -> Any:
+    """Extracts W3C trace context from carrier dict containing 'traceparent' header."""
+    propagator = TraceContextTextMapPropagator()
+    return propagator.extract(carrier)
 
 
 @dataclass
@@ -128,6 +142,7 @@ class TestForgeOtelTracer:
             "trace_id": trace_id_hex,
             "job_id": job_id,
             "root_span_id": root_span_id,
+            "traceparent": f"00-{trace_id_hex}-{root_span_id}-01",
             "target_path": target_path,
             "duration_ms": duration_ms,
             "mutation_score": mutation_score,
@@ -229,6 +244,7 @@ class TestForgeOtelTracer:
                 "name": s.name,
                 "trace_id": t_id,
                 "span_id": sp_id,
+                "traceparent": f"00-{t_id}-{sp_id}-01",
                 "status": s.status.status_code.name if s.status else "UNSET",
                 "duration_ms": round(duration_ms, 3),
                 "start_time": s.start_time,

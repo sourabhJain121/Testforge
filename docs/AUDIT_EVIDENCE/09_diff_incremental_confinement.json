@@ -1,0 +1,14 @@
+{
+  "feature": "Diff-Incremental PR Mutation Confinement",
+  "timestamp": 1794111095.405447,
+  "parsed_changed_lines": [
+    10,
+    11
+  ],
+  "confined_mutant_count": 1,
+  "outside_mutant_count": 0,
+  "confined_lines_observed": [
+    10
+  ],
+  "verdict": "PASS"
+}

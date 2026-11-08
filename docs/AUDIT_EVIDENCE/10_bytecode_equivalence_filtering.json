@@ -1,0 +1,10 @@
+{
+  "feature": "Bytecode Instruction Disassembly & Equivalence Filtering",
+  "timestamp": 1794111095.408044,
+  "dead_code_bytecode_match": true,
+  "non_equivalent_bytecode_match": false,
+  "equivalent_classified_as": "EQUIVALENT",
+  "equivalent_method": "DEAD_CODE_MUTATION",
+  "non_equivalent_classified_as": "UNKNOWN",
+  "verdict": "PASS"
+}

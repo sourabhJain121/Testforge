@@ -1,0 +1,28 @@
+{
+  "feature": "A2A Wire Protocol",
+  "timestamp": 1794111087.187052,
+  "frameworks": {
+    "internal_fipa_broker": {
+      "status": "PASS",
+      "description": "In-process strongly-typed FIPA-ACL broker for low-latency agent handoffs.",
+      "performatives_verified": [
+        "REQUEST",
+        "AGREE"
+      ],
+      "correlation_preserved": true
+    },
+    "official_a2a_sdk": {
+      "status": "PASS",
+      "spec_version": "0.3.0",
+      "agent_card_name": "testforge-agent-system",
+      "skills": [
+        "Unit Test Generation",
+        "Mutation Critique",
+        "Hardening Workflow"
+      ],
+      "description": "Official Google A2A Protocol v0.3.0 implementation using `a2a-sdk`."
+    }
+  },
+  "verdict": "PASS",
+  "provenance_clarification": "Dual-tier architecture: `testforge/a2a.py` provides the internal in-process typed FIPA-ACL broker, while `testforge/a2a_protocol.py` implements the official Google A2A Protocol v0.3.0 specification via `a2a-sdk`."
+}

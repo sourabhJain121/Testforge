@@ -1,0 +1,19 @@
+{
+  "feature": "Greedy Set Cover Test Suite Minimization",
+  "timestamp": 1794111093.9028008,
+  "original_test_count": 6,
+  "minimized_test_count": 1,
+  "reduction_pct": 83.3,
+  "score_retention_pct": 100.0,
+  "selected_tests": [
+    "test_quantity_threshold_5"
+  ],
+  "redundant_tests": [
+    "test_nominal_1",
+    "test_nominal_duplicate_1",
+    "test_quantity_threshold_5_dup",
+    "test_vip_discount",
+    "test_vip_large"
+  ],
+  "verdict": "PASS"
+}

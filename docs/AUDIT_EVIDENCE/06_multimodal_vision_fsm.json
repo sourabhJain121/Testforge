@@ -1,0 +1,20 @@
+{
+  "feature": "Multimodal Vision FSM Parsing",
+  "timestamp": 1794111090.580995,
+  "diagram_generated": true,
+  "extraction_source": "diagram-visual-parser-deterministic",
+  "states_count": 10,
+  "transitions_count": 12,
+  "terminal_states": [
+    "COMPLETED",
+    "CANCELLED",
+    "REFUNDED"
+  ],
+  "admin_only_states": [
+    "CANCELLED",
+    "REFUNDED"
+  ],
+  "has_model_credentials": true,
+  "status_label": "PASS_LIVE_MODEL",
+  "verdict": "PASS"
+}
