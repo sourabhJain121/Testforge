@@ -1,0 +1,36 @@
+======================================================================
+R3 AUDIT EVIDENCE: DASHBOARD AND RESULTS TRUTHFULNESS
+======================================================================
+Audit Timestamp: 2026-11-08 13:26:15
+Endpoint: GET /api/benchmark/multi-target/summary
+Server Framework: FastAPI / Starlette TestClient
+
+1. Provenance Fields Returned:
+   - commit: bad6cab
+   - model_name: gemini-3.6-flash
+   - fast_mode: False
+   - is_mocked: False
+   - timestamp: 1794054000.0
+
+2. Dashboard UI Provenance Badges (frontend/app.js:4190-4220):
+   - isMocked -> "badge badge-rose" ("⚠️ MOCKED / FIXTURE DATA")
+   - isFast -> "badge badge-amber" ("⚠️ FAST HEURISTIC MODE")
+   - Non-fast / Non-mock -> "badge badge-emerald" ("✓ FULL AGENTIC EVALUATION")
+   - Commit, Model, and Timestamp badges dynamically rendered
+
+3. Benchmark Publishing Protection:
+   - Canonical MULTI_TARGET_BENCHMARK_RESULTS.json SHA-256 before run:
+     26382f8ab82a817140850e20498ae98293349aa5a40b100f8d2b4de90d060a55
+   - Command: testforge benchmark --fast --targets discount --scenarios baseline
+     Output: Results written to /tmp/testforge_bench_test/results.json
+     Canonical SHA-256 after run:
+     26382f8ab82a817140850e20498ae98293349aa5a40b100f8d2b4de90d060a55 (IDENTICAL)
+   - Command: testforge benchmark --fast --targets discount --scenarios baseline --publish
+     Exit Code: 1
+     Error Output: "[✗] Publish Refused: Benchmark run was executed in --fast heuristic mode. Only full, non-fast agentic runs can be published."
+     Canonical SHA-256 after publish attempt:
+     26382f8ab82a817140850e20498ae98293349aa5a40b100f8d2b4de90d060a55 (IDENTICAL)
+
+4. Synchronization Script & Source-of-Truth Sync Tests:
+   - python testforge/scripts/sync_benchmarks.py -> Exit Code: 0
+   - pytest tests/test_benchmark_source_of_truth_sync.py -> 4 passed in 3.27s (Exit Code: 0)
