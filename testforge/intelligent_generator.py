@@ -265,6 +265,9 @@ class ASTCallableAnalyzer(ast.NodeVisitor):
                         self.string_sets[left_param] = vals
                 elif isinstance(comparator, ast.Name) and comparator.id in self.local_sets:
                     self.string_sets[left_param] = set(self.local_sets[comparator.id])
+            elif left_param and isinstance(op, (ast.Eq, ast.NotEq)):
+                if isinstance(comparator, ast.Constant) and isinstance(comparator.value, str):
+                    self.string_sets.setdefault(left_param, set()).add(comparator.value)
 
         self.generic_visit(node)
 
