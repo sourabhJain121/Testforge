@@ -1,0 +1,47 @@
+bringing up nodes...
+bringing up nodes...
+
+........................................................................ [  7%]
+........................................................................ [ 14%]
+........................................................................ [ 21%]
+........................................................................ [ 28%]
+........................................................................ [ 36%]
+........................................................................ [ 43%]
+........................................................................ [ 50%]
+........................................................................ [ 57%]
+........................................................................ [ 64%]
+........................................................................ [ 72%]
+........................................................................ [ 79%]
+........................................................................ [ 86%]
+........................................................................ [ 93%]
+...............................................................          [100%]
+=============================== warnings summary ===============================
+.venv-release/lib/python3.13/site-packages/starlette/testclient.py:45
+.venv-release/lib/python3.13/site-packages/starlette/testclient.py:45
+.venv-release/lib/python3.13/site-packages/starlette/testclient.py:45
+.venv-release/lib/python3.13/site-packages/starlette/testclient.py:45
+  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/starlette/testclient.py:45: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+tests/test_adk_web_compatibility.py::TestADKWebCompatibility::test_get_fast_api_app_initialization
+  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/google/adk/cli/fast_api.py:175: UserWarning: [EXPERIMENTAL] InMemoryCredentialService: This feature is experimental and may change or be removed in future versions without notice. It may introduce breaking changes at any time.
+    credential_service = InMemoryCredentialService()
+
+tests/test_adk_web_compatibility.py::TestADKWebCompatibility::test_get_fast_api_app_initialization
+  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/google/adk/auth/credential_service/in_memory_credential_service.py:33: UserWarning: [EXPERIMENTAL] BaseCredentialService: This feature is experimental and may change or be removed in future versions without notice. It may introduce breaking changes at any time.
+    super().__init__()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+============================= slowest 10 durations =============================
+100.45s call     tests/test_mode_c_ingestion.py::test_hardening_pipeline_on_models
+65.51s call     tests/test_blast_and_adk.py::test_agent_handoff_contracts
+56.02s call     tests/test_evaluation_corpus.py::TestBenchmarkStrategyRunner::test_missing_credentials_do_not_fabricate_tokens_or_cost
+44.71s call     tests/test_agentic_rag.py::TestAgentIntegrations::test_generator_agent_with_rag_and_memory
+39.21s call     tests/test_multimodal_fsm.py::test_synthesized_tests_kill_mutants
+30.02s call     tests/test_orchestration_mcp.py::TestCrossTaskIsolation::test_no_cross_task_leakage_between_orchestrators
+26.46s call     tests/test_parallel_mutant_execution.py::test_parallel_vs_serial_score_parity_and_speedup
+24.14s call     tests/test_performance_evaluation.py::test_evaluator_matrix_execution
+19.27s call     tests/test_agentic_pipeline.py::TestAgenticPipelineIntegration::test_end_to_end_orchestrator_agentic_reflection_loop
+16.45s call     tests/test_phase5_workflow_integration.py::test_orchestrator_end_to_end_phase5_pipeline
+
+999 passed, 6 warnings (Exit Code: 0, 100% test completion)

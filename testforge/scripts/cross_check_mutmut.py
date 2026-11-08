@@ -23,7 +23,6 @@ if REPO_ROOT not in sys.path:
 from testforge.benchmarking import BenchmarkRunner
 from testforge.mutator import ASTMutator
 
-
 TARGET_CONFIGS = [
     {
         "name": "discount",
@@ -164,11 +163,11 @@ def main():
         else:
             test_code = cfg["test_content"]
             
-        print(f"  • Running TestForge ASTMutator evaluation...")
+        print("  • Running TestForge ASTMutator evaluation...")
         tf_res = run_testforge_evaluation(cfg["target_path"], test_code)
         print(f"    TestForge: {tf_res['killed']}/{tf_res['total_mutants']} killed ({tf_res['mutation_score_pct']}%)")
         
-        print(f"  • Running mutmut 3.8.1 evaluation...")
+        print("  • Running mutmut 3.8.1 evaluation...")
         try:
             mm_res = run_mutmut_evaluation(cfg["target_path"], test_code, t_name)
             print(f"    mutmut:    {mm_res['killed']}/{mm_res['total_mutants']} killed ({mm_res['mutation_score_pct']}%) in {mm_res['duration_sec']}s")

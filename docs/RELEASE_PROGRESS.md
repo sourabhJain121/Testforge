@@ -17,7 +17,7 @@
 | **R4** | Repo Hygiene for Public Push | **DONE** | `docs/AUDIT_EVIDENCE/release/r4_repo_hygiene.txt` | Performed tracked file size audit (largest binary is 8.5MB screenshot; total tracked git objects 233 MiB). Ran secret scanner (0 real secrets, verified all patterns are synthetic redaction unit tests). Renamed `sk-live-9999` to `TOKEN-TEST-INJ-9999` in `inj_09_*.txt` to eliminate scanner false alarms. Created `release/v1.0.0` branch. |
 | **R5** | Claims and Disclosure | **DONE** | `docs/AUDIT_EVIDENCE/release/r5_claims_register.txt` | Extended `docs/CLAIMS_REGISTER.md` to 31 claims (CLM-001 - CLM-031); updated CLM-026/028; added CLM-029 (Dev set reclassification), CLM-030 (PSF stdlib provenance), and CLM-031 (999 passing tests). Updated `README.md` with audited per-target table, negative results, and full AI Assistance Disclosure. |
 | **R6** | Core-10 Study Guide (Viva Preparation) | DONE | `docs/AUDIT_EVIDENCE/release/r6_core10_study_guide.txt` | Authored `docs/viva/CORE10_STUDY_GUIDE.md` covering all 10 architectural pillars with verified line references, failure analysis, viva Q&A, and 10 tested live executable snippets. |
-| **R7** | Final Close & Release Checklist | TODO | `docs/AUDIT_EVIDENCE/release/r7_final_close.txt` | Final ruff, full test run, tag `v1.0.0-rc3`, author `docs/RELEASE_CHECKLIST.md`. |
+| **R7** | Final Close & Release Checklist | **DONE** | `docs/AUDIT_EVIDENCE/release/r7_final_close.txt`<br>`docs/AUDIT_EVIDENCE/release/r7_final_test_run.txt` | `ruff check testforge/` clean (0 errors). Full suite: 999 passed, 6 warnings, exit code 0. Authored `docs/RELEASE_CHECKLIST.md`. Synchronized `release/v1.0.0` branch and created release tag `v1.0.0-rc3`. |
 
 ---
 
