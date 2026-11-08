@@ -1,0 +1,77 @@
+======================================================================
+REPO HYGIENE & SECRET SCANNING AUDIT REPORT (R4)
+======================================================================
+
+1. SECRET SCANNER RESULTS:
+  Pattern: AIza[0-9A-Za-z_-]{35}
+  Total Matches: 2
+    - tests/test_adk_callbacks.py:25:            "Analyze module with key AIzaSyD9x829182390123812038102938102938 "
+    - tests/test_adk_workflow_constructs.py:131:            "Analyze target with key AIzaSyA1234567890abcdefghijklmnopqrstuv and "
+
+  Pattern: sk-[a-zA-Z0-9_-]{20,}
+  Total Matches: 21
+    - qa_artifacts/PRIVACY_MODE_EVIDENCE.json:87:        "raw": "Dispatch prompt using sk-or-v1-abcdef0123456789abcdef0123456789",
+    - qa_artifacts/PRIVACY_MODE_EVIDENCE.json:94:        "raw": "Authorization: Bearer sk-abcdef0123456789abcdef0123456789",
+    - testforge/scripts/evaluate_privacy_mode.py:41:    ("OpenRouter Key", "Dispatch prompt using sk-or-v1-abcdef0123456789abcdef0123456789", "[REDACTED_API_KEY_OPENROUTER]"),
+    - testforge/scripts/evaluate_privacy_mode.py:42:    ("OpenAI Key", "Authorization: Bearer sk-abcdef0123456789abcdef0123456789", "[REDACTED_API_KEY]"),
+    - testforge/security_evaluation_engine.py:143:        callback_payload={"api_key": "sk-real_super_secret_token_12345", "token": "ghp_abcdef1234567890abcdef1234567890"},
+    - tests/test_a2a.py:124:                "api_key": "sk-1234567890abcdef1234567890",
+    - tests/test_a2a.py:138:        assert msg.payload["api_key"] == "sk-1234567890abcdef1234567890"
+    - tests/test_a2a.py:364:            payload={"api_key": "sk-12345678901234567890", "data": "clean"},
+    - tests/test_adk_callbacks.py:26:            "contact admin@enterprise.corp or user sk-1234567890abcdef1234567890."
+    - tests/test_blackboard.py:164:        secret_note = "api_key='sk-1234567890abcdef12345678'"
+    - tests/test_blackboard.py:179:        assert "sk-1234567890abcdef12345678" not in str(critic_meta)
+    - tests/test_callbacks.py:169:                "api_key": "sk-secret1234567890abcdef",
+    - tests/test_callbacks.py:182:        assert "sk-secret1234567890abcdef" not in str(captured)
+    - tests/test_mcp.py:248:                "api_key": "sk-secret123456789012345"
+    - tests/test_mcp.py:258:        assert "sk-secret123456789012345" not in payload_str
+    - tests/test_observability.py:234:            "api_key": "sk-secret1234567890abcdef12345678",
+    - tests/test_privacy_mode.py:103:        "Here is my OpenRouter key: sk-or-v1-abcdef0123456789abcdef0123456789\n"
+    - tests/test_sandbox_security_isolation.py:31:            "ANTHROPIC_API_KEY": "sk-ant-api-test-0123456789",
+    - tests/test_security_agent.py:50:API_TOKEN = "sk-live-99887766554433221100"
+    - tests/test_websocket_streaming.py:110:                "token": "sk-or-v1-supersecret123456789",
+    - tests/test_websocket_streaming.py:126:        assert "sk-or-v1-supersecret123456789" not in payload_str
+
+  Pattern: ghp_[a-zA-Z0-9]{20,}
+  Total Matches: 9
+    - qa_artifacts/PRIVACY_MODE_EVIDENCE.json:101:        "raw": "Push changes using token ghp_abcdef0123456789abcdef0123456789",
+    - testforge/scripts/evaluate_privacy_mode.py:43:    ("GitHub Token", "Push changes using token ghp_abcdef0123456789abcdef0123456789", "[REDACTED_API_KEY_GITHUB]"),
+    - testforge/security_evaluation_engine.py:143:        callback_payload={"api_key": "sk-real_super_secret_token_12345", "token": "ghp_abcdef1234567890abcdef1234567890"},
+    - tests/test_a2a.py:126:                    "secret": "ghp_123456789012345678901234567890",
+    - tests/test_a2a.py:365:            headers={"secret_token": "ghp_123456789012345678901234567890"},
+    - tests/test_adk_workflow_constructs.py:132:            "contact developer at admin@testforge.internal. Also token: ghp_1234567890abcdefghijklmn."
+    - tests/test_observability.py:236:            "log_line": "Connecting with token=ghp_abcdefghijklmnopqrstuvwxyz1234567890",
+    - tests/test_observability.py:250:        assert "ghp_abcdefghijklmnopqrst" not in raw_trace_str
+    - tests/test_sandbox_security_isolation.py:36:            "GITHUB_TOKEN": "ghp_FakeGitHubPersonalAccessToken123",
+
+  Pattern: BEGIN.*PRIVATE KEY
+  Total Matches: 1
+    - qa_artifacts/post_push_integrity_verification_20261026_102200/POST_PUSH_INTEGRITY_REPORT.md:106:- Private Keys (`BEGIN RSA/OPENSSH/EC PRIVATE KEY`)
+
+2. TOP 20 LARGEST TRACKED FILES (KB):
+1128	qa_artifacts/full_e2e_audit_20261023_140930/screenshots/02d_mode_c_github.png
+1180	qa_artifacts/milestone_3_evidence_20261023_150000/screenshots/m3_01_wiretap_live_connected.png
+1248	qa_artifacts/phase2_master_acceptance_20261023_162200/screenshots/11_mutant_diff_inspected.png
+1252	qa_artifacts/phase2_master_acceptance_20261023_162200/screenshots/10_hardening_completed.png
+1320	qa_artifacts/m3_final_acceptance_audit_20261023_153600/screenshots/09_hardening_completed.png
+1320	qa_artifacts/m3_final_acceptance_audit_20261023_153600/screenshots/10_mutant_diff_inspected.png
+1404	qa_artifacts/full_e2e_audit_20261023_140930/screenshots/04b_mutants_table_killed.png
+1408	qa_artifacts/full_e2e_audit_20261023_140930/screenshots/03_hardening_completed.png
+1408	qa_artifacts/full_e2e_audit_20261023_140930/screenshots/04a_mutants_table_all.png
+1408	qa_artifacts/full_e2e_audit_20261023_140930/screenshots/04c_mutants_table_survived.png
+1412	qa_artifacts/full_e2e_audit_20261023_140930/screenshots/04d_mutants_table_equiv.png
+1412	qa_artifacts/full_e2e_audit_20261023_140930/screenshots/05_ast_diff_equivalence_inspector.png
+1608	docs/WIP_REPORT/TestForge_WIP_Report.docx
+2032	docs/WIP_REPORT/TestForge_WIP_Report_v1_backup.docx
+2156	qa_artifacts/frontend_backend_browser_audit/screenshots/32_redoc_initial.png
+2788	docs/WIP_REPORT/TestForge_WIP_Report_v1_backup.pdf
+4244	docs/WIP_REPORT/TestForge_WIP_Report.pdf
+7276	qa_artifacts/post_ast_mutation_baseline_20261030_185148/logistics_experiment_result.json
+7536	qa_artifacts/phase3_independent_validation_20261031_142800/reproduction_logistics.json
+8572	qa_artifacts/live_demo_verification_20261030_170700/screenshots/04_multi_agent_wiretap_timeline.png
+
+3. WORKING TREE CLEANLINESS:
+ M qa_artifacts/SECURITY_EVALUATION_REPORT.json
+ M testforge/evaluation_corpus/prompt_injections/inj_09_hidden_comment_instruction.txt
+ M testforge/scripts/generate_evaluation_corpus.py
+?? docs/AUDIT_EVIDENCE/release/r4_repo_hygiene.txt
