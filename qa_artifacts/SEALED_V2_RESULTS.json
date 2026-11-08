@@ -1,0 +1,1548 @@
+{
+  "metadata": {
+    "timestamp": 1794116253.8668401,
+    "date": "2026-11-08T11:07:33",
+    "pinned_model": "gemini-3.8-flash",
+    "seeds": [
+      42,
+      43,
+      44
+    ],
+    "freeze_tag": "sealed-v2-freeze",
+    "targets": [
+      "bisect_algo",
+      "fractions_algo",
+      "heapq_algo",
+      "shlex_algo",
+      "statistics_algo",
+      "textwrap_algo"
+    ],
+    "conditions": [
+      "developer_baseline",
+      "zeroshot_llm",
+      "zeroshot_retry",
+      "testforge_deterministic",
+      "testforge_full_agentic"
+    ]
+  },
+  "per_target_runs": {
+    "bisect_algo": {
+      "developer_baseline": [
+        {
+          "seed": 42,
+          "status": "PASS",
+          "line_cov": 16.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 70,
+          "duration_sec": 11.156
+        },
+        {
+          "seed": 43,
+          "status": "PASS",
+          "line_cov": 16.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 70,
+          "duration_sec": 11.614
+        },
+        {
+          "seed": 44,
+          "status": "PASS",
+          "line_cov": 16.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 70,
+          "duration_sec": 9.516
+        }
+      ],
+      "zeroshot_llm": [
+        {
+          "seed": 42,
+          "status": "PASS",
+          "line_cov": 16.0,
+          "branch_cov": 0.0,
+          "raw_ms": 100.0,
+          "adj_ms": 100.0,
+          "killed": 70,
+          "total_mutants": 70,
+          "duration_sec": 93.57
+        },
+        {
+          "seed": 43,
+          "status": "PASS",
+          "line_cov": 16.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 70,
+          "duration_sec": 110.744
+        },
+        {
+          "seed": 44,
+          "status": "PASS",
+          "line_cov": 16.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 70,
+          "duration_sec": 35.942
+        }
+      ],
+      "zeroshot_retry": [
+        {
+          "seed": 42,
+          "status": "PASS",
+          "line_cov": 16.0,
+          "branch_cov": 0.0,
+          "raw_ms": 100.0,
+          "adj_ms": 100.0,
+          "killed": 70,
+          "total_mutants": 70,
+          "duration_sec": 143.184
+        },
+        {
+          "seed": 43,
+          "status": "PASS",
+          "line_cov": 16.0,
+          "branch_cov": 0.0,
+          "raw_ms": 100.0,
+          "adj_ms": 100.0,
+          "killed": 70,
+          "total_mutants": 70,
+          "duration_sec": 157.451
+        },
+        {
+          "seed": 44,
+          "status": "PASS",
+          "line_cov": 16.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 70,
+          "duration_sec": 114.74000000000001
+        }
+      ],
+      "testforge_deterministic": [
+        {
+          "seed": 42,
+          "status": "PASS",
+          "line_cov": 16.0,
+          "branch_cov": 0.0,
+          "raw_ms": 100.0,
+          "adj_ms": 100.0,
+          "killed": 70,
+          "total_mutants": 70,
+          "duration_sec": 0.003
+        },
+        {
+          "seed": 43,
+          "status": "PASS",
+          "line_cov": 16.0,
+          "branch_cov": 0.0,
+          "raw_ms": 100.0,
+          "adj_ms": 100.0,
+          "killed": 70,
+          "total_mutants": 70,
+          "duration_sec": 0.003
+        },
+        {
+          "seed": 44,
+          "status": "PASS",
+          "line_cov": 16.0,
+          "branch_cov": 0.0,
+          "raw_ms": 100.0,
+          "adj_ms": 100.0,
+          "killed": 70,
+          "total_mutants": 70,
+          "duration_sec": 0.003
+        }
+      ],
+      "testforge_full_agentic": [
+        {
+          "seed": 42,
+          "status": "PASS",
+          "line_cov": 16.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 70,
+          "duration_sec": 136.667,
+          "iterations": 2
+        },
+        {
+          "seed": 43,
+          "status": "PASS",
+          "line_cov": 16.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 70,
+          "duration_sec": 88.105,
+          "iterations": 2
+        },
+        {
+          "seed": 44,
+          "status": "PASS",
+          "line_cov": 16.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 70,
+          "duration_sec": 130.188,
+          "iterations": 2
+        }
+      ]
+    },
+    "fractions_algo": {
+      "developer_baseline": [
+        {
+          "seed": 42,
+          "status": "PASS",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 57,
+          "duration_sec": 10.327
+        },
+        {
+          "seed": 43,
+          "status": "PASS",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 57,
+          "duration_sec": 9.727
+        },
+        {
+          "seed": 44,
+          "status": "PASS",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 57,
+          "duration_sec": 9.677
+        }
+      ],
+      "zeroshot_llm": [
+        {
+          "seed": 42,
+          "status": "BLOCKED",
+          "error": "ServerError: 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 57,
+          "duration_sec": 98.298
+        },
+        {
+          "seed": 43,
+          "status": "PASS",
+          "line_cov": 100.0,
+          "branch_cov": 100.0,
+          "raw_ms": 76.92,
+          "adj_ms": 78.43,
+          "killed": 40,
+          "total_mutants": 57,
+          "duration_sec": 69.684
+        },
+        {
+          "seed": 44,
+          "status": "PASS",
+          "line_cov": 100.0,
+          "branch_cov": 100.0,
+          "raw_ms": 80.0,
+          "adj_ms": 81.48,
+          "killed": 44,
+          "total_mutants": 57,
+          "duration_sec": 37.316
+        }
+      ],
+      "zeroshot_retry": [
+        {
+          "seed": 42,
+          "status": "BLOCKED",
+          "error": "Parent zeroshot_llm was BLOCKED; cannot proceed with retry",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 57,
+          "duration_sec": 0.0
+        },
+        {
+          "seed": 43,
+          "status": "PASS",
+          "line_cov": 100.0,
+          "branch_cov": 100.0,
+          "raw_ms": 78.85,
+          "adj_ms": 80.39,
+          "killed": 41,
+          "total_mutants": 57,
+          "duration_sec": 123.531
+        },
+        {
+          "seed": 44,
+          "status": "BLOCKED",
+          "error": "ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Q",
+          "line_cov": 100.0,
+          "branch_cov": 100.0,
+          "raw_ms": 80.0,
+          "adj_ms": 81.48,
+          "killed": 44,
+          "total_mutants": 57,
+          "duration_sec": 0.744
+        }
+      ],
+      "testforge_deterministic": [
+        {
+          "seed": 42,
+          "status": "PASS",
+          "line_cov": 67.74193548387096,
+          "branch_cov": 33.33,
+          "raw_ms": 21.82,
+          "adj_ms": 22.64,
+          "killed": 12,
+          "total_mutants": 57,
+          "duration_sec": 0.005
+        },
+        {
+          "seed": 43,
+          "status": "PASS",
+          "line_cov": 67.74193548387096,
+          "branch_cov": 33.33,
+          "raw_ms": 21.82,
+          "adj_ms": 22.64,
+          "killed": 12,
+          "total_mutants": 57,
+          "duration_sec": 0.002
+        },
+        {
+          "seed": 44,
+          "status": "PASS",
+          "line_cov": 67.74193548387096,
+          "branch_cov": 33.33,
+          "raw_ms": 21.82,
+          "adj_ms": 22.64,
+          "killed": 12,
+          "total_mutants": 57,
+          "duration_sec": 0.005
+        }
+      ],
+      "testforge_full_agentic": [
+        {
+          "seed": 42,
+          "status": "PASS",
+          "line_cov": 67.7,
+          "branch_cov": 0.0,
+          "raw_ms": 21.82,
+          "adj_ms": 21.82,
+          "killed": 12,
+          "total_mutants": 57,
+          "duration_sec": 40.069,
+          "iterations": 2
+        },
+        {
+          "seed": 43,
+          "status": "PASS",
+          "line_cov": 67.7,
+          "branch_cov": 0.0,
+          "raw_ms": 21.82,
+          "adj_ms": 21.82,
+          "killed": 12,
+          "total_mutants": 57,
+          "duration_sec": 40.147,
+          "iterations": 2
+        },
+        {
+          "seed": 44,
+          "status": "PASS",
+          "line_cov": 67.7,
+          "branch_cov": 0.0,
+          "raw_ms": 21.82,
+          "adj_ms": 21.82,
+          "killed": 12,
+          "total_mutants": 57,
+          "duration_sec": 40.35,
+          "iterations": 2
+        }
+      ]
+    },
+    "heapq_algo": {
+      "developer_baseline": [
+        {
+          "seed": 42,
+          "status": "PASS",
+          "line_cov": 76.0,
+          "branch_cov": 71.43,
+          "raw_ms": 36.73,
+          "adj_ms": 40.0,
+          "killed": 18,
+          "total_mutants": 49,
+          "duration_sec": 13.823
+        },
+        {
+          "seed": 43,
+          "status": "PASS",
+          "line_cov": 76.0,
+          "branch_cov": 71.43,
+          "raw_ms": 36.73,
+          "adj_ms": 40.0,
+          "killed": 18,
+          "total_mutants": 49,
+          "duration_sec": 13.4
+        },
+        {
+          "seed": 44,
+          "status": "PASS",
+          "line_cov": 76.0,
+          "branch_cov": 71.43,
+          "raw_ms": 36.73,
+          "adj_ms": 40.0,
+          "killed": 18,
+          "total_mutants": 49,
+          "duration_sec": 13.63
+        }
+      ],
+      "zeroshot_llm": [
+        {
+          "seed": 42,
+          "status": "PASS",
+          "line_cov": 100.0,
+          "branch_cov": 100.0,
+          "raw_ms": 100.0,
+          "adj_ms": 100.0,
+          "killed": 49,
+          "total_mutants": 49,
+          "duration_sec": 137.705
+        },
+        {
+          "seed": 43,
+          "status": "BLOCKED",
+          "error": "ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Q",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 49,
+          "duration_sec": 0.794
+        },
+        {
+          "seed": 44,
+          "status": "BLOCKED",
+          "error": "ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Q",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 49,
+          "duration_sec": 0.755
+        }
+      ],
+      "zeroshot_retry": [
+        {
+          "seed": 42,
+          "status": "BLOCKED",
+          "error": "ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Q",
+          "line_cov": 100.0,
+          "branch_cov": 100.0,
+          "raw_ms": 100.0,
+          "adj_ms": 100.0,
+          "killed": 49,
+          "total_mutants": 49,
+          "duration_sec": 0.765
+        },
+        {
+          "seed": 43,
+          "status": "BLOCKED",
+          "error": "Parent zeroshot_llm was BLOCKED; cannot proceed with retry",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 49,
+          "duration_sec": 0.0
+        },
+        {
+          "seed": 44,
+          "status": "BLOCKED",
+          "error": "Parent zeroshot_llm was BLOCKED; cannot proceed with retry",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 49,
+          "duration_sec": 0.0
+        }
+      ],
+      "testforge_deterministic": [
+        {
+          "seed": 42,
+          "status": "PASS",
+          "line_cov": 28.0,
+          "branch_cov": 14.29,
+          "raw_ms": 100.0,
+          "adj_ms": 100.0,
+          "killed": 49,
+          "total_mutants": 49,
+          "duration_sec": 0.007
+        },
+        {
+          "seed": 43,
+          "status": "PASS",
+          "line_cov": 28.0,
+          "branch_cov": 14.29,
+          "raw_ms": 100.0,
+          "adj_ms": 100.0,
+          "killed": 49,
+          "total_mutants": 49,
+          "duration_sec": 0.004
+        },
+        {
+          "seed": 44,
+          "status": "PASS",
+          "line_cov": 28.0,
+          "branch_cov": 14.29,
+          "raw_ms": 100.0,
+          "adj_ms": 100.0,
+          "killed": 49,
+          "total_mutants": 49,
+          "duration_sec": 0.005
+        }
+      ],
+      "testforge_full_agentic": [
+        {
+          "seed": 42,
+          "status": "PASS",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 49,
+          "duration_sec": 8.685,
+          "iterations": 0
+        },
+        {
+          "seed": 43,
+          "status": "PASS",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 49,
+          "duration_sec": 194.091,
+          "iterations": 0
+        },
+        {
+          "seed": 44,
+          "status": "PASS",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 49,
+          "duration_sec": 269.119,
+          "iterations": 0
+        }
+      ]
+    },
+    "shlex_algo": {
+      "developer_baseline": [
+        {
+          "seed": 42,
+          "status": "PASS",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 23,
+          "duration_sec": 8.291
+        },
+        {
+          "seed": 43,
+          "status": "PASS",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 23,
+          "duration_sec": 7.224
+        },
+        {
+          "seed": 44,
+          "status": "PASS",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 23,
+          "duration_sec": 7.191
+        }
+      ],
+      "zeroshot_llm": [
+        {
+          "seed": 42,
+          "status": "BLOCKED",
+          "error": "ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Q",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 23,
+          "duration_sec": 0.392
+        },
+        {
+          "seed": 43,
+          "status": "BLOCKED",
+          "error": "ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Q",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 23,
+          "duration_sec": 0.79
+        },
+        {
+          "seed": 44,
+          "status": "BLOCKED",
+          "error": "ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Q",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 23,
+          "duration_sec": 0.464
+        }
+      ],
+      "zeroshot_retry": [
+        {
+          "seed": 42,
+          "status": "BLOCKED",
+          "error": "Parent zeroshot_llm was BLOCKED; cannot proceed with retry",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 23,
+          "duration_sec": 0.0
+        },
+        {
+          "seed": 43,
+          "status": "BLOCKED",
+          "error": "Parent zeroshot_llm was BLOCKED; cannot proceed with retry",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 23,
+          "duration_sec": 0.0
+        },
+        {
+          "seed": 44,
+          "status": "BLOCKED",
+          "error": "Parent zeroshot_llm was BLOCKED; cannot proceed with retry",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 23,
+          "duration_sec": 0.0
+        }
+      ],
+      "testforge_deterministic": [
+        {
+          "seed": 42,
+          "status": "PASS",
+          "line_cov": 52.77777777777778,
+          "branch_cov": 54.55,
+          "raw_ms": 60.87,
+          "adj_ms": 60.87,
+          "killed": 14,
+          "total_mutants": 23,
+          "duration_sec": 0.005
+        },
+        {
+          "seed": 43,
+          "status": "PASS",
+          "line_cov": 52.77777777777778,
+          "branch_cov": 54.55,
+          "raw_ms": 60.87,
+          "adj_ms": 60.87,
+          "killed": 14,
+          "total_mutants": 23,
+          "duration_sec": 0.004
+        },
+        {
+          "seed": 44,
+          "status": "PASS",
+          "line_cov": 52.77777777777778,
+          "branch_cov": 54.55,
+          "raw_ms": 60.87,
+          "adj_ms": 60.87,
+          "killed": 14,
+          "total_mutants": 23,
+          "duration_sec": 0.004
+        }
+      ],
+      "testforge_full_agentic": [
+        {
+          "seed": 42,
+          "status": "PASS",
+          "line_cov": 52.8,
+          "branch_cov": 0.0,
+          "raw_ms": 60.87,
+          "adj_ms": 60.87,
+          "killed": 14,
+          "total_mutants": 23,
+          "duration_sec": 24.544,
+          "iterations": 2
+        },
+        {
+          "seed": 43,
+          "status": "PASS",
+          "line_cov": 52.8,
+          "branch_cov": 0.0,
+          "raw_ms": 60.87,
+          "adj_ms": 60.87,
+          "killed": 14,
+          "total_mutants": 23,
+          "duration_sec": 24.668,
+          "iterations": 2
+        },
+        {
+          "seed": 44,
+          "status": "PASS",
+          "line_cov": 52.8,
+          "branch_cov": 0.0,
+          "raw_ms": 60.87,
+          "adj_ms": 60.87,
+          "killed": 14,
+          "total_mutants": 23,
+          "duration_sec": 24.617,
+          "iterations": 2
+        }
+      ]
+    },
+    "statistics_algo": {
+      "developer_baseline": [
+        {
+          "seed": 42,
+          "status": "PASS",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 37,
+          "duration_sec": 8.332
+        },
+        {
+          "seed": 43,
+          "status": "PASS",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 37,
+          "duration_sec": 8.471
+        },
+        {
+          "seed": 44,
+          "status": "PASS",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 37,
+          "duration_sec": 8.274
+        }
+      ],
+      "zeroshot_llm": [
+        {
+          "seed": 42,
+          "status": "BLOCKED",
+          "error": "ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Q",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 37,
+          "duration_sec": 0.773
+        },
+        {
+          "seed": 43,
+          "status": "BLOCKED",
+          "error": "ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Q",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 37,
+          "duration_sec": 0.416
+        },
+        {
+          "seed": 44,
+          "status": "BLOCKED",
+          "error": "ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Q",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 37,
+          "duration_sec": 0.814
+        }
+      ],
+      "zeroshot_retry": [
+        {
+          "seed": 42,
+          "status": "BLOCKED",
+          "error": "Parent zeroshot_llm was BLOCKED; cannot proceed with retry",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 37,
+          "duration_sec": 0.0
+        },
+        {
+          "seed": 43,
+          "status": "BLOCKED",
+          "error": "Parent zeroshot_llm was BLOCKED; cannot proceed with retry",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 37,
+          "duration_sec": 0.0
+        },
+        {
+          "seed": 44,
+          "status": "BLOCKED",
+          "error": "Parent zeroshot_llm was BLOCKED; cannot proceed with retry",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 37,
+          "duration_sec": 0.0
+        }
+      ],
+      "testforge_deterministic": [
+        {
+          "seed": 42,
+          "status": "PASS",
+          "line_cov": 95.45454545454545,
+          "branch_cov": 87.5,
+          "raw_ms": 59.46,
+          "adj_ms": 61.11,
+          "killed": 22,
+          "total_mutants": 37,
+          "duration_sec": 0.006
+        },
+        {
+          "seed": 43,
+          "status": "PASS",
+          "line_cov": 95.45454545454545,
+          "branch_cov": 87.5,
+          "raw_ms": 59.46,
+          "adj_ms": 61.11,
+          "killed": 22,
+          "total_mutants": 37,
+          "duration_sec": 0.004
+        },
+        {
+          "seed": 44,
+          "status": "PASS",
+          "line_cov": 95.45454545454545,
+          "branch_cov": 87.5,
+          "raw_ms": 59.46,
+          "adj_ms": 61.11,
+          "killed": 22,
+          "total_mutants": 37,
+          "duration_sec": 0.005
+        }
+      ],
+      "testforge_full_agentic": [
+        {
+          "seed": 42,
+          "status": "PASS",
+          "line_cov": 95.5,
+          "branch_cov": 0.0,
+          "raw_ms": 59.46,
+          "adj_ms": 59.46,
+          "killed": 22,
+          "total_mutants": 37,
+          "duration_sec": 27.52,
+          "iterations": 2
+        },
+        {
+          "seed": 43,
+          "status": "PASS",
+          "line_cov": 95.5,
+          "branch_cov": 0.0,
+          "raw_ms": 59.46,
+          "adj_ms": 59.46,
+          "killed": 22,
+          "total_mutants": 37,
+          "duration_sec": 28.762,
+          "iterations": 2
+        },
+        {
+          "seed": 44,
+          "status": "PASS",
+          "line_cov": 95.5,
+          "branch_cov": 0.0,
+          "raw_ms": 59.46,
+          "adj_ms": 59.46,
+          "killed": 22,
+          "total_mutants": 37,
+          "duration_sec": 29.242,
+          "iterations": 2
+        }
+      ]
+    },
+    "textwrap_algo": {
+      "developer_baseline": [
+        {
+          "seed": 42,
+          "status": "PASS",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 23,
+          "duration_sec": 7.632
+        },
+        {
+          "seed": 43,
+          "status": "PASS",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 23,
+          "duration_sec": 10.941
+        },
+        {
+          "seed": 44,
+          "status": "PASS",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 23,
+          "duration_sec": 7.231
+        }
+      ],
+      "zeroshot_llm": [
+        {
+          "seed": 42,
+          "status": "BLOCKED",
+          "error": "ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Q",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 23,
+          "duration_sec": 0.789
+        },
+        {
+          "seed": 43,
+          "status": "BLOCKED",
+          "error": "ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Q",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 23,
+          "duration_sec": 0.445
+        },
+        {
+          "seed": 44,
+          "status": "BLOCKED",
+          "error": "ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Q",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 23,
+          "duration_sec": 0.74
+        }
+      ],
+      "zeroshot_retry": [
+        {
+          "seed": 42,
+          "status": "BLOCKED",
+          "error": "Parent zeroshot_llm was BLOCKED; cannot proceed with retry",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 23,
+          "duration_sec": 0.0
+        },
+        {
+          "seed": 43,
+          "status": "BLOCKED",
+          "error": "Parent zeroshot_llm was BLOCKED; cannot proceed with retry",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 23,
+          "duration_sec": 0.0
+        },
+        {
+          "seed": 44,
+          "status": "BLOCKED",
+          "error": "Parent zeroshot_llm was BLOCKED; cannot proceed with retry",
+          "line_cov": 0.0,
+          "branch_cov": 0.0,
+          "raw_ms": 0.0,
+          "adj_ms": 0.0,
+          "killed": 0,
+          "total_mutants": 23,
+          "duration_sec": 0.0
+        }
+      ],
+      "testforge_deterministic": [
+        {
+          "seed": 42,
+          "status": "PASS",
+          "line_cov": 72.22222222222223,
+          "branch_cov": 50.0,
+          "raw_ms": 39.13,
+          "adj_ms": 42.86,
+          "killed": 9,
+          "total_mutants": 23,
+          "duration_sec": 0.007
+        },
+        {
+          "seed": 43,
+          "status": "PASS",
+          "line_cov": 72.22222222222223,
+          "branch_cov": 50.0,
+          "raw_ms": 39.13,
+          "adj_ms": 42.86,
+          "killed": 9,
+          "total_mutants": 23,
+          "duration_sec": 0.008
+        },
+        {
+          "seed": 44,
+          "status": "PASS",
+          "line_cov": 72.22222222222223,
+          "branch_cov": 50.0,
+          "raw_ms": 39.13,
+          "adj_ms": 42.86,
+          "killed": 9,
+          "total_mutants": 23,
+          "duration_sec": 0.006
+        }
+      ],
+      "testforge_full_agentic": [
+        {
+          "seed": 42,
+          "status": "PASS",
+          "line_cov": 72.2,
+          "branch_cov": 0.0,
+          "raw_ms": 39.13,
+          "adj_ms": 39.13,
+          "killed": 9,
+          "total_mutants": 23,
+          "duration_sec": 29.809,
+          "iterations": 2
+        },
+        {
+          "seed": 43,
+          "status": "PASS",
+          "line_cov": 72.2,
+          "branch_cov": 0.0,
+          "raw_ms": 39.13,
+          "adj_ms": 39.13,
+          "killed": 9,
+          "total_mutants": 23,
+          "duration_sec": 26.298,
+          "iterations": 2
+        },
+        {
+          "seed": 44,
+          "status": "PASS",
+          "line_cov": 72.2,
+          "branch_cov": 0.0,
+          "raw_ms": 39.13,
+          "adj_ms": 39.13,
+          "killed": 9,
+          "total_mutants": 23,
+          "duration_sec": 26.465,
+          "iterations": 2
+        }
+      ]
+    }
+  },
+  "summary": {
+    "developer_baseline": {
+      "per_target": {
+        "bisect_algo": {
+          "status": "PASS",
+          "line_cov_mean": 16.0,
+          "line_cov_std": 0.0,
+          "raw_ms_mean": 0.0,
+          "raw_ms_std": 0.0,
+          "adj_ms_mean": 0.0,
+          "adj_ms_std": 0.0,
+          "duration_mean": 10.76,
+          "duration_std": 1.1
+        },
+        "fractions_algo": {
+          "status": "PASS",
+          "line_cov_mean": 0.0,
+          "line_cov_std": 0.0,
+          "raw_ms_mean": 0.0,
+          "raw_ms_std": 0.0,
+          "adj_ms_mean": 0.0,
+          "adj_ms_std": 0.0,
+          "duration_mean": 9.91,
+          "duration_std": 0.36
+        },
+        "heapq_algo": {
+          "status": "PASS",
+          "line_cov_mean": 76.0,
+          "line_cov_std": 0.0,
+          "raw_ms_mean": 36.73,
+          "raw_ms_std": 0.0,
+          "adj_ms_mean": 40.0,
+          "adj_ms_std": 0.0,
+          "duration_mean": 13.62,
+          "duration_std": 0.21
+        },
+        "shlex_algo": {
+          "status": "PASS",
+          "line_cov_mean": 0.0,
+          "line_cov_std": 0.0,
+          "raw_ms_mean": 0.0,
+          "raw_ms_std": 0.0,
+          "adj_ms_mean": 0.0,
+          "adj_ms_std": 0.0,
+          "duration_mean": 7.57,
+          "duration_std": 0.63
+        },
+        "statistics_algo": {
+          "status": "PASS",
+          "line_cov_mean": 0.0,
+          "line_cov_std": 0.0,
+          "raw_ms_mean": 0.0,
+          "raw_ms_std": 0.0,
+          "adj_ms_mean": 0.0,
+          "adj_ms_std": 0.0,
+          "duration_mean": 8.36,
+          "duration_std": 0.1
+        },
+        "textwrap_algo": {
+          "status": "PASS",
+          "line_cov_mean": 0.0,
+          "line_cov_std": 0.0,
+          "raw_ms_mean": 0.0,
+          "raw_ms_std": 0.0,
+          "adj_ms_mean": 0.0,
+          "adj_ms_std": 0.0,
+          "duration_mean": 8.6,
+          "duration_std": 2.04
+        }
+      },
+      "overall": {
+        "status": "PASS",
+        "line_cov_mean": 15.33,
+        "line_cov_std": 28.56,
+        "raw_ms_mean": 6.12,
+        "raw_ms_std": 14.09,
+        "adj_ms_mean": 6.67,
+        "adj_ms_std": 15.34,
+        "duration_mean": 9.8,
+        "duration_std": 2.22,
+        "blocked_runs": 0
+      }
+    },
+    "zeroshot_llm": {
+      "per_target": {
+        "bisect_algo": {
+          "status": "PASS",
+          "line_cov_mean": 16.0,
+          "line_cov_std": 0.0,
+          "raw_ms_mean": 33.33,
+          "raw_ms_std": 57.74,
+          "adj_ms_mean": 33.33,
+          "adj_ms_std": 57.74,
+          "duration_mean": 80.09,
+          "duration_std": 39.18
+        },
+        "fractions_algo": {
+          "status": "PARTIAL_2_OF_3",
+          "line_cov_mean": 100.0,
+          "line_cov_std": 0.0,
+          "raw_ms_mean": 78.46,
+          "raw_ms_std": 2.18,
+          "adj_ms_mean": 79.96,
+          "adj_ms_std": 2.16,
+          "duration_mean": 53.5,
+          "duration_std": 22.89
+        },
+        "heapq_algo": {
+          "status": "PARTIAL_1_OF_3",
+          "line_cov_mean": 100.0,
+          "line_cov_std": 0.0,
+          "raw_ms_mean": 100.0,
+          "raw_ms_std": 0.0,
+          "adj_ms_mean": 100.0,
+          "adj_ms_std": 0.0,
+          "duration_mean": 137.71,
+          "duration_std": 0.0
+        },
+        "shlex_algo": {
+          "status": "BLOCKED",
+          "reason": "ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Q",
+          "line_cov_mean": 0.0,
+          "line_cov_std": 0.0,
+          "raw_ms_mean": 0.0,
+          "raw_ms_std": 0.0,
+          "adj_ms_mean": 0.0,
+          "adj_ms_std": 0.0,
+          "duration_mean": 0.0
+        },
+        "statistics_algo": {
+          "status": "BLOCKED",
+          "reason": "ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Q",
+          "line_cov_mean": 0.0,
+          "line_cov_std": 0.0,
+          "raw_ms_mean": 0.0,
+          "raw_ms_std": 0.0,
+          "adj_ms_mean": 0.0,
+          "adj_ms_std": 0.0,
+          "duration_mean": 0.0
+        },
+        "textwrap_algo": {
+          "status": "BLOCKED",
+          "reason": "ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Q",
+          "line_cov_mean": 0.0,
+          "line_cov_std": 0.0,
+          "raw_ms_mean": 0.0,
+          "raw_ms_std": 0.0,
+          "adj_ms_mean": 0.0,
+          "adj_ms_std": 0.0,
+          "duration_mean": 0.0
+        }
+      },
+      "overall": {
+        "status": "PARTIAL_6_RUNS",
+        "line_cov_mean": 58.0,
+        "line_cov_std": 46.01,
+        "raw_ms_mean": 59.49,
+        "raw_ms_std": 47.08,
+        "adj_ms_mean": 59.99,
+        "adj_ms_std": 47.33,
+        "duration_mean": 80.83,
+        "duration_std": 40.8,
+        "blocked_runs": 9
+      }
+    },
+    "zeroshot_retry": {
+      "per_target": {
+        "bisect_algo": {
+          "status": "PASS",
+          "line_cov_mean": 16.0,
+          "line_cov_std": 0.0,
+          "raw_ms_mean": 66.67,
+          "raw_ms_std": 57.74,
+          "adj_ms_mean": 66.67,
+          "adj_ms_std": 57.74,
+          "duration_mean": 138.46,
+          "duration_std": 21.74
+        },
+        "fractions_algo": {
+          "status": "PARTIAL_1_OF_3",
+          "line_cov_mean": 100.0,
+          "line_cov_std": 0.0,
+          "raw_ms_mean": 78.85,
+          "raw_ms_std": 0.0,
+          "adj_ms_mean": 80.39,
+          "adj_ms_std": 0.0,
+          "duration_mean": 123.53,
+          "duration_std": 0.0
+        },
+        "heapq_algo": {
+          "status": "BLOCKED",
+          "reason": "ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Q",
+          "line_cov_mean": 0.0,
+          "line_cov_std": 0.0,
+          "raw_ms_mean": 0.0,
+          "raw_ms_std": 0.0,
+          "adj_ms_mean": 0.0,
+          "adj_ms_std": 0.0,
+          "duration_mean": 0.0
+        },
+        "shlex_algo": {
+          "status": "BLOCKED",
+          "reason": "Parent zeroshot_llm was BLOCKED; cannot proceed with retry",
+          "line_cov_mean": 0.0,
+          "line_cov_std": 0.0,
+          "raw_ms_mean": 0.0,
+          "raw_ms_std": 0.0,
+          "adj_ms_mean": 0.0,
+          "adj_ms_std": 0.0,
+          "duration_mean": 0.0
+        },
+        "statistics_algo": {
+          "status": "BLOCKED",
+          "reason": "Parent zeroshot_llm was BLOCKED; cannot proceed with retry",
+          "line_cov_mean": 0.0,
+          "line_cov_std": 0.0,
+          "raw_ms_mean": 0.0,
+          "raw_ms_std": 0.0,
+          "adj_ms_mean": 0.0,
+          "adj_ms_std": 0.0,
+          "duration_mean": 0.0
+        },
+        "textwrap_algo": {
+          "status": "BLOCKED",
+          "reason": "Parent zeroshot_llm was BLOCKED; cannot proceed with retry",
+          "line_cov_mean": 0.0,
+          "line_cov_std": 0.0,
+          "raw_ms_mean": 0.0,
+          "raw_ms_std": 0.0,
+          "adj_ms_mean": 0.0,
+          "adj_ms_std": 0.0,
+          "duration_mean": 0.0
+        }
+      },
+      "overall": {
+        "status": "PARTIAL_4_RUNS",
+        "line_cov_mean": 37.0,
+        "line_cov_std": 42.0,
+        "raw_ms_mean": 69.71,
+        "raw_ms_std": 47.53,
+        "adj_ms_mean": 70.1,
+        "adj_ms_std": 47.64,
+        "duration_mean": 134.73,
+        "duration_std": 19.26,
+        "blocked_runs": 12
+      }
+    },
+    "testforge_deterministic": {
+      "per_target": {
+        "bisect_algo": {
+          "status": "PASS",
+          "line_cov_mean": 16.0,
+          "line_cov_std": 0.0,
+          "raw_ms_mean": 100.0,
+          "raw_ms_std": 0.0,
+          "adj_ms_mean": 100.0,
+          "adj_ms_std": 0.0,
+          "duration_mean": 0.0,
+          "duration_std": 0.0
+        },
+        "fractions_algo": {
+          "status": "PASS",
+          "line_cov_mean": 67.74,
+          "line_cov_std": 0.0,
+          "raw_ms_mean": 21.82,
+          "raw_ms_std": 0.0,
+          "adj_ms_mean": 22.64,
+          "adj_ms_std": 0.0,
+          "duration_mean": 0.0,
+          "duration_std": 0.0
+        },
+        "heapq_algo": {
+          "status": "PASS",
+          "line_cov_mean": 28.0,
+          "line_cov_std": 0.0,
+          "raw_ms_mean": 100.0,
+          "raw_ms_std": 0.0,
+          "adj_ms_mean": 100.0,
+          "adj_ms_std": 0.0,
+          "duration_mean": 0.01,
+          "duration_std": 0.0
+        },
+        "shlex_algo": {
+          "status": "PASS",
+          "line_cov_mean": 52.78,
+          "line_cov_std": 0.0,
+          "raw_ms_mean": 60.87,
+          "raw_ms_std": 0.0,
+          "adj_ms_mean": 60.87,
+          "adj_ms_std": 0.0,
+          "duration_mean": 0.0,
+          "duration_std": 0.0
+        },
+        "statistics_algo": {
+          "status": "PASS",
+          "line_cov_mean": 95.45,
+          "line_cov_std": 0.0,
+          "raw_ms_mean": 59.46,
+          "raw_ms_std": 0.0,
+          "adj_ms_mean": 61.11,
+          "adj_ms_std": 0.0,
+          "duration_mean": 0.01,
+          "duration_std": 0.0
+        },
+        "textwrap_algo": {
+          "status": "PASS",
+          "line_cov_mean": 72.22,
+          "line_cov_std": 0.0,
+          "raw_ms_mean": 39.13,
+          "raw_ms_std": 0.0,
+          "adj_ms_mean": 42.86,
+          "adj_ms_std": 0.0,
+          "duration_mean": 0.01,
+          "duration_std": 0.0
+        }
+      },
+      "overall": {
+        "status": "PASS",
+        "line_cov_mean": 55.37,
+        "line_cov_std": 27.71,
+        "raw_ms_mean": 63.55,
+        "raw_ms_std": 29.76,
+        "adj_ms_mean": 64.58,
+        "adj_ms_std": 29.0,
+        "duration_mean": 0.0,
+        "duration_std": 0.0,
+        "blocked_runs": 0
+      }
+    },
+    "testforge_full_agentic": {
+      "per_target": {
+        "bisect_algo": {
+          "status": "PASS",
+          "line_cov_mean": 16.0,
+          "line_cov_std": 0.0,
+          "raw_ms_mean": 0.0,
+          "raw_ms_std": 0.0,
+          "adj_ms_mean": 0.0,
+          "adj_ms_std": 0.0,
+          "duration_mean": 118.32,
+          "duration_std": 26.37
+        },
+        "fractions_algo": {
+          "status": "PASS",
+          "line_cov_mean": 67.7,
+          "line_cov_std": 0.0,
+          "raw_ms_mean": 21.82,
+          "raw_ms_std": 0.0,
+          "adj_ms_mean": 21.82,
+          "adj_ms_std": 0.0,
+          "duration_mean": 40.19,
+          "duration_std": 0.15
+        },
+        "heapq_algo": {
+          "status": "PASS",
+          "line_cov_mean": 0.0,
+          "line_cov_std": 0.0,
+          "raw_ms_mean": 0.0,
+          "raw_ms_std": 0.0,
+          "adj_ms_mean": 0.0,
+          "adj_ms_std": 0.0,
+          "duration_mean": 157.3,
+          "duration_std": 134.06
+        },
+        "shlex_algo": {
+          "status": "PASS",
+          "line_cov_mean": 52.8,
+          "line_cov_std": 0.0,
+          "raw_ms_mean": 60.87,
+          "raw_ms_std": 0.0,
+          "adj_ms_mean": 60.87,
+          "adj_ms_std": 0.0,
+          "duration_mean": 24.61,
+          "duration_std": 0.06
+        },
+        "statistics_algo": {
+          "status": "PASS",
+          "line_cov_mean": 95.5,
+          "line_cov_std": 0.0,
+          "raw_ms_mean": 59.46,
+          "raw_ms_std": 0.0,
+          "adj_ms_mean": 59.46,
+          "adj_ms_std": 0.0,
+          "duration_mean": 28.51,
+          "duration_std": 0.89
+        },
+        "textwrap_algo": {
+          "status": "PASS",
+          "line_cov_mean": 72.2,
+          "line_cov_std": 0.0,
+          "raw_ms_mean": 39.13,
+          "raw_ms_std": 0.0,
+          "adj_ms_mean": 39.13,
+          "adj_ms_std": 0.0,
+          "duration_mean": 27.52,
+          "duration_std": 1.98
+        }
+      },
+      "overall": {
+        "status": "PASS",
+        "line_cov_mean": 50.7,
+        "line_cov_std": 33.97,
+        "raw_ms_mean": 30.21,
+        "raw_ms_std": 25.8,
+        "adj_ms_mean": 30.21,
+        "adj_ms_std": 25.8,
+        "duration_mean": 66.07,
+        "duration_std": 71.27,
+        "blocked_runs": 0
+      }
+    }
+  }
+}
