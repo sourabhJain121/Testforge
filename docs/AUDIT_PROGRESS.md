@@ -11,7 +11,7 @@
 | Sub-Task ID | Title | Status | Last Commit | Next Step / Notes |
 | :--- | :--- | :---: | :---: | :--- |
 | **A0** | Baseline and Test-Suite Integrity | DONE | `f8fc0b8` | Serial 987 passed (618s), xdist -n 4: 987 passed (361s), 0 failed. DEF-014 (1.1GB trace hang), DEF-015 (side-effect isolation), DEF-016 (restored 7 Phase-2 tests) fixed. Clean tree guard verified. |
-| **A1** | Claims Register | TODO | - | Extract claims into `docs/CLAIMS_REGISTER.md`, verify with real commands, mark VERIFIED/FALSE/MISLEADING/UNSUPPORTED. |
+| **A1** | Claims Register | DONE | `573259b` | 20 claims cataloged in `docs/CLAIMS_REGISTER.md` with real audit commands. Discovered and filed DEF-017 (diff detection claim corrected in README) and DEF-018 (pipeline_plus_manual duplicate in benchmark JSON). |
 | **A2** | Score Provenance and Real Pipeline | TODO | - | Disambiguate deterministic vs full agentic, reproduce benchmark from clean state, investigate lru_cache/stats_calc, check overfit logic. |
 | **A3** | Sealed Generalization Test | TODO | - | 6 new sealed target modules (60-200 LOC), freeze tag `sealed-eval-freeze`, single run across configs with honest metrics. |
 | **A4** | Baselines and External Judge Integrity | TODO | - | Verify actual models (Gemini/Ollama), audit mutmut per-mutant agreement, remove/caveat spurious claims. |
