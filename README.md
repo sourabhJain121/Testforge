@@ -101,7 +101,7 @@ All dependencies are pinned in `pyproject.toml` and verified in `.venv-release`:
 | **playwright** | `1.58.0` | Headless Chromium browser automation and DOM verification |
 | **docker** | `29.4.3` | Native kernel container sandboxing (`--network none`) |
 | **pydantic** | `2.12.5` | Type validation and Blackboard schema enforcement |
-| **pytest** | `9.1.1` | Master test runner orchestrating 987 regression tests |
+| **pytest** | `9.1.1` | Master test runner orchestrating 999 regression tests |
 
 ---
 
@@ -129,23 +129,22 @@ The official multi-target evaluation results derive end-to-end from pipeline exe
 | **`samples/stats_calculator.py`** | 68 | 5 | 73 | 47.60% | 43.80% | **45.21%** | **46.48%** | 2 | 33 / 73 |
 | **Macro Average** | **54.8** | **4.8** | **60.0** | **70.58%** | **65.65%** | **67.02%** | **70.17%** | **2.5** | **167 / 240** |
 
-### Sealed Set V2 Generalization Evaluation (6 Pure-Python Stdlib Targets)
+### Sealed Set V2 Generalization Evaluation (Development Set Audit)
 
-Evaluated under frozen git tag `sealed-v2-freeze` across 5 conditions and 3 seeds (`[42, 43, 44]`) with pinned foundation model `gemini-3.8-flash` (zero silent fallbacks; API quota blocks reported explicitly; see [`docs/SEALED_V2_EVALUATION.md`](file:///Users/sourabh/TestForge/docs/SEALED_V2_EVALUATION.md) and [`qa_artifacts/SEALED_V2_RESULTS.json`](file:///Users/sourabh/TestForge/qa_artifacts/SEALED_V2_RESULTS.json)):
+Evaluated under frozen git tag `sealed-v2-freeze` across 5 conditions and 3 seeds (`[42, 43, 44]`) with pinned foundation model `gemini-3.8-flash` (zero silent fallbacks; API quota blocks reported explicitly; see [`docs/SEALED_V2_EVALUATION.md`](file:///Users/sourabh/TestForge/docs/SEALED_V2_EVALUATION.md) and [`docs/SEALED_V2_MEASUREMENT_AUDIT.md`](file:///Users/sourabh/TestForge/docs/SEALED_V2_MEASUREMENT_AUDIT.md)):
 
-| Target Module | Domain | Total Mutants | Developer Baseline | TestForge Deterministic | TestForge Full Agentic | Zero-Shot LLM (`gemini-3.8-flash`) |
+| Target Module | Domain | Total Mutants | Developer Baseline (Audited) | TestForge Deterministic (Audited) | TestForge Full Agentic | Zero-Shot LLM (`gemini-3.8-flash`) |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: |
-| **`bisect_algo.py`** | Stdlib Bisection & Insort | 70 | 0.0% MS (16.0% Cov) | **100.0% MS** (16.0% Cov) | 0.0% MS (16.0% Cov) | 33.3% MS (16.0% Cov) |
-| **`fractions_algo.py`** | Rational Arithmetic & GCD | 57 | 0.0% MS (0.0% Cov) | 21.8% MS (67.7% Cov) | 21.8% MS (67.7% Cov) | **78.5% MS** (100.0% Cov) |
-| **`heapq_algo.py`** | Binary Min-Heap Priority Queue | 49 | 36.7% MS (76.0% Cov) | **100.0% MS** (28.0% Cov) | 0.0% MS (0.0% Cov) | **100.0% MS** (100.0% Cov) |
-| **`shlex_algo.py`** | POSIX Shell Lexical Analysis | 23 | 0.0% MS (0.0% Cov) | **60.9% MS** (52.8% Cov) | **60.9% MS** (52.8% Cov) | `BLOCKED` (API Quota) |
-| **`statistics_algo.py`** | Exact Statistical Measures | 37 | 0.0% MS (0.0% Cov) | **59.5% MS** (95.5% Cov) | **59.5% MS** (95.5% Cov) | `BLOCKED` (API Quota) |
-| **`textwrap_algo.py`** | Paragraph Wrapping & Filling | 23 | 0.0% MS (0.0% Cov) | **39.1% MS** (72.2% Cov) | **39.1% MS** (72.2% Cov) | `BLOCKED` (API Quota) |
-| **Overall Macro Summary** | **6 Pure Stdlib Modules** | **259** | **6.1% ± 14.1% MS** | **63.5% ± 29.8% MS** | **30.2% ± 25.8% MS** | **59.5% ± 47.1% MS** (partial) |
+| **`bisect_algo.py`** | Stdlib Bisection & Insort | 70 | 0.0% MS (16.0% Cov) | **0.0% MS (INVALID_SUITE)** | 0.0% MS (16.0% Cov) | 33.3% MS (16.0% Cov) |
+| **`fractions_algo.py`** | Rational Arithmetic & GCD | 57 | 14.6% MS (67.7% Cov) | **21.8% MS** (67.7% Cov) | 21.8% MS (67.7% Cov) | **78.5% MS** (100.0% Cov) |
+| **`heapq_algo.py`** | Binary Min-Heap Priority Queue | 49 | 36.7% MS (76.0% Cov) | **0.0% MS (INVALID_SUITE)** | 0.0% MS (0.0% Cov) | **100.0% MS** (100.0% Cov) |
+| **`shlex_algo.py`** | POSIX Shell Lexical Analysis | 23 | 56.5% MS (58.3% Cov) | **60.9% MS** (52.8% Cov) | **60.9% MS** (52.8% Cov) | `BLOCKED` (API Quota) |
+| **`statistics_algo.py`** | Exact Statistical Measures | 37 | 29.7% MS (54.5% Cov) | **59.5% MS** (95.5% Cov) | **59.5% MS** (95.5% Cov) | `BLOCKED` (API Quota) |
+| **`textwrap_algo.py`** | Paragraph Wrapping & Filling | 23 | 17.4% MS (94.4% Cov) | **39.1% MS** (72.2% Cov) | **39.1% MS** (72.2% Cov) | `BLOCKED` (API Quota) |
 
 > [!NOTE]
-> **Fair Paired Evaluation Summary:**  
-> On the paired Sealed V2 comparison where all conditions completed ($n=4$), `TestForge Deterministic` achieved **80.5% ± 39.1% MS** vs **44.2% ± 51.9% MS** for Gemini Zero-Shot. Across all 18 runs with local `qwen2.5-coder:7b`, zero-shot achieved **91.5% ± 25.7% MS** vs **62.8% ± 29.6% MS** for TestForge Deterministic (with 0.003s latency and 0 tokens). The Never-Regress Guard (`testforge/orchestrator.py`) ensures that iterative reflection never regresses below the peak suite discovered. Complete paired breakdown in [`docs/SEALED_V2_EVALUATION.md`](file:///Users/sourabh/TestForge/docs/SEALED_V2_EVALUATION.md) and diagnosis in [`docs/AGENTIC_REGRESSION_DIAGNOSIS.md`](file:///Users/sourabh/TestForge/docs/AGENTIC_REGRESSION_DIAGNOSIS.md).
+> **Measurement Harness Audit & Dataset Reclassification:**  
+> During independent release auditing, an evaluation defect was uncovered where test suites failing on clean reference code caused the uninstrumented harness to count failing tests as mutant kills (e.g. 70/70 on `bisect_algo`). The harness was refined with strict clean-reference preflight checks (`pass@1`), line coverage consistency validation, and granular kill categorization (`ASSERTION_FAIL` vs `EXCEPTION_FAIL`). Following this harness update, Sealed Set V2 is formally reclassified as a **DEVELOPMENT set** (see [`docs/SEALED_V2_MEASUREMENT_AUDIT.md`](file:///Users/sourabh/TestForge/docs/SEALED_V2_MEASUREMENT_AUDIT.md)). Target algorithms are adapted from the CPython standard library under the Python Software Foundation (PSF) License Version 2 (see [`samples/sealed_v2/NOTICE`](file:///Users/sourabh/TestForge/samples/sealed_v2/NOTICE)). Complete paired local comparison with `qwen2.5-coder:7b` (6 targets x 3 seeds) is detailed in [`docs/SEALED_V2_EVALUATION.md`](file:///Users/sourabh/TestForge/docs/SEALED_V2_EVALUATION.md).
 
 ---
 
@@ -250,12 +249,13 @@ pytest tests/ -n 4 -q
 python testforge/scripts/run_real_chrome_audit.py
 ```
 
-### Test Suite Directory Layout (987 Tests Passing)
+### Test Suite Directory Layout (999 Tests Passing)
 - **`tests/test_a2a*.py`** (37 tests): Official A2A v0.3.0 wire protocol, AgentCard discovery, and cross-process workers.
 - **`tests/test_adk*.py`** (52 tests): Google ADK Runners, Sessions, Memory, Web compatibility, and Callbacks.
 - **`tests/test_blackboard*.py`** (52 tests): 8-partition atomic Blackboard, SQLite WAL transaction logs, and checkpoint diffing.
 - **`tests/test_mutator*.py` & `tests/test_ast*.py`** (46 tests): 10-class deterministic AST mutator passes, diff targeting, and operator diversity.
 - **`tests/test_sandbox*.py`** (17 tests): Subprocess isolation, timeout defense, and real Docker daemon sandboxing.
+- **`tests/test_sealed_v2_measurement_harness.py`** (4 tests): Clean-reference suite execution verification, target coverage disambiguation, and mutant kill categorization.
 - **`tests/test_privacy_mode.py`** (6 tests): Zero-egress socket interception and secret/PII sanitization.
 - **`tests/test_multimodal_fsm.py`** (5 tests): Vision-based diagram requirement derivation with offline fallback.
 - **`tests/test_suite_minimizer.py`** (4 tests): Greedy set cover suite compression and kill matrix calculation.
@@ -266,7 +266,7 @@ python testforge/scripts/run_real_chrome_audit.py
 - **`tests/test_guardrails_approval.py`** (6 tests): AST network/import blocking and Human Approval Gate.
 - **`tests/test_frontend_playground_verification.py`** (9 tests): Headless Playwright Chrome execution across all dashboard panes (*Audit Note on Sub-Task A7: Headless Playwright only; manual interactive Chrome pass by human pending*).
 - **`tests/test_clean_working_tree_guard.py`** (1 test): Working-tree cleanliness assertion verifying zero test side-effect pollution.
-- **All other unit & integration test files** (740+ tests): End-to-end orchestration, MCP, serialization, security, and edge-case suites.
+- **All other unit & integration test files** (738+ tests): End-to-end orchestration, MCP, serialization, security, and edge-case suites.
 
 ---
 
@@ -288,13 +288,33 @@ Honest scientific disclosure is central to our engineering practice. We explicit
    - Our correlation with `mutmut v3.8.1` ($r = 0.9988$) demonstrates strong ordinal agreement across benchmark complexity levels. However, because $N=4$ sample benchmarks yield degrees of freedom $df=2$, the parametric confidence interval is wide; this must be interpreted as ordinal consistency across complexity tiers rather than an asymptotic parametric proof.
 6. **Sealed Generalization Performance**:
    - On 6 unseen domain modules frozen under tag `sealed-eval-freeze` (Sealed Set V1), autonomous generation achieved **+55.4% raw score lift** (from 3.3% baseline to 58.7% TestForge, killing 249/424 mutants in an un-tuned pass). While demonstrating zero dataset memorization, domain-specific semantic invariants (like Merkle tree cryptographic hashes) require multi-stage prompt tuning.
-7. **Sub-Task A7 Frontend Verification State**:
+7. **Type Inference Limitations in Pure AST Synthesis**:
+   - On algorithms with generic argument signatures (such as stdlib `bisect.py` and `heapq.py` which accept arbitrary sequences), heuristic AST synthesis without runtime typing information produced scalar nominal arguments (`insort(1, 1)`) that threw runtime exceptions on clean code. This reinforces the necessity of combining static AST synthesis with dynamic execution feedback.
+8. **LLM Pre-Training Memorization on Standard Library Targets**:
+   - Zero-shot evaluations on Python standard library modules (`fractions`, `statistics`, `shlex`) exhibit high baseline kill rates (up to 100%) due to extensive inclusion of stdlib implementations in LLM pre-training corpora. Evaluating LLMs on stdlib targets measures code memorization rather than pure zero-shot generalization.
+9. **Sub-Task A7 Frontend Verification State**:
    - Automated testing verifies 100% of frontend routes, reactive state, and DOM elements via headless Playwright (`tests/test_frontend_playground_verification.py`).
    - Status note: *Headless Playwright only; manual Chrome pass by human pending*.
 
 ---
 
-## 9. License
+## 9. How this project was built (AI Disclosure)
+
+In adherence to academic integrity and transparent engineering standards, we disclose the exact roles of human engineers and autonomous AI coding assistants:
+
+* **Autonomous Coding Assistance:**
+  - **Tooling:** Google Antigravity Agentic Assistant powered by frontier foundation models (Claude 3.7 Sonnet, Gemini 1.5 Pro, and Gemini 2.5/3.6 Flash).
+  - **AI Scope:** Boilerplate scaffolding for FastAPI routes, AST visitor class dispatchers, Playwright DOM locators, unit test expansions, and statistical evaluation scripts.
+* **Human Authorship & Critical Engineering Decisions:**
+  - **Architecture & System Design:** Conceptualization of the 8-partition Blackboard state machine, SQLite WAL persistence architecture, and multi-agent coordination contracts.
+  - **Integrity Auditing & Root Cause Analysis:** Identification and diagnosis of critical harness bugs (DEF-022 clean-code false kills, DEF-014 trace log memory leaks, DEF-023 coverage denominator skew).
+  - **Security Architecture:** Design and enforcement of dual-layer isolation (AST policy analysis + OS subprocess sandboxing + socket network confinement).
+  - **Curriculum Alignment:** Adherence to CSE3101 course evaluation rubrics, independent verification protocols, and live viva defense preparation.
+
+---
+
+## 10. License
 
 Developed for **CSE3101: Agentic AI** coursework by **Sourabh** & **Shreshth**.  
-Licensed under the Apache 2.0 License.
+Target code in `samples/sealed_v2/` is adapted from CPython (PSF License Version 2).  
+All original TestForge framework code is licensed under the Apache 2.0 License.
