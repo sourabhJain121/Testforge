@@ -12,6 +12,7 @@ import collections
 import json
 import logging
 import math
+import os
 import pathlib
 import re
 import time
@@ -21,7 +22,7 @@ from typing import Any, Dict, List, Optional, Set
 logger = logging.getLogger("testforge.rag.vector_store")
 
 BASE_DIR = pathlib.Path(__file__).resolve().parent.parent.parent
-DEFAULT_PERSIST_DIR = BASE_DIR / "qa_artifacts" / "knowledge_base"
+DEFAULT_PERSIST_DIR = pathlib.Path(os.environ.get("TESTFORGE_KB_DIR", str(BASE_DIR / "qa_artifacts" / "knowledge_base")))
 
 
 def _tokenize_and_vectorize(text: str) -> Dict[str, float]:
@@ -72,7 +73,8 @@ class TestForgeVectorStore:
         persist_dir: Optional[str] = None,
         use_chroma: bool = False,
     ):
-        self.persist_dir = pathlib.Path(persist_dir) if persist_dir else DEFAULT_PERSIST_DIR
+        target_dir = persist_dir or os.environ.get("TESTFORGE_KB_DIR")
+        self.persist_dir = pathlib.Path(target_dir) if target_dir else DEFAULT_PERSIST_DIR
         self.persist_dir.mkdir(parents=True, exist_ok=True)
         self.use_chroma = use_chroma
         self.chroma_client = None

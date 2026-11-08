@@ -22,6 +22,7 @@ from __future__ import annotations
 import json
 import math
 import os
+import tempfile
 import time
 import uuid
 from typing import Any, Dict, List, NamedTuple, Optional, Tuple
@@ -212,7 +213,14 @@ class BenchmarkRunner:
 
     def save_report(self, report: BenchmarkReport, output_dir: Optional[str] = None) -> Tuple[str, str]:
         """Saves benchmark report as benchmark_results.json and benchmark_results.md."""
-        dest_dir = output_dir or self.output_dir or "."
+        if output_dir:
+            dest_dir = output_dir
+        elif self.output_dir:
+            dest_dir = self.output_dir
+        elif os.environ.get("PYTEST_CURRENT_TEST"):
+            dest_dir = os.path.join(tempfile.gettempdir(), "testforge_benchmark_reports")
+        else:
+            dest_dir = "."
         os.makedirs(dest_dir, exist_ok=True)
         json_path = os.path.join(dest_dir, "benchmark_results.json")
         md_path = os.path.join(dest_dir, "benchmark_results.md")

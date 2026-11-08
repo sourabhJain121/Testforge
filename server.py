@@ -14,6 +14,7 @@ import logging
 import os
 import sqlite3
 import sys
+import tempfile
 import threading
 import time
 import uuid
@@ -771,7 +772,12 @@ async def ingest_upload(file: UploadFile = File(...)):
     code_text = content_bytes.decode("utf-8", errors="replace")
 
     safe_name = os.path.basename(file.filename)
-    dest_path = SAMPLES_DIR / f"uploaded_{safe_name}"
+    if os.environ.get("PYTEST_CURRENT_TEST"):
+        upload_dir = Path(tempfile.gettempdir()) / "testforge_uploads"
+        upload_dir.mkdir(parents=True, exist_ok=True)
+        dest_path = upload_dir / f"uploaded_{safe_name}"
+    else:
+        dest_path = SAMPLES_DIR / f"uploaded_{safe_name}"
     dest_path.write_text(code_text, encoding="utf-8")
 
     supervisor = TargetManagerAgent()
@@ -1154,14 +1160,20 @@ def _run_orchestration_job(job_id: str, payload: HardeningRunPayload):
 
         final_state = orchestrator.run()
         # Export hardened suite using job-specific path to guarantee concurrent job isolation
-        job_export_path = str(SAMPLES_DIR / f"test_hardened_{job_id}.py")
+        if os.environ.get("PYTEST_CURRENT_TEST"):
+            export_dir = Path(tempfile.gettempdir()) / "testforge_job_exports"
+            export_dir.mkdir(parents=True, exist_ok=True)
+            job_export_path = str(export_dir / f"test_hardened_{job_id}.py")
+        else:
+            job_export_path = str(SAMPLES_DIR / f"test_hardened_{job_id}.py")
         test_hardened_content = orchestrator.export_hardened_suite(job_export_path)
-        # Also maintain top-level test_hardened.py for single-job CLI compatibility
-        try:
-            with open("test_hardened.py", "w", encoding="utf-8") as f:
-                f.write(test_hardened_content)
-        except Exception:
-            pass
+        # Also maintain top-level test_hardened.py for single-job CLI compatibility (isolated under pytest)
+        if not os.environ.get("PYTEST_CURRENT_TEST"):
+            try:
+                with open("test_hardened.py", "w", encoding="utf-8") as f:
+                    f.write(test_hardened_content)
+            except Exception:
+                pass
 
         active_provider = getattr(final_state, "active_provider", "") or orchestrator.generator.active_provider
 
@@ -2459,11 +2471,12 @@ def _run_benchmark_job(job_id: str, payload: BenchmarkRunPayload):
         global LATEST_BENCHMARK
         LATEST_BENCHMARK = data
 
-        try:
-            (BASE_DIR / "benchmark_results.json").write_text(json.dumps(data, indent=2), encoding="utf-8")
-            (BASE_DIR / "benchmark_results.md").write_text(markdown, encoding="utf-8")
-        except Exception as write_err:
-            logger.warning(f"Failed to write benchmark_results cache: {write_err}")
+        if not os.environ.get("PYTEST_CURRENT_TEST"):
+            try:
+                (BASE_DIR / "benchmark_results.json").write_text(json.dumps(data, indent=2), encoding="utf-8")
+                (BASE_DIR / "benchmark_results.md").write_text(markdown, encoding="utf-8")
+            except Exception as write_err:
+                logger.warning(f"Failed to write benchmark_results cache: {write_err}")
 
         BENCHMARK_JOBS[job_id]["status"] = "COMPLETED"
         BENCHMARK_JOBS[job_id]["end_time"] = time.time()

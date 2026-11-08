@@ -16,7 +16,8 @@ node_modules/
 qa_artifacts/*.db
 qa_artifacts/*.db-wal
 qa_artifacts/*.db-shm
-testforge_trace.jsonl
+qa_artifacts/scratch_runs/
+testforge_trace.jsonl*
 trace_*.jsonl
 scratch/
 *.egg-info/
