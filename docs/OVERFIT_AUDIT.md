@@ -75,3 +75,4 @@ DB Transaction FSM (sqlite3): CleanPass=False (8/9 tests passed), Mutants=30, Ki
 - **Intelligent Heuristic Generator:** **HYBRID (70% General, 30% Overfit)**:
   - Static AST discovery, negative tests, boundary values, and type synthesis are fully general across all 6 sealed domains (Sub-Task A3) and 100 stdlib files.
   - State machine transition pairing and property invariant synthesis contain domain-specific heuristics tuned for the course benchmark targets.
+

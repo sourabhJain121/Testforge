@@ -64,7 +64,7 @@
 - **Capabilities**:
   - Parses unified diff chunk headers (`@@ -l,s +start,count @@`) from git commits or PRs.
   - Restricts AST mutation operator injection exclusively to modified and added line numbers.
-  - Across 4 realistic PR scenarios, eliminated **88.3% of redundant mutants** (240 down to 28), speeding up execution from 15.08s down to 2.80s (**5.39x macro speedup**) with 100% diff-line defect detection.
+  - Across 4 realistic PR scenarios, eliminated **88.3% of redundant mutants** (240 down to 28), speeding up execution from 15.08s down to 2.80s (**5.39x macro speedup**) (with the caveat that non-local effects outside touched AST lines can escape, as reflected in [True, False, True, False] scenario detection).
 - **Verification Tests**: [`tests/test_diff_incremental.py`](file:///Users/sourabh/TestForge/tests/test_diff_incremental.py) (3 passed).
 - **Evidence Artifacts**: [`qa_artifacts/DIFF_INCREMENTAL_EVIDENCE.json`](file:///Users/sourabh/TestForge/qa_artifacts/DIFF_INCREMENTAL_EVIDENCE.json), [`docs/DIFF_INCREMENTAL_MODE.md`](file:///Users/sourabh/TestForge/docs/DIFF_INCREMENTAL_MODE.md).
 

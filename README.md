@@ -129,6 +129,20 @@ The official multi-target evaluation results derive end-to-end from pipeline exe
 | **`samples/stats_calculator.py`** | 68 | 5 | 73 | 47.60% | 43.80% | **45.21%** | **46.48%** | 2 | 33 / 73 |
 | **Macro Average** | **54.8** | **4.8** | **60.0** | **70.58%** | **65.65%** | **67.02%** | **70.17%** | **2.5** | **167 / 240** |
 
+### Sealed Set V2 Generalization Evaluation (6 Pure-Python Stdlib Targets)
+
+Evaluated under frozen git tag `sealed-v2-freeze` across 5 conditions and 3 seeds (`[42, 43, 44]`) with pinned foundation model `gemini-3.8-flash` (zero silent fallbacks; API quota blocks reported explicitly; see [`docs/SEALED_V2_EVALUATION.md`](file:///Users/sourabh/TestForge/docs/SEALED_V2_EVALUATION.md) and [`qa_artifacts/SEALED_V2_RESULTS.json`](file:///Users/sourabh/TestForge/qa_artifacts/SEALED_V2_RESULTS.json)):
+
+| Target Module | Domain | Total Mutants | Developer Baseline | TestForge Deterministic | TestForge Full Agentic | Zero-Shot LLM (`gemini-3.8-flash`) |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: |
+| **`bisect_algo.py`** | Stdlib Bisection & Insort | 70 | 0.0% MS (16.0% Cov) | **100.0% MS** (16.0% Cov) | 0.0% MS (16.0% Cov) | 33.3% MS (16.0% Cov) |
+| **`fractions_algo.py`** | Rational Arithmetic & GCD | 57 | 0.0% MS (0.0% Cov) | 21.8% MS (67.7% Cov) | 21.8% MS (67.7% Cov) | **78.5% MS** (100.0% Cov) |
+| **`heapq_algo.py`** | Binary Min-Heap Priority Queue | 49 | 36.7% MS (76.0% Cov) | **100.0% MS** (28.0% Cov) | 0.0% MS (0.0% Cov) | **100.0% MS** (100.0% Cov) |
+| **`shlex_algo.py`** | POSIX Shell Lexical Analysis | 23 | 0.0% MS (0.0% Cov) | **60.9% MS** (52.8% Cov) | **60.9% MS** (52.8% Cov) | `BLOCKED` (API Quota) |
+| **`statistics_algo.py`** | Exact Statistical Measures | 37 | 0.0% MS (0.0% Cov) | **59.5% MS** (95.5% Cov) | **59.5% MS** (95.5% Cov) | `BLOCKED` (API Quota) |
+| **`textwrap_algo.py`** | Paragraph Wrapping & Filling | 23 | 0.0% MS (0.0% Cov) | **39.1% MS** (72.2% Cov) | **39.1% MS** (72.2% Cov) | `BLOCKED` (API Quota) |
+| **Overall Macro Summary** | **6 Pure Stdlib Modules** | **259** | **6.1% ± 14.1% MS** | **63.5% ± 29.8% MS** | **30.2% ± 25.8% MS** | **59.5% ± 47.1% MS** (partial) |
+
 ---
 
 ## 5. Quickstart & One-Command Demo
@@ -246,27 +260,33 @@ python testforge/scripts/run_real_chrome_audit.py
 - **`tests/test_bytecode_and_llm_equivalence.py`** (4 tests): Bytecode instruction comparison and equivalent mutant classification.
 - **`tests/test_hypothesis_property_testing.py`** (3 tests): Property test synthesis with `@given`.
 - **`tests/test_guardrails_approval.py`** (6 tests): AST network/import blocking and Human Approval Gate.
-- **`tests/test_frontend_playground_verification.py`** (9 tests): Headless Playwright Chrome execution across all dashboard panes.
+- **`tests/test_frontend_playground_verification.py`** (9 tests): Headless Playwright Chrome execution across all dashboard panes (*Audit Note on Sub-Task A7: Headless Playwright only; manual interactive Chrome pass by human pending*).
 - **`tests/test_clean_working_tree_guard.py`** (1 test): Working-tree cleanliness assertion verifying zero test side-effect pollution.
 - **All other unit & integration test files** (740+ tests): End-to-end orchestration, MCP, serialization, security, and edge-case suites.
 
 ---
 
-## 8. Known Limitations & Performance Boundaries
+## 8. Negative Results & Performance Boundaries
 
-Honest scientific disclosure is central to our engineering practice:
+Honest scientific disclosure is central to our engineering practice. We explicitly report all performance boundaries and negative results discovered during empirical validation:
 
-1. **Complex Pointer Graphs & Recursion Boundaries**:
+1. **Complex Pointer Graphs & Memory Heap Invariants**:
    - Single-pass autonomous generation achieves high mutation kill rates on state machines (`order_fsm.py`: 97.2%) and pure functional pricing algorithms (`discount.py`: 94.7%).
-   - For deeply coupled pointer graphs (e.g., `samples/lru_cache.py`: 31.0% raw kill score) and stateful recursive parsers (e.g., `samples/sealed_eval/markdown_parser.py`: 20.0% raw kill score), single-pass reflection hits algorithmic limits without multi-turn interactive execution traces.
-2. **macOS Sandbox Hardware Confinement**:
+   - Conversely, for deeply coupled pointer graphs (e.g., `samples/lru_cache.py`: 30.95% raw kill score) and stateful recursive parsers (e.g., `samples/sealed_eval/markdown_parser.py`: 20.0% raw kill score), single-pass reflection hits algorithmic limits without multi-turn heap-state inspection.
+2. **Floating-Point Precision & Rounding Mutations**:
+   - On `samples/stats_calculator.py` (45.21% raw kill score), 40 mutants survived. Detailed analysis in `qa_artifacts/test_hardened_stats_calculator.py` reveals that surviving mutants reside in subtle floating-point rounding precision and intermediate accumulator variance calculations where standard floating point equality assertions do not trigger without tight epsilon constraints.
+3. **Diff-Incremental Defect Detection Boundary**:
+   - As documented in `qa_artifacts/DIFF_INCREMENTAL_EVIDENCE.json` and `docs/DIFF_INCREMENTAL_MODE.md`, diff-aware targeted mutation successfully eliminates 88.3% of redundant mutants (240 down to 28, 5.39x speedup).
+   - However, defect detection across scenarios is [True, False, True, False] (50% on `stats_calculator.py` and 0% on `lru_cache.py`). Diff targeting is highly effective for localized algorithmic edits, but risks missing non-local side effects that manifest outside touched AST lines.
+4. **macOS Darwin Kernel Sandboxing Confinement**:
    - On macOS Darwin, kernel-level `RLIMIT_AS` limits are not enforced by the OS. TestForge provides dual-layer defense: in-process Python socket monkeypatching + AST static import rejection. True hardware cgroups and network namespace drops require running within Docker container mode (`TESTFORGE_SANDBOX=docker`).
-3. **Multimodal Vision Quota Fallback**:
-   - Visual architectural FSM derivation uses Gemini 1.5 Pro/Flash Vision APIs. Under active API rate limits or quota exhaustion (HTTP 429), the engine gracefully falls back to deterministic diagram topology parsing (`diagram-visual-parser`).
-4. **Small Sample Statistical Power ($N=4$ on Pearson $r$)**:
-   - Our correlation with `mutmut v3.8.1` ($r = 0.9988$) demonstrates strong ordinal agreement across benchmark complexity levels. However, because $N=4$ sample benchmarks yield degrees of freedom $df=2$, the parametric confidence interval is wide; this should be interpreted as ordinal consistency rather than an asymptotic parametric guarantee.
-5. **Sealed Generalization Performance**:
-   - On 6 unseen domain modules frozen under tag `sealed-eval-freeze`, autonomous generation achieved **+36.19% score lift** (from 9.32% baseline to 45.51% TestForge, killing 191/409 mutants in a single un-tuned pass). While demonstrating zero dataset memorization, domain-specific semantic invariants (like Merkle tree cryptographic hashes) require multi-stage prompt tuning.
+5. **Small Sample Statistical Power ($N=4$ on Pearson $r$)**:
+   - Our correlation with `mutmut v3.8.1` ($r = 0.9988$) demonstrates strong ordinal agreement across benchmark complexity levels. However, because $N=4$ sample benchmarks yield degrees of freedom $df=2$, the parametric confidence interval is wide; this must be interpreted as ordinal consistency across complexity tiers rather than an asymptotic parametric proof.
+6. **Sealed Generalization Performance**:
+   - On 6 unseen domain modules frozen under tag `sealed-eval-freeze` (Sealed Set V1), autonomous generation achieved **+55.4% raw score lift** (from 3.3% baseline to 58.7% TestForge, killing 249/424 mutants in an un-tuned pass). While demonstrating zero dataset memorization, domain-specific semantic invariants (like Merkle tree cryptographic hashes) require multi-stage prompt tuning.
+7. **Sub-Task A7 Frontend Verification State**:
+   - Automated testing verifies 100% of frontend routes, reactive state, and DOM elements via headless Playwright (`tests/test_frontend_playground_verification.py`).
+   - Status note: *Headless Playwright only; manual Chrome pass by human pending*.
 
 ---
 

@@ -73,3 +73,4 @@ Across the 114 test files in `tests/`:
   * `tests/test_testforge_mcp_server.py` (18 tests)
 
 **Conclusion:** Strict monotonic increase in verification depth. No tests or assertions were weakened, loosened, or removed.
+
