@@ -356,6 +356,19 @@ class TestForgeOrchestrator:
             TraceLoggerCallbackAdapter(self.logger),
             name="orchestrator_trace_adapter"
         )
+        # Never-Regress Guard: tracks peak-performing suite across all iterations
+        self._best_mutation_score: float = -1.0
+        self._best_raw_mutation_score: float = -1.0
+        self._best_adjusted_mutation_score: float = -1.0
+        self._best_test_code: str = (initial_test_code or "").strip()
+        self._best_iteration: int = 0
+        self._best_mutants_killed: int = 0
+        self._best_mutants_executed: int = 0
+        self._best_mutants_survived: int = 0
+        self._best_mutants_generated: int = 0
+        self._best_mutants: List[Any] = []
+        self._best_surviving_diffs: List[str] = []
+        self._guard_restored: bool = False
 
     def _sync_lifecycle(
         self,
@@ -405,16 +418,67 @@ class TestForgeOrchestrator:
                     f"Hardening job exceeded timeout bound of {self.timeout_seconds}s (elapsed: {elapsed:.2f}s)."
                 )
 
+    def _apply_never_regress_guard(self) -> bool:
+        """
+        Enforces suite monotonicity by restoring the highest-scoring test suite
+        and its metrics if any subsequent reflection iteration degraded the score.
+        Returns True if a rollback to an earlier best suite occurred.
+        """
+        if self._best_iteration <= 0 or not self.state.history:
+            return False
+
+        last_metric = self.state.history[-1]
+        last_score = last_metric.raw_mutation_score if last_metric.raw_mutation_score is not None else (last_metric.mutation_score or 0.0)
+
+        if self._best_raw_mutation_score > last_score:
+            console.print(
+                f"  [yellow]• [Never-Regress Guard] Suite degraded in iteration {last_metric.iteration} "
+                f"({last_score:.1f}% MS vs peak {self._best_raw_mutation_score:.1f}% MS from iteration {self._best_iteration}). "
+                f"Restoring best-scoring suite from iteration {self._best_iteration}.[/yellow]"
+            )
+            self._guard_restored = True
+            self.state.current_test_code = self._best_test_code
+            self.state.final_mutation_score = self._best_raw_mutation_score
+            self.state.mutants_killed = self._best_mutants_killed
+            self.state.mutants_executed = self._best_mutants_executed
+            self.state.mutants_survived = self._best_mutants_survived
+            self.state.mutants_generated = self._best_mutants_generated
+            self.state.mutants = list(self._best_mutants)
+            self.state.surviving_mutant_diffs = list(self._best_surviving_diffs)
+
+            self.blackboard.update_suite_space(
+                current_test_code=self._best_test_code,
+                hardened_test_code=self._best_test_code,
+                candidate_test_code="",
+            )
+            self.blackboard.update_metrics_space(
+                final_mutation_score=self._best_raw_mutation_score,
+                raw_mutation_score=self._best_raw_mutation_score,
+                adjusted_mutation_score=self._best_adjusted_mutation_score,
+            )
+            self.logger.log_event("NEVER_REGRESS_GUARD_TRIGGERED", {
+                "restored_iteration": self._best_iteration,
+                "best_score": self._best_raw_mutation_score,
+                "best_adj_score": self._best_adjusted_mutation_score,
+                "degraded_last_iteration": last_metric.iteration,
+                "degraded_last_score": last_score,
+                "killed_mutants": self._best_mutants_killed,
+            })
+            return True
+        return False
+
     def _finalize_cancellation_or_timeout(self, status: str, reason: str) -> None:
         """
         Consolidates and preserves all partial metrics gathered prior to cancellation/timeout.
         """
-        self.state.mutants_generated = len(self.state.mutants)
-        self.state.mutants_executed = sum(1 for m in self.state.mutants if m.status in ("KILLED", "SURVIVED", "TIMEOUT"))
-        self.state.mutants_killed = sum(1 for m in self.state.mutants if m.status in ("KILLED", "TIMEOUT"))
-        self.state.mutants_survived = sum(1 for m in self.state.mutants if m.status == "SURVIVED")
-        self.state.mutation_execution_errors = sum(1 for m in self.state.mutants if m.status == "ERROR")
-        self.state.final_mutation_score = self.state.history[-1].mutation_score if self.state.history else 0.0
+        guard_rolled_back = self._apply_never_regress_guard()
+        if not guard_rolled_back:
+            self.state.mutants_generated = len(self.state.mutants)
+            self.state.mutants_executed = sum(1 for m in self.state.mutants if m.status in ("KILLED", "SURVIVED", "TIMEOUT"))
+            self.state.mutants_killed = sum(1 for m in self.state.mutants if m.status in ("KILLED", "TIMEOUT"))
+            self.state.mutants_survived = sum(1 for m in self.state.mutants if m.status == "SURVIVED")
+            self.state.mutation_execution_errors = sum(1 for m in self.state.mutants if m.status == "ERROR")
+            self.state.final_mutation_score = self.state.history[-1].mutation_score if self.state.history else 0.0
         self.state.reflection_iterations_performed = len(self.state.history)
 
         if status == "CANCELLED":
@@ -1742,6 +1806,26 @@ class TestForgeOrchestrator:
                 hardening_status="IN_PROGRESS"
             )
             self.state.history.append(metric)
+
+            # Never-Regress Guard: Track the best-performing suite across all iterations
+            is_first_eval = (self._best_iteration == 0)
+            is_better_score = (raw_score > self._best_raw_mutation_score)
+            is_tied_with_more_kills = (
+                abs(raw_score - self._best_raw_mutation_score) < 1e-9
+                and killed > self._best_mutants_killed
+            )
+            if is_first_eval or is_better_score or is_tied_with_more_kills:
+                self._best_raw_mutation_score = raw_score
+                self._best_adjusted_mutation_score = adj_score
+                self._best_mutation_score = raw_score
+                self._best_test_code = self.state.current_test_code
+                self._best_iteration = iteration
+                self._best_mutants_killed = killed
+                self._best_mutants_executed = mutants_executed
+                self._best_mutants_survived = survived
+                self._best_mutants_generated = total
+                self._best_mutants = list(evaluated_mutants)
+                self._best_surviving_diffs = list(surviving_diffs)
             self.blackboard.update_metrics_space(
                 history=self.state.history,
                 raw_mutation_score=raw_score,
@@ -1959,17 +2043,26 @@ class TestForgeOrchestrator:
                 }
             })
 
-        # Final state metrics aggregation
-        self.state.mutants_generated = len(self.state.mutants)
-        self.state.mutants_executed = sum(1 for m in self.state.mutants if m.status in ("KILLED", "SURVIVED", "TIMEOUT"))
-        self.state.mutants_killed = sum(1 for m in self.state.mutants if m.status in ("KILLED", "TIMEOUT"))
-        self.state.mutants_survived = sum(1 for m in self.state.mutants if m.status == "SURVIVED")
-        self.state.mutation_execution_errors = sum(1 for m in self.state.mutants if m.status == "ERROR")
-        self.state.final_mutation_score = self.state.history[-1].mutation_score if self.state.history else 0.0
+        # Final state metrics aggregation with Never-Regress Guard
+        guard_rolled_back = self._apply_never_regress_guard()
+        if not guard_rolled_back:
+            self.state.mutants_generated = len(self.state.mutants)
+            self.state.mutants_executed = sum(1 for m in self.state.mutants if m.status in ("KILLED", "SURVIVED", "TIMEOUT"))
+            self.state.mutants_killed = sum(1 for m in self.state.mutants if m.status in ("KILLED", "TIMEOUT"))
+            self.state.mutants_survived = sum(1 for m in self.state.mutants if m.status == "SURVIVED")
+            self.state.mutation_execution_errors = sum(1 for m in self.state.mutants if m.status == "ERROR")
+            self.state.final_mutation_score = self.state.history[-1].mutation_score if self.state.history else 0.0
         self.state.reflection_iterations_performed = len(self.state.history)
 
-        raw_final = self.state.history[-1].raw_mutation_score if self.state.history else 0.0
-        adj_final = self.state.history[-1].adjusted_mutation_score if self.state.history else 0.0
+        if guard_rolled_back and self.state.final_mutation_score >= self.state.target_mutation_score:
+            self.state.final_hardening_status = "TARGET_REACHED"
+            self.state.termination_reason = (
+                f"Target Mutation Score achieved ({self.state.final_mutation_score:.1f}% >= "
+                f"{self.state.target_mutation_score}% via restored optimal suite from iteration {self._best_iteration})."
+            )
+
+        raw_final = self.state.final_mutation_score or 0.0
+        adj_final = getattr(self.state, "adjusted_mutation_score", None) or raw_final
         equiv_final = self.state.history[-1].equivalent_mutants if self.state.history else 0
         pot_equiv_final = self.state.history[-1].potentially_equivalent_mutants if self.state.history else 0
 
