@@ -498,10 +498,21 @@ body {
 }
 
 /* Header Action Buttons */
-.nav-right {
+.nav-right,
+.cockpit-header-actions {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+}
+
+.cockpit-header-actions .btn,
+.btn-secondary,
+#btn-mcp-status {
+  white-space: nowrap !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px;
+  min-width: max-content;
 }
 
 /* ==========================================================================
@@ -2194,12 +2205,17 @@ body {
    Modals, Settings, & Toast Notifications
    ========================================================================== */
 
-.modal-backdrop {
+.modal-backdrop,
+#mcp-modal-backdrop,
+#mcp-studio-modal-backdrop,
+#a2a-modal-backdrop,
+#settings-modal-backdrop,
+#restore-modal-backdrop {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.75);
   backdrop-filter: blur(12px);
-  z-index: 1000;
+  z-index: 10000 !important;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2207,7 +2223,12 @@ body {
   animation: fadeIn 0.2s ease;
 }
 
-.modal {
+.modal,
+#mcp-modal,
+#mcp-studio-modal,
+#a2a-modal,
+#settings-modal,
+#restore-modal {
   width: 100%;
   max-width: 560px;
   background: rgba(15, 22, 38, 0.95);
@@ -2215,6 +2236,14 @@ body {
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-lg), 0 0 40px rgba(99, 102, 241, 0.25);
   animation: modalScaleUp 0.3s var(--ease-spring);
+  z-index: 10001 !important;
+}
+
+.stat-badge,
+[data-tooltip],
+.tqs-tooltip,
+.tooltip {
+  z-index: 100 !important;
 }
 
 @keyframes modalScaleUp {

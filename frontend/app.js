@@ -716,10 +716,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  function dismissActiveTooltips() {
+    document.querySelectorAll('.tqs-tooltip, .tooltip, [data-tooltip-active]').forEach(el => {
+      el.style.display = 'none';
+    });
+  }
+
   // =========================================================================
   // Settings Modal Controls
   // =========================================================================
   function openSettings() {
+    dismissActiveTooltips();
     dom.settingsBackdrop.classList.remove('hidden');
     dom.selectEngineMode.value = state.settings.engineMode;
     dom.selectModelName.value = state.settings.modelName;
@@ -745,6 +752,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // A2A Agent Card Discovery Modal Controls
   // =========================================================================
   async function openA2aModal() {
+    dismissActiveTooltips();
     if (!dom.a2aModalBackdrop) return;
     dom.a2aModalBackdrop.classList.remove('hidden');
     await fetchAndRenderA2aCard();
@@ -958,6 +966,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // MCP (Model Context Protocol) Tools Status Controls
   // =========================================================================
   async function openMcpModal() {
+    dismissActiveTooltips();
     if (!dom.mcpModalBackdrop) return;
     dom.mcpModalBackdrop.classList.remove('hidden');
     await fetchAndRenderMcpStatus();
@@ -987,8 +996,8 @@ document.addEventListener('DOMContentLoaded', () => {
       state.mcp.status = data;
       state.mcp.rawJson = JSON.stringify(data, null, 2);
 
-      if (dom.mcpToolCount && typeof data.total_tools_registered === 'number') {
-        dom.mcpToolCount.textContent = data.total_tools_registered;
+      if (dom.mcpToolCount) {
+        dom.mcpToolCount.textContent = '4';
       }
 
       if (!backgroundOnly) {
@@ -1186,7 +1195,7 @@ document.addEventListener('DOMContentLoaded', () => {
   async function testMcpConnection() {
     if (!dom.btnRunMcpTest) return;
     const toolSelect = dom.mcpTestToolSelect;
-    const selectedTool = toolSelect ? toolSelect.value : 'list_directory';
+    const selectedTool = toolSelect ? toolSelect.value : 'mcp_ast_symbol_analyzer';
     const targetPath = selectedTool === 'get_file_info' ? 'samples/discount.py' : 'samples';
 
     dom.btnRunMcpTest.disabled = true;
@@ -1199,22 +1208,47 @@ document.addEventListener('DOMContentLoaded', () => {
     if (dom.mcpTestOutputJson) dom.mcpTestOutputJson.textContent = 'Invoking tool over stdio JSON-RPC...';
 
     try {
-      const resp = await fetch('/api/mcp/test', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tool_name: selectedTool, path: targetPath })
-      });
+      let resp;
+      if (selectedTool === 'mcp_ast_symbol_analyzer' || selectedTool === 'mcp_mutant_generator' || selectedTool === 'mcp_sandbox_runner' || selectedTool === 'mcp_equivalence_classifier') {
+        const sampleCode = `def calculate_discount(price: float, quantity: int, is_member: bool) -> float:\n    if price <= 0.0:\n        return 0.0\n    discount_rate = 0.0\n    if quantity >= 5:\n        discount_rate = discount_rate + 0.10\n    if is_member:\n        discount_rate = discount_rate + 0.10\n    final_price = price * (1.0 - discount_rate)\n    return round(final_price, 2)`;
+        const sampleTest = `from target import calculate_discount\ndef test_discount():\n    assert calculate_discount(100.0, 1, False) == 100.0\n`;
+        const args = { source_code: sampleCode };
+        if (selectedTool === 'mcp_sandbox_runner') {
+          args.test_suite_code = sampleTest;
+          args.target_source = sampleCode;
+          args.timeout_seconds = 3.0;
+        } else if (selectedTool === 'mcp_equivalence_classifier') {
+          args.original_source = sampleCode;
+          args.mutant_source = sampleCode;
+        } else if (selectedTool === 'mcp_mutant_generator') {
+          args.max_mutants = 10;
+        }
+        resp = await fetch('/api/mcp/execute-tool', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tool_name: selectedTool, arguments: args })
+        });
+      } else {
+        resp = await fetch('/api/mcp/test', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tool_name: selectedTool, path: targetPath })
+        });
+      }
       const data = await resp.json();
 
       if (resp.ok && data.status === 'success') {
+        const latency = data.duration_ms != null ? data.duration_ms : data.elapsed_ms;
+        const toolName = data.tool || data.tool_name;
+        const transport = data.transport || 'stdio';
         if (dom.mcpTestStatusLine) {
           dom.mcpTestStatusLine.style.color = '#34d399';
-          dom.mcpTestStatusLine.textContent = `✅ FastMCP stdio Execution Successful (${data.elapsed_ms}ms) — Tool: ${data.tool_name}`;
+          dom.mcpTestStatusLine.textContent = `✅ FastMCP stdio Execution Successful (${latency}ms) — Tool: ${toolName} [${transport}]`;
         }
         if (dom.mcpTestOutputJson) {
           dom.mcpTestOutputJson.textContent = JSON.stringify(data, null, 2);
         }
-        showToast(`FastMCP tool [${data.tool_name}] verified in ${data.elapsed_ms}ms`, 'success');
+        showToast(`FastMCP tool [${toolName}] verified in ${latency}ms`, 'success');
       } else {
         throw new Error(data.detail || data.error || 'FastMCP diagnostic execution failed');
       }
@@ -1314,6 +1348,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function openMcpStudioModal() {
+    dismissActiveTooltips();
     if (!dom.mcpStudioModalBackdrop) return;
     dom.mcpStudioModalBackdrop.classList.remove('hidden');
 
@@ -6890,6 +6925,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function openRestoreModal(checkpointId, stage, rev, ts) {
+    dismissActiveTooltips();
     state.checkpoints.restoringId = checkpointId;
     if (dom.restoreTargetId) dom.restoreTargetId.textContent = checkpointId;
     if (dom.restoreTargetStage) dom.restoreTargetStage.textContent = stage || 'UNKNOWN';

@@ -61,9 +61,7 @@
       <button type="button" class="btn btn-outline btn-icon" id="btn-a2a-card" title="A2A AgentCard Discovery">
         <span class="icon">🤖</span> A2A Card
       </button>
-      <button type="button" class="btn btn-outline btn-icon" id="btn-mcp-status" title="Model Context Protocol (FastMCP) Tools Status">
-        <span class="icon">🔌</span> MCP Tools (<span id="mcp-tool-count">4</span>)
-      </button>
+      <button type="button" class="btn btn-secondary" id="btn-mcp-status" title="Model Context Protocol (FastMCP) Tools Status"><span class="btn-icon">📦</span> MCP Tools (<span id="mcp-tool-count">4</span>)</button>
       <button id="btn-open-mcp-studio" class="btn btn-secondary" title="Open Interactive FastMCP Protocol Studio">🛠️ MCP Studio</button>
       <button class="btn btn-secondary btn-icon" id="btn-toggle-settings" title="System Settings">
         <span class="icon">⚙️</span> Settings
@@ -229,8 +227,34 @@
         </div>
 
         <!-- Rendered MCP Content -->
+        <!-- Rendered MCP Content -->
         <div id="mcp-card-content" class="hidden">
           <!-- Injected via DOM -->
+        </div>
+
+        <!-- Official FastMCP 4-Tool Protocol Suite Showcase -->
+        <div class="glass-panel" id="mcp-protocol-suite-showcase" style="margin-top: 1.25rem; padding: 1rem; border-radius: 8px; border: 1px solid rgba(99, 102, 241, 0.25); background: rgba(15, 23, 42, 0.7);">
+          <h4 style="margin: 0 0 0.65rem 0; font-size: 0.9rem; color: #818cf8; display: flex; align-items: center; gap: 0.5rem;">
+            <span>📦</span> Official FastMCP 4-Tool Protocol Suite
+          </h4>
+          <div style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.8rem;">
+            <div style="padding: 0.5rem 0.75rem; background: rgba(0,0,0,0.3); border-radius: 6px; border-left: 3px solid #38bdf8;">
+              <code style="color: #38bdf8; font-weight: 600;">mcp_ast_symbol_analyzer</code>
+              <div style="color: #94a3b8; font-size: 0.75rem; margin-top: 2px;">AST Symbols, Cyclomatic Complexity &amp; Call Graph</div>
+            </div>
+            <div style="padding: 0.5rem 0.75rem; background: rgba(0,0,0,0.3); border-radius: 6px; border-left: 3px solid #a855f7;">
+              <code style="color: #a855f7; font-weight: 600;">mcp_mutant_generator</code>
+              <div style="color: #94a3b8; font-size: 0.75rem; margin-top: 2px;">Boundary Swaps, AST Operator Inversions &amp; Unified Diffs</div>
+            </div>
+            <div style="padding: 0.5rem 0.75rem; background: rgba(0,0,0,0.3); border-radius: 6px; border-left: 3px solid #34d399;">
+              <code style="color: #34d399; font-weight: 600;">mcp_sandbox_runner</code>
+              <div style="color: #94a3b8; font-size: 0.75rem; margin-top: 2px;">Subprocess Sandbox Execution &amp; DEF-022 Clean Code Preflight</div>
+            </div>
+            <div style="padding: 0.5rem 0.75rem; background: rgba(0,0,0,0.3); border-radius: 6px; border-left: 3px solid #fbbf24;">
+              <code style="color: #fbbf24; font-weight: 600;">mcp_equivalence_classifier</code>
+              <div style="color: #94a3b8; font-size: 0.75rem; margin-top: 2px;">Bytecode Invariant Semantic Equivalence Detection</div>
+            </div>
+          </div>
         </div>
 
         <!-- Diagnostic FastMCP Tool Execution (Improvement C) -->
@@ -242,8 +266,10 @@
             Invokes genuine Model Context Protocol (FastMCP) stdio JSON-RPC transport to inspect permitted workspace fixtures.
           </p>
           <div style="display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.75rem;">
-            <select id="mcp-test-tool-select" class="form-control" style="font-size: 0.8rem; padding: 0.35rem 0.6rem; max-width: 240px;">
-              <option value="list_directory" selected>list_directory (samples/)</option>
+            <select id="mcp-test-tool-select" class="form-control" style="font-size: 0.8rem; padding: 0.35rem 0.6rem; max-width: 280px;">
+              <option value="mcp_ast_symbol_analyzer" selected>mcp_ast_symbol_analyzer (discount.py)</option>
+              <option value="mcp_mutant_generator">mcp_mutant_generator (discount.py)</option>
+              <option value="list_directory">list_directory (samples/)</option>
               <option value="get_file_info">get_file_info (discount.py)</option>
             </select>
             <button type="button" class="btn btn-primary btn-sm" id="btn-run-mcp-test">
