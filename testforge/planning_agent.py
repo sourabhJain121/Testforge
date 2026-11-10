@@ -57,6 +57,7 @@ from testforge.a2a import (
 )
 from testforge.blackboard import Blackboard
 from testforge.callbacks import CallbackRegistry, EventType, LifecycleEvent
+from testforge.code_intelligence_agent import infer_parameter_types_from_ast
 from testforge.llm_client import HybridLLMClient
 from testforge.logger import TraceLogger
 from testforge.prompt_guard import get_defensive_system_instruction
@@ -549,10 +550,14 @@ class TestPlanningAgent:
             arg_types = func.get("arg_types", {}) or {}
 
             # Step 1: Input signature and domain type classification
+            inferred_types = func.get("inferred_parameter_types", {})
             domain_classifications = {}
             for a in args:
+                inferred_t = inferred_types.get(a, "")
                 raw_t = str(arg_types.get(a, "any")).lower()
-                if any(k in raw_t for k in ("int", "float", "number")):
+                if inferred_t in ("SEQUENCE_LIST", "MUTABLE_LIST"):
+                    c_type = "collection"
+                elif any(k in raw_t for k in ("int", "float", "number")):
                     c_type = "numeric"
                 elif any(k in raw_t for k in ("str", "text")):
                     c_type = "string"

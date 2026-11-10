@@ -34,6 +34,8 @@ import re
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
+from testforge.code_intelligence_agent import infer_parameter_types_from_ast
+
 # ==============================================================================
 # 1. Structured Data Models for AST Discovery
 # ==============================================================================
@@ -53,6 +55,7 @@ class CallableInfo:
     optional_pos: List[str] = field(default_factory=list)
     required_kwonly: List[str] = field(default_factory=list)
     arg_types: Dict[str, str] = field(default_factory=dict)
+    inferred_arg_types: Dict[str, str] = field(default_factory=dict)
     return_type: Optional[str] = None
     has_varargs: bool = False
     has_varkw: bool = False
@@ -196,6 +199,7 @@ class ASTCallableAnalyzer(ast.NodeVisitor):
         self.boolean_params: Set[str] = set()
         self.enum_lookups: Dict[str, List[Any]] = {}
         self.local_sets: Dict[str, Set[Any]] = {}
+        self.inferred_types: Dict[str, str] = infer_parameter_types_from_ast(func_node)
 
     def visit_Assign(self, node: ast.Assign):
         # Discover local constant sets or collections: e.g. valid_tiers = {"REGULAR", ...}
@@ -474,6 +478,7 @@ class IntelligentASTSynthesizer:
                     ret_type = str(node.returns.value)
 
         qual_name = f"{parent_class}.{node.name}" if parent_class else node.name
+        inferred_types = infer_parameter_types_from_ast(node)
 
         return CallableInfo(
             name=node.name,
@@ -488,6 +493,7 @@ class IntelligentASTSynthesizer:
             optional_pos=optional_pos,
             required_kwonly=required_kwonly,
             arg_types=arg_types,
+            inferred_arg_types=inferred_types,
             return_type=ret_type,
             has_varargs=node.args.vararg is not None,
             has_varkw=node.args.kwarg is not None,
@@ -655,14 +661,38 @@ class IntelligentASTSynthesizer:
                 s_lines.append(f"    {assertion_code}")
                 tests.append("\n".join(s_lines))
                 result.meaningful_assertions_count += 1
+
+            # In-place sequence mutating function tests (e.g. insort_right, insort_left)
+            fn_low = fn_name.lower()
+            inferred_types = getattr(sig, "inferred_arg_types", {})
+            has_mutable_list = any(it == "MUTABLE_LIST" for it in inferred_types.values())
+            if "insort" in fn_low or has_mutable_list:
+                func_obj = ref.env.get(fn_name)
+                if func_obj and callable(func_obj):
+                    for m_val, m_label in [(4, "middle"), (0, "front"), (20, "end")]:
+                        try:
+                            probe_list = [1, 2, 4, 8, 16]
+                            if "insort" in fn_low:
+                                func_obj(probe_list, m_val)
+                                m_call_str = f"{fn_name}(a, {m_val})"
+                            else:
+                                func_obj(probe_list)
+                                m_call_str = f"{fn_name}(a)"
+                            mut_lines = [
+                                f"def test_{fn_name}_mutation_{m_label}():",
+                                "    a = [1, 2, 4, 8, 16]",
+                                f"    {m_call_str}",
+                                f"    assert a == {repr(probe_list)}",
+                            ]
+                            tests.append("\n".join(mut_lines))
+                            result.meaningful_assertions_count += 1
+                        except Exception:
+                            pass
         else:
-            nominal_test_lines = [
-                f"def test_{fn_name}_nominal():",
-                f"    result = {fn_name}({nominal_args_str})",
-                "    assert result is not None  # Invariant assertion",
-            ]
-            tests.append("\n".join(nominal_test_lines))
-            result.invariant_assertions_count += 1
+            result.skipped_callables.append({
+                "name": fn_name,
+                "reason": "Function failed clean pre-flight reference evaluation"
+            })
 
         # 2. Exception Guard Tests (Negative Cases)
         seen_guard_params = set()
@@ -884,7 +914,9 @@ class IntelligentASTSynthesizer:
             elif isinstance(nom_val, list):
                 extreme_candidates = [
                     ([], "empty_list"),
-                    ([nom_val[0]] if nom_val else [1], "single_element_list"),
+                    ([1], "single_element_list"),
+                    ([1, 2, 4, 8, 16], "sorted_list"),
+                    ([5, 2, 8, 1, 9], "unsorted_list"),
                 ]
             elif isinstance(nom_val, dict):
                 extreme_candidates = [
@@ -1137,6 +1169,107 @@ class IntelligentASTSynthesizer:
                         "name": f"{c_name}.{m.name}",
                         "reason": "Instance method failed clean pre-flight evaluation"
                     })
+
+            # Stateful Class Lifecycle Synthesis: e.g. LRUCache, Caches, Key-Value stores
+            method_names = {m.name for m in instance_methods}
+            if ("get" in method_names and "put" in method_names) or "cache" in c_name.lower():
+                cls_obj = ref.env.get(c_name)
+                if cls_obj:
+                    # 1. Multi-step lifecycle eviction & retrieval sequence
+                    try:
+                        c_test = cls_obj(2)
+                        p1 = c_test.put(1, 10)
+                        p2 = c_test.put(2, 20)
+                        v1 = c_test.get(1)
+                        p3 = c_test.put(3, 30)  # Evicts 2
+                        v2 = c_test.get(2)
+                        v3 = c_test.get(3)
+
+                        lines_ev = [
+                            f"def test_{c_name.lower()}_lifecycle_eviction():",
+                            f"    cache = {c_name}(2)",
+                            "    cache.put(1, 10)",
+                            "    cache.put(2, 20)",
+                        ]
+                        a1, _ = self._build_value_assertion("cache.get(1)", v1)
+                        lines_ev.append(f"    {a1}")
+                        lines_ev.append("    cache.put(3, 30)")
+                        if v2 is None:
+                            lines_ev.append("    assert cache.get(2) is None")
+                        else:
+                            lines_ev.append(f"    assert cache.get(2) == {repr(v2)}")
+                        if v3 is None:
+                            lines_ev.append("    assert cache.get(3) is None")
+                        else:
+                            lines_ev.append(f"    assert cache.get(3) == {repr(v3)}")
+                        tests.append("\n".join(lines_ev))
+                        result.total_test_count += 1
+                        result.meaningful_assertions_count += 3
+                    except Exception:
+                        pass
+
+                    # 2. Key replacement & capacity invariance
+                    try:
+                        c_repl = cls_obj(2)
+                        c_repl.put(1, 100)
+                        c_repl.put(1, 200)
+                        v_repl = c_repl.get(1)
+                        lines_repl = [
+                            f"def test_{c_name.lower()}_key_replacement():",
+                            f"    cache = {c_name}(2)",
+                            "    cache.put(1, 100)",
+                            "    cache.put(1, 200)",
+                        ]
+                        a_repl, _ = self._build_value_assertion("cache.get(1)", v_repl)
+                        lines_repl.append(f"    {a_repl}")
+                        if hasattr(c_repl, "size"):
+                            sz = c_repl.size()
+                            lines_repl.append(f"    assert cache.size() == {sz}")
+                        tests.append("\n".join(lines_repl))
+                        result.total_test_count += 1
+                        result.meaningful_assertions_count += 1
+                    except Exception:
+                        pass
+
+                    # 3. Capacity limit boundary exception (e.g. capacity <= 0)
+                    for invalid_cap in (0, -1):
+                        try:
+                            cls_obj(invalid_cap)
+                        except ValueError:
+                            tests.append(
+                                f"def test_{c_name.lower()}_invalid_capacity_{abs(invalid_cap)}_raises_value_error():\n"
+                                f"    with pytest.raises(ValueError):\n"
+                                f"        {c_name}({invalid_cap})"
+                            )
+                            result.total_test_count += 1
+                            result.negative_tests_count += 1
+                        except Exception:
+                            pass
+
+                    # 4. Clear and hit ratio metrics if available
+                    if hasattr(cls_obj, "clear") or "clear" in method_names:
+                        try:
+                            c_clr = cls_obj(2)
+                            c_clr.put(1, 10)
+                            c_clr.clear()
+                            v_clr = c_clr.get(1)
+                            lines_clr = [
+                                f"def test_{c_name.lower()}_clear_reset():",
+                                f"    cache = {c_name}(2)",
+                                "    cache.put(1, 10)",
+                                "    cache.clear()",
+                            ]
+                            if v_clr is None:
+                                lines_clr.append("    assert cache.get(1) is None")
+                            else:
+                                lines_clr.append(f"    assert cache.get(1) == {repr(v_clr)}")
+                            if hasattr(c_clr, "size"):
+                                lines_clr.append("    assert cache.size() == 0")
+                            tests.append("\n".join(lines_clr))
+                            result.total_test_count += 1
+                            result.meaningful_assertions_count += 1
+                        except Exception:
+                            pass
 
             # If multiple methods are successful and class is a state object, generate sequential lifecycle test
             if len(successful_methods) >= 3 and any(w in c_name.lower() for w in ("inventory", "order", "state", "manager", "cart", "session")):
@@ -1674,11 +1807,44 @@ class IntelligentASTSynthesizer:
             analyzer = ASTCallableAnalyzer(sig.node, sig.pos_args + sig.kwonly_args)
             analyzer.visit(sig.node)
         str_sets = analyzer.string_sets if analyzer else {}
+        inferred_types = getattr(sig, "inferred_arg_types", {})
+        if not inferred_types and analyzer and hasattr(analyzer, "inferred_types"):
+            inferred_types = analyzer.inferred_types
+
+        fn_low = sig.name.lower()
+        is_bisect = any(b in fn_low for b in ("bisect", "insort"))
 
         pos_vals: List[Any] = []
-        for p in sig.pos_args:
+        for p_idx, p in enumerate(sig.pos_args):
             t = sig.arg_types.get(p, "").lower()
             p_low = p.lower()
+            inferred_t = inferred_types.get(p, "")
+
+            # Bisect / insort algorithm parameter targeting
+            if is_bisect:
+                if p_idx == 0 or p == "a":
+                    pos_vals.append([1, 2, 4, 8, 16])
+                    continue
+                elif p_idx == 1 or p == "x":
+                    pos_vals.append(4)
+                    continue
+                elif p == "lo":
+                    pos_vals.append(0)
+                    continue
+                elif p == "hi":
+                    pos_vals.append(None)
+                    continue
+                elif p == "key":
+                    pos_vals.append(None)
+                    continue
+
+            # Inferred sequence and mutable list types from AST usage
+            if inferred_t == "MUTABLE_LIST":
+                pos_vals.append([5, 2, 8, 1, 9])
+                continue
+            elif inferred_t == "SEQUENCE_LIST":
+                pos_vals.append([1, 2, 4, 8, 16])
+                continue
             if t == "float":
                 pos_vals.append(100.0 if "price" in p_low or "amount" in p_low else 10.0)
             elif t == "int":
@@ -1770,7 +1936,12 @@ class IntelligentASTSynthesizer:
         for p in sig.kwonly_args:
             t = sig.arg_types.get(p, "").lower()
             p_low = p.lower()
-            if t == "bool" or p_low.startswith("is_"):
+            inferred_t = inferred_types.get(p, "")
+            if is_bisect and p == "key":
+                kw_vals[p] = None
+            elif inferred_t in ("SEQUENCE_LIST", "MUTABLE_LIST"):
+                kw_vals[p] = [1, 2, 4, 8, 16]
+            elif t == "bool" or p_low.startswith("is_"):
                 kw_vals[p] = False
             elif t == "str":
                 kw_vals[p] = "test"

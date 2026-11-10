@@ -248,6 +248,13 @@ try:
     http.client.HTTPConnection.connect = _guarded_http_connect
 except Exception:
     pass
+
+# Prevent C-extension shadowing of pure Python target modules under test
+try:
+    import sys
+    sys.modules["_bisect"] = None
+except Exception:
+    pass
 '''
 
 

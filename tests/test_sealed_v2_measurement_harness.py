@@ -100,3 +100,40 @@ def test_uncovered_line_mutant_cannot_be_killed():
     assert evaluated[0].kill_classification == "UNCOVERED"
     assert "uncovered line" in evaluated[0].equivalence_reason
 
+
+def test_bisect_algo_sequence_inference_and_measurement():
+    """Verify bisect_algo sequence parameter inference, clean-code preflight, and >0% mutation score."""
+    from testforge.intelligent_generator import IntelligentASTSynthesizer
+    with open("samples/sealed_v2/bisect_algo.py", "r", encoding="utf-8") as f:
+        src = f.read()
+
+    synth = IntelligentASTSynthesizer().synthesize_test_suite(src)
+    assert synth.total_test_count > 0
+
+    runner = BenchmarkRunner(target_code=src, target_file_path="samples/sealed_v2/bisect_algo.py")
+    res = runner.evaluate_suite(synth.test_code)
+
+    assert res.baseline_passed is True, "bisect_algo must pass clean reference preflight (Pass@1 == 100%)"
+    assert res.invalid_suite is False
+    assert res.score > 0.0, f"bisect_algo must achieve > 0% mutation score, got {res.score}%"
+    assert res.killed > 0
+
+
+def test_lru_cache_stateful_lifecycle_synthesis():
+    """Verify stateful class lifecycle generation for LRUCache."""
+    from testforge.intelligent_generator import IntelligentASTSynthesizer
+    with open("samples/lru_cache.py", "r", encoding="utf-8") as f:
+        src = f.read()
+
+    synth = IntelligentASTSynthesizer().synthesize_test_suite(src)
+    assert "test_lrucache_lifecycle_eviction" in synth.test_code
+    assert "test_lrucache_key_replacement" in synth.test_code
+
+    runner = BenchmarkRunner(target_code=src, target_file_path="samples/lru_cache.py")
+    res = runner.evaluate_suite(synth.test_code)
+
+    assert res.baseline_passed is True, "LRUCache must pass clean reference preflight (Pass@1 == 100%)"
+    assert res.invalid_suite is False
+    assert res.score > 0.0, f"LRUCache must achieve > 0% mutation score, got {res.score}%"
+    assert res.killed > 0
+

@@ -195,6 +195,72 @@ class _BranchAndExceptionVisitor(ast.NodeVisitor):
         self.generic_visit(node)
 
 
+def infer_parameter_types_from_ast(func_node: Union[ast.FunctionDef, ast.AsyncFunctionDef]) -> Dict[str, str]:
+    """
+    Infers parameter types (e.g. SEQUENCE_LIST, MUTABLE_LIST) based purely on AST usage
+    in the function body (Subscript, For, Call to len/heapq, and list-mutating attributes).
+    Does NOT require dynamic imports of target code.
+    """
+    classifications: Dict[str, str] = {}
+    if not isinstance(func_node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+        return classifications
+
+    param_names: Set[str] = set()
+    for a in getattr(func_node.args, "posonlyargs", []):
+        if a.arg not in ("self", "cls"):
+            param_names.add(a.arg)
+    for a in func_node.args.args:
+        if a.arg not in ("self", "cls"):
+            param_names.add(a.arg)
+    for a in getattr(func_node.args, "kwonlyargs", []):
+        param_names.add(a.arg)
+
+    if not param_names:
+        return classifications
+
+    mutating_attrs = {"append", "pop", "insert", "extend", "remove", "clear", "sort", "reverse"}
+    heapq_funcs = {"heappush", "heappop", "heapify", "heapreplace", "heappushpop", "nlargest", "nsmallest"}
+
+    for node in ast.walk(func_node):
+        # 1. Subscript: e.g. a[mid], a[i]
+        if isinstance(node, ast.Subscript):
+            if isinstance(node.value, ast.Name) and node.value.id in param_names:
+                if classifications.get(node.value.id) != "MUTABLE_LIST":
+                    classifications[node.value.id] = "SEQUENCE_LIST"
+
+        # 2. For / AsyncFor: for x in a:
+        elif isinstance(node, (ast.For, ast.AsyncFor)):
+            if isinstance(node.iter, ast.Name) and node.iter.id in param_names:
+                if classifications.get(node.iter.id) != "MUTABLE_LIST":
+                    classifications[node.iter.id] = "SEQUENCE_LIST"
+
+        # 3. Call: len(a), heapq, or mutating methods
+        elif isinstance(node, ast.Call):
+            # len(a)
+            if isinstance(node.func, ast.Name) and node.func.id == "len":
+                if node.args and isinstance(node.args[0], ast.Name) and node.args[0].id in param_names:
+                    p = node.args[0].id
+                    if classifications.get(p) != "MUTABLE_LIST":
+                        classifications[p] = "SEQUENCE_LIST"
+
+            # heapq functions
+            func_name = None
+            if isinstance(node.func, ast.Attribute) and node.func.attr in heapq_funcs:
+                func_name = node.func.attr
+            elif isinstance(node.func, ast.Name) and node.func.id in heapq_funcs:
+                func_name = node.func.id
+
+            if func_name and node.args and isinstance(node.args[0], ast.Name) and node.args[0].id in param_names:
+                classifications[node.args[0].id] = "MUTABLE_LIST"
+
+            # mutating attributes: a.append(...), a.pop(...), a.insert(...)
+            if isinstance(node.func, ast.Attribute) and node.func.attr in mutating_attrs:
+                if isinstance(node.func.value, ast.Name) and node.func.value.id in param_names:
+                    classifications[node.func.value.id] = "MUTABLE_LIST"
+
+    return classifications
+
+
 def _compute_cyclomatic_complexity(node: Union[ast.FunctionDef, ast.AsyncFunctionDef]) -> int:
     """Computes standard McCabe cyclomatic complexity for an AST function node."""
     complexity = 1
@@ -476,11 +542,14 @@ class CodeIntelligenceAgent:
         functions: List[Dict[str, Any]] = []
         function_complexities: Dict[str, int] = {}
 
-        # Discover top-level and method AST nodes for complexity
+        # Discover top-level and method AST nodes for complexity and parameter type inference
+        function_inferred_types: Dict[str, Dict[str, str]] = {}
         for node in ast.walk(tree):
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 c = _compute_cyclomatic_complexity(node)
                 function_complexities[node.name] = c
+                inferred = infer_parameter_types_from_ast(node)
+                function_inferred_types[node.name] = inferred
 
         for sig in func_sigs:
             name = sig.get("name", "")
@@ -494,6 +563,7 @@ class CodeIntelligenceAgent:
                 "return_annotation": sig.get("return_type"),
                 "is_async": sig.get("is_async", False),
                 "cyclomatic_complexity": complexity,
+                "inferred_parameter_types": function_inferred_types.get(name, {}),
             })
 
         # 4. Extract Classes
