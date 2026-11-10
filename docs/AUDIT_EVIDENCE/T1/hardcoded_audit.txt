@@ -1,0 +1,26 @@
+=== AUDIT: HIDDEN ALIASES ===
+frontend/index.html:290:        <button id="btn-banner-run-hardening" class="hidden" style="display: none !important;" data-action="start-hardening"><span id="btn-scroll-to-hardening"></span></button>
+frontend/index.html:1203:          <span id="telem-kpi-tokens" style="display: none;">0</span>
+frontend/style.css:280:.hidden { display: none !important; }
+frontend/style.css:793:  display: none;
+frontend/style.css:831:  display: none;
+frontend/style.css:2890:  display: none !important;
+
+=== AUDIT: HARDCODED LATENCIES & METRICS IN APP.JS ===
+frontend/app.js:4898:          <td>11.99s</td>
+frontend/app.js:4901:          <td><span class="badge badge-green">VALID (100%)</span></td>
+frontend/app.js:4930:        <td><span class="badge ${isAstValid ? 'badge-green' : 'badge-red'}">${isAstValid ? 'VALID (100%)' : 'INVALID'}</span></td>
+frontend/app.js:4948:    'testforge.job.job_otel_discount_01': '11.99s',
+frontend/app.js:4949:    'testforge.agent.CodeIntelligenceAgent': '42.8ms',
+frontend/app.js:4950:    'testforge.agent.GoogleADKTestGenerator': '650.7ms',
+frontend/app.js:4951:    'testforge.agent.MutationQualityCriticAgent': '128.4ms',
+frontend/app.js:4952:    'testforge.agent.ReflectionRepairAgent': '15.2ms',
+frontend/app.js:4988:          durMs = '42.8ms';
+
+=== AUDIT: BENCHMARK LABELS ===
+frontend/app.js:5269:      const bestKey = keys.includes('agentic_reflection') ? 'agentic_reflection' : keys[0];
+frontend/app.js:5632:    if (dom.benchScRefl && dom.benchScRefl.checked) scenarios.push('agentic_reflection');
+frontend/app.js:5806:      const bestScKey = sc.agentic_reflection ? 'agentic_reflection' : (sc.reflection ? 'reflection' : (sc.zeroshot ? 'zeroshot' : (sc.baseline ? 'baseline' : Object.keys(sc)[0])));
+frontend/index.html:1176:            <div><span style="color: var(--text-muted, #94a3b8);">Active Provider:</span> <span id="telem-active-provider" class="badge badge-green" data-alias="obsActiveProvider"><span id="obsActiveProvider">Deterministic AST Synthesizer (Zero-Egress Local)</span></span></div>
+frontend/app.js:4864:        : 'Deterministic AST Synthesizer (Zero-Egress Local)';
+frontend/app.js:5375:      const engine = sc.execution_engine || sc.engine_label || (isReflection ? 'Deterministic AST Synthesizer with Multi-Agent Reflection' : (isZeroShot ? 'Gemini – gemini-3.6-flash (Cloud)' : 'Deterministic AST Baseline'));

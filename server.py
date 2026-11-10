@@ -1803,24 +1803,11 @@ async def get_otel_traces(job_id: Optional[str] = None):
             except Exception:
                 pass
 
-    default_latencies = {
-        "testforge.job.job_otel_discount_01": 11990.0,
-        "testforge.agent.CodeIntelligenceAgent": 42.8,
-        "testforge.agent.GoogleADKTestGenerator": 650.7,
-        "testforge.agent.MutationQualityCriticAgent": 128.4,
-        "testforge.agent.ReflectionRepairAgent": 15.2,
-    }
     norm_spans = []
     for s in spans:
         item = dict(s)
-        name = item.get("name", "")
-        if item.get("duration_ms", 0) < 0.1:
-            if name in default_latencies:
-                item["duration_ms"] = default_latencies[name]
-            elif item.get("attributes", {}).get("testforge.duration_ms", 0) > 0:
-                item["duration_ms"] = float(item["attributes"]["testforge.duration_ms"])
-            else:
-                item["duration_ms"] = 42.8
+        if item.get("attributes", {}).get("testforge.duration_ms", 0) > 0 and item.get("duration_ms", 0) < 0.1:
+            item["duration_ms"] = float(item["attributes"]["testforge.duration_ms"])
         norm_spans.append(item)
 
     return {"spans": norm_spans, "total_spans": len(norm_spans)}

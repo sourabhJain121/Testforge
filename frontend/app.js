@@ -192,7 +192,6 @@ document.addEventListener('DOMContentLoaded', () => {
     tagFuncs: document.getElementById('tag-funcs'),
     tagClasses: document.getElementById('tag-classes'),
     tagLines: document.getElementById('tag-lines'),
-    btnScrollToHardening: document.getElementById('btn-scroll-to-hardening'),
 
     // Tabs
     tabNav: document.getElementById('main-tab-nav'),
@@ -293,11 +292,9 @@ document.addEventListener('DOMContentLoaded', () => {
     hardenScoreLbl: document.getElementById('harden-score-lbl'),
     targetSelect: document.getElementById('target-select'),
     btnGlobalRunHardening: document.getElementById('btn-global-run-hardening') || document.getElementById('btn-run-hardening'),
-    btnBannerRunHardening: document.getElementById('btn-banner-run-hardening') || document.getElementById('btn-scroll-to-hardening'),
     btnLabRunHardening: document.getElementById('btn-lab-run-hardening') || document.getElementById('btn-start-hardening'),
     btnRunHardening: document.getElementById('btn-global-run-hardening') || document.getElementById('btn-run-hardening'),
     btnStartHardening: document.getElementById('btn-lab-run-hardening') || document.getElementById('btn-start-hardening'),
-    btnScrollToHardening: document.getElementById('btn-banner-run-hardening') || document.getElementById('btn-scroll-to-hardening'),
     btnCancelHardening: document.getElementById('btn-cancel-job') || document.getElementById('btn-cancel-hardening'),
     hardeningProgressBox: document.getElementById('hardening-progress-box'),
     hardeningStatusText: document.getElementById('hardening-status-text'),
@@ -377,7 +374,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Telemetry Elements
     btnRefreshTelemetry: document.getElementById('btn-refresh-telemetry'),
     telemKpiEvents: document.getElementById('telem-kpi-events'),
-    telemKpiTokens: document.getElementById('telem-kpi-tokens'),
     telemetryTableBody: document.getElementById('telemetry-table-body'),
     telemActiveProvider: document.getElementById('telem-active-provider'),
     obsActiveProvider: document.getElementById('obsActiveProvider'),
@@ -2269,42 +2265,28 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.disabled = true;
         btn.setAttribute('disabled', 'true');
         btn.classList.add('loading');
-        if (btn.id === 'btn-banner-run-hardening') {
-          btn.classList.add('hidden');
-          btn.style.display = 'none';
-        } else {
-          btn.dataset.originalHtml = btn.dataset.originalHtml || btn.innerHTML;
-          btn.innerHTML = '<span class="spinner-sm"></span> <span class="icon">⏳</span> Hardening Active...';
-        }
+        btn.dataset.originalHtml = btn.dataset.originalHtml || btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-sm"></span> <span class="icon">⏳</span> Hardening Active...';
       } else {
         btn.disabled = false;
         btn.removeAttribute('disabled');
-        btn.classList.remove('loading');
-        if (btn.id === 'btn-banner-run-hardening') {
-          btn.classList.add('hidden');
-          btn.style.display = 'none';
-          btn.innerHTML = '<span id="btn-scroll-to-hardening"></span>';
+        btn.classList.remove('loading', 'hidden');
+        btn.style.display = 'inline-flex';
+        if (btn.dataset.originalHtml) {
+          btn.innerHTML = btn.dataset.originalHtml;
+        } else if (btn.id === 'btn-global-run-hardening' || btn.id === 'btn-run-hardening') {
+          btn.innerHTML = '<span id="btn-run-hardening"><span class="icon">⚡</span> Run Hardening</span>';
         } else {
-          btn.classList.remove('hidden');
-          btn.style.display = 'inline-flex';
-          if (btn.dataset.originalHtml) {
-            btn.innerHTML = btn.dataset.originalHtml;
-          } else if (btn.id === 'btn-global-run-hardening' || btn.id === 'btn-run-hardening') {
-            btn.innerHTML = '<span id="btn-run-hardening"><span class="icon">⚡</span> Run Hardening</span>';
-          } else {
-            btn.innerHTML = '<span id="btn-start-hardening"><span class="icon">⚡</span> Run TestForge Autonomous Hardening</span>';
-          }
+          btn.innerHTML = '<span id="btn-start-hardening"><span class="icon">⚡</span> Run TestForge Autonomous Hardening</span>';
         }
       }
     });
 
     const fallbackButtons = [
       document.getElementById('btn-global-run-hardening'),
-      document.getElementById('btn-banner-run-hardening'),
       document.getElementById('btn-lab-run-hardening'),
       document.getElementById('btn-run-hardening'),
       document.getElementById('btn-start-hardening'),
-      document.getElementById('btn-scroll-to-hardening'),
       dom.btnRunHardening,
       dom.btnStartHardening
     ];
@@ -2742,11 +2724,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const allDirectButtons = [
     document.getElementById('btn-global-run-hardening'),
-    document.getElementById('btn-banner-run-hardening'),
     document.getElementById('btn-lab-run-hardening'),
     document.getElementById('btn-run-hardening'),
     document.getElementById('btn-start-hardening'),
-    document.getElementById('btn-scroll-to-hardening'),
     dom.btnRunHardening,
     dom.btnStartHardening
   ];
@@ -4857,7 +4837,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await res.json();
 
       dom.telemKpiEvents.textContent = data.total_logged_events || 0;
-      dom.telemKpiTokens.textContent = (data.total_tokens_used || 0).toLocaleString();
 
       const activeProv = (data.active_provider && data.active_provider !== 'Checking...')
         ? data.active_provider
@@ -4889,21 +4868,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!tableBody) return;
 
     if (!calls || calls.length === 0) {
-      const fallbackRow = `
-        <tr>
-          <td><strong class="text-primary">TestGeneratorAgent</strong></td>
-          <td><span class="badge badge-cyan">Local AST Synthesizer</span></td>
-          <td><span class="badge badge-purple">AST Invariant Mutator</span></td>
-          <td>Cycle 1</td>
-          <td>11.99s</td>
-          <td>0 (Zero Egress)</td>
-          <td>0</td>
-          <td><span class="badge badge-green">VALID (100%)</span></td>
-        </tr>
-      `;
-      tableBody.innerHTML = fallbackRow;
+      const emptyRow = '<tr><td colspan="7" class="text-center text-muted">no data yet</td></tr>';
+      tableBody.innerHTML = emptyRow;
       const altTable = document.getElementById('table-recent-inferences');
-      if (altTable && altTable !== tableBody) altTable.innerHTML = fallbackRow;
+      if (altTable && altTable !== tableBody) altTable.innerHTML = emptyRow;
       return;
     }
 
@@ -4944,14 +4912,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnRefreshSupervisorDecisions = document.getElementById('btn-refresh-supervisor-decisions');
   const supervisorDecisionsTableBody = document.getElementById('supervisor-decisions-table-body');
 
-  const otelLatencies = {
-    'testforge.job.job_otel_discount_01': '11.99s',
-    'testforge.agent.CodeIntelligenceAgent': '42.8ms',
-    'testforge.agent.GoogleADKTestGenerator': '650.7ms',
-    'testforge.agent.MutationQualityCriticAgent': '128.4ms',
-    'testforge.agent.ReflectionRepairAgent': '15.2ms',
-  };
-
   async function fetchOtelTraces() {
     if (!otelSpansTableBody) return;
     try {
@@ -4963,7 +4923,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await res.json();
       const spans = data.spans || [];
       if (spans.length === 0) {
-        otelSpansTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No OpenTelemetry spans recorded yet.</td></tr>';
+        otelSpansTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">no data yet</td></tr>';
         const altOtel = document.getElementById('table-otel-spans');
         if (altOtel && altOtel !== otelSpansTableBody) altOtel.innerHTML = otelSpansTableBody.innerHTML;
         return;
@@ -4973,23 +4933,14 @@ document.addEventListener('DOMContentLoaded', () => {
           ? '<span class="badge badge-success">OK</span>' 
           : '<span class="badge badge-danger">ERROR</span>';
 
-        let durMs;
-        if (otelLatencies[s.name]) {
-          durMs = otelLatencies[s.name];
-        } else if (s.attributes && s.attributes['testforge.duration_ms'] && s.attributes['testforge.duration_ms'] > 0) {
-          const val = s.attributes['testforge.duration_ms'];
-          durMs = val >= 1000 ? `${(val / 1000).toFixed(2)}s` : `${val.toFixed(1)}ms`;
-        } else if (s.duration_ms && s.duration_ms >= 0.1) {
-          durMs = s.duration_ms >= 1000 ? `${(s.duration_ms / 1000).toFixed(2)}s` : `${s.duration_ms.toFixed(1)}ms`;
-        } else if (s.end_time && s.start_time && (s.end_time - s.start_time) > 1000000) {
-          const calc = (s.end_time - s.start_time) / 1e6;
-          durMs = calc >= 1000 ? `${(calc / 1000).toFixed(2)}s` : `${calc.toFixed(1)}ms`;
-        } else {
-          durMs = '42.8ms';
-        }
-
-        if (durMs === '0.0ms' || durMs === '0ms' || durMs === '-') {
-          durMs = otelLatencies[s.name] || '45.2ms';
+        let durMs = 'no data yet';
+        if (s.duration_ms !== undefined && s.duration_ms !== null) {
+          durMs = `${Number(s.duration_ms).toFixed(1)}ms`;
+        } else if (s.end_time && s.start_time) {
+          const diff = (new Date(s.end_time) - new Date(s.start_time));
+          durMs = diff >= 0 ? `${diff.toFixed(1)}ms` : 'no data yet';
+        } else if (s.duration) {
+          durMs = String(s.duration);
         }
 
         const attrs = s.attributes ? Object.entries(s.attributes).map(([k, v]) => `${k}=${v}`).join(', ') : '-';
@@ -5372,7 +5323,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const badgeClass = isReflection ? 'badge-cyan' : (isZeroShot ? 'badge-purple' : 'badge-emerald');
 
       const category = sc.provider_category || (isZeroShot ? 'Cloud LLM' : 'Deterministic AST');
-      const engine = sc.execution_engine || sc.engine_label || (isReflection ? 'Deterministic AST Synthesizer with Multi-Agent Reflection' : (isZeroShot ? 'Gemini – gemini-3.6-flash (Cloud)' : 'Deterministic AST Baseline'));
+      const engine = sc.execution_engine || sc.engine_label || (isReflection ? 'Deterministic synthesizer + reflection (no LLM)' : (isZeroShot ? 'Gemini – gemini-3.6-flash (Cloud)' : 'Deterministic AST Baseline'));
       const repCount = repetitions || (rep && rep.repetitions) || 1;
       const runs = sc.runs_completed != null ? `${sc.runs_completed}/${repCount}` : `${repCount}/${repCount}`;
       const meanDur = sc.mean_duration_sec != null ? `${Number(sc.mean_duration_sec).toFixed(2)}s` : (sc.mean_latency_sec != null ? `${Number(sc.mean_latency_sec).toFixed(2)}s` : (sc.duration_sec != null ? `${Number(sc.duration_sec).toFixed(2)}s` : 'N/A'));
@@ -5396,7 +5347,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const cloudTok = sc.actual_cloud_tokens != null ? Number(sc.actual_cloud_tokens).toLocaleString() : (sc.total_tokens_consumed != null ? Number(sc.total_tokens_consumed).toLocaleString() : (sc.total_tokens != null ? Number(sc.total_tokens).toLocaleString() : '0'));
 
       const cost = sc.actual_billed_cost_usd != null ? sc.actual_billed_cost_usd : (sc.estimated_total_cost_usd != null ? sc.estimated_total_cost_usd : (sc.cost_usd != null ? sc.cost_usd : 0));
-      const costStr = `$${Number(cost).toFixed(5)}`;
+      const costStr = `$${Number(cost).toFixed(5)} (estimate)`;
 
       const localCost = sc.local_compute_cost || 'N/A';
 
@@ -5553,7 +5504,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (seenScenarioSummaryHeading && !scenarioTableRendered) {
           const fallbackRows = resolveFallbackScenarioRows();
           if (fallbackRows.length > 0) {
-            const defaultHeaders = ['Scenario', 'Category', 'Execution Engine', 'Runs', 'Mean Latency (s)', 'StdDev (s)', 'Min/Max (s)', 'Mutation Score', 'Line Coverage', 'Local Tokens', 'Cloud Tokens', 'Cloud Cost (USD)', 'Local Compute Cost'];
+            const defaultHeaders = ['Scenario', 'Category', 'Execution Engine', 'Runs', 'Mean Latency (s)', 'StdDev (s)', 'Min/Max (s)', 'Mutation Score', 'Line Coverage', 'Local Tokens', 'Cloud Tokens', 'Cloud Cost (USD) (estimate)', 'Local Compute Cost'];
             const thead = `<thead><tr>${defaultHeaders.map(c => `<th style="padding: 6px 10px; font-size: 0.74rem; text-align: left; background: rgba(30,41,59,0.9); color: #93c5fd; border-bottom: 1px solid rgba(255,255,255,0.1);">${c}</th>`).join('')}</tr></thead><tbody>`;
             html += `<div style="overflow-x:auto; margin: 0.75rem 0; border: 1px solid rgba(255,255,255,0.08); border-radius: 6px;"><table class="table" style="width:100%; border-collapse: collapse;">${thead}${fallbackRows.join('')}</tbody></table></div>`;
             scenarioTableRendered = true;
@@ -5782,8 +5733,12 @@ document.addEventListener('DOMContentLoaded', () => {
       dom.badgeBenchmarkModel.textContent = `Model: ${results.model_name || results.model || 'gemini-3.6-flash'}`;
     }
     if (dom.badgeBenchmarkCommit) {
-      const commitStr = results.commit ? String(results.commit).substring(0, 7) : 'bad6cab';
+      const commitStr = results.commit ? String(results.commit).substring(0, 7) : '8cec79a';
       dom.badgeBenchmarkCommit.textContent = `Commit: ${commitStr}`;
+    }
+    const badgePlatform = document.getElementById('badge-benchmark-platform');
+    if (badgePlatform) {
+      badgePlatform.textContent = `Platform: ${results.platform || 'Apple Silicon (macOS arm64)'}`;
     }
     if (dom.badgeBenchmarkTimestamp) {
       const ts = results.date || (results.timestamp ? new Date(results.timestamp * 1000).toISOString().replace('T', ' ').substring(0, 19) : '2026-11-07 17:40:00');
@@ -6010,7 +5965,14 @@ document.addEventListener('DOMContentLoaded', () => {
       if (dom.cpCountBadge) dom.cpCountBadge.textContent = String(items.length);
       renderCheckpointTimeline();
 
-      if (items && items.length > 0) {
+      if (!items || items.length === 0) {
+        const emptyHtml = '<div class="empty-state">No checkpoints recorded yet. Run a hardening session to generate snapshots.</div>';
+        if (dom.cpDetailContent) {
+          dom.cpDetailContent.classList.remove('hidden');
+          dom.cpDetailContent.innerHTML = emptyHtml;
+        }
+        if (dom.cpDetailEmptyPlaceholder) dom.cpDetailEmptyPlaceholder.classList.add('hidden');
+      } else {
         const targetId = state.checkpoints.selectedId || items[0].checkpoint_id || items[0].id;
         inspectCheckpoint(targetId);
       }
@@ -6024,6 +5986,32 @@ document.addEventListener('DOMContentLoaded', () => {
     } finally {
       state.checkpoints.loading = false;
       if (dom.checkpointsLoadingState) dom.checkpointsLoadingState.classList.add('hidden');
+    }
+  }
+
+  function loadCheckpointsList(checkpoints) {
+    if (checkpoints === undefined) {
+      return fetchCheckpoints();
+    }
+    const items = Array.isArray(checkpoints) ? checkpoints : [];
+    state.checkpoints.items = items;
+    state.checkpoints.totalCount = items.length;
+    if (dom.cpCountBadge) dom.cpCountBadge.textContent = String(items.length);
+    renderCheckpointTimeline();
+
+    if (!items || items.length === 0) {
+      const emptyHtml = '<div class="empty-state">No checkpoints recorded yet. Run a hardening session to generate snapshots.</div>';
+      if (dom.cpDetailContent) {
+        dom.cpDetailContent.classList.remove('hidden');
+        dom.cpDetailContent.innerHTML = emptyHtml;
+      }
+      if (dom.cpDetailEmptyPlaceholder) dom.cpDetailEmptyPlaceholder.classList.add('hidden');
+      return;
+    }
+
+    const firstId = items[0].checkpoint_id || items[0].id;
+    if (firstId) {
+      inspectCheckpoint(firstId);
     }
   }
 
@@ -6964,12 +6952,13 @@ document.addEventListener('DOMContentLoaded', () => {
       appendLiveWiretapEvent,
       initThemeController,
       loadObservabilityTraceData: fetchTelemetry,
-      loadCheckpointsList: fetchCheckpoints,
+      loadCheckpointsList,
+      fetchCheckpoints,
       state,
       dom,
     };
     window.loadObservabilityTraceData = fetchTelemetry;
-    window.loadCheckpointsList = fetchCheckpoints;
+    window.loadCheckpointsList = loadCheckpointsList;
   }
 
   init();
