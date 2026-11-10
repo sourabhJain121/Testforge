@@ -149,6 +149,21 @@ document.addEventListener('DOMContentLoaded', () => {
     mcpTestStatusLine: document.getElementById('mcp-test-status-line'),
     mcpTestOutputJson: document.getElementById('mcp-test-output-json'),
 
+    // FastMCP Tool Studio (Step 4)
+    btnOpenMcpStudio: document.getElementById('btn-open-mcp-studio'),
+    mcpStudioModalBackdrop: document.getElementById('mcp-studio-modal-backdrop'),
+    mcpStudioModal: document.getElementById('mcp-studio-modal'),
+    btnCloseMcpStudio: document.getElementById('btn-close-mcp-studio'),
+    btnMcpStudioFooterClose: document.getElementById('btn-mcp-studio-footer-close'),
+    mcpStudioToolSelect: document.getElementById('mcp-studio-tool-select'),
+    btnMcpStudioExecute: document.getElementById('btn-mcp-studio-execute'),
+    mcpStudioMetaBadge: document.getElementById('mcp-studio-meta-badge'),
+    mcpStudioCodeInput: document.getElementById('mcp-studio-code-input'),
+    mcpStudioSecondaryContainer: document.getElementById('mcp-studio-secondary-container'),
+    mcpStudioSecondaryInput: document.getElementById('mcp-studio-secondary-input'),
+    mcpStudioOutputJson: document.getElementById('mcp-studio-output-json'),
+    btnMcpStudioCopy: document.getElementById('btn-mcp-studio-copy'),
+
     // Live Blackboard Partition Strip (Improvement B)
     hardeningBbStrip: document.getElementById('hardening-blackboard-strip'),
     bbStripStage: document.getElementById('bb-strip-stage'),
@@ -1272,6 +1287,170 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // ============================================================================
+  // FastMCP Protocol Tool Studio (Step 4)
+  // ============================================================================
+  function updateMcpStudioToolFields() {
+    const tool = dom.mcpStudioToolSelect ? dom.mcpStudioToolSelect.value : 'mcp_ast_symbol_analyzer';
+    const needsSecondary = (tool === 'mcp_sandbox_runner' || tool === 'mcp_equivalence_classifier');
+    if (dom.mcpStudioSecondaryContainer) {
+      if (needsSecondary) {
+        dom.mcpStudioSecondaryContainer.classList.remove('hidden');
+        const secLabel = document.getElementById('mcp-studio-secondary-label');
+        if (secLabel) {
+          secLabel.textContent = tool === 'mcp_sandbox_runner'
+            ? 'Test Suite Code (test_suite_code)'
+            : 'Mutant Source Code (mutant_source)';
+        }
+        if (dom.mcpStudioSecondaryInput && !dom.mcpStudioSecondaryInput.value.trim()) {
+          dom.mcpStudioSecondaryInput.value = tool === 'mcp_sandbox_runner'
+            ? "from target import calculate_discount\nimport pytest\n\ndef test_discount_normal():\n    assert calculate_discount(100.0, 1, False) == 100.0\n"
+            : "def calculate_discount(price: float, quantity: int, is_member: bool) -> float:\n    if price <= 0.0:\n        return 0.0\n    return round(price * 0.9, 2)\n";
+        }
+      } else {
+        dom.mcpStudioSecondaryContainer.classList.add('hidden');
+      }
+    }
+  }
+
+  function openMcpStudioModal() {
+    if (!dom.mcpStudioModalBackdrop) return;
+    dom.mcpStudioModalBackdrop.classList.remove('hidden');
+
+    if (dom.mcpStudioCodeInput && !dom.mcpStudioCodeInput.value.trim()) {
+      let activeCode = '';
+      if (dom.inputCustomTargetCode && dom.inputCustomTargetCode.value.trim()) {
+        activeCode = dom.inputCustomTargetCode.value.trim();
+      } else if (state && state.targetSourceCode && state.targetSourceCode.trim()) {
+        activeCode = state.targetSourceCode.trim();
+      } else {
+        activeCode = `def calculate_discount(price: float, quantity: int, is_member: bool) -> float:
+    if price <= 0.0:
+        return 0.0
+
+    discount_rate = 0.0
+    if quantity >= 5:
+        discount_rate = discount_rate + 0.10
+
+    if is_member:
+        discount_rate = discount_rate + 0.10
+
+    final_price = price * (1.0 - discount_rate)
+    return round(final_price, 2)`;
+      }
+      dom.mcpStudioCodeInput.value = activeCode;
+    }
+
+    updateMcpStudioToolFields();
+  }
+
+  function closeMcpStudioModal() {
+    if (dom.mcpStudioModalBackdrop) {
+      dom.mcpStudioModalBackdrop.classList.add('hidden');
+    }
+  }
+
+  async function executeMcpStudioTool() {
+    if (!dom.btnMcpStudioExecute) return;
+    const tool = dom.mcpStudioToolSelect ? dom.mcpStudioToolSelect.value : 'mcp_ast_symbol_analyzer';
+    const code = dom.mcpStudioCodeInput ? dom.mcpStudioCodeInput.value : '';
+    const sec = dom.mcpStudioSecondaryInput ? dom.mcpStudioSecondaryInput.value : '';
+
+    const args = {};
+    if (tool === 'mcp_ast_symbol_analyzer') {
+      args.source_code = code;
+    } else if (tool === 'mcp_mutant_generator') {
+      args.source_code = code;
+      args.max_mutants = 30;
+    } else if (tool === 'mcp_sandbox_runner') {
+      args.test_suite_code = sec;
+      args.target_source = code;
+      args.timeout_seconds = 3.0;
+    } else if (tool === 'mcp_equivalence_classifier') {
+      args.original_source = code;
+      args.mutant_source = sec;
+    }
+
+    dom.btnMcpStudioExecute.disabled = true;
+    const originalText = dom.btnMcpStudioExecute.innerHTML;
+    dom.btnMcpStudioExecute.innerHTML = '<span class="icon">⏳</span> Executing...';
+
+    if (dom.mcpStudioMetaBadge) {
+      dom.mcpStudioMetaBadge.className = 'badge badge-yellow';
+      dom.mcpStudioMetaBadge.textContent = 'Transport: Executing...';
+    }
+
+    try {
+      const resp = await fetch('/api/mcp/execute-tool', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tool_name: tool, arguments: args })
+      });
+      const data = await resp.json();
+
+      if (!resp.ok) {
+        if (dom.mcpStudioOutputJson) {
+          dom.mcpStudioOutputJson.textContent = JSON.stringify(data, null, 2);
+        }
+        if (dom.mcpStudioMetaBadge) {
+          dom.mcpStudioMetaBadge.className = 'badge badge-red';
+          dom.mcpStudioMetaBadge.textContent = `❌ Error (${resp.status})`;
+        }
+        showToast(`FastMCP execution error: ${data.detail || 'Failed'}`, 'error');
+      } else {
+        if (dom.mcpStudioOutputJson) {
+          dom.mcpStudioOutputJson.textContent = JSON.stringify(data, null, 2);
+        }
+        if (dom.mcpStudioMetaBadge) {
+          dom.mcpStudioMetaBadge.className = 'badge badge-green';
+          dom.mcpStudioMetaBadge.textContent = `🟢 Stdio (${data.duration_ms}ms)`;
+        }
+        showToast(`FastMCP tool [${data.tool}] executed in ${data.duration_ms}ms`, 'success');
+      }
+    } catch (err) {
+      if (dom.mcpStudioOutputJson) {
+        dom.mcpStudioOutputJson.textContent = JSON.stringify({ error: String(err) }, null, 2);
+      }
+      if (dom.mcpStudioMetaBadge) {
+        dom.mcpStudioMetaBadge.className = 'badge badge-red';
+        dom.mcpStudioMetaBadge.textContent = '❌ Network Error';
+      }
+      showToast(`Network error: ${err.message}`, 'error');
+    } finally {
+      dom.btnMcpStudioExecute.disabled = false;
+      dom.btnMcpStudioExecute.innerHTML = originalText;
+    }
+  }
+
+  function copyMcpStudioJson() {
+    if (!dom.mcpStudioOutputJson) return;
+    const text = dom.mcpStudioOutputJson.textContent;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text);
+    }
+    if (dom.btnMcpStudioCopy) {
+      const origHtml = dom.btnMcpStudioCopy.innerHTML;
+      dom.btnMcpStudioCopy.innerHTML = '✅ Copied!';
+      setTimeout(() => {
+        dom.btnMcpStudioCopy.innerHTML = origHtml;
+      }, 1800);
+    }
+    showToast('FastMCP JSON output copied to clipboard!', 'success');
+  }
+
+  if (dom.btnOpenMcpStudio) dom.btnOpenMcpStudio.addEventListener('click', openMcpStudioModal);
+  if (dom.btnCloseMcpStudio) dom.btnCloseMcpStudio.addEventListener('click', closeMcpStudioModal);
+  if (dom.btnMcpStudioFooterClose) dom.btnMcpStudioFooterClose.addEventListener('click', closeMcpStudioModal);
+  if (dom.mcpStudioToolSelect) dom.mcpStudioToolSelect.addEventListener('change', updateMcpStudioToolFields);
+  if (dom.btnMcpStudioExecute) dom.btnMcpStudioExecute.addEventListener('click', executeMcpStudioTool);
+  if (dom.btnMcpStudioCopy) dom.btnMcpStudioCopy.addEventListener('click', copyMcpStudioJson);
+
+  if (dom.mcpStudioModalBackdrop) {
+    dom.mcpStudioModalBackdrop.addEventListener('click', (e) => {
+      if (e.target === dom.mcpStudioModalBackdrop) closeMcpStudioModal();
+    });
+  }
+
   if (dom.a2aModalBackdrop) {
     dom.a2aModalBackdrop.addEventListener('click', (e) => {
       if (e.target === dom.a2aModalBackdrop) closeA2aModal();
@@ -1288,6 +1467,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       if (dom.mcpModalBackdrop && !dom.mcpModalBackdrop.classList.contains('hidden')) {
         closeMcpModal();
+      }
+      if (dom.mcpStudioModalBackdrop && !dom.mcpStudioModalBackdrop.classList.contains('hidden')) {
+        closeMcpStudioModal();
       }
       if (dom.restoreModalBackdrop && !dom.restoreModalBackdrop.classList.contains('hidden')) {
         closeRestoreModal();

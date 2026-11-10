@@ -2903,5 +2903,51 @@ input:checked + .slider.round:before {
   margin-top: 1rem;
 }
 
+/* ==========================================================================
+   FastMCP Protocol Tool Studio (Step 4)
+   ========================================================================== */
+#mcp-studio-modal {
+  max-width: 960px;
+  width: 95vw;
+}
+
+.mcp-studio-control-bar {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--bg-surface-2, rgba(15, 23, 42, 0.6));
+  border-radius: 8px;
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+}
+
+.mcp-studio-workspace {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .mcp-studio-workspace {
+    grid-template-columns: 1fr;
+  }
+}
+
+#mcp-studio-output-json {
+  color: var(--text-primary, #e2e8f0);
+}
+
+html[data-theme="light"] #mcp-studio-output-json {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .mcp-studio-control-bar,
+html[data-theme="light"] .mcp-studio-output pre {
+  background: rgba(241, 245, 249, 0.9) !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+}
+
 
 

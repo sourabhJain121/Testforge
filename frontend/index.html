@@ -54,7 +54,7 @@
       </div>
     </div>
 
-    <div class="nav-right">
+    <div class="nav-right cockpit-header-actions">
       <button type="button" class="btn btn-outline btn-icon" id="btn-toggle-privacy" title="Zero-Egress Privacy Mode Toggle">
         <span class="icon" id="icon-privacy">🔓</span> <span id="label-privacy">Privacy Mode: OFF</span>
       </button>
@@ -64,6 +64,7 @@
       <button type="button" class="btn btn-outline btn-icon" id="btn-mcp-status" title="Model Context Protocol (FastMCP) Tools Status">
         <span class="icon">🔌</span> MCP Tools (<span id="mcp-tool-count">4</span>)
       </button>
+      <button id="btn-open-mcp-studio" class="btn btn-secondary" title="Open Interactive FastMCP Protocol Studio">🛠️ MCP Studio</button>
       <button class="btn btn-secondary btn-icon" id="btn-toggle-settings" title="System Settings">
         <span class="icon">⚙️</span> Settings
       </button>
@@ -265,6 +266,61 @@
           </button>
         </div>
         <button type="button" class="btn btn-secondary" id="btn-close-mcp-footer">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FastMCP Protocol Tool Studio Modal -->
+  <div class="modal-backdrop hidden" id="mcp-studio-modal-backdrop">
+    <div class="modal glass-panel" id="mcp-studio-modal" role="dialog" aria-labelledby="mcp-studio-modal-title" style="max-width: 960px;">
+      <div class="modal-header">
+        <h2 id="mcp-studio-modal-title"><span class="icon">🛠️</span> FastMCP Protocol Tool Studio</h2>
+        <button type="button" class="close-btn" id="btn-close-mcp-studio" aria-label="Close FastMCP Studio">&times;</button>
+      </div>
+      <div class="modal-body" id="mcp-studio-modal-body">
+        <!-- Control Bar -->
+        <div class="mcp-studio-control-bar" style="display: flex; gap: 0.75rem; align-items: flex-end; flex-wrap: wrap; margin-bottom: 1rem; padding: 0.75rem 1rem; background: var(--bg-surface-2, rgba(15, 23, 42, 0.6)); border-radius: 8px; border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));">
+          <div style="flex: 1; min-width: 240px;">
+            <label for="mcp-studio-tool-select" style="display: block; font-size: 0.75rem; color: var(--text-muted, #94a3b8); margin-bottom: 0.25rem; font-weight: 600;">Protocol Suite Tool</label>
+            <select id="mcp-studio-tool-select" class="form-control" style="width: 100%;">
+              <option value="mcp_ast_symbol_analyzer">mcp_ast_symbol_analyzer (AST Symbols & Complexity)</option>
+              <option value="mcp_mutant_generator">mcp_mutant_generator (AST Mutator & Unified Diffs)</option>
+              <option value="mcp_sandbox_runner">mcp_sandbox_runner (Subprocess Sandbox Execution)</option>
+              <option value="mcp_equivalence_classifier">mcp_equivalence_classifier (Semantic Equivalence Classifier)</option>
+            </select>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.6rem;">
+            <button id="btn-mcp-studio-execute" class="btn btn-primary">⚡ Execute via FastMCP</button>
+            <span id="mcp-studio-meta-badge" class="badge badge-gray">Transport: Stdio (Standby)</span>
+          </div>
+        </div>
+
+        <!-- Two-Column Workspace -->
+        <div class="mcp-studio-workspace" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <!-- Left Column (Inputs) -->
+          <div class="mcp-studio-inputs" style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <div>
+              <label for="mcp-studio-code-input" id="mcp-studio-code-label" style="display: block; font-size: 0.75rem; color: var(--text-muted, #94a3b8); margin-bottom: 0.25rem; font-weight: 600;">Primary Target Code (source_code / target_source)</label>
+              <textarea id="mcp-studio-code-input" class="form-control" rows="12" placeholder="# Enter Python target code here..." style="font-family: monospace; font-size: 0.8rem; width: 100%; resize: vertical;"></textarea>
+            </div>
+            <div id="mcp-studio-secondary-container" class="hidden">
+              <label for="mcp-studio-secondary-input" id="mcp-studio-secondary-label" style="display: block; font-size: 0.75rem; color: var(--text-muted, #94a3b8); margin-bottom: 0.25rem; font-weight: 600;">Secondary Input (test_suite_code / mutant_source)</label>
+              <textarea id="mcp-studio-secondary-input" class="form-control" rows="8" placeholder="# Enter test suite or mutant code..." style="font-family: monospace; font-size: 0.8rem; width: 100%; resize: vertical;"></textarea>
+            </div>
+          </div>
+
+          <!-- Right Column (Live Protocol JSON Output) -->
+          <div class="mcp-studio-output" style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 0.75rem; color: var(--text-muted, #94a3b8); font-weight: 600;">Live Protocol JSON Output</span>
+              <button id="btn-mcp-studio-copy" class="btn btn-secondary btn-sm" title="Copy response JSON to clipboard">📋 Copy JSON</button>
+            </div>
+            <pre style="flex: 1; max-height: 440px; overflow: auto; background: var(--bg-surface-2, rgba(15, 23, 42, 0.8)); border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1)); border-radius: 8px; padding: 0.75rem; margin: 0;"><code id="mcp-studio-output-json" style="font-family: monospace; font-size: 0.8rem; white-space: pre;">{ "status": "standby", "message": "Select a tool and click execute" }</code></pre>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: flex-end; align-items: center;">
+        <button type="button" class="btn btn-secondary" id="btn-mcp-studio-footer-close">Close</button>
       </div>
     </div>
   </div>

@@ -117,6 +117,29 @@ class TestFrontendStaticDOMAndAPIContracts:
                     break
             assert matched is True, f"Unmapped frontend fetch endpoint found: {fetch_url}"
 
+    def test_mcp_studio_modal_elements_exist_in_dom(self):
+        """Verifies #btn-open-mcp-studio and all MCP Studio modal elements exist in index.html without dangling references."""
+        parser = HTMLIDCollector()
+        parser.feed(INDEX_HTML_PATH.read_text(encoding="utf-8"))
+        all_html_ids = parser.ids
+
+        required_studio_ids = [
+            "btn-open-mcp-studio",
+            "mcp-studio-modal-backdrop",
+            "mcp-studio-modal",
+            "btn-close-mcp-studio",
+            "mcp-studio-tool-select",
+            "btn-mcp-studio-execute",
+            "mcp-studio-meta-badge",
+            "mcp-studio-code-input",
+            "mcp-studio-secondary-container",
+            "mcp-studio-secondary-input",
+            "mcp-studio-output-json",
+            "btn-mcp-studio-copy",
+        ]
+        for req_id in required_studio_ids:
+            assert req_id in all_html_ids, f"Required MCP Studio element #{req_id} missing in index.html"
+
 
 # ==============================================================================
 # Module 2: Playwright Headless Browser & Cockpit Verification Suite
@@ -1078,6 +1101,40 @@ class TestFrontendHeadlessBrowserPlayground:
             assert dark_theme == "dark", f"Expected data-theme='dark' after second click, got '{dark_theme}'"
 
             assert len(page_errors) == 0, f"Unexpected page errors: {page_errors}"
+            browser.close()
+
+    def test_mcp_studio_modal_interaction(self, live_server_url):
+        """Verifies opening MCP Studio modal, tool selection toggle, and close interactions."""
+        from playwright.sync_api import sync_playwright
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            page = browser.new_page()
+            page.goto(live_server_url)
+
+            # 1. Assert button exists and backdrop is initially hidden
+            btn_open = page.locator("#btn-open-mcp-studio")
+            assert btn_open.is_visible()
+            backdrop = page.locator("#mcp-studio-modal-backdrop")
+            assert "hidden" in (backdrop.get_attribute("class") or "")
+
+            # 2. Click open -> backdrop visible
+            btn_open.click()
+            page.wait_for_selector("#mcp-studio-modal", state="visible")
+            assert "hidden" not in (backdrop.get_attribute("class") or "")
+
+            # 3. Check tool selector and secondary input visibility toggle
+            sec_container = page.locator("#mcp-studio-secondary-container")
+            assert "hidden" in (sec_container.get_attribute("class") or "")
+
+            page.select_option("#mcp-studio-tool-select", "mcp_sandbox_runner")
+            assert "hidden" not in (sec_container.get_attribute("class") or "")
+
+            page.select_option("#mcp-studio-tool-select", "mcp_ast_symbol_analyzer")
+            assert "hidden" in (sec_container.get_attribute("class") or "")
+
+            # 4. Close modal
+            page.click("#btn-close-mcp-studio")
+            assert "hidden" in (backdrop.get_attribute("class") or "")
             browser.close()
 
 

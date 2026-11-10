@@ -208,6 +208,14 @@ async def lifespan(app: FastAPI):
 
     yield
 
+    # Teardown MCP stdio client if active
+    global _global_stdio_mcp_client
+    if _global_stdio_mcp_client is not None:
+        try:
+            _global_stdio_mcp_client.close()
+        except Exception:
+            pass
+
 app = FastAPI(
     title="TestForge API",
     description="Autonomous Agentic Test Hardening System API with Apple Silicon Optimization",
@@ -562,6 +570,119 @@ async def run_mcp_test_action(req: MCPTestRequest):
         raise HTTPException(
             status_code=500,
             detail=f"FastMCP stdio execution failed ({elapsed_ms}ms): {str(exc)}"
+        )
+
+
+class ExecuteToolRequest(BaseModel):
+    tool_name: str
+    arguments: Dict[str, Any] = Field(default_factory=dict)
+
+
+PERMITTED_PROTOCOL_TOOLS = {
+    "mcp_ast_symbol_analyzer",
+    "mcp_mutant_generator",
+    "mcp_sandbox_runner",
+    "mcp_equivalence_classifier",
+}
+
+_global_stdio_mcp_client: Optional[Any] = None
+_global_stdio_mcp_lock = threading.Lock()
+
+
+def get_or_create_stdio_mcp_client():
+    global _global_stdio_mcp_client
+    with _global_stdio_mcp_lock:
+        if _global_stdio_mcp_client is None or not _global_stdio_mcp_client.is_alive():
+            from testforge.mcp_client import FastMCPStdioClient
+            _global_stdio_mcp_client = FastMCPStdioClient(timeout=10.0)
+            _global_stdio_mcp_client.start()
+        return _global_stdio_mcp_client
+
+
+@app.post("/api/mcp/execute-tool")
+async def execute_mcp_protocol_tool(req: ExecuteToolRequest):
+    """
+    Executes an interactive tool from the FastMCP 4-tool protocol suite over stdio JSON-RPC,
+    with resilient in-process fallback.
+    """
+    if req.tool_name not in PERMITTED_PROTOCOL_TOOLS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unknown tool '{req.tool_name}'. Permitted tools: {sorted(list(PERMITTED_PROTOCOL_TOOLS))}"
+        )
+
+    args = dict(req.arguments or {})
+
+    # Validate tool-specific arguments
+    if req.tool_name in ("mcp_ast_symbol_analyzer", "mcp_mutant_generator"):
+        code = args.get("source_code") or args.get("code")
+        if not code or not isinstance(code, str) or not code.strip():
+            raise HTTPException(
+                status_code=400,
+                detail=f"Tool '{req.tool_name}' requires non-empty string argument 'source_code'."
+            )
+        args["source_code"] = code
+
+    elif req.tool_name == "mcp_sandbox_runner":
+        test_suite = args.get("test_suite_code") or args.get("tests")
+        target_src = args.get("target_source") or args.get("source_code") or args.get("code")
+        if not test_suite or not isinstance(test_suite, str):
+            raise HTTPException(
+                status_code=400,
+                detail="Tool 'mcp_sandbox_runner' requires string argument 'test_suite_code'."
+            )
+        if not target_src or not isinstance(target_src, str):
+            raise HTTPException(
+                status_code=400,
+                detail="Tool 'mcp_sandbox_runner' requires string argument 'target_source'."
+            )
+        args["test_suite_code"] = test_suite
+        args["target_source"] = target_src
+
+    elif req.tool_name == "mcp_equivalence_classifier":
+        orig = args.get("original_source") or args.get("source_code")
+        mut = args.get("mutant_source") or args.get("mutated_source")
+        if not orig or not isinstance(orig, str):
+            raise HTTPException(
+                status_code=400,
+                detail="Tool 'mcp_equivalence_classifier' requires string argument 'original_source'."
+            )
+        if not mut or not isinstance(mut, str):
+            raise HTTPException(
+                status_code=400,
+                detail="Tool 'mcp_equivalence_classifier' requires string argument 'mutant_source'."
+            )
+        args["original_source"] = orig
+        args["mutant_source"] = mut
+
+    start_t = time.perf_counter()
+    try:
+        client = get_or_create_stdio_mcp_client()
+        res = client.call_tool(req.tool_name, args)
+        elapsed_ms = round((time.perf_counter() - start_t) * 1000, 2)
+
+        if not res.success:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Tool execution failed: {res.error}"
+            )
+
+        transport = "stdio" if client.is_alive() else "in_process"
+        return {
+            "status": "success",
+            "tool": req.tool_name,
+            "transport": transport,
+            "duration_ms": elapsed_ms,
+            "result": res.data,
+        }
+    except HTTPException:
+        raise
+    except Exception as exc:
+        elapsed_ms = round((time.perf_counter() - start_t) * 1000, 2)
+        logger.warning(f"Error executing MCP protocol tool '{req.tool_name}': {exc}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"FastMCP execution failed ({elapsed_ms}ms): {str(exc)}"
         )
 
 
