@@ -16,8 +16,11 @@ Features:
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 import os
+import select
+import subprocess
 import sys
 import threading
 import time
@@ -696,3 +699,396 @@ def create_testforge_client(
         callback_registry=callback_registry,
         server_id="testforge-mcp"
     )
+
+
+class ToolResultDict(dict):
+    """
+    Subclass of dict providing attribute access (.success, .data, .error, .duration_ms, .tool_name)
+    in addition to dict keys (['data'], ['success'], etc.).
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    @property
+    def tool_name(self) -> str:
+        return self.get("tool_name", "")
+
+    @property
+    def success(self) -> bool:
+        return bool(self.get("success", False))
+
+    @property
+    def data(self) -> Any:
+        return self.get("data")
+
+    @property
+    def error(self) -> Optional[str]:
+        return self.get("error")
+
+    @property
+    def duration_ms(self) -> float:
+        return float(self.get("duration_ms", 0.0))
+
+    def __getattr__(self, name: str) -> Any:
+        try:
+            return self[name]
+        except KeyError:
+            raise AttributeError(f"'ToolResultDict' object has no attribute '{name}'")
+
+
+class FastMCPStdioClient:
+    """
+    Standard MCP JSON-RPC stdio transport client managing an isolated child process
+    running `testforge.mcp_server`.
+
+    Features:
+    - Launches isolated child process with sys.executable -m testforge.mcp_server protocol.
+    - JSON-RPC 2.0 handshake (initialize, notifications/initialized).
+    - stdio tools/list and tools/call dispatch.
+    - select() timeout protection on stdio read.
+    - Resilient fallback: on timeout, EOF, or broken pipe, falls back to direct
+      in-process execution and logs `MCP_STDIO_FALLBACK_TRIGGERED`.
+    - Emits OpenTelemetry trace_event spans for tool execution telemetry.
+    - Clean process teardown (terminate -> wait -> kill) with zero zombie processes.
+    """
+    def __init__(
+        self,
+        command: Optional[List[str]] = None,
+        cwd: Optional[str] = None,
+        env: Optional[Dict[str, str]] = None,
+        timeout: float = 10.0,
+    ):
+        self.repo_root = Path(__file__).parent.parent.resolve()
+        self.command = command or [sys.executable, "-m", "testforge.mcp_server", "protocol"]
+        self.cwd = cwd or str(self.repo_root)
+        base_env = os.environ.copy()
+        base_env["PYTHONPATH"] = str(self.repo_root)
+        if env:
+            base_env.update(env)
+        self.env = base_env
+        self.timeout = timeout
+        self.process: Optional[subprocess.Popen] = None
+        self._request_id = 0
+        self._lock = threading.Lock()
+        self._started = False
+        self._closed = False
+
+    def is_alive(self) -> bool:
+        return self.process is not None and self.process.poll() is None
+
+    @property
+    def pid(self) -> Optional[int]:
+        return self.process.pid if self.process else None
+
+    def start(self) -> None:
+        with self._lock:
+            if self.is_alive():
+                return
+            self._closed = False
+            try:
+                self.process = subprocess.Popen(
+                    self.command,
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    cwd=self.cwd,
+                    env=self.env,
+                    text=True,
+                    bufsize=1,
+                )
+                self._started = True
+                self._handshake()
+            except Exception as e:
+                logger.error(f"Failed to start FastMCP stdio subprocess: {e}")
+                self.close()
+
+    def _handshake(self) -> None:
+        init_req = {
+            "jsonrpc": "2.0",
+            "id": self._next_id(),
+            "method": "initialize",
+            "params": {
+                "protocolVersion": "2024-11-05",
+                "capabilities": {},
+                "clientInfo": {"name": "testforge-agent", "version": "1.0.0"},
+            },
+        }
+        res = self._send_request_raw(init_req, timeout=5.0)
+        if not res or "result" not in res:
+            logger.warning(f"FastMCP stdio handshake failed: {res}")
+            return
+        notif = {
+            "jsonrpc": "2.0",
+            "method": "notifications/initialized",
+        }
+        self._send_notification_raw(notif)
+
+    def _next_id(self) -> int:
+        self._request_id += 1
+        return self._request_id
+
+    def _send_notification_raw(self, payload: Dict[str, Any]) -> None:
+        if not self.is_alive() or not self.process or not self.process.stdin:
+            return
+        line = json.dumps(payload) + "\n"
+        try:
+            self.process.stdin.write(line)
+            self.process.stdin.flush()
+        except (BrokenPipeError, OSError):
+            pass
+
+    def _send_request_raw(self, payload: Dict[str, Any], timeout: Optional[float] = None) -> Optional[Dict[str, Any]]:
+        if not self.is_alive() or not self.process or not self.process.stdin or not self.process.stdout:
+            return None
+        t_out = timeout or self.timeout
+        line = json.dumps(payload) + "\n"
+        try:
+            self.process.stdin.write(line)
+            self.process.stdin.flush()
+        except (BrokenPipeError, OSError) as e:
+            logger.warning(f"Failed to write to FastMCP stdio: {e}")
+            return None
+
+        # Wait for response using select
+        try:
+            rlist, _, _ = select.select([self.process.stdout], [], [], t_out)
+        except (ValueError, OSError) as e:
+            logger.warning(f"Select error on FastMCP stdio: {e}")
+            return None
+
+        if not rlist:
+            logger.warning(f"FastMCP stdio read timed out after {t_out}s")
+            return None
+
+        try:
+            resp_line = self.process.stdout.readline()
+        except (BrokenPipeError, OSError) as e:
+            logger.warning(f"Read error on FastMCP stdio: {e}")
+            return None
+
+        if not resp_line:
+            logger.warning("FastMCP stdio received EOF from server")
+            return None
+
+        try:
+            return json.loads(resp_line.strip())
+        except Exception as e:
+            logger.warning(f"FastMCP stdio invalid JSON response: {e}")
+            return None
+
+    def list_tools(self, timeout: float = 5.0) -> List[Dict[str, Any]]:
+        with self._lock:
+            if not self.is_alive() and not self._closed:
+                self.start()
+            req = {
+                "jsonrpc": "2.0",
+                "id": self._next_id(),
+                "method": "tools/list",
+                "params": {},
+            }
+            res = self._send_request_raw(req, timeout=timeout)
+            if res and "result" in res and "tools" in res["result"]:
+                return res["result"]["tools"]
+            # Fallback tool definitions
+            return [
+                {"name": "mcp_ast_symbol_analyzer", "description": "AST Symbol Analysis"},
+                {"name": "mcp_mutant_generator", "description": "Mutant Generation Engine"},
+                {"name": "mcp_sandbox_runner", "description": "Isolated Sandbox Runner"},
+                {"name": "mcp_equivalence_classifier", "description": "Equivalence Classifier"},
+            ]
+
+    def call_tool(
+        self,
+        name: str,
+        arguments: Optional[Dict[str, Any]] = None,
+        timeout: Optional[float] = None,
+    ) -> ToolResultDict:
+        start_time = time.time()
+        args = arguments or {}
+
+        with self._lock:
+            if not self.is_alive() and not self._started and not self._closed:
+                self.start()
+
+            res: Optional[Dict[str, Any]] = None
+            if self.is_alive() and not self._closed:
+                req = {
+                    "jsonrpc": "2.0",
+                    "id": self._next_id(),
+                    "method": "tools/call",
+                    "params": {"name": name, "arguments": args},
+                }
+                res = self._send_request_raw(req, timeout=timeout)
+
+        duration_ms = (time.time() - start_time) * 1000.0
+
+        if res is not None and "result" in res:
+            result_obj = res["result"]
+            data = None
+            if "content" in result_obj and isinstance(result_obj["content"], list):
+                content_list = result_obj["content"]
+                if len(content_list) == 1:
+                    raw_text = content_list[0].get("text", "") if isinstance(content_list[0], dict) else str(content_list[0])
+                    try:
+                        data = json.loads(raw_text)
+                    except Exception:
+                        data = raw_text
+                elif len(content_list) > 1:
+                    data = []
+                    for item in content_list:
+                        raw = item.get("text", "") if isinstance(item, dict) else str(item)
+                        try:
+                            data.append(json.loads(raw))
+                        except Exception:
+                            data.append(raw)
+                else:
+                    data = []
+            else:
+                data = result_obj
+
+            if name == "mcp_mutant_generator" and isinstance(data, dict):
+                data = [data]
+
+            try:
+                from testforge.observability import trace_event
+                trace_event("mcp.tool_call", {
+                    "tool": name,
+                    "transport": "stdio",
+                    "duration_ms": duration_ms,
+                    "status": "success",
+                })
+            except Exception:
+                pass
+
+            return ToolResultDict(tool_name=name, success=True, data=data, error=None, duration_ms=duration_ms)
+
+        # Fallback triggered
+        logger.warning(f"MCP_STDIO_FALLBACK_TRIGGERED: FastMCP stdio call failed for '{name}'. Falling back to in-process execution.")
+        try:
+            from testforge.observability import trace_event
+            trace_event("MCP_STDIO_FALLBACK_TRIGGERED", {
+                "tool": name,
+                "transport": "in_process_fallback",
+                "reason": "stdio_timeout_or_pipe_error",
+            })
+        except Exception:
+            pass
+
+        fallback_result = self._execute_in_process(name, args)
+        fallback_duration_ms = (time.time() - start_time) * 1000.0
+        fallback_result["duration_ms"] = fallback_duration_ms
+
+        try:
+            from testforge.observability import trace_event
+            trace_event("mcp.tool_call", {
+                "tool": name,
+                "transport": "in_process_fallback",
+                "duration_ms": fallback_duration_ms,
+                "status": "success" if fallback_result.success else "error",
+                "fallback": True,
+            })
+        except Exception:
+            pass
+
+        return fallback_result
+
+    def call_tool_sync(
+        self,
+        tool_name: str,
+        arguments: Optional[Dict[str, Any]] = None,
+        timeout: Optional[float] = None,
+    ) -> ToolResultDict:
+        return self.call_tool(name=tool_name, arguments=arguments, timeout=timeout)
+
+    def _execute_in_process(self, name: str, arguments: Dict[str, Any]) -> ToolResultDict:
+        from testforge.mcp_server import (
+            mcp_ast_symbol_analyzer,
+            mcp_mutant_generator,
+            mcp_sandbox_runner,
+            mcp_equivalence_classifier,
+        )
+        try:
+            if name == "mcp_ast_symbol_analyzer":
+                source = arguments.get("source_code") or arguments.get("code") or ""
+                out = mcp_ast_symbol_analyzer(source_code=source)
+                return ToolResultDict(tool_name=name, success=True, data=out, error=None)
+            elif name == "mcp_mutant_generator":
+                source = arguments.get("source_code") or arguments.get("code") or ""
+                max_mutants = int(arguments.get("max_mutants", 30))
+                out = mcp_mutant_generator(source_code=source, max_mutants=max_mutants)
+                return ToolResultDict(tool_name=name, success=True, data=out, error=None)
+            elif name == "mcp_sandbox_runner":
+                test_suite = arguments.get("test_suite_code", "")
+                target_src = arguments.get("target_source", "")
+                timeout_sec = float(arguments.get("timeout_seconds", 3.0))
+                out = mcp_sandbox_runner(
+                    test_suite_code=test_suite,
+                    target_source=target_src,
+                    timeout_seconds=timeout_sec,
+                )
+                return ToolResultDict(tool_name=name, success=True, data=out, error=None)
+            elif name == "mcp_equivalence_classifier":
+                orig = arguments.get("original_source", "")
+                mut = arguments.get("mutant_source", "")
+                out = mcp_equivalence_classifier(original_source=orig, mutant_source=mut)
+                return ToolResultDict(tool_name=name, success=True, data=out, error=None)
+            else:
+                return ToolResultDict(tool_name=name, success=False, data=None, error=f"Unknown tool: {name}")
+        except Exception as e:
+            return ToolResultDict(tool_name=name, success=False, data=None, error=str(e))
+
+    def close(self) -> None:
+        with self._lock:
+            if self.process is not None:
+                try:
+                    if self.process.stdin:
+                        self.process.stdin.close()
+                except Exception:
+                    pass
+                try:
+                    if self.process.stdout:
+                        self.process.stdout.close()
+                except Exception:
+                    pass
+                try:
+                    if self.process.stderr:
+                        self.process.stderr.close()
+                except Exception:
+                    pass
+                try:
+                    self.process.terminate()
+                    try:
+                        self.process.wait(timeout=2.0)
+                    except subprocess.TimeoutExpired:
+                        self.process.kill()
+                        self.process.wait(timeout=1.0)
+                except Exception:
+                    pass
+                finally:
+                    self.process = None
+
+    def disconnect_sync(self) -> None:
+        self.close()
+
+    def sync_to_blackboard(self, tool_result: Any, blackboard: Any) -> None:
+        if not getattr(tool_result, "success", False) or not blackboard:
+            return
+
+    def __enter__(self) -> "FastMCPStdioClient":
+        self.start()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        self.close()
+
+    def __del__(self) -> None:
+        self.close()
+
+
+def create_fastmcp_stdio_client(
+    timeout: float = 10.0,
+) -> FastMCPStdioClient:
+    """
+    Creates and returns a FastMCPStdioClient instance targeting the 4-tool protocol suite.
+    """
+    return FastMCPStdioClient(timeout=timeout)

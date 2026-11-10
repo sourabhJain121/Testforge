@@ -656,8 +656,11 @@ def create_testforge_server(repo_root: Optional[Path] = None) -> FastMCP:
 
 
 if __name__ == "__main__":
-    server_type = sys.argv[1] if len(sys.argv) > 1 else "filesystem"
-    if server_type == "filesystem":
+    server_type = sys.argv[1] if len(sys.argv) > 1 else "protocol"
+    if server_type in ("protocol", "tools", "four_tools", "protocol_suite"):
+        server = create_protocol_suite_server()
+        server.run(transport="stdio")
+    elif server_type == "filesystem":
         root = sys.argv[2] if len(sys.argv) > 2 else os.getcwd()
         server = create_filesystem_server(root)
         server.run(transport="stdio")
@@ -667,9 +670,6 @@ if __name__ == "__main__":
     elif server_type == "testforge":
         root = sys.argv[2] if len(sys.argv) > 2 else os.getcwd()
         server = create_testforge_server(Path(root))
-        server.run(transport="stdio")
-    elif server_type in ("protocol", "tools", "four_tools"):
-        server = create_protocol_suite_server()
         server.run(transport="stdio")
     else:
         sys.stderr.write(f"Unknown server type: {server_type}\n")

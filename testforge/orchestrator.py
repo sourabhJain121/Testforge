@@ -639,8 +639,23 @@ class TestForgeOrchestrator:
             "stage": stage_name
         }, correlation_id=self.workflow_id, workflow_id=self.workflow_id)
 
-        res = self.mcp_client.call_tool_sync(tool_name, arguments, timeout=timeout)
+        if hasattr(self.mcp_client, "call_tool_sync"):
+            res = self.mcp_client.call_tool_sync(tool_name, arguments, timeout=timeout)
+        elif hasattr(self.mcp_client, "call_tool"):
+            res = self.mcp_client.call_tool(tool_name, arguments, timeout=timeout)
+        else:
+            res = None
         duration_ms = (time.perf_counter() - start_time) * 1000
+
+        try:
+            from testforge.observability import trace_event
+            trace_event("mcp.tool_call", {
+                "tool": tool_name,
+                "transport": "stdio" if getattr(self.mcp_client, "is_alive", None) else "in_process",
+                "duration_ms": duration_ms,
+            })
+        except Exception:
+            pass
 
         # Build safe summary
         summary = ""
@@ -745,7 +760,9 @@ class TestForgeOrchestrator:
         # If MCP client exists, ensure clean session reinitialization without dead process handles
         if self.mcp_client:
             try:
-                if hasattr(self.mcp_client, "disconnect_sync"):
+                if hasattr(self.mcp_client, "close"):
+                    self.mcp_client.close()
+                elif hasattr(self.mcp_client, "disconnect_sync"):
                     self.mcp_client.disconnect_sync()
             except Exception as e:
                 logger.warning(f"Error resetting MCP client on recovery: {e}")
@@ -765,6 +782,19 @@ class TestForgeOrchestrator:
         )
 
         return plan
+
+    def cleanup_resources(self) -> None:
+        """
+        Cleans up pipeline resources including active MCP stdio subprocesses.
+        """
+        if self.mcp_client:
+            try:
+                if hasattr(self.mcp_client, "close"):
+                    self.mcp_client.close()
+                elif hasattr(self.mcp_client, "disconnect_sync"):
+                    self.mcp_client.disconnect_sync()
+            except Exception as e:
+                logger.warning(f"Error during MCP client cleanup: {e}")
 
     def resume_from_checkpoint(self, checkpoint_id: str) -> TestForgeState:
         """

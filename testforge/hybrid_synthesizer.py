@@ -60,12 +60,56 @@ class HybridSynthesizer:
         target_file_path: Optional[str] = None,
         max_iterations: int = 3,
         timeout_seconds: float = 3.0,
+        mcp_client: Optional[Any] = None,
     ):
         self.target_code: str = target_code.strip()
         self.target_file_path: str = target_file_path or "sample_target.py"
         self.max_iterations: int = max_iterations
         self.timeout_seconds: float = timeout_seconds
+        self.mcp_client = mcp_client
         self.sandbox = ParallelSandboxRunner(timeout_seconds=self.timeout_seconds, target_file_path=self.target_file_path)
+
+    def _call_mcp_tool(self, tool_name: str, arguments: Dict[str, Any]) -> Any:
+        """
+        Invokes an MCP tool through the connected MCP client (stdio subprocess),
+        falling back gracefully to in-process execution.
+        """
+        if self.mcp_client is not None:
+            res = None
+            if hasattr(self.mcp_client, "call_tool"):
+                res = self.mcp_client.call_tool(tool_name, arguments)
+            elif hasattr(self.mcp_client, "call_tool_sync"):
+                res = self.mcp_client.call_tool_sync(tool_name, arguments)
+            if res and getattr(res, "success", False):
+                return getattr(res, "data", None)
+
+        if tool_name == "mcp_ast_symbol_analyzer":
+            return mcp_ast_symbol_analyzer(source_code=arguments.get("source_code", ""))
+        elif tool_name == "mcp_mutant_generator":
+            return mcp_mutant_generator(
+                source_code=arguments.get("source_code", ""),
+                max_mutants=arguments.get("max_mutants", 30),
+            )
+        elif tool_name == "mcp_sandbox_runner":
+            return mcp_sandbox_runner(
+                test_suite_code=arguments.get("test_suite_code", ""),
+                target_source=arguments.get("target_source", ""),
+                timeout_seconds=arguments.get("timeout_seconds", 3.0),
+            )
+        elif tool_name == "mcp_equivalence_classifier":
+            return mcp_equivalence_classifier(
+                original_source=arguments.get("original_source", ""),
+                mutant_source=arguments.get("mutant_source", ""),
+            )
+        return None
+
+    def close(self) -> None:
+        """Cleans up MCP client process resources if owned."""
+        if self.mcp_client is not None and hasattr(self.mcp_client, "close"):
+            try:
+                self.mcp_client.close()
+            except Exception:
+                pass
 
     # --------------------------------------------------------------------------
     # Step 1: AST Invariant Baseline / Boundary Seed Ingestion
@@ -75,7 +119,7 @@ class HybridSynthesizer:
         Ingests or synthesizes initial test cases targeting boundary inputs and AST invariants.
         """
         # Run MCP AST symbol analyzer for code intelligence
-        ast_info = mcp_ast_symbol_analyzer(self.target_code)
+        ast_info = self._call_mcp_tool("mcp_ast_symbol_analyzer", {"source_code": self.target_code})
 
         synth = IntelligentASTSynthesizer()
         synth_res = synth.synthesize_test_suite(self.target_code)
@@ -96,8 +140,15 @@ class HybridSynthesizer:
         tests are retained in the candidate suite.
         """
         # Quick pre-flight check on entire candidate suite
-        quick_check = mcp_sandbox_runner(candidate_suite, self.target_code, timeout_seconds=self.timeout_seconds)
-        if quick_check["clean_code_integrity"]:
+        quick_check = self._call_mcp_tool(
+            "mcp_sandbox_runner",
+            {
+                "test_suite_code": candidate_suite,
+                "target_source": self.target_code,
+                "timeout_seconds": self.timeout_seconds,
+            },
+        )
+        if quick_check and quick_check.get("clean_code_integrity"):
             return candidate_suite, True
 
         # Granular filter: validate each test function individually
@@ -112,8 +163,15 @@ class HybridSynthesizer:
         retained = res.retained_test_code.strip()
         if retained and "def test_" in retained:
             # Double check filtered suite
-            recheck = mcp_sandbox_runner(retained, self.target_code, timeout_seconds=self.timeout_seconds)
-            if recheck["clean_code_integrity"]:
+            recheck = self._call_mcp_tool(
+                "mcp_sandbox_runner",
+                {
+                    "test_suite_code": retained,
+                    "target_source": self.target_code,
+                    "timeout_seconds": self.timeout_seconds,
+                },
+            )
+            if recheck and recheck.get("clean_code_integrity"):
                 return retained, True
 
         # Fallback to minimal safe nominal test if everything fails
@@ -148,8 +206,11 @@ class HybridSynthesizer:
             try:
                 # Apply mutant to reconstruct full mutated source for classifier
                 m_code = m.mutated_code_snippet
-                eq_check = mcp_equivalence_classifier(self.target_code, self.target_code)
-                if eq_check["is_equivalent"]:
+                eq_check = self._call_mcp_tool("mcp_equivalence_classifier", {
+                    "original_source": self.target_code,
+                    "mutant_source": self.target_code,
+                })
+                if eq_check and eq_check.get("is_equivalent"):
                     continue
             except Exception:
                 pass

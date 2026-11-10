@@ -282,3 +282,16 @@ class TestForgeOtelTracer:
     def clear(self) -> None:
         self.collector.clear()
         self.supervisor_decisions.clear()
+
+
+def trace_event(name: str, attributes: Optional[Dict[str, Any]] = None) -> None:
+    """
+    Emits an OpenTelemetry span / trace event for telemetry and dashboard aggregation.
+    """
+    tracer = TestForgeOtelTracer.get_instance()
+    attrs = dict(attributes or {})
+    try:
+        with tracer.tracer.start_as_current_span(name, attributes=attrs) as span:
+            span.set_status(Status(StatusCode.OK))
+    except Exception:
+        pass
