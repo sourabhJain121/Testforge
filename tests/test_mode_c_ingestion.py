@@ -207,13 +207,15 @@ def test_hardening_pipeline_on_models(tmp_path):
     saved_path, analysis = tm.ingest_github(MODELS_URL, output_dir=str(tmp_path))
 
     trace_file = str(tmp_path / "models_trace.jsonl")
+    temp_output_file = str(tmp_path / "test_hardened_temp.py")
     orch = TestForgeOrchestrator(
         target_source_code=analysis.source_code,
         max_iterations=1,
         target_mutation_score=85.0,
         trace_log_path=trace_file,
         target_file_path=str(saved_path),
-        engine_mode="local"
+        engine_mode="local",
+        output_path=temp_output_file
     )
 
     state = orch.run()
@@ -245,3 +247,8 @@ def test_hardening_pipeline_on_models(tmp_path):
     # Anti-cheat check: Must NOT report SUCCESS if coverage is 0.0%
     if state.baseline_line_coverage == 0.0:
         assert state.final_hardening_status != "SUCCESS", "Cannot claim SUCCESS with 0.0% coverage"
+
+    # Export hardened suite using isolated path and verify working tree protection
+    exported = orch.export_hardened_suite(output_path=temp_output_file)
+    assert Path(temp_output_file).exists()
+    assert len(exported) > 0

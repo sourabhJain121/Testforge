@@ -21,6 +21,7 @@ import json
 import logging
 import os
 import re
+import tempfile
 import time
 import uuid
 from typing import Any, Dict, List, Optional
@@ -164,6 +165,7 @@ class TestForgeOrchestrator:
         resume_checkpoint_id: Optional[str] = None,
         feature_flags: Optional[FeatureFlags] = None,
         privacy_mode: Optional[bool] = None,
+        output_path: Optional[str] = None,
     ):
         from testforge.privacy_mode import PrivacyModeManager
         privacy_mgr = PrivacyModeManager.get_instance()
@@ -178,6 +180,7 @@ class TestForgeOrchestrator:
             engine_mode = "local"
 
         self.target_file_path = target_file_path
+        self.output_path = output_path
         self.engine_mode = engine_mode
         self.target_lines = target_lines
         self.callbacks = callbacks or default_callback_registry
@@ -680,15 +683,19 @@ class TestForgeOrchestrator:
 
         return res
 
-    def export_hardened_suite(self, output_path: str = "test_hardened.py") -> str:
+    def export_hardened_suite(self, output_path: Optional[str] = None) -> str:
         """
         Exports the final test suite formatted for standalone pytest execution.
         """
+        eff_output_path = output_path or self.output_path or "test_hardened.py"
+        # Protect tracked test_hardened.py during automated test execution
+        if eff_output_path == "test_hardened.py" and os.environ.get("PYTEST_CURRENT_TEST"):
+            eff_output_path = os.path.join(tempfile.gettempdir(), "testforge_test_hardened.py")
         formatted = format_standalone_test_suite(
             self.state.current_test_code,
             self.target_file_path
         )
-        with open(output_path, "w", encoding="utf-8") as f:
+        with open(eff_output_path, "w", encoding="utf-8") as f:
             f.write(formatted)
         return formatted
 
@@ -766,9 +773,14 @@ class TestForgeOrchestrator:
         self.resume_checkpoint_id = checkpoint_id
         return self.run()
 
-    def harden(self) -> TestForgeState:
+    def harden(self, output_path: Optional[str] = None) -> TestForgeState:
         """Alias for run() - executes the autonomous test hardening pipeline."""
-        return self.run()
+        if output_path is not None:
+            self.output_path = output_path
+        state = self.run()
+        if self.output_path:
+            self.export_hardened_suite(self.output_path)
+        return state
 
     def run(self) -> TestForgeState:
         if self._start_time is None:
