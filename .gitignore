@@ -26,3 +26,23 @@ dist/
 .mutmut-cache/
 mutants/
 
+
+# --- TestForge Release Hygiene (T4) ---
+# Backup documents and temporary docx
+docs/WIP_REPORT/*_backup.*
+*.docx
+
+# Huge historical experiment logs (>5MB raw JSON dumps)
+qa_artifacts/phase3_independent_validation_20261031_142800/reproduction_logistics.json
+qa_artifacts/post_ast_mutation_baseline_20261030_185148/logistics_experiment_result.json
+
+# Redundant legacy run screenshots (curated screenshots remain in docs/)
+qa_artifacts/**/screenshots/
+qa_artifacts/browser_audit/
+qa_artifacts/final_ui_audit/
+qa_artifacts/frontend_backend_browser_audit/
+
+# Ephemeral caches and session files
+PHASE_0_CURRENT_STATE_REPORT.md
+/tmp/testforge_*
+*.lock
