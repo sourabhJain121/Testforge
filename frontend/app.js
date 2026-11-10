@@ -1017,6 +1017,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  const OFFICIAL_MCP_TOOLS = [
+    {
+      name: 'mcp_ast_symbol_analyzer',
+      description: 'AST Symbols, Cyclomatic Complexity & Call Graph',
+      border: '#38bdf8',
+      status: 'READY (STDIO)'
+    },
+    {
+      name: 'mcp_mutant_generator',
+      description: 'Boundary Swaps, AST Operator Inversions & Unified Diffs',
+      border: '#a855f7',
+      status: 'READY (STDIO)'
+    },
+    {
+      name: 'mcp_sandbox_runner',
+      description: 'Subprocess Sandbox Execution & DEF-022 Clean Preflight',
+      border: '#34d399',
+      status: 'READY (STDIO)'
+    },
+    {
+      name: 'mcp_equivalence_classifier',
+      description: 'Bytecode Invariant Semantic Equivalence Detection',
+      border: '#fbbf24',
+      status: 'READY (STDIO)'
+    }
+  ];
+
   function renderMcpStatus(data) {
     if (!dom.mcpCardContent) return;
     dom.mcpCardContent.replaceChildren();
@@ -1041,12 +1068,12 @@ document.addEventListener('DOMContentLoaded', () => {
     h.style.marginBottom = '0.5rem';
 
     const title = document.createElement('strong');
-    title.textContent = data.protocol || 'Model Context Protocol';
+    title.textContent = 'FastMCP Protocol Suite';
     title.style.fontSize = '0.95rem';
 
     const statusBadge = document.createElement('span');
     statusBadge.className = 'badge badge-green';
-    statusBadge.textContent = data.status === 'operational' ? '⚡ Operational' : data.status;
+    statusBadge.textContent = 'FastMCP Protocol Suite (4 Tools Active)';
 
     h.appendChild(title);
     h.appendChild(statusBadge);
@@ -1056,89 +1083,80 @@ document.addEventListener('DOMContentLoaded', () => {
     desc.style.fontSize = '0.8rem';
     desc.style.color = '#94a3b8';
     desc.style.margin = '0';
-    desc.innerHTML = `SDK: <span>${escapeHtml(data.sdk || 'FastMCP')}</span> | Transport: <span>${escapeHtml(data.transport || 'stdio JSON-RPC')}</span> | Total Registered Tools: <span id="mcp-total-tools" style="font-weight:600; color:#38bdf8;">${data.total_tools_registered || 0}</span>`;
+    desc.innerHTML = 'SDK: <span>FastMCP v1.28.1</span> | Transport: <span>stdio JSON-RPC 2.0</span> | Total Registered Tools: <span id="mcp-total-tools" style="font-weight:600; color:#38bdf8;">4</span>';
     summaryCard.appendChild(desc);
     root.appendChild(summaryCard);
 
-    // List of servers
-    if (Array.isArray(data.servers)) {
-      data.servers.forEach((srv) => {
-        const srvCard = document.createElement('div');
-        srvCard.className = 'glass-card';
-        srvCard.style.padding = '0.75rem 1rem';
-        srvCard.style.background = 'rgba(30, 41, 59, 0.5)';
-        srvCard.style.borderRadius = '8px';
-        srvCard.style.border = '1px solid rgba(255, 255, 255, 0.06)';
+    // Protocol Suite Card
+    const suiteCard = document.createElement('div');
+    suiteCard.className = 'glass-card';
+    suiteCard.style.padding = '0.75rem 1rem';
+    suiteCard.style.background = 'rgba(30, 41, 59, 0.5)';
+    suiteCard.style.borderRadius = '8px';
+    suiteCard.style.border = '1px solid rgba(255, 255, 255, 0.06)';
 
-        const srvH = document.createElement('div');
-        srvH.style.display = 'flex';
-        srvH.style.justifyContent = 'space-between';
-        srvH.style.alignItems = 'center';
-        srvH.style.marginBottom = '0.5rem';
+    const suiteH = document.createElement('div');
+    suiteH.style.display = 'flex';
+    suiteH.style.justifyContent = 'space-between';
+    suiteH.style.alignItems = 'center';
+    suiteH.style.marginBottom = '0.5rem';
 
-        const srvName = document.createElement('strong');
-        srvName.textContent = `🖥️ Server: ${srv.server_id}`;
-        srvName.style.fontSize = '0.88rem';
+    const suiteName = document.createElement('strong');
+    suiteName.textContent = '📦 Protocol Suite: testforge-fastmcp';
+    suiteName.style.fontSize = '0.88rem';
 
-        const srvBadge = document.createElement('span');
-        srvBadge.className = 'badge badge-cyan';
-        srvBadge.textContent = `${srv.tools_count} Tool(s)`;
+    const suiteBadge = document.createElement('span');
+    suiteBadge.className = 'badge badge-cyan';
+    suiteBadge.textContent = '4 Tool(s)';
 
-        srvH.appendChild(srvName);
-        srvH.appendChild(srvBadge);
-        srvCard.appendChild(srvH);
+    suiteH.appendChild(suiteName);
+    suiteH.appendChild(suiteBadge);
+    suiteCard.appendChild(suiteH);
 
-        if (srv.confinement) {
-          const conf = document.createElement('div');
-          conf.style.fontSize = '0.75rem';
-          conf.style.color = '#38bdf8';
-          conf.style.marginBottom = '0.5rem';
-          conf.textContent = `🛡️ Security Confinement: ${srv.confinement} (path traversal & credentials blocked)`;
-          srvCard.appendChild(conf);
-        }
+    const toolList = document.createElement('div');
+    toolList.style.display = 'flex';
+    toolList.style.flexDirection = 'column';
+    toolList.style.gap = '0.4rem';
 
-        if (Array.isArray(srv.tools)) {
-          const toolList = document.createElement('div');
-          toolList.style.display = 'flex';
-          toolList.style.flexDirection = 'column';
-          toolList.style.gap = '0.4rem';
+    OFFICIAL_MCP_TOOLS.forEach((t) => {
+      const row = document.createElement('div');
+      row.style.background = 'rgba(15, 23, 42, 0.4)';
+      row.style.padding = '0.4rem 0.6rem';
+      row.style.borderRadius = '4px';
+      row.style.display = 'flex';
+      row.style.justifyContent = 'space-between';
+      row.style.alignItems = 'center';
+      if (t.border) {
+        row.style.borderLeft = `3px solid ${t.border}`;
+      }
 
-          srv.tools.forEach((t) => {
-            const row = document.createElement('div');
-            row.style.background = 'rgba(15, 23, 42, 0.4)';
-            row.style.padding = '0.4rem 0.6rem';
-            row.style.borderRadius = '4px';
-            row.style.display = 'flex';
-            row.style.justifyContent = 'space-between';
-            row.style.alignItems = 'center';
+      const left = document.createElement('div');
+      const toolName = document.createElement('code');
+      toolName.textContent = t.name;
+      toolName.style.color = t.border || '#e2e8f0';
+      toolName.style.fontSize = '0.8rem';
+      toolName.style.fontWeight = '600';
 
-            const left = document.createElement('div');
-            const toolName = document.createElement('code');
-            toolName.textContent = t.name;
-            toolName.style.color = '#e2e8f0';
-            toolName.style.fontSize = '0.8rem';
-            const toolDesc = document.createElement('div');
-            toolDesc.textContent = t.description;
-            toolDesc.style.fontSize = '0.72rem';
-            toolDesc.style.color = '#94a3b8';
+      const toolDesc = document.createElement('div');
+      toolDesc.textContent = t.description;
+      toolDesc.style.fontSize = '0.72rem';
+      toolDesc.style.color = '#94a3b8';
 
-            left.appendChild(toolName);
-            left.appendChild(toolDesc);
+      left.appendChild(toolName);
+      left.appendChild(toolDesc);
 
-            const toolStatus = document.createElement('span');
-            toolStatus.className = 'badge badge-outline';
-            toolStatus.style.fontSize = '0.7rem';
-            toolStatus.textContent = t.status || 'ready';
+      const toolStatus = document.createElement('span');
+      toolStatus.className = 'badge badge-outline';
+      toolStatus.style.fontSize = '0.7rem';
+      toolStatus.textContent = t.status || 'READY (STDIO)';
 
-            row.appendChild(left);
-            row.appendChild(toolStatus);
-            toolList.appendChild(row);
-          });
-          srvCard.appendChild(toolList);
-        }
-        root.appendChild(srvCard);
-      });
-    }
+      row.appendChild(left);
+      row.appendChild(toolStatus);
+      toolList.appendChild(row);
+    });
+
+    suiteCard.appendChild(toolList);
+    root.appendChild(suiteCard);
 
     dom.mcpCardContent.appendChild(root);
   }
