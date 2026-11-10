@@ -1,6 +1,6 @@
 # TestForge Release & Viva Submission Checklist (v1.0.0)
 
-This checklist outlines the automated verification baselines and manual human-only steps required for official submission and live oral viva evaluation for **CSE3101: Agentic AI Systems (Phase-3 Evaluation)**.
+This checklist outlines the automated verification baselines and manual human-only steps required for official submission and live oral viva evaluation for **Autonomous Agentic AI Systems (Phase-3 Evaluation)**.
 
 ---
 

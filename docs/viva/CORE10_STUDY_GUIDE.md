@@ -1,7 +1,7 @@
 # TestForge Core-10 Viva & Oral Examination Study Guide
 
 **Target Audience:** Viva Examination Candidates, System Auditors, Academic Examiners  
-**Coursework:** CSE3101: Autonomous Agentic AI Systems  
+**Coursework:** Autonomous Agentic Systems: Autonomous Agentic AI Systems  
 **Evaluation Reference:** Python 3.13 macOS arm64 (`.venv-release`), 999 Passed Unit & Integration Tests
 
 ---

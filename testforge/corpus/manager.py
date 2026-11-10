@@ -2,7 +2,7 @@
 manager.py - Evaluation Corpus Registry, Validation Harness, and Manifest Generators.
 
 Author: TestForge Agentic Engineering
-Course: CSE3101 - Agentic AI
+System: Autonomous Multi-Agent Hardening Engine
 Milestone: Phase 2 Milestone 2.1 (GAP-04)
 """
 

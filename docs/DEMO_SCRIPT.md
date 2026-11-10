@@ -2,7 +2,7 @@
 
 > **Total Duration**: 10 Minutes  
 > **Presenters**: Sourabh & Shreshth  
-> **Course**: CSE3101 - Agentic AI (Phase-3 Submission)  
+> **Course**: Autonomous Agentic AI (Phase-3 Submission)  
 > **Live Cockpit**: `http://127.0.0.1:8000`  
 > **Fallback Plan**: Zero-Egress Air-Gapped Local Ollama / Deterministic Offline Mode  
 

@@ -1,6 +1,6 @@
 # TestForge — Teacher Requirements & Acceptance Evaluation
 
-**Course:** CSE3101 - Agentic AI  
+**Course:** Autonomous Agentic AI  
 **Document ID:** TF-REQ-TEACHER-001  
 **Date:** October 30, 2026  
 **Status:** Academic Verification Report  
@@ -9,7 +9,7 @@
 
 ## 1. Overview & Verification Standard
 
-This document evaluates the implementation and operational verification status of the **11 Mandatory Academic Requirements** specified for the CSE3101 Agentic AI project.
+This document evaluates the implementation and operational verification status of the **11 Mandatory Academic Requirements** specified for the Autonomous Agentic AI project.
 
 **Verification Standard:**
 - **VERIFIED:** Implemented, covered by authentic automated tests, and verified via live execution.

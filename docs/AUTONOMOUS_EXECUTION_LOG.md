@@ -2,7 +2,7 @@
 ## Continuous Engineering, Verification, and Completion
 
 **Project:** TestForge — Autonomous Agentic Unit Test Hardening System  
-**Course:** CSE3101 - Agentic AI  
+**Course:** Autonomous Agentic AI  
 **Execution Window:** 150 – 180 Minutes  
 **Session Start Time:** 2026-10-22T13:34:43+05:30  
 **Environment:** Python 3.13 Isolated (`/Users/sourabh/.gemini/antigravity-ide/brain/05f0de02-c90e-40d7-bf92-0819372e0bac/scratch/venv_313/bin/python`)  

@@ -1,7 +1,7 @@
 # TestForge — University Requirements Acceptance Matrix
 ## Comprehensive Verification and Compliance Evidence across all 11 Teacher MUSTs
 
-**Course:** CSE3101 — Agentic AI (16 Weeks, Project-Based Learning)  
+**Course:** Autonomous Agentic AI (16 Weeks, Project-Based Learning)  
 **Project:** TestForge — Autonomous Agentic Unit Test Hardening System  
 **Authors:** Sourabh & Shreshth  
 **Date:** October 2026  

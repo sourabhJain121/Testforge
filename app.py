@@ -11,7 +11,7 @@ verification, and legacy prototype reference. Do not launch this file during
 normal production operation.
 
 Authors: Sourabh & Shreshth
-Course: CSE3101 - Agentic AI
+System: Autonomous Multi-Agent Hardening Engine
 """
 
 import os
@@ -44,7 +44,7 @@ st.set_page_config(
 )
 
 st.title("⚡ TestForge: Autonomous Agentic Test Hardening")
-st.caption("CSE3101: Agentic AI — Authors: Sourabh & Shreshth | Apple Silicon Hardware Optimized")
+st.caption("Autonomous Multi-Agent Hardening Engine — Authors: Sourabh & Shreshth | Apple Silicon Hardware Optimized")
 st.info("🌟 **Primary Evaluation Interface:** TestForge's modern enterprise dashboard is running on port 8000: [http://127.0.0.1:8000](http://127.0.0.1:8000) (includes FastMCP tools, A2A discovery card, and SQLite checkpoint diffing).")
 
 # Sidebar Configuration

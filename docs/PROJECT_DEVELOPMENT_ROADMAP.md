@@ -59,7 +59,7 @@ flowchart TD
   2. Implement strict system/user message delimitation (`DEFENSIVE_SYSTEM_PREAMBLE`) and data sanitization boundaries.
   3. Prevent docstrings/comments from instructing the LLM to skip tests, alter assertions, or bypass security rules.
   4. Build adversarial prompt-injection test suite (10 scenarios).
-- **Evaluation Status:** Frozen baseline for CSE3101 Academic Project Evaluation.
+- **Evaluation Status:** Frozen baseline for Autonomous Agentic Systems Academic Project Evaluation.
 
 ### Phase 2C: Arbitrary Public GitHub Repository Ingestion
 - **Objective:** End-to-end verification of ingesting arbitrary, previously unconfigured public repositories.

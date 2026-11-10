@@ -2,7 +2,7 @@
 export.py - Enterprise CI/CD Report Exporters (JUnit XML & OASIS SARIF v2.1.0).
 
 Authors: Sourabh & Shreshth
-Course: CSE3101 - Agentic AI
+System: Autonomous Multi-Agent Hardening Engine
 """
 
 import time

@@ -1,6 +1,6 @@
 # TestForge Multimodal Requirement Derivation for State Machines
 
-**Course Module:** CSE3101 - Agentic AI (Phase-3 Final Evidence)  
+**Course Module:** Autonomous Agentic AI (Phase-3 Final Evidence)  
 **Feature:** Sub-Task 4.2 / Handout Feature F4 Multimodal  
 **Status:** 100% VERIFIED  
 

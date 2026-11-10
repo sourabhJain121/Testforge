@@ -1,6 +1,6 @@
 # TestForge: Autonomous Agentic Unit Test Hardening System
 
-> **Course**: CSE3101 - Agentic AI (16 Weeks, Phase-3 Final Evaluation)  
+> **System**: Autonomous Multi-Agent Hardening Engine (Production Release)  
 > **Authors**: Sourabh & Shreshth  
 > **Target Platform**: macOS (Apple Silicon M-Series Optimized, arm64) & Linux Container  
 > **Repository**: [sourabhJain121/Testforge](https://github.com/sourabhJain121/Testforge)  
@@ -309,12 +309,12 @@ In adherence to academic integrity and transparent engineering standards, we dis
   - **Architecture & System Design:** Conceptualization of the 8-partition Blackboard state machine, SQLite WAL persistence architecture, and multi-agent coordination contracts.
   - **Integrity Auditing & Root Cause Analysis:** Identification and diagnosis of critical harness bugs (DEF-022 clean-code false kills, DEF-014 trace log memory leaks, DEF-023 coverage denominator skew).
   - **Security Architecture:** Design and enforcement of dual-layer isolation (AST policy analysis + OS subprocess sandboxing + socket network confinement).
-  - **Curriculum Alignment:** Adherence to CSE3101 course evaluation rubrics, independent verification protocols, and live viva defense preparation.
+  - **Verification Alignment:** Adherence to rigorous engineering verification protocols and live defense preparation.
 
 ---
 
 ## 10. License
 
-Developed for **CSE3101: Agentic AI** coursework by **Sourabh** & **Shreshth**.  
+Developed for autonomous test hardening and verification research by **Sourabh** & **Shreshth**.  
 Target code in `samples/sealed_v2/` is adapted from CPython (PSF License Version 2).  
 All original TestForge framework code is licensed under the Apache 2.0 License.

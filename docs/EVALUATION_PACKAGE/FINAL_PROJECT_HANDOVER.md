@@ -1,7 +1,7 @@
 # TestForge — Final Project Handover & Evaluation Freeze
 
 **Project Name:** TestForge (Autonomous Agentic Python Test Hardening Platform)  
-**Academic Course:** CSE3101: Agentic AI  
+**Academic Course:** Autonomous Agentic AI  
 **Authors:** Sourabh & Shreshth  
 **Handover Date:** 2026-10-30  
 **Freeze Status:** **STRICT EVALUATION FREEZE ACTIVE (NO CODE CHANGES ALLOWED)**  

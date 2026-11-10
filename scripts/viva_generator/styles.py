@@ -76,7 +76,7 @@ def add_cover_page(doc: docx.Document, title: str, subtitle: str, metadata_rows:
 
     # University / Course Header
     p_org = doc.add_paragraph()
-    r_org = p_org.add_run("BML MUNJAL UNIVERSITY • SCHOOL OF ENGINEERING & TECHNOLOGY\nCSE3101: AGENTIC AI & AUTONOMOUS SOFTWARE SYSTEMS")
+    r_org = p_org.add_run("BML MUNJAL UNIVERSITY • SCHOOL OF ENGINEERING & TECHNOLOGY\nAUTONOMOUS AGENTIC AI & SOFTWARE SYSTEMS")
     r_org.font.name = "Calibri"
     r_org.font.size = Pt(11)
     r_org.font.bold = True

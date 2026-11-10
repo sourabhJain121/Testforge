@@ -1,7 +1,7 @@
 # TestForge — Checkpoint Timeline, Deterministic Diff Inspector & Recovery UI
 **Milestone 1.3 Technical Documentation & Operational Guide**  
 *Project: TestForge — Autonomous Agentic Unit-Test Hardening System*  
-*Authors: Sourabh & Shreshth | CSE3101: Agentic AI*  
+*Authors: Sourabh & Shreshth | Autonomous Agentic AI*  
 *Environment: Python 3.13 (`.venv-release`) | macOS Apple Silicon (arm64)*  
 *Verified Release Gate: October 2026*
 

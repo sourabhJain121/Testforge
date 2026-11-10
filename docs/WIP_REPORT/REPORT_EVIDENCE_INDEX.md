@@ -2,7 +2,7 @@
 
 **Document ID:** TF-WIP-EVID-INDEX-001  
 **Report Title:** TestForge — Autonomous Agentic Unit Test Hardening via Multi-Callable Synthesis and AST Mutation Analysis  
-**Course:** CSE3101 - Agentic AI  
+**Course:** Autonomous Agentic AI  
 **Author:** Sourabh Jain  
 **Verified Commit SHA:** `ee8f765c4f7316e87439fab7250103e6da651c02`  
 **GitHub Remote:** `https://github.com/sourabhJain121/Testforge`  

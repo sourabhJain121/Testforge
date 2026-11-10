@@ -1,7 +1,7 @@
 # TestForge — Milestone 2: AST-Aware Mutation & Equivalent-Mutant Analysis Architecture
 
 **Author**: Sourabh & Shreshth  
-**Course**: CSE3101 - Agentic AI  
+**Course**: Autonomous Agentic AI  
 **Repository**: `/Users/sourabh/TestForge`  
 **Milestone**: Milestone 2  
 **Verification Environment**: Python 3.13.1 (`.venv-release`)  

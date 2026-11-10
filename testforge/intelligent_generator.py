@@ -1879,3 +1879,7 @@ class IntelligentASTSynthesizer:
             return f"assert {var_name} is None", True
         else:
             return f"assert {var_name} is not None  # Invariant fallback", False
+
+
+# Canonical alias for deterministic rule-based baseline synthesis
+DeterministicBaselineGenerator = IntelligentASTSynthesizer

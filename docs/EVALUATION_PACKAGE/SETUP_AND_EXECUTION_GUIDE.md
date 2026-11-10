@@ -1,6 +1,6 @@
 # TestForge — Setup, Execution & Verification Guide
 
-**Course:** CSE3101 - Agentic AI  
+**Course:** Autonomous Agentic AI  
 **Document ID:** TF-GUIDE-EVAL-001  
 **Date:** October 30, 2026  
 **Status:** Evaluation Baseline  

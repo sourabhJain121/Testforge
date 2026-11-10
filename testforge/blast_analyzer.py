@@ -2,7 +2,7 @@
 blast_analyzer.py - Static Blast Radius & Dependency Impact Analysis Engine.
 
 Author: Sourabh & Shreshth
-Course: CSE3101 - Agentic AI
+System: Autonomous Multi-Agent Hardening Engine
 
 Features:
   - ASTCallGraphVisitor: Parses Python AST to construct an adjacency graph

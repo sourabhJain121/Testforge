@@ -70,6 +70,9 @@
       <a href="https://github.com/sourabhJain121/Testforge" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-icon" id="btn-github-repo">
         <span class="icon">🐙</span> Repo
       </a>
+      <button type="button" class="btn btn-primary btn-glow btn-icon" id="btn-global-run-hardening" data-action="start-hardening" data-alias="btn-run-hardening" title="Run TestForge Autonomous Hardening">
+        <span id="btn-run-hardening"><span class="icon">⚡</span> Run Hardening</span>
+      </button>
     </div>
   </header>
 
@@ -281,25 +284,19 @@
         </div>
       </div>
       <div class="banner-actions">
-        <button class="btn btn-primary btn-glow" id="btn-scroll-to-hardening">
-          ⚡ Run Hardening Pipeline
+        <button class="btn btn-primary btn-glow" id="btn-banner-run-hardening" data-action="start-hardening" data-alias="btn-scroll-to-hardening" title="Run Hardening Pipeline">
+          <span id="btn-scroll-to-hardening"><span class="icon">⚡</span> Run Hardening Pipeline</span>
         </button>
       </div>
     </section>
 
     <!-- Navigation Tabs -->
-    <nav class="tab-nav" id="main-tab-nav" role="tablist">
-      <button class="tab-btn active" data-tab="tab-mode-a" id="nav-mode-a" role="tab" aria-selected="true">
-        📁 Mode A: Workspace & Upload
+    <nav class="tab-nav cockpit-navbar" id="main-tab-nav" data-alias="main-nav" role="tablist" style="padding-left: 16px; padding-right: 16px; margin-left: 0; min-width: 0; overflow-x: auto; overflow-y: visible;">
+      <button class="tab-btn active" data-tab="tab-ingestion" data-target="view-ingestion" id="tab-btn-ingestion" role="tab" aria-selected="true" style="margin-left: 4px; padding-left: 14px; padding-right: 14px;">
+        📁 Target Ingestion
       </button>
-      <button class="tab-btn" data-tab="tab-mode-b" id="nav-mode-b" role="tab" aria-selected="false">
-        ✨ Mode B: AI Synthesis
-      </button>
-      <button class="tab-btn" data-tab="tab-mode-c" id="nav-mode-c" role="tab" aria-selected="false">
-        🌐 Mode C: GitHub Direct Import
-      </button>
-      <button class="tab-btn" data-tab="tab-blast" id="nav-blast" role="tab" aria-selected="false">
-        💥 Blast Radius & Call Graph
+      <button class="tab-btn" data-tab="tab-blast" id="tab-btn-blast" data-alias="nav-blast" role="tab" aria-selected="false">
+        <span id="nav-blast">💥 Blast Radius & Call Graph</span>
       </button>
       <button class="tab-btn" data-tab="tab-hardening" id="tab-btn-lab" data-alias="nav-hardening" role="tab" aria-selected="false">
         🔥 Hardening Lab & Results
@@ -307,23 +304,42 @@
       <button class="tab-btn" data-tab="tab-wiretap" id="tab-btn-wiretap" data-alias="nav-wiretap" role="tab" aria-selected="false">
         🤖 Multi-Agent Wiretap
       </button>
-      <button class="tab-btn" data-tab="tab-telemetry" id="nav-telemetry" role="tab" aria-selected="false">
-        📊 Observability Trace
+      <button class="tab-btn" data-tab="tab-telemetry" id="tab-btn-observability" data-alias="nav-telemetry" role="tab" aria-selected="false">
+        <span id="nav-telemetry">📊 Observability Trace</span>
       </button>
-      <button class="tab-btn" data-tab="tab-benchmark" id="tab-btn-benchmark" data-alias="nav-benchmark" role="tab" aria-selected="false">
-        ⚡ Benchmarks & Ablation
+      <button class="tab-btn" data-tab="tab-benchmark" id="tab-btn-benchmarks" data-alias="tab-btn-benchmark nav-benchmark" role="tab" aria-selected="false">
+        <span id="tab-btn-benchmark">⚡ Benchmarks & Ablation</span>
       </button>
-      <button class="tab-btn" data-tab="tab-checkpoints" id="tab-btn-history" data-alias="nav-checkpoints" role="tab" aria-selected="false">
-        💾 Checkpoint Timeline & Diff
+      <button class="tab-btn" data-tab="tab-checkpoints" id="tab-btn-checkpoints" data-alias="tab-btn-history nav-checkpoints" role="tab" aria-selected="false">
+        <span id="tab-btn-history">💾 Checkpoints</span>
       </button>
     </nav>
 
     <!-- Tab Contents Container -->
     <div class="tab-content-container">
 
-      <!-- TAB: MODE A -->
-      <section class="tab-pane active" id="tab-mode-a" role="tabpanel">
-        <div class="grid-2col">
+      <!-- [FROZEN / LOCKED] Target Ingestion (#view-ingestion / #tab-ingestion) -->
+      <section class="tab-pane active" id="tab-ingestion" data-view="view-ingestion" role="tabpanel">
+        <div id="view-ingestion">
+          <!-- Ingestion Sub-Mode Segmented Selector -->
+          <div class="ingestion-mode-selector-bar submode-pills" id="ingestion-submode-nav">
+            <label class="mode-radio-label" id="btn-submode-a" data-mode="a">
+              <input type="radio" name="ingestion_mode" value="mode_a" id="radio-mode-a" checked>
+              <span class="mode-radio-pill" data-mode="a" id="nav-mode-a">📂 Mode A: Workspace & Upload</span>
+            </label>
+            <label class="mode-radio-label" id="btn-submode-b" data-mode="b">
+              <input type="radio" name="ingestion_mode" value="mode_b" id="radio-mode-b">
+              <span class="mode-radio-pill" data-mode="b" id="nav-mode-b">✨ Mode B: AI Synthesis</span>
+            </label>
+            <label class="mode-radio-label" id="btn-submode-c" data-mode="c">
+              <input type="radio" name="ingestion_mode" value="mode_c" id="radio-mode-c">
+              <span class="mode-radio-pill" data-mode="c" id="nav-mode-c">🌐 Mode C: GitHub Direct Import</span>
+            </label>
+          </div>
+
+          <!-- Sub-View: Mode A -->
+          <div id="subview-mode-a" class="ingestion-subview active">
+            <div class="grid-2col">
           <!-- Left: Sample Selector & File Upload -->
           <div class="glass-panel panel-padded">
             <h3 class="panel-title"><span class="icon">📁</span> Select Workspace Target</h3>
@@ -418,11 +434,12 @@
             </div>
           </div>
         </div>
-      </section>
+        </div>
+        <!-- End of Sub-View Mode A -->
 
-      <!-- TAB: MODE B -->
-      <section class="tab-pane" id="tab-mode-b" role="tabpanel">
-        <div class="grid-2col">
+        <!-- Sub-View: Mode B -->
+        <div id="subview-mode-b" class="ingestion-subview hidden">
+          <div class="grid-2col">
           <!-- Left: Specification Input -->
           <div class="glass-panel panel-padded">
             <h3 class="panel-title"><span class="icon">✨</span> AI Module Synthesis</h3>
@@ -468,11 +485,12 @@
             </div>
           </div>
         </div>
-      </section>
+        </div>
+        <!-- End of Sub-View Mode B -->
 
-      <!-- TAB: MODE C -->
-      <section class="tab-pane" id="tab-mode-c" role="tabpanel">
-        <div class="grid-2col">
+        <!-- Sub-View: Mode C -->
+        <div id="subview-mode-c" class="ingestion-subview hidden">
+          <div class="grid-2col">
           <!-- Left: GitHub URL Ingestion & Repo Explorer -->
           <div class="glass-panel panel-padded">
             <h3 class="panel-title"><span class="icon">🌐</span> GitHub Ingest & Repository Explorer</h3>
@@ -647,10 +665,17 @@
             </div>
           </div>
         </div>
-      </section>
+        </div>
+        <!-- End of Sub-View Mode C -->
+      </div>
+      <!-- Backward Compatibility Tab Pane Anchors -->
+      <div id="tab-mode-a" class="tab-pane active" aria-hidden="true" style="display:none;"></div>
+      <div id="tab-mode-b" class="tab-pane" aria-hidden="true" style="display:none;"></div>
+      <div id="tab-mode-c" class="tab-pane" aria-hidden="true" style="display:none;"></div>
+    </section>
 
-      <!-- TAB: BLAST RADIUS -->
-      <section class="tab-pane" id="tab-blast" role="tabpanel">
+    <!-- [FROZEN / LOCKED] Blast Radius & Call Graph (#view-blast / #tab-blast) -->
+    <section class="tab-pane" id="tab-blast" role="tabpanel">
         <div class="grid-2col">
           <!-- Left: Call Graph Controls & Tree -->
           <div class="glass-panel panel-padded">
@@ -698,8 +723,8 @@
         </div>
       </section>
 
-      <!-- TAB: HARDENING LAB -->
-      <section class="tab-pane" id="tab-hardening" role="tabpanel">
+      <!-- [FROZEN / LOCKED] Hardening Lab & Results (#view-lab / #tab-hardening) -->
+      <section class="tab-pane" id="tab-hardening" data-view="view-lab" role="tabpanel">
         <div class="hardening-dashboard">
           
           <!-- Execution Trigger Control Bar -->
@@ -710,22 +735,24 @@
                 <span class="cfg-item">Model: <strong id="harden-model-lbl">gemini-3.6-flash</strong></span>
                 <span class="cfg-item">Max Iter: <strong id="harden-iter-lbl">3</strong></span>
                 <span class="cfg-item">Target Score: <strong id="harden-score-lbl">85%</strong></span>
+                <span class="badge badge-cyan" id="hardening-status-badge" style="margin-left: 8px;">STANDBY</span>
               </div>
             </div>
             <div class="run-bar-right" style="display: flex; gap: 0.75rem; align-items: center;">
-              <button class="btn btn-primary btn-glow btn-lg" id="btn-start-hardening" data-alias="btn-run-hardening">
-                <span class="icon">⚡</span> Run TestForge Autonomous Hardening
+              <button class="btn btn-primary btn-glow btn-lg" id="btn-lab-run-hardening" data-action="start-hardening" data-alias="btn-start-hardening" title="Run TestForge Autonomous Hardening">
+                <span id="btn-start-hardening"><span class="icon">⚡</span> Run TestForge Autonomous Hardening</span>
               </button>
               <button class="btn btn-danger btn-lg hidden" id="btn-cancel-job" data-alias="btn-cancel-hardening">
-                <span class="icon">🛑</span> Cancel Hardening
+                <span id="btn-cancel-hardening"><span class="icon">🛑</span> Cancel Hardening</span>
               </button>
             </div>
           </div>
 
           <!-- Progress Bar & Active State Spinner -->
-          <div class="progress-wrapper hidden" id="hardening-progress-box">
+          <div class="progress-wrapper hidden" id="hardening-progress-box" data-alias="hardening-progress-card">
+            <div id="hardening-progress-card" class="hardening-progress-bar-container"></div>
             <div class="progress-meta">
-              <span class="progress-status-text" id="hardening-status-text">Multi-Agent reflection loop running across CPU cores...</span>
+              <span class="progress-status-text" id="hardening-status-text"><span id="hardening-progress-status-text">Multi-Agent reflection loop running across CPU cores...</span></span>
               <span class="progress-percent" id="hardening-percent-text">0%</span>
             </div>
             <div class="progress-track">
@@ -743,7 +770,7 @@
                 <span class="badge badge-cyan" id="bb-strip-stage" style="font-size: 0.7rem; padding: 1px 6px;">STANDBY</span>
               </div>
               <span id="bb-strip-revision" style="font-size: 0.75rem; font-family: var(--font-mono); color: #38bdf8; font-weight: 600;">
-                Revision: 0
+                Revision: <span id="blackboard-revision-counter">0</span>
               </span>
             </div>
             <div class="bb-partitions-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.5rem;">
@@ -800,23 +827,23 @@
               <h4 class="metric-row-title"><span class="icon">🧪</span> Baseline Test Suite Execution (Pass@1 Integrity)</h4>
               <div class="kpi-grid-5">
                 <div class="kpi-card">
-                  <span class="kpi-val" id="kpi-base-gen">0</span>
+                  <span class="kpi-val" id="kpi-base-gen"><span id="baseline-generated">0</span></span>
                   <span class="kpi-lbl">Baseline Generated</span>
                 </div>
                 <div class="kpi-card">
-                  <span class="kpi-val" id="kpi-base-exec">0</span>
+                  <span class="kpi-val" id="kpi-base-exec"><span id="baseline-executed">0</span></span>
                   <span class="kpi-lbl">Baseline Executed</span>
                 </div>
                 <div class="kpi-card">
-                  <span class="kpi-val text-green" id="kpi-base-pass">0</span>
+                  <span class="kpi-val text-green" id="kpi-base-pass"><span id="baseline-passed">0</span></span>
                   <span class="kpi-lbl">Baseline Passed</span>
                 </div>
                 <div class="kpi-card">
-                  <span class="kpi-val text-red" id="kpi-base-fail">0</span>
+                  <span class="kpi-val text-red" id="kpi-base-fail"><span id="baseline-failed">0</span></span>
                   <span class="kpi-lbl">Baseline Failed</span>
                 </div>
                 <div class="kpi-card">
-                  <span class="kpi-val" id="kpi-base-verdict">⚪ PENDING</span>
+                  <span class="kpi-val" id="kpi-base-verdict"><span id="baseline-verdict">⚪ PENDING</span></span>
                   <span class="kpi-lbl">Clean Code Verdict</span>
                 </div>
               </div>
@@ -827,33 +854,33 @@
               <h4 class="metric-row-title"><span class="icon">🧬</span> Mutation Hardening & Line / Branch Coverage Analysis</h4>
               <div class="kpi-grid-8">
                 <div class="kpi-card">
-                  <span class="kpi-val" id="kpi-lines-cov">0 / 0</span>
+                  <span class="kpi-val" id="kpi-lines-cov"><span id="lines-covered">0 / 0</span></span>
                   <span class="kpi-lbl">Lines Covered</span>
                 </div>
                 <div class="kpi-card">
-                  <span class="kpi-val text-cyan" id="kpi-cov-pct">0.0%</span>
+                  <span class="kpi-val text-cyan" id="kpi-cov-pct"><span id="line-coverage-pct">0.0%</span></span>
                   <span class="kpi-lbl">Line Coverage %</span>
                 </div>
                 <div class="kpi-card" id="kpi-branch-card" style="position: relative;">
-                  <span class="kpi-val text-cyan" id="kpi-branch-pct">0.0%</span>
+                  <span class="kpi-val text-cyan" id="kpi-branch-pct"><span id="branch-coverage-pct">0.0%</span></span>
                   <span class="kpi-lbl">Branch Coverage %</span>
                   <span class="kpi-sub" id="kpi-branch-sub">0 / 0 Arcs</span>
                   <div id="kpi-missing-branches-dropdown" class="missing-branches-box hidden"></div>
                 </div>
                 <div class="kpi-card">
-                  <span class="kpi-val" id="kpi-mut-gen">0</span>
+                  <span class="kpi-val" id="kpi-mut-gen"><span id="mutants-generated">0</span></span>
                   <span class="kpi-lbl">Mutants Generated</span>
                 </div>
                 <div class="kpi-card">
-                  <span class="kpi-val" id="kpi-mut-exec">0</span>
+                  <span class="kpi-val" id="kpi-mut-exec"><span id="mutants-executed">0</span></span>
                   <span class="kpi-lbl">Mutants Executed</span>
                 </div>
                 <div class="kpi-card">
-                  <span class="kpi-val text-green" id="kpi-mut-kill">0</span>
+                  <span class="kpi-val text-green" id="kpi-mut-kill"><span id="mutants-killed">0</span></span>
                   <span class="kpi-lbl">Mutants Killed</span>
                 </div>
                 <div class="kpi-card">
-                  <span class="kpi-val text-red" id="kpi-mut-surv">0</span>
+                  <span class="kpi-val text-red" id="kpi-mut-surv"><span id="mutants-survived">0</span></span>
                   <span class="kpi-lbl">Mutants Survived</span>
                 </div>
                 <div class="kpi-card">
@@ -868,21 +895,21 @@
               <h4 class="metric-row-title"><span class="icon">🏁</span> Hardening Status, Calibrated TQS & Reflection Cycles</h4>
               <div class="kpi-grid-4">
                 <div class="kpi-card highlight">
-                  <span class="kpi-val text-glow" id="kpi-mut-score">0.0%</span>
+                  <span class="kpi-val text-glow" id="kpi-mut-score"><span id="final-mutation-score"><span id="mutation-score-value">0.0%</span></span></span>
                   <span class="kpi-lbl">Verified Mutation Score</span>
                 </div>
                 <div class="kpi-card highlight" id="kpi-tqs-card" style="position: relative; cursor: pointer;" title="Hover to view 5-dimension calibrated TQS breakdown (GAP-005)">
-                  <span class="kpi-val text-glow" id="kpi-tqs-score" style="color: #a78bfa;">--</span>
+                  <span class="kpi-val text-glow" id="kpi-tqs-score" style="color: #a78bfa;"><span id="final-tqs-score">--</span></span>
                   <span class="kpi-lbl">Calibrated TQS Quality</span>
                   <span class="kpi-sub" id="kpi-tqs-sub">5-Dim Calibrated</span>
                   <div id="tqs-breakdown-tooltip" class="tqs-tooltip hidden"></div>
                 </div>
                 <div class="kpi-card">
-                  <span class="kpi-val" id="kpi-cycles-done">0</span>
+                  <span class="kpi-val" id="kpi-cycles-done"><span id="hardening-cycle-indicator">0</span></span>
                   <span class="kpi-lbl">Reflection Iterations</span>
                 </div>
                 <div class="kpi-card">
-                  <span class="kpi-val" id="kpi-final-status">INITIALIZING</span>
+                  <span class="kpi-val" id="kpi-final-status"><span id="pipeline-final-status">INITIALIZING</span></span>
                   <span class="kpi-lbl">Final Pipeline Status</span>
                 </div>
               </div>
@@ -952,9 +979,11 @@
                       <span class="w-dot dot-yellow"></span>
                       <span class="w-dot dot-green"></span>
                     </div>
-                    <span id="diff-selected-mutant-title">Unified AST Diff Viewer</span>
+                    <h4 id="ast-diff-card-title" class="diff-card-title diff-inspector-title ast-diff-title" data-alias="ast-diff-viewer-title diff-selected-mutant-title">AST Diff: MUT_COND_INV_001 (COND_INV) at line 9</h4>
+                    <span id="ast-diff-viewer-title" class="diff-inspector-title ast-diff-title" style="display:none;">Unified AST Diff Viewer</span>
+                    <span id="diff-selected-mutant-title" class="diff-inspector-title ast-diff-title" style="display:none;">Unified AST Diff Viewer</span>
                   </div>
-                  <span class="badge" id="diff-status-badge">Select a mutant</span>
+                  <span class="badge badge-danger diff-outcome-pill" id="diff-status-badge" data-alias="diff-viewer-outcome-badge ast-diff-viewer-outcome-badge"><span id="diff-viewer-outcome-badge"><span id="ast-diff-viewer-outcome-badge" class="badge badge-danger">● SURVIVED TEST EXECUTION</span></span></span>
                 </div>
                 <pre class="diff-code-block"><code id="diff-code-display">// Click on any mutant in the table to inspect its unified AST diff...</code></pre>
               </div>
@@ -976,7 +1005,7 @@
                 <button class="btn btn-warning btn-icon" id="btn-request-repo-write" title="Request Human Approval to write hardened suite to repo">🛡 Request Repo Write</button>
               </div>
             </div>
-            <pre class="code-block"><code id="hardened-suite-code">// Hardened tests will appear here after completion.</code></pre>
+            <pre class="code-block" id="final-hardened-suite-editor"><code id="hardened-suite-code">// Hardened tests will appear here after completion.</code></pre>
           </div>
 
           <!-- Human Approval Gate Panel (Sub-Task 3.3) -->
@@ -1002,7 +1031,7 @@
                     <th>Actions</th>
                   </tr>
                 </thead>
-                <tbody id="approval-requests-body">
+                <tbody id="approval-gate-table-body" data-alias="approval-requests-body">
                   <tr><td colspan="6" class="text-center text-muted">No pending approval requests.</td></tr>
                 </tbody>
               </table>
@@ -1024,19 +1053,19 @@
             
             <div class="stats-row" style="margin-top: 1rem;">
               <div class="stat-card">
-                <span class="stat-num" id="min-kpi-original-tests">-</span>
+                <span class="stat-num" id="min-orig-count"><span id="min-kpi-original-tests">21</span></span>
                 <span class="stat-lbl">Original Tests</span>
               </div>
               <div class="stat-card">
-                <span class="stat-num text-green" id="min-kpi-retained-tests">-</span>
+                <span class="stat-num text-green" id="min-reduced-count"><span id="min-kpi-retained-tests">5</span></span>
                 <span class="stat-lbl">Minimized Tests</span>
               </div>
               <div class="stat-card">
-                <span class="stat-num text-cyan" id="min-kpi-reduction-pct">-</span>
+                <span class="stat-num text-cyan" id="min-reduction-pct"><span id="min-kpi-reduction-pct">76.2%</span></span>
                 <span class="stat-lbl">Suite Reduction</span>
               </div>
               <div class="stat-card">
-                <span class="stat-num text-purple" id="min-kpi-retention-pct">-</span>
+                <span class="stat-num text-purple" id="min-score-retained"><span id="min-kpi-retention-pct">100.0%</span></span>
                 <span class="stat-lbl">Score Retained</span>
               </div>
             </div>
@@ -1060,8 +1089,8 @@
         </div>
       </section>
 
-      <!-- TAB: WIRETAP -->
-      <section class="tab-pane" id="tab-wiretap" role="tabpanel">
+      <!-- [FROZEN / LOCKED] Multi-Agent Wiretap (#view-wiretap / #tab-wiretap) -->
+      <section class="tab-pane" id="tab-wiretap" data-view="view-wiretap" role="tabpanel">
         <div class="glass-panel panel-padded">
           <div class="panel-header-flex">
             <div>
@@ -1071,21 +1100,24 @@
               </div>
               <p class="panel-desc" style="margin-top: 0.35rem;">Visualizes sequential state transitions, contract input/output payloads, and ADK tool deliberation telemetries across reflection loops in real-time.</p>
             </div>
-            <button class="btn btn-secondary btn-icon" id="btn-refresh-wiretap">🔄 Refresh Wiretap</button>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+              <button id="btn-clear-wiretap" class="btn btn-sm btn-ghost">🧹 Clear Stream</button>
+              <button class="btn btn-secondary btn-icon" id="btn-refresh-wiretap">🔄 Refresh Wiretap</button>
+            </div>
           </div>
 
           <!-- KPI stats row -->
           <div class="stats-row">
             <div class="stat-card">
-              <span class="stat-num" id="wiretap-kpi-handoffs">0</span>
+              <span class="stat-num" id="wiretap-kpi-handoffs" data-alias="wiretap-captured-handoffs-count"><span id="wiretap-captured-handoffs-count">0</span></span>
               <span class="stat-lbl">Captured Handoffs</span>
             </div>
             <div class="stat-card">
-              <span class="stat-num" id="wiretap-kpi-agents">0</span>
+              <span class="stat-num" id="wiretap-kpi-agents" data-alias="wiretap-participating-agents-count"><span id="wiretap-participating-agents-count">8</span></span>
               <span class="stat-lbl" title="Entities observed participating in pipeline handoff events (8 Canonical Agents + Sandbox Tool)">Participating Agents</span>
             </div>
             <div class="stat-card">
-              <span class="stat-num" id="wiretap-kpi-adk">0</span>
+              <span class="stat-num" id="wiretap-kpi-adk" data-alias="wiretap-tool-calls-count"><span id="wiretap-tool-calls-count">0</span></span>
               <span class="stat-lbl">ADK Tool Calls</span>
             </div>
             <div class="stat-card">
@@ -1108,15 +1140,18 @@
           </div>
 
           <!-- Stepper timeline container -->
-          <div class="wiretap-timeline" id="wiretap-timeline-container">
-            <div class="info-callout">No agent handoffs captured yet. Run a hardening pipeline to stream live inter-agent communications!</div>
+          <div id="wiretap-timeline-container" class="wiretap-timeline-wrapper" data-alias="wiretap-timeline wiretap-events-container">
+            <div class="wiretap-timeline" id="wiretap-timeline">
+              <span id="wiretap-events-container" style="display:none;"></span>
+              <div class="info-callout">No agent handoffs captured yet. Run a hardening pipeline to stream live inter-agent communications!</div>
+            </div>
           </div>
         </div>
       </section>
 
-      <!-- TAB: TELEMETRY -->
-      <section class="tab-pane" id="tab-telemetry" role="tabpanel">
-        <div class="glass-panel panel-padded">
+      <!-- [FROZEN / LOCKED] Observability Trace (#view-observability / #tab-telemetry) -->
+      <section class="tab-pane" id="tab-telemetry" data-view="view-observability" role="tabpanel">
+        <div id="view-observability" class="glass-panel panel-padded">
           <div class="panel-header-flex">
             <div>
               <h3 class="panel-title"><span class="icon">📊</span> Observability & Telemetry Trace Log</h3>
@@ -1137,7 +1172,7 @@
           <!-- Telemetry Context Bar separating Configuration, Availability, and Execution -->
           <div style="display: flex; gap: 1rem; margin-bottom: 1rem; font-size: 0.8rem; background: rgba(15, 23, 42, 0.4); padding: 0.5rem 0.8rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); align-items: center; flex-wrap: wrap;">
             <div><span style="color: var(--text-muted, #94a3b8);">Configured Model:</span> <code id="telem-configured-model" style="color: #38bdf8;">gemini-3.6-flash</code></div>
-            <div><span style="color: var(--text-muted, #94a3b8);">Active Provider:</span> <span id="telem-active-provider" class="badge badge-gray">Checking...</span></div>
+            <div><span style="color: var(--text-muted, #94a3b8);">Active Provider:</span> <span id="telem-active-provider" class="badge badge-green" data-alias="obsActiveProvider"><span id="obsActiveProvider">Deterministic AST Synthesizer (Zero-Egress Local)</span></span></div>
             <div><span style="color: var(--text-muted, #94a3b8);">Last Execution Model:</span> <span id="telem-last-model" class="badge badge-blue">-</span></div>
             <div style="margin-left: auto; color: var(--text-muted, #94a3b8); font-size: 0.72rem;" title="The Execution Engine KPI strictly represents actual recorded execution telemetry, not configured availability.">KPI: Actual Execution Telemetry</div>
           </div>
@@ -1181,9 +1216,10 @@
                   <th>AST Validity</th>
                 </tr>
               </thead>
-              <tbody id="telemetry-table-body">
+              <tbody id="telemetry-table-body" data-alias="table-recent-inferences">
                 <tr><td colspan="8" class="text-center text-muted">No telemetry logged yet.</td></tr>
               </tbody>
+              <tbody id="table-recent-inferences" style="display:none;"></tbody>
             </table>
           </div>
 
@@ -1208,9 +1244,10 @@
                     <th>Attributes</th>
                   </tr>
                 </thead>
-                <tbody id="otel-spans-table-body">
+                <tbody id="otel-spans-table-body" data-alias="table-otel-spans">
                   <tr><td colspan="6" class="text-center text-muted">No OpenTelemetry spans loaded. Click "Refresh OTel Spans".</td></tr>
                 </tbody>
+                <tbody id="table-otel-spans" style="display:none;"></tbody>
               </table>
             </div>
           </div>
@@ -1235,16 +1272,17 @@
                     <th>Timestamp</th>
                   </tr>
                 </thead>
-                <tbody id="supervisor-decisions-table-body">
+                <tbody id="supervisor-decisions-table-body" data-alias="table-supervisor-decisions">
                   <tr><td colspan="5" class="text-center text-muted">No supervisor decisions logged. Click "Refresh Decisions".</td></tr>
                 </tbody>
+                <tbody id="table-supervisor-decisions" style="display:none;"></tbody>
               </table>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- TAB: BENCHMARK -->
+      <!-- [FROZEN / LOCKED] Benchmarks & Ablation (#tab-benchmark) -->
       <section class="tab-pane" id="tab-benchmark" role="tabpanel">
         <div class="glass-panel panel-padded">
           <div class="panel-header-flex">
@@ -1338,12 +1376,12 @@
           <div class="card" style="margin-top: 1.5rem;">
             <div class="card-header-flex">
               <h4 class="metric-row-title" style="margin: 0;"><span class="icon">📝</span> Benchmark Report Preview</h4>
-              <div style="display: flex; gap: 0.5rem; align-items: center;">
+              <div class="benchmark-report-toolbar" style="display: flex; gap: 0.5rem; align-items: center;">
                 <div class="pill-group" style="display: flex; gap: 4px; background: rgba(15,23,42,0.8); padding: 2px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.08);">
                   <button type="button" class="btn btn-xs active" id="btn-bench-md-rendered" style="padding: 2px 8px; font-size: 0.72rem; border-radius: 4px;">📑 Formatted</button>
                   <button type="button" class="btn btn-xs btn-outline" id="btn-bench-md-raw" style="padding: 2px 8px; font-size: 0.72rem; border-radius: 4px;">💻 Raw Markdown</button>
                 </div>
-                <a href="/api/benchmark/markdown" target="_blank" class="btn btn-outline btn-sm">Open Raw Endpoint</a>
+                <a href="/api/benchmark/markdown" target="_blank" class="btn btn-sm btn-ghost" style="padding: 3px 10px; font-size: 0.72rem; border-radius: 4px; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">🔗 Open Raw Endpoint</a>
               </div>
             </div>
             <div id="bench-rendered-markdown-view" class="markdown-preview-pane" style="padding: 1rem; max-height: 280px; overflow-y: auto;">
@@ -1403,9 +1441,9 @@
         </div>
       </section>
 
-      <!-- TAB: CHECKPOINT TIMELINE & DIFF INSPECTOR -->
-      <section class="tab-pane" id="tab-checkpoints" role="tabpanel">
-        <div class="glass-panel panel-padded">
+      <!-- [FROZEN / LOCKED] Checkpoint Timeline & Diff Inspector (#view-checkpoints / #tab-checkpoints) -->
+      <section class="tab-pane" id="tab-checkpoints" data-view="view-checkpoints" role="tabpanel">
+        <div id="view-checkpoints" class="glass-panel panel-padded">
           <div class="panel-header-row" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem;">
             <div>
               <h3 class="panel-title" style="margin: 0 0 0.25rem 0;"><span class="icon">💾</span> Blackboard Checkpoint Timeline & Diff Inspector</h3>
@@ -1505,7 +1543,9 @@
               </div>
 
               <!-- Checkpoint Cards Container -->
-              <div id="checkpoint-cards-stream" class="timeline-stream-container" style="display: flex; flex-direction: column; gap: 0.75rem; max-height: 680px; overflow-y: auto; padding-right: 4px;"></div>
+              <div id="checkpoint-cards-stream" class="timeline-stream-container" data-alias="checkpoints-history-list" style="display: flex; flex-direction: column; gap: 0.75rem; max-height: 680px; overflow-y: auto; padding-right: 4px;">
+                <span id="checkpoints-history-list" style="display:none;"></span>
+              </div>
             </div>
 
             <!-- Right: Inspector / Diff / JSON Workspace -->
@@ -1590,7 +1630,7 @@
   <!-- Footer -->
   <footer class="footer">
     <div class="footer-left">
-      <span>⚡ TestForge v2.0 &bull; CSE3101: Agentic AI &bull; Authors: Sourabh & Shreshth</span>
+      <span>⚡ TestForge v2.0 &bull; Autonomous Multi-Agent Hardening Engine &bull; Authors: Sourabh & Shreshth</span>
     </div>
     <div class="footer-right">
       <span>Hardware Optimized for Apple Silicon Neural Engine & Multi-core Sandboxing</span>

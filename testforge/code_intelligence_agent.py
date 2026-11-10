@@ -1,5 +1,10 @@
 """
-code_intelligence_agent.py - Google ADK-Powered Code Intelligence Agent for TestForge.
+================================================================================
+[FROZEN / LOCKED] code_intelligence_agent.py
+Google ADK-Powered Code Intelligence Agent for TestForge.
+Notice: AST static analysis, cyclomatic complexity, blast radius propagation,
+and call-graph contracts are permanently locked to preserve empirical integrity.
+================================================================================
 
 Author: TestForge Agentic Upgrade
 Phase 3: Code Intelligence and Security Agent Realization

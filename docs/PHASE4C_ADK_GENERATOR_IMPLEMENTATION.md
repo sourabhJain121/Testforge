@@ -1,7 +1,7 @@
 # Phase 4C Implementation Report: Google ADK Test Generator Agent Integration
 
 **Project**: TestForge — Autonomous Agentic Unit Test Hardening System  
-**Course**: CSE3101 - Agentic AI  
+**Course**: Autonomous Agentic AI  
 **Author**: Sourabh  
 **Target Milestone**: Phase 4C — Google ADK Test Generator, Generator-Critic Workflow, A2A Broker & Blackboard SuiteSpace Integration  
 **Date**: October 2026  

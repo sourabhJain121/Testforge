@@ -1,7 +1,7 @@
 """
 supervisor_agent.py - Dedicated Google ADK Top-Level Supervisor Agent for TestForge.
 
-Course: CSE3101 - Agentic AI
+System: Autonomous Multi-Agent Hardening Engine
 Role: 8-Agent Architecture Component #1 (Master Workflow Coordinator)
 
 Responsibilities:

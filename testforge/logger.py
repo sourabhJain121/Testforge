@@ -1,7 +1,7 @@
 """
 logger.py - Structured JSON-lines Event Tracer & Observability.
 
-Course: CSE3101 - Agentic AI
+System: Autonomous Multi-Agent Hardening Engine
 Authors: Sourabh & Shreshth
 
 Captures:

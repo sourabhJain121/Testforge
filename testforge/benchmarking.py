@@ -1,5 +1,10 @@
 """
-benchmarking.py - Statistical Repeatable Benchmarking & Cost Accounting for TestForge.
+================================================================================
+[FROZEN / LOCKED] benchmarking.py
+Statistical Repeatable Benchmarking & Cost Accounting for TestForge.
+Notice: Core benchmarking calculations, statistical aggregations, cost models,
+and reporting schemas are permanently locked to preserve empirical integrity.
+================================================================================
 
 Course: CSE3101 - Agentic AI
 Features:
@@ -137,35 +142,36 @@ class BenchmarkReport(BaseModel):
         if self.hardware_summary:
             lines.append(f"- **Hardware Platform:** {self.hardware_summary}")
 
-        lines.extend([
-            "",
-            "## Scenario Performance Summary",
-            "",
-            "| Scenario | Category | Execution Engine | Runs | Mean Latency (s) | StdDev (s) | Min/Max (s) | Mutation Score | Line Coverage | Local Tokens | Cloud Tokens | Cloud Cost (USD) | Local Compute Cost |",
-            "|---|---|---|---|---|---|---|---|---|---|---|---|---|",
-        ])
+        if self.scenario_summaries:
+            lines.extend([
+                "",
+                "## Scenario Performance Summary",
+                "",
+                "| Scenario | Category | Execution Engine | Runs | Mean Latency (s) | StdDev (s) | Min/Max (s) | Mutation Score | Line Coverage | Local Tokens | Cloud Tokens | Cloud Cost (USD) | Local Compute Cost |",
+                "|---|---|---|---|---|---|---|---|---|---|---|---|---|",
+            ])
 
-        for sc_name, sc in self.scenario_summaries.items():
-            stddev_str = f"±{sc.stddev_duration_sec:.2f}s" if sc.stddev_duration_sec is not None else "N/A (1 obs)"
-            min_max_str = f"{sc.min_duration_sec:.2f}s / {sc.max_duration_sec:.2f}s"
-            if sc.mean_mutation_score is not None:
-                score_str = f"{sc.mean_mutation_score:.1f}%"
-                if sc.mean_adjusted_mutation_score is not None and sc.mean_adjusted_mutation_score != sc.mean_mutation_score:
-                    score_str += f" (Adj: {sc.mean_adjusted_mutation_score:.1f}%)"
-            else:
-                score_str = "N/A"
+            for sc_name, sc in self.scenario_summaries.items():
+                stddev_str = f"±{sc.stddev_duration_sec:.2f}s" if sc.stddev_duration_sec is not None else "N/A (1 obs)"
+                min_max_str = f"{sc.min_duration_sec:.2f}s / {sc.max_duration_sec:.2f}s"
+                if sc.mean_mutation_score is not None:
+                    score_str = f"{sc.mean_mutation_score:.1f}%"
+                    if sc.mean_adjusted_mutation_score is not None and sc.mean_adjusted_mutation_score != sc.mean_mutation_score:
+                        score_str += f" (Adj: {sc.mean_adjusted_mutation_score:.1f}%)"
+                else:
+                    score_str = "N/A"
 
-            local_tok_str = f"{sc.actual_local_tokens:,}" if sc.actual_local_tokens > 0 else "0"
-            cloud_tok_str = f"{sc.actual_cloud_tokens:,}" if sc.actual_cloud_tokens > 0 else "0"
-            act_cost_str = f"${sc.actual_billed_cost_usd:.5f}" if sc.actual_billed_cost_usd > 0 else "$0.00000"
+                local_tok_str = f"{sc.actual_local_tokens:,}" if sc.actual_local_tokens > 0 else "0"
+                cloud_tok_str = f"{sc.actual_cloud_tokens:,}" if sc.actual_cloud_tokens > 0 else "0"
+                act_cost_str = f"${sc.actual_billed_cost_usd:.5f}" if sc.actual_billed_cost_usd > 0 else "$0.00000"
 
-            lines.append(
-                f"| **{sc_name}** | {sc.provider_category} | {sc.execution_engine} | {sc.runs_completed}/{self.repetitions} | "
-                f"{sc.mean_duration_sec:.2f}s | {stddev_str} | {min_max_str} | "
-                f"{score_str} | {sc.mean_line_coverage:.1f}% | "
-                f"{local_tok_str} | {cloud_tok_str} | "
-                f"{act_cost_str} | {sc.local_compute_cost} |"
-            )
+                lines.append(
+                    f"| **{sc_name}** | {sc.provider_category} | {sc.execution_engine} | {sc.runs_completed}/{self.repetitions} | "
+                    f"{sc.mean_duration_sec:.2f}s | {stddev_str} | {min_max_str} | "
+                    f"{score_str} | {sc.mean_line_coverage:.1f}% | "
+                    f"{local_tok_str} | {cloud_tok_str} | "
+                    f"{act_cost_str} | {sc.local_compute_cost} |"
+                )
 
         lines.extend([
             "",
@@ -1304,6 +1310,7 @@ class MultiTargetBenchmarkRunner:
 
             cross_target_summary["scenarios"][sc] = {
                 "arithmetic_mean_line_coverage": _arithmetic_mean(line_covs),
+                "geometric_mean_line_coverage": _geometric_mean(line_covs),
                 "arithmetic_mean_branch_coverage": _arithmetic_mean(branch_covs),
                 "geometric_mean_branch_coverage": _geometric_mean(branch_covs),
                 "arithmetic_mean_raw_mutation_score": _arithmetic_mean(raw_ms),
@@ -1311,6 +1318,7 @@ class MultiTargetBenchmarkRunner:
                 "arithmetic_mean_adj_mutation_score": _arithmetic_mean(adj_ms),
                 "geometric_mean_adj_mutation_score": _geometric_mean(adj_ms),
                 "mean_latency_sec": _arithmetic_mean(latencies),
+                "geometric_mean_latency_sec": _geometric_mean(latencies),
                 "total_tokens_consumed": tokens,
                 "total_killed_mutants": total_killed,
                 "total_mutants": total_muts,

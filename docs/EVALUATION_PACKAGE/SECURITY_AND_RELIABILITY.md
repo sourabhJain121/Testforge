@@ -1,6 +1,6 @@
 # TestForge — Security Architecture & Reliability
 
-**Course:** CSE3101 - Agentic AI  
+**Course:** Autonomous Agentic AI  
 **Document ID:** TF-SEC-EVAL-001  
 **Date:** October 30, 2026  
 **Status:** Evaluation Baseline  

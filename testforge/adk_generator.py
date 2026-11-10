@@ -2,7 +2,7 @@
 adk_generator.py - Genuine Google ADK Test Generator Agent for TestForge.
 
 Author: TestForge Agentic Upgrade
-Course: CSE3101 - Agentic AI
+System: Autonomous Multi-Agent Hardening Engine
 
 Features:
   1. Genuine Google ADK Framework Execution:
@@ -196,11 +196,15 @@ class ADKModelBridge(BaseLlm):
                     '{"test_code": str, "target_function": str, "covered_mutants": list[str], '
                     '"test_rationale": str, "assumptions": list[str], "warnings": list[str], "generation_metadata": dict}.'
                 )
-                raw_text = client.generate(
-                    prompt=prompt_text,
-                    system_instruction=system_instruction,
-                    temperature=0.2,
-                    agent_name="GoogleADKGenerator",
+                raw_text = await asyncio.wait_for(
+                    asyncio.to_thread(
+                        client.generate,
+                        prompt=prompt_text,
+                        system_instruction=system_instruction,
+                        temperature=0.2,
+                        agent_name="GoogleADKGenerator",
+                    ),
+                    timeout=30.0
                 )
                 cleaned = raw_text.strip()
                 if "```json" in cleaned:
@@ -437,10 +441,10 @@ class ADKModelBridge(BaseLlm):
 # 3. Synchronous / Threading Helper for ADK Async Execution
 # ==============================================================================
 
-def _run_coroutine_sync(coro: Any) -> Any:
+def _run_coroutine_sync(coro: Any, timeout: float = 30.0) -> Any:
     """
     Safely executes an async coroutine synchronously, handling both
-    nested event loop scenarios and clean execution contexts.
+    nested event loop scenarios and clean execution contexts, enforcing a strict timeout.
     """
     try:
         loop = asyncio.get_running_loop()
@@ -449,9 +453,9 @@ def _run_coroutine_sync(coro: Any) -> Any:
 
     if loop and loop.is_running():
         with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
-            return executor.submit(lambda: asyncio.run(coro)).result()
+            return executor.submit(lambda: asyncio.run(asyncio.wait_for(coro, timeout=timeout))).result(timeout=timeout + 2.0)
     else:
-        return asyncio.run(coro)
+        return asyncio.run(asyncio.wait_for(coro, timeout=timeout))
 
 
 # ==============================================================================
@@ -614,7 +618,11 @@ class GoogleADKTestGenerator:
             return "".join(collected_text)
 
         logger.info(f"Running Google ADK Generator (Iteration {iteration})...")
-        raw_response_text = _run_coroutine_sync(_execute_adk_runner())
+        try:
+            raw_response_text = _run_coroutine_sync(_execute_adk_runner(), timeout=30.0)
+        except Exception as exc:
+            logger.warning(f"Google ADK runner timed out or failed: {exc}. Generating fallback.")
+            raw_response_text = self.model_bridge._synthesize_deterministic_tests(full_prompt)
 
         if not raw_response_text or not raw_response_text.strip():
             logger.warning("Google ADK runner returned empty output. Generating fallback.")

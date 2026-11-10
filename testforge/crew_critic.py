@@ -2,7 +2,7 @@
 crew_critic.py - Genuine CrewAI-based Adversarial Critic Agent for TestForge.
 
 Author: TestForge Agentic Upgrade
-Course: CSE3101 - Agentic AI
+System: Autonomous Multi-Agent Hardening Engine
 
 Features:
   1. Genuine CrewAI Framework Execution:

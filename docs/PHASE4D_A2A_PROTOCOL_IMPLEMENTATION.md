@@ -1,7 +1,7 @@
 # Phase 4D: Official Agent2Agent (A2A) Protocol Interoperability
 
 **Project:** TestForge — Autonomous Agentic Unit Test Hardening System  
-**Course:** CSE3101 - Agentic AI  
+**Course:** Autonomous Agentic AI  
 **Author:** TestForge Agentic Upgrade  
 **Status:** Completed & Verified  
 

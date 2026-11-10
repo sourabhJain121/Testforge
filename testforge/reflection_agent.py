@@ -1,7 +1,7 @@
 """
 reflection_agent.py - Dedicated Google ADK Reflection & Repair Agent for TestForge.
 
-Course: CSE3101 - Agentic AI
+System: Autonomous Multi-Agent Hardening Engine
 Role: 8-Agent Architecture Component #8
 
 Responsibilities:
@@ -77,8 +77,8 @@ from testforge.security import redact_sensitive_data
 logger = logging.getLogger("testforge.reflection_agent")
 
 
-def _run_coroutine_sync(coro: Any) -> Any:
-    """Safely executes an async coroutine synchronously across thread boundaries."""
+def _run_coroutine_sync(coro: Any, timeout: float = 30.0) -> Any:
+    """Safely executes an async coroutine synchronously across thread boundaries with strict timeout."""
     try:
         loop = asyncio.get_running_loop()
     except RuntimeError:
@@ -86,9 +86,9 @@ def _run_coroutine_sync(coro: Any) -> Any:
 
     if loop and loop.is_running():
         with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
-            return executor.submit(lambda: asyncio.run(coro)).result()
+            return executor.submit(lambda: asyncio.run(asyncio.wait_for(coro, timeout=timeout))).result(timeout=timeout + 2.0)
     else:
-        return asyncio.run(coro)
+        return asyncio.run(asyncio.wait_for(coro, timeout=timeout))
 
 
 # ==============================================================================
@@ -283,11 +283,15 @@ class ReflectionModelBridge(BaseLlm):
                     "Analyze test failures, surviving mutants, and critic directives. "
                     "Produce a strictly valid JSON response adhering to RepairDirectivePayload."
                 )
-                resp_str = client.generate(
-                    prompt=prompt_text,
-                    system_instruction=system_instruction,
-                    temperature=0.1,
-                    agent_name="ReflectionRepairAgent",
+                resp_str = await asyncio.wait_for(
+                    asyncio.to_thread(
+                        client.generate,
+                        prompt=prompt_text,
+                        system_instruction=system_instruction,
+                        temperature=0.1,
+                        agent_name="ReflectionRepairAgent",
+                    ),
+                    timeout=30.0
                 )
                 content = types.Content(
                     role="model",
@@ -969,6 +973,13 @@ class ReflectionRepairAgent:
         prev_test_sha = hashlib.sha256(current_test_code.encode("utf-8")).hexdigest()
         source_sha = hashlib.sha256(target_source_code.encode("utf-8")).hexdigest()
 
+        # Wall-clock watchdog timer per reflection iteration (max 90s)
+        iteration_start_time = time.perf_counter()
+        MAX_ITERATION_WALL_CLOCK_SEC = 90.0
+
+        def _is_watchdog_expired() -> bool:
+            return (time.perf_counter() - iteration_start_time) >= MAX_ITERATION_WALL_CLOCK_SEC
+
         # Coerce any dict mutants into MutantRecord instances
         from testforge.state import MutantRecord
         coerced_mutants: List[MutantRecord] = []
@@ -1061,6 +1072,32 @@ class ReflectionRepairAgent:
         candidate_code = gen_payload.test_code
         cand_test_sha = hashlib.sha256(candidate_code.encode("utf-8")).hexdigest()
 
+        # Watchdog check after test generation
+        if _is_watchdog_expired():
+            result = RepairResultPayload(
+                repair_id=f"rep_{uuid.uuid4().hex[:8]}",
+                task_id=eff_task_id,
+                iteration=iteration,
+                source_sha=source_sha,
+                previous_test_sha=prev_test_sha,
+                candidate_test_sha=cand_test_sha,
+                accepted=False,
+                rejection_reason=f"Reflection iteration exceeded watchdog wall-clock limit ({MAX_ITERATION_WALL_CLOCK_SEC}s). Finalizing current best suite.",
+                previous_mutation_score=prev_score,
+                candidate_mutation_score=prev_score,
+                previous_test_count=prev_test_count,
+                candidate_test_count=prev_test_count,
+                previous_line_coverage=0.0,
+                candidate_line_coverage=0.0,
+                retained_test_code=current_test_code,
+                mutants_killed=[],
+                quarantined_tests=[],
+                should_iterate=False,
+                stop_reason="WATCHDOG_TIMEOUT_FINALIZED_BEST",
+            )
+            self._update_blackboard_and_dispatch(result)
+            return result
+
         # 5. Granular Validation of Candidate Suite (TestExecutionAgent / Sandbox)
         validation_res = self.sandbox.validate_and_filter_candidate_suite(
             candidate_test_code=candidate_code,
@@ -1099,6 +1136,32 @@ class ReflectionRepairAgent:
             return result
 
         candidate_retained_code = validation_res.retained_test_code
+
+        # Watchdog check after suite validation
+        if _is_watchdog_expired():
+            result = RepairResultPayload(
+                repair_id=f"rep_{uuid.uuid4().hex[:8]}",
+                task_id=eff_task_id,
+                iteration=iteration,
+                source_sha=source_sha,
+                previous_test_sha=prev_test_sha,
+                candidate_test_sha=cand_test_sha,
+                accepted=False,
+                rejection_reason=f"Reflection iteration exceeded watchdog wall-clock limit ({MAX_ITERATION_WALL_CLOCK_SEC}s). Finalizing current best suite.",
+                previous_mutation_score=prev_score,
+                candidate_mutation_score=prev_score,
+                previous_test_count=prev_test_count,
+                candidate_test_count=prev_test_count,
+                previous_line_coverage=0.0,
+                candidate_line_coverage=0.0,
+                retained_test_code=current_test_code,
+                mutants_killed=[],
+                quarantined_tests=quarantined_names,
+                should_iterate=False,
+                stop_reason="WATCHDOG_TIMEOUT_FINALIZED_BEST",
+            )
+            self._update_blackboard_and_dispatch(result)
+            return result
 
         # 6. Re-evaluate Mutants against Candidate Retained Code via TestExecutionAgent
         evaluated_mutants = self.execution_agent.evaluate_mutants(

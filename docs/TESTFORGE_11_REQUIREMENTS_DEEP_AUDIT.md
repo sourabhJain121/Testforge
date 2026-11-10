@@ -4,7 +4,7 @@
 **Date:** October 22, 2026  
 **Auditor / Agentic AI Architect:** Senior Agentic AI Systems Architect  
 **Workspace:** `/Users/sourabh/TestForge`  
-**Evaluation Standard:** CSE3101 Autonomous Agentic Systems Rigorous Rubric  
+**Evaluation Standard:** Autonomous Agentic Systems Rigorous Rubric  
 
 ---
 

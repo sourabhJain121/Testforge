@@ -1,6 +1,6 @@
 # TestForge — Academic Project Demonstration Script
 
-**Course:** CSE3101 - Agentic AI  
+**Course:** Autonomous Agentic AI  
 **Time Limit:** 10–15 Minutes  
 **Demonstration Mode:** Live Interactive Walkthrough  
 **Target Environment:** macOS (Darwin arm64), `.venv-release` (Python 3.13.18)  

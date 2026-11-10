@@ -138,6 +138,27 @@ class WebSocketEventHub:
             except Exception as exc:
                 logger.warning(f"Failed to enqueue to client {ws}: {exc}")
 
+    def broadcast_event(self, data: Dict[str, Any]) -> None:
+        """Directly broadcasts any dictionary payload to all active WebSocket clients."""
+        if not self._clients:
+            return
+        if "timestamp" not in data:
+            data["timestamp"] = time.time()
+        if "hub_dispatch_ts" not in data:
+            data["hub_dispatch_ts"] = time.time()
+        loop = self._loop
+        if loop is None:
+            try:
+                loop = asyncio.get_running_loop()
+                self._loop = loop
+            except RuntimeError:
+                loop = None
+
+        if loop and loop.is_running():
+            loop.call_soon_threadsafe(self._enqueue_to_all_clients, data)
+        else:
+            self._enqueue_to_all_clients(data)
+
     def attach_to_registry(
         self,
         registry: CallbackRegistry = default_callback_registry,

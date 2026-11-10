@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 """
+================================================================================
+[FROZEN / LOCKED] sync_benchmarks.py
 TestForge Benchmark Single Source of Truth Synchronization Script (Stage 0.2).
+Notice: Benchmark synchronization logic, mathematical formulas, and scorecard
+generation are permanently locked to preserve evaluation consistency.
+================================================================================
+
 Reads/Updates qa_artifacts/MULTI_TARGET_BENCHMARK_RESULTS.json as the definitive source of truth,
 and regenerates:
   - qa_artifacts/MULTI_TARGET_BENCHMARK_SUMMARY.md
@@ -375,6 +381,7 @@ def build_benchmark_dataset() -> Dict[str, Any]:
 
         cross_summary["scenarios"][sc] = {
             "arithmetic_mean_line_coverage": _am(lines),
+            "geometric_mean_line_coverage": _gm(lines),
             "arithmetic_mean_branch_coverage": _am(branches),
             "geometric_mean_branch_coverage": _gm(branches),
             "arithmetic_mean_raw_mutation_score": _am(raws),
@@ -382,6 +389,7 @@ def build_benchmark_dataset() -> Dict[str, Any]:
             "arithmetic_mean_adj_mutation_score": _am(adjs),
             "geometric_mean_adj_mutation_score": _gm(adjs),
             "mean_latency_sec": _am(lats),
+            "geometric_mean_latency_sec": _gm(lats),
             "total_tokens_consumed": toks,
             "total_killed_mutants": killed,
             "total_mutants": total_m,

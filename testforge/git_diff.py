@@ -2,7 +2,7 @@
 git_diff.py - Git Diff Inspection Engine for Targeted AST Mutation.
 
 Author: Sourabh & Shreshth
-Course: CSE3101 - Agentic AI
+System: Autonomous Multi-Agent Hardening Engine
 
 Features:
   - GitDiffInspector:

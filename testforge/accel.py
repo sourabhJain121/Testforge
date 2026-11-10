@@ -36,7 +36,15 @@ class HardwareProfile:
 
         # Recommended sandbox worker pool size
         # Sized to leave headroom for OS and interactive LLM processes while saturating cores
-        if self.is_apple_silicon:
+        env_workers = os.environ.get("TESTFORGE_WORKERS")
+        if env_workers:
+            try:
+                self.recommended_workers = max(1, int(env_workers))
+            except ValueError:
+                self.recommended_workers = 2
+        elif os.environ.get("PYTEST_CURRENT_TEST") or os.environ.get("CREWAI_TESTING"):
+            self.recommended_workers = min(2, max(1, self.cpu_count - 1))
+        elif self.is_apple_silicon:
             # e.g., 10 cores on M2 Pro -> 8 worker processes for concurrent sandbox runs
             self.recommended_workers = max(1, min(self.cpu_count - 1, 8))
         else:

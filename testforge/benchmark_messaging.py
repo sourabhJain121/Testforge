@@ -2,7 +2,7 @@
 benchmark_messaging.py - Empirical Messaging & State Architecture Benchmark for TestForge.
 
 Author: TestForge Agentic Architecture Team
-Course: CSE3101 - Agentic AI
+System: Autonomous Multi-Agent Hardening Engine
 
 Features:
   1. Microsecond-level operational latency and throughput benchmarking comparing:

@@ -2,7 +2,7 @@
 prompt_guard.py - Indirect Prompt-Injection Mitigation and Boundary Controls for TestForge.
 
 Author: TestForge Security Team
-Course: CSE3101 - Agentic AI
+System: Autonomous Multi-Agent Hardening Engine
 
 Features:
   1. Untrusted Content Envelopes:

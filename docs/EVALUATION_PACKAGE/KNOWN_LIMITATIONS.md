@@ -1,6 +1,6 @@
 # TestForge — Known Limitations, Residual Risks & Unverified Scope
 
-**Course:** CSE3101 - Agentic AI  
+**Course:** Autonomous Agentic AI  
 **Document ID:** TF-LIMIT-EVAL-001  
 **Date:** October 30, 2026  
 **Status:** Evaluation Candidate  

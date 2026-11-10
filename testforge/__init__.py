@@ -1,7 +1,7 @@
 """
 TestForge: Autonomous Multi-Agent Unit Test Suite Hardener.
 
-Course: CSE3101 - Agentic AI
+System: Autonomous Multi-Agent Hardening Engine
 Authors: Sourabh & Shreshth
 """
 

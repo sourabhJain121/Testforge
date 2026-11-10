@@ -2,7 +2,7 @@
 test_blast_and_adk.py - Unit tests for BlastRadiusAnalyzer, GitDiffInspector, and ADK Engine.
 
 Author: Sourabh & Shreshth
-Course: CSE3101 - Agentic AI
+System: Autonomous Multi-Agent Hardening Engine
 """
 
 import pytest

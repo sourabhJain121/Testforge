@@ -1,6 +1,6 @@
 # TestForge — Complete Technical Report: Autonomous Agentic Unit-Test Hardening System
 **System Architecture, Multi-Agent Coordination, Blackboard Persistence, and Verification Report**  
-*Project: TestForge | CSE3101: Agentic AI*  
+*Project: TestForge | Autonomous Agentic AI*  
 *Authors: Sourabh & Shreshth*  
 *Target Repository: `/Users/sourabh/TestForge`*  
 *Environment: Python 3.13 (`.venv-release`) | macOS Apple Silicon (arm64)*  

@@ -1,7 +1,7 @@
 # TestForge: Autonomous Agentic Unit Test Hardening System
 ## Comprehensive Technical Architecture & Agent Communication Report
 
-**Course**: CSE3101 - Agentic AI (16 Weeks, Project-Based Learning)  
+**Project**: TestForge Autonomous Test Hardening System  
 **Authors**: Sourabh & Shreshth  
 **Target Hardware**: macOS Apple Silicon (arm64, M-Series Unified Memory, Apple MLX Neural Acceleration)  
 **Repository**: [sourabhJain121/Testforge](https://github.com/sourabhJain121/Testforge)  

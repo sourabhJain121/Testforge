@@ -1,7 +1,7 @@
 """
 run_benchmark.py - Ablation Study: Baseline vs Zero-Shot vs Mutation-Reflected TestForge.
 
-Course: CSE3101 - Agentic AI
+System: Autonomous Multi-Agent Hardening Engine
 Authors: Sourabh & Shreshth
 
 Compares 3 distinct configurations:

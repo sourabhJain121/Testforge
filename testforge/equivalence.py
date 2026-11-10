@@ -3,7 +3,7 @@ equivalence.py - Conservative Equivalent-Mutant Analysis & Mutation Score Engine
 
 Module: Milestone 2 (TestForge)
 Author: Sourabh & Shreshth
-Course: CSE3101 - Agentic AI
+System: Autonomous Multi-Agent Hardening Engine
 
 Provides:
   1. EquivalentMutantAnalyzer: Static & heuristic analysis layer to detect equivalent
@@ -562,7 +562,7 @@ def calculate_mutation_scores(mutants: List[MutantRecord]) -> Dict[str, Any]:
     total = len(mutants)
     killed = sum(1 for m in mutants if m.status == "KILLED")
     survived = sum(1 for m in mutants if m.status == "SURVIVED" and m.equivalence_status not in ("EQUIVALENT", "POTENTIALLY_EQUIVALENT"))
-    timed_out = sum(1 for m in mutants if m.status == "TIMEOUT")
+    timed_out = sum(1 for m in mutants if m.status in ("TIMEOUT", "TIMED_OUT"))
     errors = sum(1 for m in mutants if m.status == "ERROR")
     invalid = sum(1 for m in mutants if m.status == "INVALID" or not m.is_valid_syntax)
 

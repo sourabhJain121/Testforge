@@ -2,7 +2,7 @@
 ingestion.py - Target Ingestion & Code Synthesis Supervisor Agent.
 
 Author: Sourabh (Module 1 & 3)
-Course: CSE3101 - Agentic AI
+System: Autonomous Multi-Agent Hardening Engine
 
 Features:
   - Mode A (Arbitrary File Ingestion):

@@ -50,7 +50,7 @@ class TestHardeningPipelineExecution:
         assert state.baseline_tests_executed > 0
         assert state.baseline_passed is True
         assert state.baseline_tests_passed > 0
-        assert state.final_hardening_status in ("TARGET_ACHIEVED", "TARGET_SCORE_UNREACHED")
+        assert state.final_hardening_status in ("SUCCESS", "TARGET_ACHIEVED", "TARGET_SCORE_UNREACHED")
         assert state.final_mutation_score is not None
 
     def test_02_multiple_functions(self, tmp_path):

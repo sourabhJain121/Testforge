@@ -2,7 +2,7 @@
 cli.py - Enterprise Standalone CLI for TestForge.
 
 Authors: Sourabh & Shreshth
-Course: CSE3101 - Agentic AI
+System: Autonomous Multi-Agent Hardening Engine
 """
 
 import argparse

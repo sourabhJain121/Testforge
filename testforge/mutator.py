@@ -2,7 +2,7 @@
 mutator.py - Deterministic AST-based Mutation Testing Engine.
 
 Author: Shreshth (Module 2) & Sourabh
-Course: CSE3101 - Agentic AI
+System: Autonomous Multi-Agent Hardening Engine
 Milestone: 2 (AST-Aware Mutation & Equivalent-Mutant Analysis)
 
 Implements 10 deterministic, syntax-aware AST mutation categories:

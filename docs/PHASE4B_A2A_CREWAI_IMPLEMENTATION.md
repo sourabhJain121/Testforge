@@ -1,7 +1,7 @@
 # Phase 4B Implementation Report: Typed A2A Contract & Genuine CrewAI Adversarial Critic
 
 **Project**: TestForge — Autonomous Agentic Unit Test Hardening System  
-**Course**: CSE3101 - Agentic AI  
+**Course**: Autonomous Agentic AI  
 **Author**: Sourabh  
 **Target Milestone**: Phase 4B — A2A Contract, A2A Broker, Genuine CrewAI Critic, Blackboard & Callback Integration  
 **Date**: October 2026  

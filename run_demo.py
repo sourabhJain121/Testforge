@@ -1,7 +1,7 @@
 """
 run_demo.py - TestForge End-to-End Multi-Target Benchmark Suite.
 
-Course: CSE3101 - Agentic AI
+System: Autonomous Multi-Agent Hardening Engine
 Authors: Sourabh & Shreshth
 """
 

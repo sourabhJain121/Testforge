@@ -2,7 +2,7 @@
 network_security.py - Network Security, SSRF Mitigation, and Bounded Payload Controls.
 
 Author: TestForge Security Team
-Course: CSE3101 - Agentic AI
+System: Autonomous Multi-Agent Hardening Engine
 
 Guarantees:
   1. SSRF Mitigation: Strict allowlist validation of GitHub hostnames across all requests

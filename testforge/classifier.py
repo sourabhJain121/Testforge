@@ -2,7 +2,7 @@
 classifier.py - Lightweight Neural Mutant Difficulty Classifier in MLX.
 
 Author: Shreshth & Sourabh
-Course: CSE3101 - Agentic AI
+System: Autonomous Multi-Agent Hardening Engine
 
 Runs natively on Apple Silicon GPU via Apple MLX (`Device(gpu, 0)`).
 Predicts whether a mutant is 'trivial' or 'subtle/hard' based on AST context

@@ -2,7 +2,7 @@
 agents.py - Multi-Provider Resilient Foundation Model Agents.
 
 Author: Sourabh (Module 1 & 3)
-Course: CSE3101 - Agentic AI
+System: Autonomous Multi-Agent Hardening Engine
 
 Features:
   - Multi-Provider LLM Fallback Architecture:

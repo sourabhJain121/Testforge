@@ -1,6 +1,6 @@
 # TestForge — System Architecture & Multi-Agent Design
 
-**Course:** CSE3101 - Agentic AI  
+**Course:** Autonomous Agentic AI  
 **Document ID:** TF-ARCH-EVAL-001  
 **Date:** October 30, 2026  
 **Status:** Evaluation Baseline  

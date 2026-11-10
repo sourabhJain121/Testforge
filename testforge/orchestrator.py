@@ -2,7 +2,7 @@
 orchestrator.py - Multi-Agent State Graph Orchestration & Reflection Loop.
 
 Author: Sourabh (Module 1 & 3)
-Course: CSE3101 - Agentic AI
+System: Autonomous Multi-Agent Hardening Engine
 
 Agent State Graph:
   1. Sandbox baseline validation (pass@1 check on clean code)
@@ -197,6 +197,7 @@ class TestForgeOrchestrator:
         self._explicit_target_score = target_mutation_score
         self.is_cancelled: bool = False
         self.is_timed_out: bool = False
+        self.cancel_requested: bool = False
         self.state = TestForgeState(
             target_source_code=(target_source_code or "").strip(),
             current_test_code=(initial_test_code or "").strip(),
@@ -369,6 +370,30 @@ class TestForgeOrchestrator:
         self._best_mutants: List[Any] = []
         self._best_surviving_diffs: List[str] = []
         self._guard_restored: bool = False
+
+    @property
+    def active_worker_pids(self) -> Set[int]:
+        """Returns all active child process IDs across worker executor pools."""
+        pids: Set[int] = set()
+        if hasattr(self, "sandbox") and self.sandbox:
+            pids.update(getattr(self.sandbox, "active_pids", set()))
+            if hasattr(self.sandbox, "_executor") and self.sandbox._executor:
+                pids.update(getattr(self.sandbox._executor, "_processes", {}).keys())
+        return pids
+
+    @property
+    def active_process(self) -> Optional[Any]:
+        """Returns the primary active worker process object, if any."""
+        if hasattr(self, "sandbox") and self.sandbox:
+            procs = getattr(self.sandbox, "active_processes", [])
+            return procs[0] if procs else None
+        return None
+
+    def terminate_workers(self) -> None:
+        """Forcefully halts and cleans up all active subprocess workers."""
+        if hasattr(self, "sandbox") and self.sandbox:
+            if hasattr(self.sandbox, "terminate_all_workers"):
+                self.sandbox.terminate_all_workers()
 
     def _sync_lifecycle(
         self,
@@ -1138,6 +1163,16 @@ class TestForgeOrchestrator:
                 )
                 self.supervisor.set_agent_executing("TestGeneratorAgent", True)
             console.print("[yellow][Step 1/6] Synthesizing initial candidate test suite...[/yellow]")
+            try:
+                from testforge.websocket_hub import global_websocket_hub
+                global_websocket_hub.broadcast_event({
+                    "event_type": "PIPELINE_TELEMETRY",
+                    "phase": "EXECUTING",
+                    "stage": "LLM_SYNTHESIS",
+                    "detail": "Synthesizing boundary tests via Gemini Flash..."
+                })
+            except Exception:
+                pass
             initial_tests = ""
             provider_used = self.generator.active_provider
             step1_corr_id = f"init_gen_{uuid.uuid4().hex[:8]}"
@@ -1237,6 +1272,16 @@ class TestForgeOrchestrator:
 
         self.check_cancellation_or_timeout()
         if not skip_baseline_validation:
+            try:
+                from testforge.websocket_hub import global_websocket_hub
+                global_websocket_hub.broadcast_event({
+                    "event_type": "PIPELINE_TELEMETRY",
+                    "phase": "EXECUTING",
+                    "stage": "PASS1_VALIDATION",
+                    "detail": "Verifying candidate tests on clean target (Pass@1)..."
+                })
+            except Exception:
+                pass
             self._sync_lifecycle(TaskLifecycleState.EXECUTING, metadata={"step": "baseline_validation"})
             # Consult Top-Level Supervisor Agent for sandbox execution approval
             if hasattr(self, "supervisor") and self.supervisor:
@@ -1529,6 +1574,17 @@ class TestForgeOrchestrator:
                 if hasattr(self, "supervisor") and self.supervisor:
                     self.supervisor.set_agent_executing("ReflectionRepairAgent", True)
                 console.print("  [cyan]• Hardening test assertions based on Critic reasoning...[/cyan]")
+                try:
+                    from testforge.websocket_hub import global_websocket_hub
+                    global_websocket_hub.broadcast_event({
+                        "event_type": "PIPELINE_TELEMETRY",
+                        "phase": "EXECUTING",
+                        "stage": "LLM_SYNTHESIS",
+                        "detail": f"Synthesizing boundary tests via Gemini Flash (Iteration {iteration})...",
+                        "iteration": iteration
+                    })
+                except Exception:
+                    pass
                 hardened_tests = ""
                 provider_used = self.generator.active_provider
                 if self.engine_mode != "legacy":
@@ -1576,6 +1632,16 @@ class TestForgeOrchestrator:
                     provider_used = self.generator.active_provider
 
                 # Granular Candidate Test Validation: validate tests individually so one broken test doesn't discard all
+                try:
+                    from testforge.websocket_hub import global_websocket_hub
+                    global_websocket_hub.broadcast_event({
+                        "event_type": "PIPELINE_TELEMETRY",
+                        "phase": "EXECUTING",
+                        "stage": "PASS1_VALIDATION",
+                        "detail": "Verifying candidate tests on clean target (Pass@1)..."
+                    })
+                except Exception:
+                    pass
                 self._sync_lifecycle(TaskLifecycleState.EXECUTING, metadata={"iteration": iteration, "step": "granular_test_validation"})
                 validation_res = self.sandbox.validate_and_filter_candidate_suite(
                     candidate_test_code=hardened_tests,
@@ -1806,6 +1872,17 @@ class TestForgeOrchestrator:
                 hardening_status="IN_PROGRESS"
             )
             self.state.history.append(metric)
+            try:
+                from testforge.websocket_hub import global_websocket_hub
+                global_websocket_hub.broadcast_event({
+                    "event_type": "PIPELINE_TELEMETRY",
+                    "phase": "EXECUTING",
+                    "stage": "ITERATION_COMPLETED",
+                    "detail": f"Iteration {iteration} complete: {metric.killed_mutants} killed / {total} total ({metric.raw_mutation_score}%)",
+                    "iteration_result": metric.model_dump() if hasattr(metric, "model_dump") else metric.__dict__
+                })
+            except Exception:
+                pass
 
             # Never-Regress Guard: Track the best-performing suite across all iterations
             is_first_eval = (self._best_iteration == 0)
@@ -2065,6 +2142,18 @@ class TestForgeOrchestrator:
         adj_final = getattr(self.state, "adjusted_mutation_score", None) or raw_final
         equiv_final = self.state.history[-1].equivalent_mutants if self.state.history else 0
         pot_equiv_final = self.state.history[-1].potentially_equivalent_mutants if self.state.history else 0
+
+        try:
+            from testforge.websocket_hub import global_websocket_hub
+            global_websocket_hub.broadcast_event({
+                "event_type": "PIPELINE_TELEMETRY",
+                "phase": "RUNNING",
+                "stage": "EXPORTING",
+                "job_id": self.job_id,
+                "detail": "Hardening Complete: Exporting hardened test suite..."
+            })
+        except Exception:
+            pass
 
         self._sync_lifecycle(TaskLifecycleState.COMPLETED, reason=self.state.termination_reason)
         self.blackboard.update_metrics_space(

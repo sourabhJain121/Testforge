@@ -1,6 +1,6 @@
 # TestForge Phase-3 Rubric Alignment Matrix
 
-> **Course**: CSE3101 - Agentic AI (16 Weeks, Phase-3 Evaluation)  
+> **Course**: Autonomous Agentic AI (16 Weeks, Phase-3 Evaluation)  
 > **Authors**: Sourabh & Shreshth  
 > **Mode**: INTEGRITY FIRST, THEN EVIDENCE, THEN FEATURES, THEN POLISH  
 > **Branch**: `feat/final-evidence`  

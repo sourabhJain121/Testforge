@@ -1,6 +1,6 @@
 # TestForge Stage 1: Requirement Verification Matrix
 
-**Evaluation Course:** CSE3101 - Agentic AI  
+**Evaluation Course:** Autonomous Agentic AI  
 **Document ID:** TF-WIP-REQ-MATRIX-001  
 **Inspection Date:** November 2, 2026  
 **Commit SHA:** `ee8f765c4f7316e87439fab7250103e6da651c02`  

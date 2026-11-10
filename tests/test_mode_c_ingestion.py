@@ -3,7 +3,7 @@ test_mode_c_ingestion.py - Automated regression tests for Mode C GitHub Ingestio
 and Hardening Pipeline Execution on real public repository files.
 
 Authors: Sourabh & Shreshth
-Course: CSE3101 - Agentic AI
+System: Autonomous Multi-Agent Hardening Engine
 """
 
 from pathlib import Path

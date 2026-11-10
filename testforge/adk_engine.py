@@ -2,7 +2,7 @@
 adk_engine.py - Agent Development Kit (ADK) Tool-Use & Deliberation Architecture.
 
 Author: Sourabh & Shreshth
-Course: CSE3101 - Agentic AI
+System: Autonomous Multi-Agent Hardening Engine
 
 Features:
   - Standard Pydantic ADK Contracts:

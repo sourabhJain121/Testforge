@@ -146,7 +146,7 @@ r_title.font.bold = True
 p_sub = doc.add_paragraph()
 p_sub.alignment = WD_ALIGN_PARAGRAPH.CENTER
 p_sub.paragraph_format.space_after = Pt(8)
-r_sub = p_sub.add_run("Academic Work in Progress (WIP) Technical Report — CSE3101: Agentic AI")
+r_sub = p_sub.add_run("Academic Work in Progress (WIP) Technical Report — Autonomous Agentic AI")
 r_sub.font.name = 'Arial'
 r_sub.font.size = Pt(11)
 r_sub.font.bold = True
@@ -157,7 +157,7 @@ meta_tbl = doc.add_table(rows=2, cols=3)
 meta_tbl.alignment = WD_TABLE_ALIGNMENT.CENTER
 set_tbl_borders(meta_tbl)
 meta_data = [
-    [("Student Author:", " Sourabh Jain"), ("Course:", " CSE3101 Agentic AI"), ("Runtime:", " Python 3.13 / ARM64")],
+    [("Student Author:", " Sourabh Jain"), ("Course:", " Autonomous Agentic AI"), ("Runtime:", " Python 3.13 / ARM64")],
     [("Verified Commit:", f" {COMMIT_SHA[:12]}"), ("Repository:", " github.com/sourabhJain121/Testforge"), ("Pytest Suite:", " 542 Passed, 0 Failed, 305 Warn")]
 ]
 for row_idx, row in enumerate(meta_data):

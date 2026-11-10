@@ -1,6 +1,6 @@
 # TestForge — Academic Project Overview
 
-**Course:** CSE3101 - Agentic AI  
+**Course:** Autonomous Agentic AI  
 **Project:** TestForge — Autonomous AI-Powered Code-Hardening & Testing Platform  
 **Authors:** Sourabh & Shreshth  
 **Evaluation Candidate Date:** October 30, 2026  

@@ -1,6 +1,6 @@
 # TestForge Viva Package: Examiner Q&A Defense
 
-This document compiles anticipated technical examination questions, architectural trade-offs, and empirical defenses for the TestForge viva examination (CSE3101 Agentic AI, Phase-3 Evaluation).
+This document compiles anticipated technical examination questions, architectural trade-offs, and empirical defenses for the TestForge viva examination (Autonomous Agentic AI, Phase-3 Evaluation).
 
 ---
 

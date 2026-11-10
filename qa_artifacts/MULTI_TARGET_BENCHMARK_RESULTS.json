@@ -369,6 +369,7 @@
     "scenarios": {
       "baseline": {
         "arithmetic_mean_line_coverage": 30.75,
+        "geometric_mean_line_coverage": 28.93,
         "arithmetic_mean_branch_coverage": 25.62,
         "geometric_mean_branch_coverage": 22.0,
         "arithmetic_mean_raw_mutation_score": 6.46,
@@ -376,6 +377,7 @@
         "arithmetic_mean_adj_mutation_score": 6.79,
         "geometric_mean_adj_mutation_score": 6.74,
         "mean_latency_sec": 0.06,
+        "geometric_mean_latency_sec": 0.06,
         "total_tokens_consumed": 0,
         "total_killed_mutants": 16,
         "total_mutants": 240,
@@ -385,6 +387,7 @@
       },
       "zeroshot": {
         "arithmetic_mean_line_coverage": 39.17,
+        "geometric_mean_line_coverage": 38.52,
         "arithmetic_mean_branch_coverage": 30.48,
         "geometric_mean_branch_coverage": 27.54,
         "arithmetic_mean_raw_mutation_score": 32.58,
@@ -392,6 +395,7 @@
         "arithmetic_mean_adj_mutation_score": 34.33,
         "geometric_mean_adj_mutation_score": 29.18,
         "mean_latency_sec": 1.66,
+        "geometric_mean_latency_sec": 1.63,
         "total_tokens_consumed": 2660,
         "total_killed_mutants": 58,
         "total_mutants": 240,
@@ -401,6 +405,7 @@
       },
       "agentic_reflection": {
         "arithmetic_mean_line_coverage": 70.58,
+        "geometric_mean_line_coverage": 63.75,
         "arithmetic_mean_branch_coverage": 65.65,
         "geometric_mean_branch_coverage": 53.57,
         "arithmetic_mean_raw_mutation_score": 67.02,
@@ -408,6 +413,7 @@
         "arithmetic_mean_adj_mutation_score": 70.17,
         "geometric_mean_adj_mutation_score": 63.15,
         "mean_latency_sec": 14.89,
+        "geometric_mean_latency_sec": 9.77,
         "total_tokens_consumed": 10650,
         "total_killed_mutants": 167,
         "total_mutants": 240,
@@ -417,6 +423,7 @@
       },
       "pipeline_plus_manual": {
         "arithmetic_mean_line_coverage": 70.58,
+        "geometric_mean_line_coverage": 63.75,
         "arithmetic_mean_branch_coverage": 65.65,
         "geometric_mean_branch_coverage": 53.57,
         "arithmetic_mean_raw_mutation_score": 67.02,
@@ -424,6 +431,7 @@
         "arithmetic_mean_adj_mutation_score": 70.17,
         "geometric_mean_adj_mutation_score": 63.15,
         "mean_latency_sec": 14.89,
+        "geometric_mean_latency_sec": 9.77,
         "total_tokens_consumed": 10650,
         "total_killed_mutants": 167,
         "total_mutants": 240,
