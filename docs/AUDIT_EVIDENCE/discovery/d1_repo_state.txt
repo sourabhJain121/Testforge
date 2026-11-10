@@ -1,0 +1,670 @@
+=== D1 REPO STATE ===
+--- CURRENT BRANCH ---
+release/v1.0.0
+--- HEAD HASH ---
+916b843ef6982bb5c0ca1a9baedbb875130bf829
+--- GIT STATUS PORCELAIN ---
+?? docs/AUDIT_EVIDENCE/discovery/
+?? qa_artifacts/ablation_progression_chart.png
+?? qa_artifacts/dynamic_model_observability/
+?? qa_artifacts/final_observability_verification/
+?? qa_artifacts/release_audit_20261022/01_initial_dashboard.png
+?? qa_artifacts/release_audit_20261022/02_mode_a_sample_loaded.png
+?? qa_artifacts/release_audit_20261022/03_mode_c_ingestion_and_activation.png
+?? qa_artifacts/release_audit_20261022/04_hardening_completed.png
+?? qa_artifacts/release_audit_20261022/05_wiretap_timeline.png
+?? qa_artifacts/release_audit_20261022/06_benchmark_markdown_preview.png
+?? qa_artifacts/release_audit_20261022/07_mobile_responsive_final.png
+?? qa_artifacts/release_audit_20261022_stabilization/01_initial_dashboard.png
+?? qa_artifacts/release_audit_20261022_stabilization/02_mode_a_sample_loaded.png
+?? qa_artifacts/release_audit_20261022_stabilization/03_mode_c_ingestion_and_activation.png
+?? qa_artifacts/release_audit_20261022_stabilization/04_hardening_completed.png
+?? qa_artifacts/release_audit_20261022_stabilization/05_wiretap_timeline.png
+?? qa_artifacts/release_audit_20261022_stabilization/06_benchmark_markdown_preview.png
+?? qa_artifacts/release_audit_20261022_stabilization/07_mobile_responsive_final.png
+--- ALL TAGS ---
+audit-start 1d44613e1f6ade392dd3376df6764c50e0eb14c4
+sealed-eval-freeze 9d136110c3066491221db34e8f181d1f32e1b922
+sealed-v2-freeze 8a53c9b24e87292fe957042357f45f8540898e71
+sealed-v2-measurement-fix 68852e5943b53119691c8dc9bf35bca86adcd1db
+stage-0-done f596d1c0744a3dc0fc52029b4872cdf13bb1e7eb
+stage-1-done 4f1c2d12ee1287249e7842295cd2c010d483516c
+stage-2-done dcdf1eaed32486d4e525489c7126bc8a8199926f
+stage-3-done 2c1954bf39ca36c654baab0ef20399f6a77ff876
+stage-4-done 8e30bfde47c41185d0e565a7bb3c2d16f71a849a
+stage-5-done 2b98645314429fbaf8b91ccc88f9a4b4be613a46
+stage-6-done d1cf87d6463e6508c178eaa277f7d07bfd2cc62c
+stage-7-done 1d44613e1f6ade392dd3376df6764c50e0eb14c4
+v1.0.0-rc1 18b33759addd5f92bb773b1a9e9cf32556c008a9
+v1.0.0-rc2 f327d1ecaea2093694a7093dfc20de88394a01e1
+v1.0.0-rc3 8253c9d3a85875c7d12325b2d8b4aff11925b27a
+--- ALL BRANCHES WITH HASHES ---
+  final/ui-verify     e9fe6a3ffbc7b01c1553c86f0e3bc0b0152661cd chore(hygiene): purge all legacy qa_artifacts screenshots from git index and seal T3/T4
+  main                8cec79ad013381f5e52939f2f23152bc38a7c3f4 feat(release): finalize production cockpit UI, telemetry hydration, sandbox safety, and release lock
+* release/v1.0.0      916b843ef6982bb5c0ca1a9baedbb875130bf829 docs: mark T4 as DONE on release/v1.0.0 branch
+  remotes/origin/main 8cec79ad013381f5e52939f2f23152bc38a7c3f4 feat(release): finalize production cockpit UI, telemetry hydration, sandbox safety, and release lock
+--- TRACKED FILE COUNT ---
+    1532
+--- GIT DIRECTORY SIZE ---
+237M	.git
+--- 15 LARGEST TRACKED FILES ---
+4343127 docs/WIP_REPORT/TestForge_WIP_Report.pdf
+1643773 docs/WIP_REPORT/TestForge_WIP_Report.docx
+1069680 qa_artifacts/phase2_test_generation_20261030_190423/benchmark_logistics.json
+1040533 docs/AUDIT_EVIDENCE/frontend/pass2_rerun_dashboard.png
+957980 docs/AUDIT_EVIDENCE/frontend/pass1_dashboard.png
+777911 docs/PROJECT_COVERAGE/TestForge_Project_Coverage.pdf
+623747 docs/WIP_REPORT/assets/figure3_blackboard_architecture.png
+551972 docs/WIP_REPORT/assets/figure1_system_architecture.png
+455527 docs/WIP_REPORT/assets/figure4_mutation_refinement.png
+444076 docs/WIP_REPORT/assets/figure2_execution_workflow.png
+435574 docs/screenshots/02_wiretap_topology.png
+432443 docs/screenshots/09_mode_c_github.png
+429252 TestForge_GPT_Knowledge_Package.zip
+424546 docs/screenshots/08_mode_b_synthesis.png
+413200 docs/screenshots/04_checkpoints_timeline.png
+--- TRACKED FILE COUNTS PER TOP-LEVEL DIRECTORY ---
+ 661 qa_artifacts
+ 329 docs
+ 214 testforge
+ 154 samples
+ 120 tests
+  24 root
+  17 scripts
+   6 adk_agents
+   3 frontend
+   2 evals
+   1 .github
+   1 .agents
+--- ROOT DIRECTORY FILES ---
+total 40824
+drwxr-xr-x@ 540 sourabh  staff     17280 Nov 10 15:38 .
+drwxr-x---+ 105 sourabh  staff      3360 Nov 10 12:28 ..
+-rw-r--r--@   1 sourabh  staff     12292 Nov  2 16:14 .DS_Store
+drwxr-xr-x@   3 sourabh  staff        96 Sep 19 18:58 .agents
+-rw-r--r--@   1 sourabh  staff     53248 Nov 10 13:30 .coverage
+-rw-r--r--@   1 sourabh  staff       111 Oct 22 19:32 .dockerignore
+-rw-r--r--@   1 sourabh  staff       701 Nov 10 13:30 .env.example
+drwxr-xr-x@  16 sourabh  staff       512 Nov 10 15:54 .git
+drwxr-xr-x@   3 sourabh  staff        96 Nov 10 13:30 .github
+-rw-r--r--@   1 sourabh  staff       962 Nov 10 15:45 .gitignore
+drwxr-xr-x@   6 sourabh  staff       192 Nov  7 15:55 .pytest_cache
+drwxr-xr-x@   5 sourabh  staff       160 Nov  7 16:41 .ruff_cache
+drwxr-xr-x@   9 sourabh  staff       288 Sep 19 18:55 .venv
+drwxr-xr-x@   9 sourabh  staff       288 Oct 22 19:33 .venv-release
+-rw-r--r--@   1 sourabh  staff      4164 Nov 10 13:30 COVERAGE_IMPROVEMENT_REPORT.md
+-rw-r--r--@   1 sourabh  staff      1561 Nov 10 13:30 Dockerfile
+-rw-r--r--@   1 sourabh  staff      4472 Nov 10 13:30 MUTATION_TESTING_REPORT.md
+-rw-r--r--@   1 sourabh  staff      7226 Oct 30 10:18 PHASE_0_CURRENT_STATE_REPORT.md
+-rw-r--r--@   1 sourabh  staff     27377 Nov 10 13:30 README.md
+-rw-r--r--@   1 sourabh  staff     32273 Nov 10 13:30 TECHNICAL_REPORT.md
+-rw-r--r--@   1 sourabh  staff      4267 Nov 10 13:30 TESTING_QUALITY_AUDIT.md
+-rw-r--r--@   1 sourabh  staff    429252 Oct 30 17:02 TestForge_GPT_Knowledge_Package.zip
+drwxr-xr-x@   4 sourabh  staff       128 Nov 10 14:59 __pycache__
+drwxr-xr-x@   5 sourabh  staff       160 Nov  7 20:39 adk_agents
+-rw-r--r--@   1 sourabh  staff     48838 Nov 10 13:30 app.py
+-rw-r--r--@   1 sourabh  staff     23488 Nov 10 13:30 benchmark_results.json
+-rw-r--r--@   1 sourabh  staff      2115 Nov 10 13:30 benchmark_results.md
+-rw-r--r--@   1 sourabh  staff      1188 Oct 25 21:12 benchmark_results_fast.json
+-rw-r--r--@   1 sourabh  staff       933 Oct 25 21:12 benchmark_results_fast.md
+-rw-r--r--@   1 sourabh  staff         0 Oct 30 17:19 checkpoints.db
+-rw-r--r--@   1 sourabh  staff      1654 Nov 10 13:30 docker-compose.yml
+drwxr-xr-x@  99 sourabh  staff      3168 Nov 10 14:49 docs
+drwxr-xr-x@   4 sourabh  staff       128 Nov 10 13:30 evals
+drwxr-xr-x@   5 sourabh  staff       160 Nov 10 13:30 frontend
+drwxr-xr-x@   2 sourabh  staff        64 Nov  4 11:46 job_bench_0084c6
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 17:47 job_bench_00cd26
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 20:11 job_bench_00f519
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 11:52 job_bench_010e40
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 11:51 job_bench_013d4e
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 09:58 job_bench_02013e
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 22:07 job_bench_0230da
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 09:10 job_bench_029a99
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 09:08 job_bench_02a2d2
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 08:37 job_bench_0401ec
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 13:15 job_bench_047e86
+drwxr-xr-x@   2 sourabh  staff        64 Nov  2 17:18 job_bench_053a45
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 13:25 job_bench_065c8f
+drwxr-xr-x@   2 sourabh  staff        64 Nov  2 17:57 job_bench_0693fe
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 11:44 job_bench_075c4b
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:08 job_bench_087691
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 11:46 job_bench_0a4143
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 16:16 job_bench_0ad24c
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 09:07 job_bench_0b26e1
+drwxr-xr-x@   2 sourabh  staff        64 Nov  2 17:55 job_bench_0c223c
+drwxr-xr-x@   2 sourabh  staff        64 Nov  2 17:22 job_bench_0d4c61
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 11:51 job_bench_0d4f18
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 16:17 job_bench_0ecece
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 12:23 job_bench_0ed4c1
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 17:49 job_bench_11ae20
+drwxr-xr-x@  12 sourabh  staff       384 Nov  2 18:09 job_bench_11f8f6
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 20:09 job_bench_12a464
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 16:47 job_bench_1326f6
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 10:05 job_bench_135a9b
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 13:15 job_bench_13705c
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 20:09 job_bench_13b95b
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 12:22 job_bench_1408d8
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 14:53 job_bench_142b09
+drwxr-xr-x@   2 sourabh  staff        64 Nov  2 17:55 job_bench_14a4db
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 14:12 job_bench_151325
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 14:04 job_bench_1564c4
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 11:07 job_bench_1576c9
+drwxr-xr-x@   2 sourabh  staff        64 Nov  2 17:22 job_bench_157f60
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 11:50 job_bench_1615db
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 18:19 job_bench_163fb7
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 09:06 job_bench_170ba6
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 08:37 job_bench_17990a
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 17:36 job_bench_18a176
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 12:36 job_bench_18df17
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:38 job_bench_193cf5
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 07:57 job_bench_1a69d6
+drwxr-xr-x@   2 sourabh  staff        64 Nov 10 15:10 job_bench_1a8a6e
+drwxr-xr-x@   2 sourabh  staff        64 Nov  2 17:56 job_bench_1b0747
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:03 job_bench_1b5502
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 21:18 job_bench_1b6f2b
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 16:09 job_bench_1d3718
+drwxr-xr-x@   2 sourabh  staff        64 Nov 10 15:24 job_bench_1e2b1e
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 09:39 job_bench_1e4358
+drwxr-xr-x@   2 sourabh  staff        64 Nov 10 15:11 job_bench_1e4ab4
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 11:52 job_bench_1eafe1
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 08:49 job_bench_1ef8ad
+drwxr-xr-x@   2 sourabh  staff        64 Nov  2 17:55 job_bench_2073d1
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 21:18 job_bench_214bdf
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 20:11 job_bench_21746b
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 07:57 job_bench_218d71
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 18:23 job_bench_22188e
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 12:47 job_bench_224a80
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:04 job_bench_22d49e
+drwxr-xr-x@   2 sourabh  staff        64 Nov  4 11:46 job_bench_23511a
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 12:52 job_bench_23bfe7
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:35 job_bench_2404e3
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 14:41 job_bench_249c5c
+drwxr-xr-x@   2 sourabh  staff        64 Nov  2 17:18 job_bench_24e990
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 17:16 job_bench_25404d
+drwxr-xr-x@   2 sourabh  staff        64 Nov  4 11:03 job_bench_261b9a
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 18:11 job_bench_264ca7
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:16 job_bench_265f3d
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 09:58 job_bench_27fe43
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 11:30 job_bench_282887
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 11:06 job_bench_287abe
+drwxr-xr-x@   2 sourabh  staff        64 Nov  2 17:22 job_bench_28a70f
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 12:22 job_bench_28fa27
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 14:53 job_bench_29b77c
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 12:13 job_bench_2a9a6a
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 08:49 job_bench_2bf057
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 17:52 job_bench_2c046f
+drwxr-xr-x@   2 sourabh  staff        64 Nov  4 11:03 job_bench_2c773a
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:05 job_bench_2d89c4
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 12:51 job_bench_2df1c0
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 11:44 job_bench_2eefd6
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 09:26 job_bench_2f35a4
+drwxr-xr-x@   2 sourabh  staff        64 Nov  2 17:22 job_bench_2f8a72
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 08:49 job_bench_2fe490
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 09:58 job_bench_30627d
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 12:36 job_bench_307644
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 09:58 job_bench_310bcd
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 09:28 job_bench_311daf
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 08:48 job_bench_314ef6
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 10:07 job_bench_31a30b
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 14:10 job_bench_31ea2a
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 10:11 job_bench_328903
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 13:15 job_bench_332ed6
+drwxr-xr-x@   2 sourabh  staff        64 Nov  2 17:21 job_bench_333218
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 11:50 job_bench_33619d
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 15:46 job_bench_338c6c
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 12:53 job_bench_345028
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 12:55 job_bench_352f70
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:15 job_bench_35f0ba
+drwxr-xr-x@  12 sourabh  staff       384 Nov  2 18:05 job_bench_35fe46
+drwxr-xr-x@   2 sourabh  staff        64 Nov 10 15:16 job_bench_36026b
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:10 job_bench_36118f
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:03 job_bench_369cbc
+drwxr-xr-x@  12 sourabh  staff       384 Nov  8 13:58 job_bench_36e40c
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 17:55 job_bench_36fe20
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 10:12 job_bench_377adc
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 09:06 job_bench_37a87d
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 17:15 job_bench_383902
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 12:36 job_bench_383edc
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 12:45 job_bench_386600
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 18:35 job_bench_38a657
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 09:03 job_bench_38ce2d
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 20:09 job_bench_394fc8
+drwxr-xr-x@   2 sourabh  staff        64 Nov 10 15:34 job_bench_3a954f
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 16:10 job_bench_3b17ae
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 13:13 job_bench_3b3332
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 12:53 job_bench_3bb203
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 12:22 job_bench_3bc2a5
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 10:12 job_bench_3bd230
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:08 job_bench_3c84ac
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 12:20 job_bench_3cc4c0
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:17 job_bench_3ddd29
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 11:59 job_bench_3de1e1
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 12:09 job_bench_3df36a
+drwxr-xr-x@   2 sourabh  staff        64 Nov  2 17:57 job_bench_3e5104
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 14:51 job_bench_3e8531
+drwxr-xr-x@   2 sourabh  staff        64 Nov  2 17:54 job_bench_3f09d7
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 17:36 job_bench_3f13f6
+drwxr-xr-x@   2 sourabh  staff        64 Nov  4 11:02 job_bench_404e7f
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 17:15 job_bench_406aa3
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 15:48 job_bench_40914d
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 17:16 job_bench_40e6a5
+drwxr-xr-x@   2 sourabh  staff        64 Nov 10 15:32 job_bench_421a01
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 14:12 job_bench_425c93
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 12:48 job_bench_432f7d
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 13:25 job_bench_43ce24
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 21:18 job_bench_43dca0
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 14:38 job_bench_451d40
+drwxr-xr-x@   2 sourabh  staff        64 Nov  2 17:55 job_bench_453f0c
+drwxr-xr-x@   2 sourabh  staff        64 Nov 10 15:11 job_bench_459f6c
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 12:46 job_bench_465f85
+drwxr-xr-x@   2 sourabh  staff        64 Nov  4 11:47 job_bench_472dc7
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 11:05 job_bench_483274
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 14:40 job_bench_485f45
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 11:45 job_bench_48f235
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 08:37 job_bench_4a1ccf
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 12:21 job_bench_4bd9a8
+drwxr-xr-x@   2 sourabh  staff        64 Nov  2 17:54 job_bench_4c23d7
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 17:14 job_bench_4e5fc3
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 10:12 job_bench_4f2aeb
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 11:41 job_bench_4f69e9
+drwxr-xr-x@   2 sourabh  staff        64 Nov 10 15:17 job_bench_4f89bc
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 12:38 job_bench_4fe186
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:08 job_bench_4fe678
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 21:43 job_bench_501fca
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 10:07 job_bench_504574
+drwxr-xr-x@   2 sourabh  staff        64 Nov 10 15:09 job_bench_504c92
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 17:51 job_bench_51c3d7
+drwxr-xr-x@   2 sourabh  staff        64 Nov  2 17:18 job_bench_51e903
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 10:12 job_bench_520c7c
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 13:14 job_bench_52506a
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 09:28 job_bench_52bcb7
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 12:04 job_bench_53e0cb
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:09 job_bench_54465d
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:20 job_bench_54968a
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 14:04 job_bench_5527e3
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 14:10 job_bench_556f29
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 09:28 job_bench_55e7b9
+drwxr-xr-x@   2 sourabh  staff        64 Nov 10 15:17 job_bench_55f8c9
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 17:16 job_bench_560a6e
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 12:46 job_bench_56442b
+drwxr-xr-x@   2 sourabh  staff        64 Nov  2 17:18 job_bench_566850
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 14:38 job_bench_568b2c
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 17:36 job_bench_5774d1
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 13:23 job_bench_57f689
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 21:46 job_bench_5848c2
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 14:33 job_bench_589411
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 13:13 job_bench_5912f8
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 09:09 job_bench_5b5d12
+drwxr-xr-x@   2 sourabh  staff        64 Nov  2 17:27 job_bench_5c8e18
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 14:39 job_bench_5e4af2
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 11:45 job_bench_5f1899
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 08:47 job_bench_6091b2
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 22:05 job_bench_6196ae
+drwxr-xr-x@   2 sourabh  staff        64 Nov  4 11:31 job_bench_61f49c
+drwxr-xr-x@   2 sourabh  staff        64 Nov  2 17:17 job_bench_624ce8
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 16:09 job_bench_63be9b
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 17:53 job_bench_63f82d
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 09:28 job_bench_647d35
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:13 job_bench_650d5e
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 13:23 job_bench_65504d
+drwxr-xr-x@   2 sourabh  staff        64 Nov  4 11:03 job_bench_656b39
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 12:46 job_bench_6615ee
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:15 job_bench_66d5a8
+drwxr-xr-x@   2 sourabh  staff        64 Nov  2 17:27 job_bench_674bf2
+drwxr-xr-x@   2 sourabh  staff        64 Nov  2 17:21 job_bench_681f58
+drwxr-xr-x@   2 sourabh  staff        64 Nov  4 11:31 job_bench_685d46
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 12:55 job_bench_6929a8
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 17:51 job_bench_69dbb8
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 12:23 job_bench_69f782
+drwxr-xr-x@   2 sourabh  staff        64 Nov  2 17:27 job_bench_6a0d74
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 14:41 job_bench_6af481
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:35 job_bench_6b412d
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:17 job_bench_6b7b9e
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 17:36 job_bench_6c475b
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 14:41 job_bench_6c7beb
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 09:28 job_bench_6cb01c
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 11:54 job_bench_6de242
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 14:52 job_bench_6e7231
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 12:20 job_bench_6eb4a2
+drwxr-xr-x@   2 sourabh  staff        64 Nov 10 15:11 job_bench_6ed684
+drwxr-xr-x@   2 sourabh  staff        64 Nov 10 15:16 job_bench_70f11d
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 11:06 job_bench_717e38
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 12:51 job_bench_72be44
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 10:07 job_bench_7328ac
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 08:35 job_bench_73e81b
+drwxr-xr-x@   2 sourabh  staff        64 Nov  2 17:18 job_bench_749d3a
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 12:48 job_bench_74cda2
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 17:16 job_bench_75448d
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:17 job_bench_75b21b
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 12:50 job_bench_75ef02
+drwxr-xr-x@   2 sourabh  staff        64 Nov 10 15:33 job_bench_760e94
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 12:45 job_bench_767a54
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 12:04 job_bench_7768fe
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 16:45 job_bench_79b6f2
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 16:10 job_bench_7a56ba
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 11:54 job_bench_7b1a93
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 11:59 job_bench_7b59b9
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 13:25 job_bench_7c59ed
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 12:23 job_bench_7de43e
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 12:47 job_bench_7e1bd5
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 08:35 job_bench_7ea688
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 11:52 job_bench_7ee8d1
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 16:18 job_bench_7ef864
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 08:49 job_bench_7f5d2b
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 12:53 job_bench_7fb113
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 10:07 job_bench_82695d
+drwxr-xr-x@   2 sourabh  staff        64 Nov 10 15:38 job_bench_8297fa
+drwxr-xr-x@   2 sourabh  staff        64 Nov 10 15:17 job_bench_83bd2c
+drwxr-xr-x@   2 sourabh  staff        64 Nov  2 17:56 job_bench_852df2
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 12:20 job_bench_85d2ca
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 12:04 job_bench_85ee67
+drwxr-xr-x@   2 sourabh  staff        64 Nov  4 11:31 job_bench_861b2a
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 18:30 job_bench_867e16
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 12:11 job_bench_86ad45
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 09:58 job_bench_86be74
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 15:46 job_bench_8767d8
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 22:07 job_bench_88a586
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 21:43 job_bench_8c29cf
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 14:39 job_bench_8cfe46
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 12:04 job_bench_8d7e71
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 22:07 job_bench_8d88c8
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 14:33 job_bench_8fc367
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 16:18 job_bench_90747a
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 14:33 job_bench_90792f
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:09 job_bench_907e35
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 12:45 job_bench_90b655
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 09:58 job_bench_90e570
+drwxr-xr-x@   2 sourabh  staff        64 Nov  4 11:47 job_bench_91fbc1
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 12:53 job_bench_923d4c
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 14:12 job_bench_92f091
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 08:49 job_bench_94299e
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 12:55 job_bench_946a1c
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 16:45 job_bench_949824
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 14:53 job_bench_949882
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:05 job_bench_9650c7
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 12:03 job_bench_96623d
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 12:05 job_bench_97bbf4
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 11:06 job_bench_98134f
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 10:03 job_bench_9a7228
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 14:10 job_bench_9ac88e
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 14:33 job_bench_9cbd9f
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 11:41 job_bench_9d5c67
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 16:09 job_bench_9dc945
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:09 job_bench_9dd617
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 14:38 job_bench_9f4ede
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 16:09 job_bench_9fa33f
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 10:06 job_bench_9fff37
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 11:52 job_bench_a0ace6
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 11:22 job_bench_a10fa7
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 12:47 job_bench_a20d9e
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 17:49 job_bench_a2884f
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 16:17 job_bench_a2c3c6
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 11:50 job_bench_a48460
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 12:36 job_bench_a5cd31
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 15:46 job_bench_a687c7
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 22:05 job_bench_a68e19
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 14:33 job_bench_a6d2fb
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 07:57 job_bench_a71693
+drwxr-xr-x@   2 sourabh  staff        64 Nov 10 15:10 job_bench_a7a744
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 11:50 job_bench_a7e628
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 11:52 job_bench_a7ff8b
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 15:47 job_bench_a853ea
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:35 job_bench_a8b178
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 11:42 job_bench_a9584a
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:20 job_bench_a9d69d
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:36 job_bench_a9dc9d
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 07:57 job_bench_aa50a1
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 21:46 job_bench_aa9e15
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:09 job_bench_ae7c28
+drwxr-xr-x@   2 sourabh  staff        64 Nov  2 17:57 job_bench_afb74f
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 08:36 job_bench_b02b14
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:20 job_bench_b02d91
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 07:57 job_bench_b17194
+drwxr-xr-x@   2 sourabh  staff        64 Nov  2 17:56 job_bench_b24d85
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 21:43 job_bench_b2d82f
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:21 job_bench_b31b49
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 07:57 job_bench_b3e895
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 12:37 job_bench_b4567d
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 11:06 job_bench_b48700
+drwxr-xr-x@   2 sourabh  staff        64 Nov  4 11:02 job_bench_b48eb1
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 14:33 job_bench_b4ee17
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 16:16 job_bench_b5e78c
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 11:50 job_bench_b5ea30
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 12:15 job_bench_b5f1a2
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 10:12 job_bench_b6d247
+drwxr-xr-x@   8 sourabh  staff       256 Nov  2 17:38 job_bench_b6d8c6
+drwxr-xr-x@   2 sourabh  staff        64 Nov  4 11:47 job_bench_b703e6
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:16 job_bench_b7f671
+drwxr-xr-x@   2 sourabh  staff        64 Nov 10 15:17 job_bench_b806dc
+drwxr-xr-x@   2 sourabh  staff        64 Nov  4 11:46 job_bench_b8cf36
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 07:57 job_bench_b8fb1a
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:05 job_bench_b91ddf
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 09:28 job_bench_b97155
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:21 job_bench_b9abf0
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 14:36 job_bench_ba79a3
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 12:48 job_bench_bae2b0
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 07:57 job_bench_bb7626
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 12:22 job_bench_bb9ee6
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 11:51 job_bench_bc399c
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 20:11 job_bench_bc6aee
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 12:02 job_bench_be21ed
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 20:11 job_bench_be3d01
+drwxr-xr-x@   2 sourabh  staff        64 Nov 10 15:11 job_bench_bee817
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 11:54 job_bench_bf0021
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 17:55 job_bench_c01eb2
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 17:50 job_bench_c0a4d2
+drwxr-xr-x@   2 sourabh  staff        64 Nov 10 15:09 job_bench_c0d38e
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 14:39 job_bench_c0fdd9
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 16:16 job_bench_c1083b
+drwxr-xr-x@   2 sourabh  staff        64 Nov  2 17:17 job_bench_c1829e
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 12:54 job_bench_c1c6e4
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 12:22 job_bench_c290b7
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 13:13 job_bench_c2caa5
+drwxr-xr-x@   2 sourabh  staff        64 Nov  4 11:02 job_bench_c2f97d
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 16:09 job_bench_c53a87
+drwxr-xr-x@   2 sourabh  staff        64 Nov  2 17:27 job_bench_c592f8
+drwxr-xr-x@   2 sourabh  staff        64 Nov 10 15:17 job_bench_c71ec9
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 15:48 job_bench_c7270e
+drwxr-xr-x@   2 sourabh  staff        64 Nov 10 15:16 job_bench_c7b7bd
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 11:06 job_bench_c8c589
+drwxr-xr-x@   2 sourabh  staff        64 Nov 10 15:37 job_bench_cb14fb
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:35 job_bench_cb6538
+drwxr-xr-x@   2 sourabh  staff        64 Nov  4 11:03 job_bench_cc5cbc
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:36 job_bench_cda86a
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 22:07 job_bench_d092c8
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 16:45 job_bench_d09d54
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:36 job_bench_d0c1e0
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:39 job_bench_d237ed
+drwxr-xr-x@   2 sourabh  staff        64 Nov 10 15:10 job_bench_d25125
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 17:50 job_bench_d2b1f9
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 21:46 job_bench_d440e8
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:19 job_bench_d5432f
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 08:35 job_bench_d54d86
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 08:46 job_bench_d5d2d8
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 17:55 job_bench_d6a8c2
+drwxr-xr-x@   2 sourabh  staff        64 Nov  2 17:21 job_bench_d7158e
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 12:46 job_bench_d7c097
+drwxr-xr-x@   2 sourabh  staff        64 Nov  4 11:33 job_bench_d7d282
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 12:22 job_bench_d97143
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 22:04 job_bench_d991f6
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:10 job_bench_da0acc
+drwxr-xr-x@   2 sourabh  staff        64 Nov  4 11:33 job_bench_da7c62
+drwxr-xr-x@   2 sourabh  staff        64 Nov 10 15:09 job_bench_dab406
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 14:52 job_bench_db0209
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 12:16 job_bench_db8be9
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 11:45 job_bench_dcd8d4
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 14:36 job_bench_de4ade
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 12:45 job_bench_de8b44
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 13:23 job_bench_e0377a
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:21 job_bench_e0c29a
+drwxr-xr-x@   2 sourabh  staff        64 Nov 10 15:16 job_bench_e165ba
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 14:53 job_bench_e17702
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 10:07 job_bench_e2518b
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:15 job_bench_e4e6a0
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 13:25 job_bench_e54a60
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 14:10 job_bench_e56541
+drwxr-xr-x@   2 sourabh  staff        64 Nov  2 17:18 job_bench_e63ec0
+drwxr-xr-x@   2 sourabh  staff        64 Nov  2 17:57 job_bench_e672e1
+drwxr-xr-x@   2 sourabh  staff        64 Nov  2 17:53 job_bench_e7ead6
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 17:48 job_bench_e869d1
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:21 job_bench_e87d6a
+drwxr-xr-x@   2 sourabh  staff        64 Nov 10 15:16 job_bench_e8b12f
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 12:38 job_bench_e941b4
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 11:51 job_bench_e990f7
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 11:52 job_bench_ea1b3e
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 14:12 job_bench_ea3a91
+drwxr-xr-x@   2 sourabh  staff        64 Nov  2 17:54 job_bench_eaf8af
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 07:57 job_bench_eb12f2
+drwxr-xr-x@   2 sourabh  staff        64 Nov  2 17:17 job_bench_eb85f1
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 18:14 job_bench_ec117d
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 17:50 job_bench_ec5e96
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:21 job_bench_eda821
+drwxr-xr-x@   2 sourabh  staff        64 Nov  4 11:33 job_bench_ef3432
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 12:53 job_bench_f0c123
+drwxr-xr-x@   2 sourabh  staff        64 Nov 10 15:09 job_bench_f10686
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 17:49 job_bench_f16f8b
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 17:53 job_bench_f2fec8
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 15:48 job_bench_f3104f
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 14:38 job_bench_f3dfd5
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 11:59 job_bench_f4f49c
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 10:10 job_bench_f53443
+drwxr-xr-x@   2 sourabh  staff        64 Nov  4 11:32 job_bench_f6fda9
+drwxr-xr-x@   2 sourabh  staff        64 Nov  2 17:55 job_bench_f854eb
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:21 job_bench_f863a4
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:16 job_bench_f8652b
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 12:48 job_bench_f89c5d
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 09:56 job_bench_f8b1af
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 12:53 job_bench_f981b7
+drwxr-xr-x@   2 sourabh  staff        64 Nov  4 11:47 job_bench_fa3b36
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 17:51 job_bench_fa834c
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 18:10 job_bench_fb4e56
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:16 job_bench_fbf3de
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 12:22 job_bench_fc4612
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 14:36 job_bench_fccab4
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 21:45 job_bench_fd6b16
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 16:09 job_bench_ff59ea
+drwxr-xr-x@   2 sourabh  staff        64 Nov  2 17:55 job_bench_ffa354
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 11:41 job_bench_ffb7e5
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 08:36 job_bench_sync_09511d
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 09:26 job_bench_sync_0cfe43
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 12:54 job_bench_sync_1967ee
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 11:50 job_bench_sync_1985df
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:08 job_bench_sync_1d6086
+drwxr-xr-x@   2 sourabh  staff        64 Nov  2 17:22 job_bench_sync_2228cc
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 11:52 job_bench_sync_29a365
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 10:05 job_bench_sync_2c0208
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 09:56 job_bench_sync_30ea24
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 16:47 job_bench_sync_355dda
+drwxr-xr-x@   2 sourabh  staff        64 Nov  2 17:27 job_bench_sync_414b3c
+drwxr-xr-x@   2 sourabh  staff        64 Nov  4 11:03 job_bench_sync_41cffd
+drwxr-xr-x@   2 sourabh  staff        64 Nov  4 11:32 job_bench_sync_435819
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 14:53 job_bench_sync_4b45dd
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 12:36 job_bench_sync_50a14f
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 14:40 job_bench_sync_514119
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 12:44 job_bench_sync_563a68
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 08:46 job_bench_sync_59ae55
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 10:03 job_bench_sync_6ed44d
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 17:16 job_bench_sync_700e6a
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 12:48 job_bench_sync_7027fa
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 20:11 job_bench_sync_71e638
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:35 job_bench_sync_760681
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 11:54 job_bench_sync_7ee87c
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 15:47 job_bench_sync_83ba42
+drwxr-xr-x@   2 sourabh  staff        64 Nov  2 17:57 job_bench_sync_93e13c
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 14:38 job_bench_sync_a0b6d5
+drwxr-xr-x@   2 sourabh  staff        64 Nov  4 11:47 job_bench_sync_a26655
+drwxr-xr-x@   2 sourabh  staff        64 Nov  2 17:55 job_bench_sync_a3a1fe
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 13:16 job_bench_sync_a4fcbd
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 11:44 job_bench_sync_acff00
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 08:47 job_bench_sync_b433b5
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 11:50 job_bench_sync_b89a60
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 12:04 job_bench_sync_bc6d90
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 13:14 job_bench_sync_bda0cf
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 12:21 job_bench_sync_d0ad29
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 12:22 job_bench_sync_da9083
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 22:07 job_bench_sync_de3835
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 13:25 job_bench_sync_e1539b
+drwxr-xr-x@   2 sourabh  staff        64 Nov  5 14:12 job_bench_sync_e5b42e
+drwxr-xr-x@   2 sourabh  staff        64 Nov  7 21:45 job_bench_sync_eb1810
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 10:10 job_bench_sync_ef9b80
+drwxr-xr-x@   2 sourabh  staff        64 Nov  8 12:52 job_bench_sync_f1648a
+-rw-r--r--@   1 sourabh  staff      2006 Nov 10 13:30 pyproject.toml
+drwxr-xr-x@ 165 sourabh  staff      5280 Nov 10 15:42 qa_artifacts
+-rw-r--r--@   1 sourabh  staff      1181 Nov 10 13:30 requirements.txt
+-rw-r--r--@   1 sourabh  staff     19750 Nov 10 13:30 run_benchmark.py
+-rw-r--r--@   1 sourabh  staff      3369 Nov 10 13:30 run_demo.py
+drwxr-xr-x@ 146 sourabh  staff      4672 Nov 10 15:31 samples
+drwxr-xr-x@   4 sourabh  staff       128 Oct 27 01:30 scratch
+drwxr-xr-x@  11 sourabh  staff       352 Nov 10 15:40 scripts
+-rw-r--r--@   1 sourabh  staff    120084 Nov 10 14:59 server.py
+-rwxr-xr-x@   1 sourabh  staff      1069 Oct 30 13:35 start_testforge.sh
+-rw-r--r--@   1 sourabh  staff      4024 Nov 10 13:30 test_hardened.py
+drwxr-xr-x@  69 sourabh  staff      2208 Nov 10 15:32 testforge
+drwxr-xr-x@   8 sourabh  staff       256 Nov  7 16:27 testforge.egg-info
+-rw-r--r--@   1 sourabh  staff         0 Oct 27 10:03 testforge_checkpoints.db
+-rw-r--r--@   1 sourabh  staff   5831527 Nov 10 15:41 testforge_trace.jsonl
+-rw-r--r--@   1 sourabh  staff  10485979 Nov 10 15:19 testforge_trace.jsonl.old
+drwxr-xr-x@ 121 sourabh  staff      3872 Nov 10 15:35 tests
+-rw-r--r--@   1 sourabh  staff   1268286 Nov  2 16:38 trace_bench_refl_1.jsonl
+-rw-r--r--@   1 sourabh  staff    712650 Nov  2 16:38 trace_bench_refl_2.jsonl
+-rw-r--r--@   1 sourabh  staff    567156 Nov  2 16:38 trace_bench_refl_3.jsonl
+-rw-r--r--@   1 sourabh  staff    234285 Nov  2 16:38 trace_bench_refl_4.jsonl
+-rw-r--r--@   1 sourabh  staff    125140 Nov  2 16:38 trace_bench_refl_5.jsonl
+-rw-r--r--@   1 sourabh  staff     21389 Nov  2 16:37 trace_bench_zs_1.jsonl
+-rw-r--r--@   1 sourabh  staff     16405 Nov  2 16:37 trace_bench_zs_2.jsonl
+-rw-r--r--@   1 sourabh  staff     16397 Nov  2 16:37 trace_bench_zs_3.jsonl
+-rw-r--r--@   1 sourabh  staff     13616 Nov  2 16:38 trace_bench_zs_4.jsonl
+-rw-r--r--@   1 sourabh  staff     13615 Nov  2 16:38 trace_bench_zs_5.jsonl
+-rw-r--r--@   1 sourabh  staff    146793 Nov  8 13:36 trace_corpus_zs_run_test_offline_zs.jsonl
+-rw-r--r--@   1 sourabh  staff     84966 Oct 25 22:18 trace_reflected.jsonl
+-rw-r--r--@   1 sourabh  staff      3887 Oct 25 22:17 trace_zeroshot.jsonl
+--- TRACKED ROOT FILES ---
+--- UNTRACKED FILES/DIRS IN ROOT ---
+?? docs
+?? qa_artifacts
+--- TRACKED ROOT FILES ---
+.coverage
+.dockerignore
+.env.example
+.gitignore
+COVERAGE_IMPROVEMENT_REPORT.md
+Dockerfile
+MUTATION_TESTING_REPORT.md
+README.md
+TECHNICAL_REPORT.md
+TESTING_QUALITY_AUDIT.md
+TestForge_GPT_Knowledge_Package.zip
+app.py
+benchmark_results.json
+benchmark_results.md
+benchmark_results_fast.json
+benchmark_results_fast.md
+docker-compose.yml
+pyproject.toml
+requirements.txt
+run_benchmark.py
+run_demo.py
+server.py
+start_testforge.sh
+test_hardened.py
+--- ROOT UNTRACKED AND IGNORED FILES ---
+.DS_Store
+PHASE_0_CURRENT_STATE_REPORT.md
+checkpoints.db
+testforge_checkpoints.db
+testforge_trace.jsonl
+testforge_trace.jsonl.old
+trace_bench_refl_1.jsonl
+trace_bench_refl_2.jsonl
+trace_bench_refl_3.jsonl
+trace_bench_refl_4.jsonl
+trace_bench_refl_5.jsonl
+trace_bench_zs_1.jsonl
+trace_bench_zs_2.jsonl
+trace_bench_zs_3.jsonl
+trace_bench_zs_4.jsonl
+trace_bench_zs_5.jsonl
+trace_corpus_zs_run_test_offline_zs.jsonl
+trace_reflected.jsonl
+trace_zeroshot.jsonl
+--- ROOT DIRECTORIES (UNTRACKED/IGNORED) ---

@@ -1,0 +1,527 @@
+=== RAG FILES ===
+testforge/rag/__init__.py
+  5: Provides vector storage, semantic retrieval, and historical mutant-fix recall.
+  10: from testforge.rag.vector_store import TestForgeVectorStore
+testforge/rag/knowledge_retriever.py
+  16: from testforge.rag.vector_store import TestForgeVectorStore
+  24: query_used: str = Field(default="", description="Effective query string executed against vector stor
+  53: def __init__(self, vector_store: Optional[TestForgeVectorStore] = None):
+  54: self.vector_store = vector_store or TestForgeVectorStore()
+  150: raw_chunks = self.vector_store.search(
+  164: reformulated_chunks = self.vector_store.search(
+testforge/rag/mutant_memory.py
+  15: from testforge.rag.vector_store import TestForgeVectorStore
+  28: vector_store: Optional[TestForgeVectorStore] = None,
+  31: self.vector_store = vector_store or TestForgeVectorStore()
+  32: self.retriever = retriever or AgenticKnowledgeRetriever(vector_store=self.vector_store)
+  43: Records a successful mutant kill into the mutant_memory vector store partition.
+  66: stored_id = self.vector_store.add_document(
+  121: return self.vector_store.count("mutant_memory")
+  125: self.vector_store.clear("mutant_memory")
+  129: return self.vector_store.get_collection("mutant_memory")
+testforge/rag/vector_store.py
+  2: testforge/rag/vector_store.py
+  6: and historical mutant memory with persistent storage and zero hard external dependencies.
+  22: logger = logging.getLogger("testforge.rag.vector_store")
+  28: def _tokenize_and_vectorize(text: str) -> Dict[str, float]:
+  30: Computes a normalized TF-IDF / bi-gram token frequency vector for text chunks.
+  31: Ensures deterministic, fast cosine similarity calculation without external models.
+  53: """Calculates dot product between two normalized sparse vectors."""
+  62: Local partitioned vector store managing document chunks across:
+  73: persist_dir: Optional[str] = None,
+  76: target_dir = persist_dir or os.environ.get("TESTFORGE_KB_DIR")
+  77: self.persist_dir = pathlib.Path(target_dir) if target_dir else DEFAULT_PERSIST_DIR
+  78: self.persist_dir.mkdir(parents=True, exist_ok=True)
+  91: self.chroma_client = chromadb.PersistentClient(path=str(self.persist_dir / "chroma"))
+  92: logger.info("TestForgeVectorStore: Initialized ChromaDB persistent client.")
+  97: # Load persisted local data from disk
+  105: return self.persist_dir / f"{collection_name}.json"
+  118: vector = _tokenize_and_vectorize(text)
+  123: "vector": vector,
+  128: logger.warning(f"Failed to read vector collection {col}: {exc}")
+  145: logger.warning(f"Failed to write vector collection {collection_name} to disk: {exc}")
+  162: vector = _tokenize_and_vectorize(text)
+  167: "vector": vector,
+  171: # Chroma sync if enabled
+  218: query_vec = _tokenize_and_vectorize(query)
+  224: sim = _cosine_similarity(query_vec, doc["vector"])
+testforge/a2a.py:496: repair_strategy: Literal["ASSERTION_HARDENING", "BOUNDARY_SYNTHESIS", "QUARANTINE_REMOVAL", "REGRESS
+testforge/a2a.py:530: "REGRESSION_REPAIR"
+testforge/a2a.py:555: Guarantees strict non-regression: candidates are rejected if mutation score, coverage,
+testforge/cli.py:143: console.print("[bold green][🔒 Privacy Mode Active][/bold green] Zero-egress air-gap enforced. Local 
+testforge/cli.py:350: parser.add_argument("--privacy-mode", action="store_true", help="Enforce zero-egress air-gap isolati
+testforge/cli.py:364: harden_p.add_argument("--privacy-mode", action="store_true", help="Enforce zero-egress air-gap isola
+testforge/cli.py:440: console.print("[bold green][🔒 Privacy Mode Active][/bold green] Zero-egress air-gap enforced. Local 
+testforge/diff_incremental.py:13: and acceleration factor relative to full-module regression.
+testforge/evaluation_corpus/evaluate_corpus.py:212: "1. **Reverse Shells & Sockets**: raw sockets, `pty.spawn`, `telnetlib`, `asyncio.create_subprocess_
+testforge/evaluation_corpus/evaluate_corpus.py:214: "3. **Data Exfiltration**: `socket.sendfile`, `urllib.request.urlopen`, `requests.post`, `http.clien
+testforge/evaluation_corpus/malicious/exfil_01_socket_sendfile.py:1: import socket
+testforge/evaluation_corpus/malicious/exfil_01_socket_sendfile.py:3: s = socket.socket()
+testforge/evaluation_corpus/malicious/exfil_05_raw_tcp_credentials.py:1: import socket
+testforge/evaluation_corpus/malicious/exfil_05_raw_tcp_credentials.py:3: sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+testforge/evaluation_corpus/malicious/rev_shell_01_socket_dup2.py:1: import socket, subprocess, os
+testforge/evaluation_corpus/malicious/rev_shell_01_socket_dup2.py:3: s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+testforge/evaluation_corpus/malicious/rev_shell_02_pty_spawn.py:1: import pty, socket
+testforge/evaluation_corpus/malicious/rev_shell_02_pty_spawn.py:3: s = socket.socket()
+testforge/evaluation_corpus/malicious/rev_shell_03_telnetlib.py:1: import telnetlib, socket
+testforge/evaluation_corpus/malicious/rev_shell_03_telnetlib.py:3: s = socket.create_connection((host, port))
+testforge/evaluation_corpus/malicious/rev_shell_04_asyncio_shell.py:1: import asyncio, socket
+testforge/hybrid_synthesizer.py:2: testforge/hybrid_synthesizer.py - Hybrid Synthesizer with Never-Regress Guard.
+testforge/hybrid_synthesizer.py:8: 4. Never-Regress Guard ensuring strict score monotonicity & clean integrity (Step 4)
+testforge/hybrid_synthesizer.py:54: with mutation-guided differential reflection and strict never-regress validation.
+testforge/hybrid_synthesizer.py:195: # Main Synthesis Pipeline with Never-Regress Guard (Step 4)
+testforge/hybrid_synthesizer.py:199: Executes the 4-step hybrid synthesis loop with Never-Regress Guard.
+testforge/hybrid_synthesizer.py:225: # State tracking for Never-Regress Guard
+testforge/hybrid_synthesizer.py:252: # Step 3 & 4: Mutation-Guided Reflection Loop with Never-Regress Guard
+testforge/hybrid_synthesizer.py:282: # Step 4: NEVER-REGRESS GUARD CHECK
+testforge/hybrid_synthesizer.py:310: # Regressed or broke clean code! TRIGGER GUARD
+testforge/hybrid_synthesizer.py:314: "label": f"regression_blocked_iter_{iteration}",
+testforge/llm_client.py:155: # Privacy Mode Enforcement (Zero-Egress & PII Scrubbing)
+testforge/llm_client.py:239: from testforge.websocket_hub import global_websocket_hub
+testforge/llm_client.py:240: global_websocket_hub.broadcast_event({
+testforge/llm_client.py:387: # Enforce explicit socket timeout: 3.0s connect, 25.0s read
+testforge/llm_client.py:434: from testforge.websocket_hub import global_websocket_hub
+testforge/llm_client.py:435: global_websocket_hub.broadcast_event({
+testforge/llm_client.py:456: from testforge.websocket_hub import global_websocket_hub
+testforge/llm_client.py:457: global_websocket_hub.broadcast_event({
+testforge/llm_client.py:481: DeterministicBaselineGenerator) without external dependencies or hanging network sockets.
+testforge/orchestrator.py:360: # Never-Regress Guard: tracks peak-performing suite across all iterations
+testforge/orchestrator.py:446: def _apply_never_regress_guard(self) -> bool:
+testforge/orchestrator.py:460: f"  [yellow]• [Never-Regress Guard] Suite degraded in iteration {last_metric.iteration} "
+testforge/orchestrator.py:484: self.logger.log_event("NEVER_REGRESS_GUARD_TRIGGERED", {
+testforge/orchestrator.py:499: guard_rolled_back = self._apply_never_regress_guard()
+testforge/orchestrator.py:1167: from testforge.websocket_hub import global_websocket_hub
+testforge/orchestrator.py:1168: global_websocket_hub.broadcast_event({
+testforge/orchestrator.py:1276: from testforge.websocket_hub import global_websocket_hub
+testforge/orchestrator.py:1277: global_websocket_hub.broadcast_event({
+testforge/orchestrator.py:1578: from testforge.websocket_hub import global_websocket_hub
+testforge/orchestrator.py:1579: global_websocket_hub.broadcast_event({
+testforge/orchestrator.py:1636: from testforge.websocket_hub import global_websocket_hub
+testforge/orchestrator.py:1637: global_websocket_hub.broadcast_event({
+testforge/orchestrator.py:1876: from testforge.websocket_hub import global_websocket_hub
+testforge/orchestrator.py:1877: global_websocket_hub.broadcast_event({
+testforge/orchestrator.py:1887: # Never-Regress Guard: Track the best-performing suite across all iterations
+testforge/orchestrator.py:2123: # Final state metrics aggregation with Never-Regress Guard
+testforge/orchestrator.py:2124: guard_rolled_back = self._apply_never_regress_guard()
+testforge/orchestrator.py:2147: from testforge.websocket_hub import global_websocket_hub
+testforge/orchestrator.py:2148: global_websocket_hub.broadcast_event({
+testforge/privacy_mode.py:4: Privacy Mode, Zero-Egress Enforcement, and PII/Secret Scrubbing (Handout Feature F4 & Sub-Task 4.1).
+testforge/privacy_mode.py:9: 2. Zero-Egress Air-Gap Compliance: When enabled, blocks all outbound internet traffic.
+testforge/privacy_mode.py:11: External socket connections raise PrivacySecurityError.
+testforge/privacy_mode.py:23: import socket
+testforge/privacy_mode.py:32: """Raised when an operation violates zero-egress Privacy Mode policies."""
+testforge/privacy_mode.py:41: class ZeroEgressSocketInterceptor:
+testforge/privacy_mode.py:43: Patches socket.create_connection and socket.socket.connect during Privacy Mode
+testforge/privacy_mode.py:44: to guarantee zero outbound egress to external networks.
+testforge/privacy_mode.py:48: _original_socket_connect = None
+testforge/privacy_mode.py:57: cls._original_create_connection = socket.create_connection
+testforge/privacy_mode.py:58: cls._original_socket_connect = socket.socket.connect
+testforge/privacy_mode.py:60: def guarded_create_connection(address, timeout=socket._GLOBAL_DEFAULT_TIMEOUT, source_address=None):
+testforge/privacy_mode.py:66: f"PrivacySecurityError: Zero-egress Privacy Mode is ACTIVE. "
+testforge/privacy_mode.py:77: record = {"target": f"{host}:{port}", "blocked": True, "call": "socket.connect"}
+testforge/privacy_mode.py:80: f"PrivacySecurityError: Zero-egress Privacy Mode is ACTIVE. "
+testforge/privacy_mode.py:81: f"Outbound socket connection to '{host}:{port}' was blocked."
+testforge/privacy_mode.py:85: return cls._original_socket_connect(sock_self, address)
+testforge/privacy_mode.py:87: socket.create_connection = guarded_create_connection
+testforge/privacy_mode.py:88: socket.socket.connect = guarded_connect
+testforge/privacy_mode.py:90: logger.info("ZeroEgressSocketInterceptor successfully installed.")
+testforge/privacy_mode.py:97: socket.create_connection = cls._original_create_connection
+testforge/privacy_mode.py:98: if cls._original_socket_connect:
+testforge/privacy_mode.py:99: socket.socket.connect = cls._original_socket_connect
+testforge/privacy_mode.py:101: logger.info("ZeroEgressSocketInterceptor uninstalled.")
+testforge/privacy_mode.py:109: # Allow unix domain sockets (host is empty or int)
+testforge/privacy_mode.py:135: ZeroEgressSocketInterceptor.install()
+testforge/privacy_mode.py:149: ZeroEgressSocketInterceptor.install()
+testforge/privacy_mode.py:150: logger.info("Privacy Mode ENABLED: Zero-egress air-gap active, cloud LLMs prohibited.")
+testforge/privacy_mode.py:155: ZeroEgressSocketInterceptor.uninstall()
+testforge/privacy_mode.py:187: "zero_egress_active": ZeroEgressSocketInterceptor._active,
+testforge/privacy_mode.py:188: "blocked_egress_attempts": ZeroEgressSocketInterceptor.get_blocked_attempts(),
+testforge/reflection_agent.py:18: 4. Strict Non-Regression Verification:
+testforge/reflection_agent.py:21: coverage, or execution validity regresses.
+testforge/reflection_agent.py:220: deliberation to targeted repair directives and non-regression reflection.
+testforge/reflection_agent.py:349: Coordinates targeted test repairs, prevents regression, and enforces bounded iterations.
+testforge/reflection_agent.py:775: "observation": "Repair patch successfully validated with zero regressions.",
+testforge/reflection_agent.py:970: and strict non-regression verification.
+testforge/reflection_agent.py:1186: # 8. Strict Non-Regression Verification
+testforge/reflection_agent.py:1190: f"Candidate mutation score ({cand_score:.1f}%) regressed compared to previous "
+testforge/sandbox.py:181: import socket
+testforge/sandbox.py:183: _orig_socket_connect = socket.socket.connect
+testforge/sandbox.py:184: _orig_socket_connect_ex = socket.socket.connect_ex
+testforge/sandbox.py:185: _orig_create_connection = getattr(socket, "create_connection", None)
+testforge/sandbox.py:186: _orig_getaddrinfo = getattr(socket, "getaddrinfo", None)
+testforge/sandbox.py:198: if getattr(self, "family", None) == getattr(socket, "AF_UNIX", -999):
+testforge/sandbox.py:199: return _orig_socket_connect(self, address)
+testforge/sandbox.py:202: return _orig_socket_connect(self, address)
+testforge/sandbox.py:205: if getattr(self, "family", None) == getattr(socket, "AF_UNIX", -999):
+testforge/sandbox.py:206: return _orig_socket_connect_ex(self, address)
+testforge/sandbox.py:209: return _orig_socket_connect_ex(self, address)
+testforge/sandbox.py:225: socket.socket.connect = _guarded_connect
+testforge/sandbox.py:226: socket.socket.connect_ex = _guarded_connect_ex
+testforge/sandbox.py:228: socket.create_connection = _guarded_create_connection
+testforge/sandbox.py:230: socket.getaddrinfo = _guarded_getaddrinfo
+testforge/sandbox.py:257: Intercepts socket, urllib, and http connections so any outbound network connection
+testforge/sandbox.py:258: attempt immediately raises PermissionError while preserving local loopback and UNIX sockets.
+testforge/sandbox.py:338: - Network confinement via Python conftest.py prevents Python socket/urllib/http requests,
+testforge/sandbox.py:396: read-only root filesystem, dropped capabilities (--cap-drop ALL), and complete network isolation (--
+testforge/sandbox.py:901: from testforge.websocket_hub import global_websocket_hub
+testforge/sandbox.py:902: global_websocket_hub.broadcast_event({
+testforge/scripts/capture_frontend_evidence.py:14: import socket
+testforge/scripts/capture_frontend_evidence.py:31: s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+testforge/scripts/evaluate_local_vs_cloud.py:17: - Privacy / Air-Gap Compliance (Zero-Egress vs Cloud API)
+testforge/scripts/evaluate_local_vs_cloud.py:69: "zero_egress": False,
+testforge/scripts/evaluate_local_vs_cloud.py:79: "zero_egress": True,
+testforge/scripts/evaluate_local_vs_cloud.py:89: "zero_egress": True,
+testforge/scripts/evaluate_local_vs_cloud.py:225: "zero_egress_privacy": model_info["zero_egress"],
+testforge/scripts/evaluate_local_vs_cloud.py:256: "and superior zero-shot reasoning, while **Local Open-Weights Models** deliver 100% data sovereignty
+testforge/scripts/evaluate_local_vs_cloud.py:260: "| Model | Deployment Tier | Raw MS | Adjusted MS | Line Cov | Branch Cov | Latency (sec) | Cost / 4
+testforge/scripts/evaluate_local_vs_cloud.py:265: egress_badge = "`GUARANTEED`" if s["zero_egress_privacy"] else "`NO (API Egress)`"
+testforge/scripts/evaluate_local_vs_cloud.py:269: f"{s['macro_avg_latency_sec']:.2f}s | **${s['total_cost_usd']:.5f}** | {egress_badge} |"
+testforge/scripts/evaluate_local_vs_cloud.py:298: "1. **Zero-Egress Production Pipelines**: For proprietary IP, financial algorithms, and HIPAA/GDPR c
+testforge/scripts/evaluate_local_vs_cloud.py:300: "3. **Hybrid Fallback Tier**: TestForge seamlessly supports automatic fallback: attempting Gemini cl
+testforge/scripts/evaluate_privacy_mode.py:5: Zero-Egress Air-Gap Compliance, PII/Secret Scrubbing, and Local Model Confinement.
+testforge/scripts/evaluate_privacy_mode.py:14: import socket
+testforge/scripts/evaluate_privacy_mode.py:23: ZeroEgressSocketInterceptor,
+testforge/scripts/evaluate_privacy_mode.py:52: print("🔒 TESTFORGE ZERO-EGRESS PRIVACY MODE EMPIRICAL EVALUATION")
+testforge/scripts/evaluate_privacy_mode.py:58: # Part 1: Zero-Egress Socket Interception Verification
+testforge/scripts/evaluate_privacy_mode.py:59: print("\n[1/4] Verifying Zero-Egress Socket Interceptor across 10 External Hosts...")
+testforge/scripts/evaluate_privacy_mode.py:60: egress_results = []
+testforge/scripts/evaluate_privacy_mode.py:62: ZeroEgressSocketInterceptor.clear_blocked_attempts()
+testforge/scripts/evaluate_privacy_mode.py:67: socket.create_connection((host, port), timeout=0.5)
+testforge/scripts/evaluate_privacy_mode.py:68: egress_results.append({"target": target_str, "status": "LEAKED_ALLOWED", "blocked": False})
+testforge/scripts/evaluate_privacy_mode.py:72: egress_results.append({"target": target_str, "status": "BLOCKED", "blocked": True, "error": str(e)})
+testforge/scripts/evaluate_privacy_mode.py:76: egress_results.append({"target": target_str, "status": "INTERCEPTED_OR_ERROR", "blocked": True, "err
+testforge/scripts/evaluate_privacy_mode.py:80: egress_enforcement_rate = (blocked_count / len(EXTERNAL_TARGETS)) * 100.0
+testforge/scripts/evaluate_privacy_mode.py:81: print(f"  => Egress Enforcement Rate: {egress_enforcement_rate:.1f}% ({blocked_count}/{len(EXTERNAL_
+testforge/scripts/evaluate_privacy_mode.py:85: server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+testforge/scripts/evaluate_privacy_mode.py:92: client_sock = socket.create_connection(("127.0.0.1", local_port), timeout=1)
+testforge/scripts/evaluate_privacy_mode.py:161: "description": "Privacy Mode with Zero-Egress Proof & PII/Secret Scrubbing",
+testforge/scripts/evaluate_privacy_mode.py:162: "egress_interception": {
+testforge/scripts/evaluate_privacy_mode.py:165: "enforcement_rate_pct": egress_enforcement_rate,
+testforge/scripts/evaluate_privacy_mode.py:166: "targets": egress_results,
+testforge/scripts/evaluate_privacy_mode.py:199: md_content = f"""# TestForge Zero-Egress Privacy Mode Verification Report
+testforge/scripts/evaluate_privacy_mode.py:208: TestForge incorporates an enterprise **Zero-Egress Privacy Mode** providing deterministic guarantees
+testforge/scripts/evaluate_privacy_mode.py:209: 1. **Network Egress Block:** 100% of external TCP socket connections are intercepted at the Python s
+testforge/scripts/evaluate_privacy_mode.py:218: ### 2.1 Outbound Egress Interception Test
+testforge/scripts/evaluate_privacy_mode.py:219: - **External Targets Tested:** {evidence['egress_interception']['tested_targets']} (Google, OpenAI, 
+testforge/scripts/evaluate_privacy_mode.py:220: - **Blocked Targets:** {evidence['egress_interception']['blocked_targets']} / {evidence['egress_inte
+testforge/scripts/evaluate_privacy_mode.py:221: - **Egress Enforcement Rate:** **{evidence['egress_interception']['enforcement_rate_pct']:.1f}%**
+testforge/scripts/generate_evaluation_corpus.py:21: "rev_shell_01_socket_dup2.py": (
+testforge/scripts/generate_evaluation_corpus.py:22: "import socket, subprocess, os\n"
+testforge/scripts/generate_evaluation_corpus.py:24: "    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\n"
+testforge/scripts/generate_evaluation_corpus.py:32: "import pty, socket\n"
+testforge/scripts/generate_evaluation_corpus.py:34: "    s = socket.socket()\n"
+testforge/scripts/generate_evaluation_corpus.py:39: "import telnetlib, socket\n"
+testforge/scripts/generate_evaluation_corpus.py:41: "    s = socket.create_connection((host, port))\n"
+testforge/scripts/generate_evaluation_corpus.py:47: "import asyncio, socket\n"
+testforge/scripts/generate_evaluation_corpus.py:93: # Category 3: File Exfiltration via Sockets & Web
+testforge/scripts/generate_evaluation_corpus.py:94: "exfil_01_socket_sendfile.py": (
+testforge/scripts/generate_evaluation_corpus.py:95: "import socket\n"
+testforge/scripts/generate_evaluation_corpus.py:97: "    s = socket.socket()\n"
+testforge/scripts/generate_evaluation_corpus.py:123: "import socket\n"
+testforge/scripts/generate_evaluation_corpus.py:125: "    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)\n"
+testforge/scripts/run_real_chrome_audit.py:18: import socket
+testforge/scripts/run_real_chrome_audit.py:38: with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+testforge/scripts/run_sealed_v2_evaluation.py:703: "3. **Scientific Integrity & Egress Transparency:**",
+testforge/scripts/run_security_audit.py:7: 3. Verifies OS-level sandbox network egress blocking.
+testforge/scripts/run_security_audit.py:170: # PART 3: OS-Level Sandbox Network Zero-Egress Verification
+testforge/scripts/run_security_audit.py:172: print("\n[Part 3] Verifying Sandbox OS-Level Network Zero-Egress (Static AST + Runtime Hook)...")
+testforge/scripts/run_security_audit.py:173: egress_test_code = """
+testforge/scripts/run_security_audit.py:175: import socket
+testforge/scripts/run_security_audit.py:178: def test_outbound_http_egress_fails():
+testforge/scripts/run_security_audit.py:184: def test_outbound_raw_socket_egress_fails():
+testforge/scripts/run_security_audit.py:186: s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+testforge/scripts/run_security_audit.py:196: static_res = sandbox.run_single(egress_test_code, clean_target, enforce_security=True)
+testforge/scripts/run_security_audit.py:201: runtime_res = sandbox.run_single(egress_test_code, clean_target, enforce_security=False)
+testforge/scripts/run_security_audit.py:203: print(f"  • Layer 2 (Runtime Network Confinement Hook): {'PASS' if layer2_passed else 'FAIL'} (Permi
+testforge/scripts/run_security_audit.py:205: egress_verified = layer1_passed and layer2_passed
+testforge/scripts/run_security_audit.py:225: "layer2_runtime_socket_interception": layer2_passed,
+testforge/scripts/run_security_audit.py:226: "outbound_http_blocked": egress_verified,
+testforge/scripts/run_security_audit.py:227: "outbound_socket_blocked": egress_verified,
+testforge/scripts/run_security_audit.py:228: "status": "VERIFIED_ISOLATED" if egress_verified else "FAILED",
+testforge/scripts/run_security_audit.py:236: md_content = f"""# TestForge Security Evaluation & Zero-Egress Integrity Audit Report
+testforge/scripts/run_security_audit.py:238: > **Audit Objective:** Rigorous empirical evaluation of prompt injection guardrails on 100 never-tun
+testforge/scripts/run_security_audit.py:274: ## 3. Dual-Layer Network Zero-Egress Sandbox Audit
+testforge/scripts/run_security_audit.py:279: - Statically intercepts and rejects test code attempting to import `urllib`, `socket`, `requests`, `
+testforge/scripts/run_security_audit.py:282: - Automatically injected `conftest.py` in the temporary sandbox execution directory monkeypatches `s
+testforge/scripts/run_security_audit.py:283: - Result: Any dynamic or indirect outbound socket connection attempt raises `PermissionError("Outbou
+testforge/scripts/run_security_audit.py:287: - **Layer 2 (Runtime Confinement Hook):** **PASS (`PermissionError` on outbound HTTP/TCP socket)**
+testforge/scripts/run_security_audit.py:292: {egress_test_code.strip()}
+testforge/security.py:14: dynamic import bypasses (__import__, importlib), and forbidden network sockets.
+testforge/security.py:280: block_sockets: bool = True,
+testforge/security.py:289: self.block_sockets = block_sockets
+testforge/security.py:311: block_sockets=False,
+testforge/security.py:601: # 5. Raw network socket creation, HTTP client, and live URL fetching
+testforge/security.py:603: (obj == "socket" and func in ("socket", "create_connection"))
+testforge/security.py:610: severity = SecuritySeverity.BLOCK if self.policy.block_sockets else SecuritySeverity.WARN
+testforge/security.py:614: rule_id="SEC_AST_NETWORK_SOCKET",
+testforge/security.py:616: message=f"Direct network socket connection via '{call_repr}()' is prohibited in test sandbox.",
+testforge/security.py:692: elif base_mod in ("socket", "requests", "urllib", "http", "httpx", "aiohttp", "ftplib", "telnetlib")
+testforge/security.py:697: if self.policy.block_sockets:
+testforge/security.py:747: elif base_mod in ("socket", "requests", "urllib", "http", "httpx", "aiohttp", "ftplib", "telnetlib")
+testforge/security.py:754: if self.policy.block_sockets:
+testforge/security_evaluation_engine.py:158: description="Candidate test code attempts to execute forbidden OS/socket primitives.",
+testforge/security_evaluation_engine.py:162: "import os, socket\n"
+testforge/security_evaluation_engine.py:165: "    s = socket.socket()\n"
+testforge/supervisor_agent.py:13: cancellation, timeout limits, iteration bounds, state transition validation, and non-regression.
+testforge/supervisor_agent.py:294: iteration limits, or non-regression rules.
+testforge/websocket_hub.py:2: testforge/websocket_hub.py - Real-Time WebSocket Event Hub & Lifecycle Callback Bridge.
+testforge/websocket_hub.py:5: 1. Thread-safe asynchronous broadcasting of LifecycleEvents to multiple WebSocket clients.
+testforge/websocket_hub.py:20: from starlette.websockets import WebSocket, WebSocketDisconnect
+testforge/websocket_hub.py:24: logger = logging.getLogger("testforge.websocket_hub")
+testforge/websocket_hub.py:27: class WebSocketEventHub:
+testforge/websocket_hub.py:29: Manages active WebSocket connections and broadcasts LifecycleEvents with
+testforge/websocket_hub.py:35: self._clients: Dict[WebSocket, asyncio.Queue] = {}
+testforge/websocket_hub.py:58: async def register_client(self, websocket: WebSocket) -> asyncio.Queue:
+testforge/websocket_hub.py:59: """Registers a newly connected WebSocket client and allocates an isolated bounded queue."""
+testforge/websocket_hub.py:62: self._clients[websocket] = queue
+testforge/websocket_hub.py:65: logger.debug(f"Client connected. Active WebSocket clients: {len(self._clients)}")
+testforge/websocket_hub.py:68: async def unregister_client(self, websocket: WebSocket) -> None:
+testforge/websocket_hub.py:69: """Unregisters a disconnecting WebSocket client."""
+testforge/websocket_hub.py:71: if websocket in self._clients:
+testforge/websocket_hub.py:72: del self._clients[websocket]
+testforge/websocket_hub.py:73: logger.debug(f"Client disconnected. Active WebSocket clients: {len(self._clients)}")
+testforge/websocket_hub.py:142: """Directly broadcasts any dictionary payload to all active WebSocket clients."""
+testforge/websocket_hub.py:177: name="WebSocketEventHub",
+testforge/websocket_hub.py:179: logger.info(f"WebSocketEventHub attached to CallbackRegistry (sub_id={self._subscription_id})")
+testforge/websocket_hub.py:194: async def handle_websocket_connection(self, websocket: WebSocket) -> None:
+testforge/websocket_hub.py:196: Handles the complete lifecycle of a single WebSocket connection:
+testforge/websocket_hub.py:199: await websocket.accept()
+testforge/websocket_hub.py:200: queue = await self.register_client(websocket)
+testforge/websocket_hub.py:204: await websocket.send_json({
+testforge/websocket_hub.py:208: "emitter": "WebSocketEventHub",
+testforge/websocket_hub.py:212: await self.unregister_client(websocket)
+testforge/websocket_hub.py:219: await websocket.send_json(msg)
+testforge/websocket_hub.py:224: logger.debug(f"WebSocket send loop exited: {send_err}")
+testforge/websocket_hub.py:229: text = await websocket.receive_text()
+testforge/websocket_hub.py:233: await websocket.send_json({
+testforge/websocket_hub.py:237: "emitter": "WebSocketEventHub"
+testforge/websocket_hub.py:243: except (WebSocketDisconnect, ConnectionResetError):
+testforge/websocket_hub.py:246: logger.debug(f"WebSocket recv loop exited: {recv_err}")
+testforge/websocket_hub.py:260: await self.unregister_client(websocket)
+testforge/websocket_hub.py:262: await websocket.close()
+testforge/websocket_hub.py:268: global_websocket_hub = WebSocketEventHub()
+testforge/websocket_hub.py:269: global_websocket_hub.attach_to_registry(default_callback_registry)
+=== DOCKERFILE ===
+# ==============================================================================
+# TestForge: Autonomous Agentic Unit Test Hardening System
+# Production Multi-Stage Container Definition (Python 3.13)
+# ==============================================================================
+
+FROM python:3.13-slim AS base
+
+# Prevent Python from writing .pyc files and enable unbuffered streaming logs
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    DEBIAN_FRONTEND=noninteractive
+
+# Install essential OS runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    curl \
+    build-essential \
+    sqlite3 \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set up dedicated non-root application user
+RUN groupadd -r testforge && useradd -r -g testforge -m -d /home/testforge testforge
+
+WORKDIR /app
+
+# Install project dependencies
+COPY requirements.txt /app/
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy project files and change ownership
+COPY . /app/
+RUN chown -R testforge:testforge /app
+
+# Switch to non-root user
+USER testforge
+
+# Expose FastAPI backend (8000) and Streamlit dashboard (8501)
+EXPOSE 8000 8501
+
+# Container healthcheck targeting standard healthz probe
+HEALTHCHECK --interval=15s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:8000/healthz || exit 1
+
+# Default entrypoint: Start FastAPI server
+CMD ["python", "-m", "uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8000"]
+=== DOCKER-COMPOSE ===
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: testforge-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      - PYTHONUNBUFFERED=1
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://ollama:11434}
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-}
+    volumes:
+      - ./qa_artifacts:/app/qa_artifacts
+      - ./samples:/app/samples
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - testforge-net
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: testforge-ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_storage:/root/.ollama
+    networks:
+      - testforge-net
+
+  dashboard:
+    profiles:
+      - legacy-streamlit
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: testforge-dashboard
+    restart: unless-stopped
+    command: ["streamlit", "run", "app.py", "--server.port", "8501", "--server.address", "0.0.0.0"]
+    ports:
+      - "8501:8501"
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      - PYTHONUNBUFFERED=1
+      - TESTFORGE_API_URL=http://backend:8000
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+    networks:
+      - testforge-net
+
+volumes:
+  ollama_storage:
+
+networks:
+  testforge-net:
+    driver: bridge
+=== GITHUB WORKFLOWS ===
+total 8
+drwxr-xr-x@ 3 sourabh  staff    96 Nov 10 13:30 .
+drwxr-xr-x@ 3 sourabh  staff    96 Nov 10 13:30 ..
+-rw-r--r--@ 1 sourabh  staff  2596 Nov 10 13:30 testforge_pr_check.yml
+--- .github/workflows/testforge_pr_check.yml ---
+name: TestForge PR Gate & Mutation Hardening
+
+"on":
+  pull_request:
+    branches:
+      - main
+      - master
+    paths:
+      - '**.py'
+      - 'requirements.txt'
+
+permissions:
+  contents: read
+  security-events: write
+  pull-requests: write
+
+jobs:
+  testforge-ci:
+    name: Autonomous Hardening & Verification
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Identify changed Python source files
+        id: changed-files
+        run: |
+          BASE_REF="${{ github.base_ref }}"
+          echo "Comparing against origin/$BASE_REF..."
+          git fetch origin "$BASE_REF" --depth=1 || true
+          CHANGED=$(git diff --name-only "origin/$BASE_REF...HEAD" -- '*.py' | grep -v '^tests/' || true)
+          echo "Changed files: $CHANGED"
+          echo "files=$CHANGED" >> "$GITHUB_OUTPUT"
+
+      - name: Execute TestForge CLI Hardening on Changed Targets
+        if: steps.changed-files.outputs.files != ''
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          CREWAI_TESTING: "true"
+          CREWAI_TRACING_ENABLED: "false"
+        run: |
+          mkdir -p qa_artifacts
+          for file in ${{ steps.changed-files.outputs.files }}; do
+            if [ -f "$file" ]; then
+              echo ">>> Hardening target: $file"
+              python -m testforge.cli harden "$file" --target-score 80.0 --max-iterations 3 --output-dir qa_artifacts
+            fi
+          done
+
+      - name: Run Full Regression Test Suite
+        env:
+          CREWAI_TESTING: "true"
+          CREWAI_TRACING_ENABLED: "false"
+        run: |
+          pytest tests/ -v --junitxml=qa_artifacts/junit_suite_results.xml
+
+      - name: Upload OASIS SARIF Security & Mutation Report
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        continue-on-error: true
+        with:
+          sarif_file: qa_artifacts/
+          category: testforge-hardening
+
+      - name: Archive QA Artifacts & Verification Reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: testforge-qa-artifacts
+          path: qa_artifacts/
+          retention-days: 14
+--- DOCKER CLI & DAEMON CHECK ---
+/Applications/Docker.app/Contents/Resources/bin/docker
+Client:
+ Version:    29.4.3
+ Context:    desktop-linux
+ Debug Mode: false
+ Plugins:
+  agent: Docker AI Agent Runner (Docker Inc.)
+    Version:  v1.54.0
+    Path:     /Users/sourabh/.docker/cli-plugins/docker-agent
+  ai: Docker AI Agent - Ask Gordon (Docker Inc.)
+    Version:  v1.20.2

@@ -1,0 +1,72 @@
+=== MCP SERVER: create_testforge_server() ===
+Server name: testforge-mcp-server
+Tool: mcp_ast_symbol_analyzer
+  Desc: Returns AST symbols, cyclomatic complexity, functions, and branch boundaries.
+Tool: mcp_mutant_generator
+  Desc: Generates verified AST mutants (operator swap, boundary shift, condition inversion).
+Tool: mcp_sandbox_runner
+  Desc: Runs candidate tests inside subprocess sandbox, returning pass/fail, exit code, and clean code integrity.
+Tool: mcp_equivalence_classifier
+  Desc: Checks AST structural invariants to classify semantic equivalent mutants.
+Tool: harden_module
+  Desc: Executes TestForge autonomous mutation-verified test hardening on a Python module.
+Validates path confinement, discovers AST mutants, executes reflection loop, and returns results.
+Tool: get_report
+  Desc: Retrieves the execution report, coverage metrics, and generated test code for a job.
+Tool: list_jobs
+  Desc: Lists all recorded test hardening jobs with their status and mutation scores.
+=== PROTOCOL SUITE SERVER: create_protocol_suite_server() ===
+Tool: mcp_ast_symbol_analyzer
+  Desc: Returns AST symbols, cyclomatic complexity, functions, and branch boundaries.
+Tool: mcp_mutant_generator
+  Desc: Generates verified AST mutants (operator swap, boundary shift, condition inversion).
+Tool: mcp_sandbox_runner
+  Desc: Runs candidate tests inside subprocess sandbox, returning pass/fail, exit code, and clean code integrity.
+Tool: mcp_equivalence_classifier
+  Desc: Checks AST structural invariants to classify semantic equivalent mutants.
+mcp_client occurrences in orchestrator.py: 14
+   rt TraceLogger from testforge.mcp_client import ToolSelectionDecision from testforge.mutator import 
+   l[Blackboard] = None,         mcp_client: Optional[Any] = None,         broker: Optional[A2ABroker] 
+   Flags.from_env()         self.mcp_client = mcp_client         if self.mcp_client and getattr(self.mc
+   v()         self.mcp_client = mcp_client         if self.mcp_client and getattr(self.mcp_client, "ca
+    = mcp_client         if self.mcp_client and getattr(self.mcp_client, "callbacks", None) is None:   
+   f.mcp_client and getattr(self.mcp_client, "callbacks", None) is None:             self.mcp_client.ca
+   ne) is None:             self.mcp_client.callbacks = self.callbacks         self.cancel_event = canc
+         """         if not self.mcp_client:             return ToolSelectionDecision(                 
+         """         if not self.mcp_client:             return None          arguments = arguments or 
+   kflow_id)          res = self.mcp_client.call_tool_sync(tool_name, arguments, timeout=timeout)      
+   .blackboard:             self.mcp_client.sync_to_blackboard(res, self.blackboard)             self.b
+   ocess handles         if self.mcp_client:             try:                 if hasattr(self.mcp_clien
+                 if hasattr(self.mcp_client, "disconnect_sync"):                     self.mcp_client.di
+   c"):                     self.mcp_client.disconnect_sync()             except Exception as e:       
+=== CHECKING FOR official a2a-sdk IMPORTS ===
+testforge/a2a_protocol.py:43: from a2a.client import A2ACardResolver, ClientConfig, ClientFactory
+testforge/a2a_protocol.py:44: from a2a.server.agent_execution import AgentExecutor, RequestContext
+testforge/a2a_protocol.py:45: from a2a.server.apps import A2AStarletteApplication
+testforge/a2a_protocol.py:46: from a2a.server.events import EventQueue
+testforge/a2a_protocol.py:47: from a2a.server.request_handlers import DefaultRequestHandler
+testforge/a2a_protocol.py:48: from a2a.server.tasks import InMemoryTaskStore
+testforge/a2a_protocol.py:49: from a2a.types import (
+testforge/a2a_protocol.py:70: from testforge.a2a import (
+testforge/a2a.py:1381: from testforge.a2a_protocol import (
+testforge/a2a.py:1394: Lazy re-export of official A2A protocol components from testforge.a2a_protocol.
+testforge/a2a.py:1398: import testforge.a2a_protocol as proto
+testforge/reflection_agent.py:54: from testforge.a2a import (
+testforge/code_intelligence_agent.py:55: from testforge.a2a import (
+testforge/benchmark_messaging.py:29: from testforge.a2a import (
+testforge/planning_agent.py:51: from testforge.a2a import (
+testforge/crew_critic.py:61: from testforge.a2a import (
+testforge/orchestrator.py:33: from testforge.a2a import WorkflowStage
+testforge/orchestrator.py:119: from testforge.a2a import A2ABroker, A2AMessage, A2APerformative
+testforge/adk_generator.py:56: from testforge.a2a import (
+testforge/adk_workflow_agents.py:36: from testforge.a2a import CodeIntelligencePayload, SecurityEvaluationPayload
+testforge/supervisor_agent.py:49: from testforge.a2a import (
+testforge/security_agent.py:54: from testforge.a2a import (
+testforge/execution_agent.py:50: from testforge.a2a import (
+testforge/scripts/run_feature_audit.py:39: from testforge.a2a import A2ABroker, A2AMessage, A2APerformative
+testforge/scripts/run_feature_audit.py:88: from a2a.types import AgentCapabilities, AgentCard, AgentSkill
+testforge/scripts/run_feature_audit.py:90: from testforge.a2a_protocol import TestForgeA2AExecutor, build_testforge_agent_card
+testforge/flows/hardening_flow.py:26: from testforge.a2a import CriticDirectivePayload
+server.py:575: from testforge.a2a_protocol import build_testforge_agent_card
+server.py:609: from a2a.types import AgentCard
+server.py:611: from testforge.a2a_protocol import OFFICIAL_A2A_PROTOCOL_VERSION, build_testforge_agent_card

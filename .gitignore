@@ -46,3 +46,9 @@ qa_artifacts/frontend_backend_browser_audit/
 PHASE_0_CURRENT_STATE_REPORT.md
 /tmp/testforge_*
 *.lock
+
+# Discovery run traces & worker scratch directories
+job_bench_*
+trace_*.jsonl
+testforge_trace.jsonl*
+*.db

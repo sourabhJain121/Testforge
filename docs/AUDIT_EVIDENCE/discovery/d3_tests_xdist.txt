@@ -1,0 +1,40 @@
+--- RUNNING PYTEST WITH XDIST ---
+============================= test session starts ==============================
+platform darwin -- Python 3.13.18, pytest-9.1.1, pluggy-1.7.0
+rootdir: /Users/sourabh/TestForge
+configfile: pyproject.toml
+testpaths: tests
+plugins: hypothesis-6.170.15, cov-7.1.0, xdist-3.8.0, timeout-2.4.0, anyio-4.15.1, platformdirs-4.13.5
+created: 10/10 workers
+10 workers [1010 items]
+
+........................................................................ [  7%]
+........................................................................ [ 14%]
+........................................................................ [ 21%]
+........................................................................ [ 28%]
+........................................................................ [ 35%]
+........................................................................ [ 42%]
+........................................................................ [ 49%]
+........................................................................ [ 57%]
+........................................................................ [ 64%]
+........................................................................ [ 71%]
+...............................................s........................ [ 78%]
+........................................................................ [ 85%]
+........................................................................ [ 92%]
+........................................................................ [ 99%]
+..                                                                       [100%]
+=============================== warnings summary ===============================
+.venv-release/lib/python3.13/site-packages/starlette/testclient.py:45: 10 warnings
+  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/starlette/testclient.py:45: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+tests/test_adk_web_compatibility.py::TestADKWebCompatibility::test_get_fast_api_app_initialization
+  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/google/adk/cli/fast_api.py:175: UserWarning: [EXPERIMENTAL] InMemoryCredentialService: This feature is experimental and may change or be removed in future versions without notice. It may introduce breaking changes at any time.
+    credential_service = InMemoryCredentialService()
+
+tests/test_adk_web_compatibility.py::TestADKWebCompatibility::test_get_fast_api_app_initialization
+  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/google/adk/auth/credential_service/in_memory_credential_service.py:33: UserWarning: [EXPERIMENTAL] BaseCredentialService: This feature is experimental and may change or be removed in future versions without notice. It may introduce breaking changes at any time.
+    super().__init__()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========== 1009 passed, 1 skipped, 12 warnings in 315.33s (0:05:15) ===========
