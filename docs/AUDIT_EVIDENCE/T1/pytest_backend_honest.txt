@@ -31,4 +31,6 @@ tests/test_mode_c_ingestion.py::test_regression_test_4_sequential_replacement_fu
 tests/test_mode_c_ingestion.py::test_mode_c_cookies_ingestion PASSED     [ 88%]
 tests/test_mode_c_ingestion.py::test_mode_c_models_ingestion PASSED      [ 92%]
 tests/test_mode_c_ingestion.py::test_mode_c_sequential_replacement_and_ast_transition PASSED [ 96%]
-tests/test_mode_c_ingestion.py::test_hardening_pipeline_on_models 
+tests/test_mode_c_ingestion.py::test_hardening_pipeline_on_models PASSED [100%]
+
+======================== 25 passed in 147.57s (0:02:27) ========================
