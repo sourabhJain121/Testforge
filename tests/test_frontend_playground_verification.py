@@ -140,6 +140,32 @@ class TestFrontendStaticDOMAndAPIContracts:
         for req_id in required_studio_ids:
             assert req_id in all_html_ids, f"Required MCP Studio element #{req_id} missing in index.html"
 
+    def test_mutant_diff_modal_elements_exist_in_dom(self):
+        """Verifies #mutant-diff-modal and all diff inspector modal elements exist in index.html without dangling references."""
+        parser = HTMLIDCollector()
+        parser.feed(INDEX_HTML_PATH.read_text(encoding="utf-8"))
+        all_html_ids = parser.ids
+
+        required_diff_ids = [
+            "mutant-diff-modal-backdrop",
+            "mutant-diff-modal",
+            "mutant-diff-modal-title",
+            "mutant-modal-badge-container",
+            "mutant-diff-operator-pill",
+            "mutant-diff-line-pill",
+            "mutant-diff-status-pill",
+            "btn-close-mutant-diff-modal",
+            "btn-diff-mode-toggle",
+            "btn-copy-mutant-diff",
+            "mutant-diff-container",
+            "mutant-diff-explanation",
+            "mutant-diff-explanation-text",
+            "btn-close-mutant-diff-footer",
+            "btn-open-mutant-diff-modal",
+        ]
+        for req_id in required_diff_ids:
+            assert req_id in all_html_ids, f"Required Mutant Diff element #{req_id} missing in index.html"
+
 
 # ==============================================================================
 # Module 2: Playwright Headless Browser & Cockpit Verification Suite
@@ -1136,6 +1162,51 @@ class TestFrontendHeadlessBrowserPlayground:
             page.click("#btn-close-mcp-studio")
             assert "hidden" in (backdrop.get_attribute("class") or "")
             browser.close()
+
+    def test_mutant_diff_modal_interaction(self, live_server_url):
+        """Verifies opening mutant diff modal, mode toggle between side-by-side and unified, and close."""
+        from playwright.sync_api import sync_playwright
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            page = browser.new_page()
+            page.goto(live_server_url)
+
+            # Assert modal backdrop initially hidden
+            backdrop = page.locator("#mutant-diff-modal-backdrop")
+            assert "hidden" in (backdrop.get_attribute("class") or "")
+
+            # Navigate to Hardening Lab tab where diff panel lives
+            page.locator("#tab-btn-lab").click()
+            page.wait_for_selector("#mutant-audit-panel", state="visible")
+
+            # Open via #btn-open-mutant-diff-modal
+            btn_open = page.locator("#btn-open-mutant-diff-modal")
+            assert btn_open.is_visible()
+            btn_open.click()
+            page.wait_for_selector("#mutant-diff-modal", state="visible")
+            assert "hidden" not in (backdrop.get_attribute("class") or "")
+
+            # Verify mode toggle button
+            btn_toggle = page.locator("#btn-diff-mode-toggle")
+            assert btn_toggle.is_visible()
+            initial_text = btn_toggle.inner_text()
+            assert "Side-by-Side" in initial_text
+
+            # Toggle view mode
+            btn_toggle.click()
+            toggled_text = btn_toggle.inner_text()
+            assert "Unified" in toggled_text
+
+            # Toggle back to Side-by-Side
+            btn_toggle.click()
+            back_text = btn_toggle.inner_text()
+            assert "Side-by-Side" in back_text
+
+            # Close modal
+            page.click("#btn-close-mutant-diff-modal")
+            assert "hidden" in (backdrop.get_attribute("class") or "")
+            browser.close()
+
 
 
 

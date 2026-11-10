@@ -2208,6 +2208,7 @@ body {
 .modal-backdrop,
 #mcp-modal-backdrop,
 #mcp-studio-modal-backdrop,
+#mutant-diff-modal-backdrop,
 #a2a-modal-backdrop,
 #settings-modal-backdrop,
 #restore-modal-backdrop {
@@ -2226,6 +2227,7 @@ body {
 .modal,
 #mcp-modal,
 #mcp-studio-modal,
+#mutant-diff-modal,
 #a2a-modal,
 #settings-modal,
 #restore-modal {
@@ -2977,6 +2979,185 @@ html[data-theme="light"] .mcp-studio-output pre {
   background: rgba(241, 245, 249, 0.9) !important;
   border-color: rgba(0, 0, 0, 0.12) !important;
 }
+
+/* ==========================================================================
+   Visual Side-by-Side AST Mutant Diff Viewer (Phase A)
+   ========================================================================== */
+#mutant-diff-modal {
+  max-width: 1040px;
+  width: 95vw;
+}
+
+.diff-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-surface-2, rgba(15, 23, 42, 0.6));
+  border-radius: 6px;
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+}
+
+.diff-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+@media (max-width: 768px) {
+  .diff-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.diff-pane {
+  background: var(--bg-surface-2, rgba(15, 23, 42, 0.6));
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.diff-pane-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  background: rgba(0, 0, 0, 0.25);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted, #94a3b8);
+}
+
+.diff-pane-body {
+  padding: 0.4rem 0;
+  overflow-x: auto;
+  max-height: 480px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.diff-line-row {
+  display: flex;
+  align-items: stretch;
+  min-height: 22px;
+  line-height: 1.5;
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.diff-line-num {
+  user-select: none;
+  text-align: right;
+  padding: 0 8px;
+  color: var(--text-muted, #64748b);
+  min-width: 36px;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  opacity: 0.7;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.diff-line-content {
+  flex: 1;
+  padding: 0 10px;
+  white-space: pre;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+}
+
+.diff-line-del {
+  background: rgba(239, 68, 68, 0.15);
+  border-left: 3px solid #ef4444;
+}
+
+.diff-line-add {
+  background: rgba(34, 197, 94, 0.15);
+  border-left: 3px solid #22c55e;
+}
+
+.diff-line-ctx {
+  color: var(--text-primary, #e2e8f0);
+}
+
+.diff-line-empty {
+  background: rgba(255, 255, 255, 0.02);
+  opacity: 0.25;
+}
+
+.diff-explanation {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--bg-surface-2, rgba(15, 23, 42, 0.6));
+  border-radius: 6px;
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+/* Light Theme Overrides */
+html[data-theme="light"] #mutant-diff-modal {
+  background: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .diff-toolbar {
+  background: #f1f5f9 !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+html[data-theme="light"] .diff-pane {
+  background: #f8fafc !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+html[data-theme="light"] .diff-pane-header {
+  background: #e2e8f0 !important;
+  color: #334155 !important;
+  border-bottom-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+html[data-theme="light"] .diff-line-num {
+  border-right-color: rgba(0, 0, 0, 0.08) !important;
+  color: #64748b !important;
+}
+
+html[data-theme="light"] .diff-line-del {
+  background: rgba(239, 68, 68, 0.12) !important;
+  border-left: 3px solid #dc2626 !important;
+  color: #991b1b !important;
+}
+
+html[data-theme="light"] .diff-line-add {
+  background: rgba(34, 197, 94, 0.12) !important;
+  border-left: 3px solid #16a34a !important;
+  color: #166534 !important;
+}
+
+html[data-theme="light"] .diff-line-ctx {
+  color: #0f172a !important;
+}
+
+html[data-theme="light"] .diff-line-empty {
+  background: rgba(0, 0, 0, 0.03) !important;
+}
+
+html[data-theme="light"] .diff-explanation {
+  background: #f8fafc !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  color: #1e293b !important;
+}
+
 
 
 

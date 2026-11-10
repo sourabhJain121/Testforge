@@ -44,6 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
       mutants: [],
       selectedMutant: null,
       filter: 'ALL',
+      diffViewMode: 'side-by-side',
       testHardenedCode: '',
     },
     settings: {
@@ -361,6 +362,23 @@ document.addEventListener('DOMContentLoaded', () => {
     diffStatusBadge: document.getElementById('diff-status-badge'),
     diffViewerOutcomeBadge: document.getElementById('ast-diff-viewer-outcome-badge'),
     diffCodeDisplay: document.getElementById('diff-code-display'),
+
+    // Visual Side-by-Side AST Mutant Diff Viewer (Phase A)
+    mutantDiffModalBackdrop: document.getElementById('mutant-diff-modal-backdrop'),
+    mutantDiffModal: document.getElementById('mutant-diff-modal'),
+    mutantDiffModalTitle: document.getElementById('mutant-diff-modal-title'),
+    mutantModalBadgeContainer: document.getElementById('mutant-modal-badge-container'),
+    mutantDiffOperatorPill: document.getElementById('mutant-diff-operator-pill'),
+    mutantDiffLinePill: document.getElementById('mutant-diff-line-pill'),
+    mutantDiffStatusPill: document.getElementById('mutant-diff-status-pill'),
+    btnCloseMutantDiffModal: document.getElementById('btn-close-mutant-diff-modal'),
+    btnDiffModeToggle: document.getElementById('btn-diff-mode-toggle'),
+    btnCopyMutantDiff: document.getElementById('btn-copy-mutant-diff'),
+    mutantDiffContainer: document.getElementById('mutant-diff-container'),
+    mutantDiffExplanation: document.getElementById('mutant-diff-explanation'),
+    mutantDiffExplanationText: document.getElementById('mutant-diff-explanation-text'),
+    btnCloseMutantDiffFooter: document.getElementById('btn-close-mutant-diff-footer'),
+    btnOpenMutantDiffModal: document.getElementById('btn-open-mutant-diff-modal'),
 
     // Hardened Suite Export & CI/CD Toolbars
     hardenedSuiteCode: document.getElementById('hardened-suite-code'),
@@ -3963,10 +3981,507 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     dom.diffCodeDisplay.innerHTML = diagnosisBox + diffContent;
+    populateMutantDiffModal(mutant);
   }
 
   const renderUnifiedAstDiffViewer = inspectMutantDiff;
   window.renderUnifiedAstDiffViewer = renderUnifiedAstDiffViewer;
+
+  function computeLineDiff(origLines, mutLines) {
+    const m = origLines.length;
+    const n = mutLines.length;
+    const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+    for (let i = 0; i < m; i++) {
+      for (let j = 0; j < n; j++) {
+        if (origLines[i] === mutLines[j]) {
+          dp[i + 1][j + 1] = dp[i][j] + 1;
+        } else {
+          dp[i + 1][j + 1] = Math.max(dp[i + 1][j], dp[i][j + 1]);
+        }
+      }
+    }
+
+    let i = m;
+    let j = n;
+    const rawPairs = [];
+    while (i > 0 || j > 0) {
+      if (i > 0 && j > 0 && origLines[i - 1] === mutLines[j - 1]) {
+        rawPairs.push({ type: 'equal', orig: origLines[i - 1], mut: mutLines[j - 1], origIdx: i - 1, mutIdx: j - 1 });
+        i--;
+        j--;
+      } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
+        rawPairs.push({ type: 'add', orig: null, mut: mutLines[j - 1], origIdx: null, mutIdx: j - 1 });
+        j--;
+      } else if (i > 0 && (j === 0 || dp[i][j - 1] < dp[i - 1][j])) {
+        rawPairs.push({ type: 'del', orig: origLines[i - 1], mut: null, origIdx: i - 1, mutIdx: null });
+        i--;
+      }
+    }
+    rawPairs.reverse();
+
+    const aligned = [];
+    let p = 0;
+    while (p < rawPairs.length) {
+      const cur = rawPairs[p];
+      if (cur.type === 'equal') {
+        aligned.push({ type: 'equal', orig: cur.orig, mut: cur.mut, origIdx: cur.origIdx, mutIdx: cur.mutIdx });
+        p++;
+      } else if (cur.type === 'del' && p + 1 < rawPairs.length && rawPairs[p + 1].type === 'add') {
+        aligned.push({
+          type: 'modify',
+          orig: cur.orig,
+          mut: rawPairs[p + 1].mut,
+          origIdx: cur.origIdx,
+          mutIdx: rawPairs[p + 1].mutIdx
+        });
+        p += 2;
+      } else if (cur.type === 'del') {
+        aligned.push({ type: 'del', orig: cur.orig, mut: null, origIdx: cur.origIdx, mutIdx: null });
+        p++;
+      } else {
+        aligned.push({ type: 'add', orig: null, mut: cur.mut, origIdx: null, mutIdx: cur.mutIdx });
+        p++;
+      }
+    }
+    return aligned;
+  }
+
+  function renderVisualDiff(originalSnippet, mutatedSnippet, containerElement, options = {}) {
+    if (!containerElement) return;
+    containerElement.replaceChildren();
+
+    const viewMode = options.viewMode || (state.hardening && state.hardening.diffViewMode) || 'side-by-side';
+    const startLine = Number(options.startLine) || 1;
+    const mutantId = options.mutantId || 'MUT';
+
+    const origLines = (originalSnippet || '').split('\n');
+    const mutLines = (mutatedSnippet || '').split('\n');
+    const aligned = computeLineDiff(origLines, mutLines);
+
+    if (viewMode === 'side-by-side') {
+      const grid = document.createElement('div');
+      grid.className = 'diff-grid';
+
+      // Left Pane: Original AST Code
+      const leftPane = document.createElement('div');
+      leftPane.className = 'diff-pane diff-pane-left';
+
+      const leftHeader = document.createElement('div');
+      leftHeader.className = 'diff-pane-header';
+      leftHeader.innerHTML = `<span>📄 Original AST Code</span><span class="badge badge-outline" style="font-size:0.7rem;">Line ${startLine}</span>`;
+      leftPane.appendChild(leftHeader);
+
+      const leftBody = document.createElement('div');
+      leftBody.className = 'diff-pane-body';
+
+      // Right Pane: Mutated AST Code
+      const rightPane = document.createElement('div');
+      rightPane.className = 'diff-pane diff-pane-right';
+
+      const rightHeader = document.createElement('div');
+      rightHeader.className = 'diff-pane-header';
+      rightHeader.innerHTML = `<span>🧬 Mutated AST Code</span><span class="badge badge-outline" style="font-size:0.7rem;">Mutant: ${escapeHtml(mutantId)}</span>`;
+      rightPane.appendChild(rightHeader);
+
+      const rightBody = document.createElement('div');
+      rightBody.className = 'diff-pane-body';
+
+      aligned.forEach((row) => {
+        // Left Row
+        const lRow = document.createElement('div');
+        lRow.className = 'diff-line-row';
+
+        const lNum = document.createElement('span');
+        lNum.className = 'diff-line-num';
+
+        const lContent = document.createElement('span');
+        lContent.className = 'diff-line-content';
+
+        if (row.type === 'equal') {
+          lRow.classList.add('diff-line-ctx');
+          lNum.textContent = String(startLine + row.origIdx);
+          lContent.textContent = row.orig;
+        } else if (row.type === 'modify' || row.type === 'del') {
+          lRow.classList.add('diff-line-del');
+          lNum.textContent = String(startLine + row.origIdx);
+          lContent.textContent = row.orig;
+        } else {
+          lRow.classList.add('diff-line-empty');
+          lNum.textContent = '';
+          lContent.textContent = '';
+        }
+        lRow.appendChild(lNum);
+        lRow.appendChild(lContent);
+        leftBody.appendChild(lRow);
+
+        // Right Row
+        const rRow = document.createElement('div');
+        rRow.className = 'diff-line-row';
+
+        const rNum = document.createElement('span');
+        rNum.className = 'diff-line-num';
+
+        const rContent = document.createElement('span');
+        rContent.className = 'diff-line-content';
+
+        if (row.type === 'equal') {
+          rRow.classList.add('diff-line-ctx');
+          rNum.textContent = String(startLine + row.mutIdx);
+          rContent.textContent = row.mut;
+        } else if (row.type === 'modify' || row.type === 'add') {
+          rRow.classList.add('diff-line-add');
+          rNum.textContent = String(startLine + row.mutIdx);
+          rContent.textContent = row.mut;
+        } else {
+          rRow.classList.add('diff-line-empty');
+          rNum.textContent = '';
+          rContent.textContent = '';
+        }
+        rRow.appendChild(rNum);
+        rRow.appendChild(rContent);
+        rightBody.appendChild(rRow);
+      });
+
+      leftPane.appendChild(leftBody);
+      rightPane.appendChild(rightBody);
+      grid.appendChild(leftPane);
+      grid.appendChild(rightPane);
+      containerElement.appendChild(grid);
+    } else {
+      // Unified view
+      const uniPane = document.createElement('div');
+      uniPane.className = 'diff-pane diff-unified-pane';
+
+      const uniHeader = document.createElement('div');
+      uniHeader.className = 'diff-pane-header';
+      uniHeader.innerHTML = `<span>☰ Unified AST Diff</span><span class="badge badge-outline" style="font-size:0.7rem;">Lines ${startLine}-${startLine + Math.max(origLines.length, mutLines.length)}</span>`;
+      uniPane.appendChild(uniHeader);
+
+      const uniBody = document.createElement('div');
+      uniBody.className = 'diff-pane-body';
+
+      const hunkRow = document.createElement('div');
+      hunkRow.className = 'diff-line-row diff-header-line';
+      hunkRow.style.padding = '2px 8px';
+      hunkRow.style.color = '#818cf8';
+      hunkRow.style.fontWeight = '600';
+      hunkRow.textContent = `@@ -${startLine},${origLines.length} +${startLine},${mutLines.length} @@`;
+      uniBody.appendChild(hunkRow);
+
+      aligned.forEach((row) => {
+        if (row.type === 'equal') {
+          const r = document.createElement('div');
+          r.className = 'diff-line-row diff-line-ctx';
+          const n = document.createElement('span');
+          n.className = 'diff-line-num';
+          n.textContent = String(startLine + row.origIdx);
+          const c = document.createElement('span');
+          c.className = 'diff-line-content';
+          c.textContent = `  ${row.orig}`;
+          r.appendChild(n);
+          r.appendChild(c);
+          uniBody.appendChild(r);
+        } else if (row.type === 'modify') {
+          const delR = document.createElement('div');
+          delR.className = 'diff-line-row diff-line-del';
+          const delN = document.createElement('span');
+          delN.className = 'diff-line-num';
+          delN.textContent = String(startLine + row.origIdx);
+          const delC = document.createElement('span');
+          delC.className = 'diff-line-content';
+          delC.textContent = `- ${row.orig}`;
+          delR.appendChild(delN);
+          delR.appendChild(delC);
+          uniBody.appendChild(delR);
+
+          const addR = document.createElement('div');
+          addR.className = 'diff-line-row diff-line-add';
+          const addN = document.createElement('span');
+          addN.className = 'diff-line-num';
+          addN.textContent = String(startLine + row.mutIdx);
+          const addC = document.createElement('span');
+          addC.className = 'diff-line-content';
+          addC.textContent = `+ ${row.mut}`;
+          addR.appendChild(addN);
+          addR.appendChild(addC);
+          uniBody.appendChild(addR);
+        } else if (row.type === 'del') {
+          const r = document.createElement('div');
+          r.className = 'diff-line-row diff-line-del';
+          const n = document.createElement('span');
+          n.className = 'diff-line-num';
+          n.textContent = String(startLine + row.origIdx);
+          const c = document.createElement('span');
+          c.className = 'diff-line-content';
+          c.textContent = `- ${row.orig}`;
+          r.appendChild(n);
+          r.appendChild(c);
+          uniBody.appendChild(r);
+        } else if (row.type === 'add') {
+          const r = document.createElement('div');
+          r.className = 'diff-line-row diff-line-add';
+          const n = document.createElement('span');
+          n.className = 'diff-line-num';
+          n.textContent = String(startLine + row.mutIdx);
+          const c = document.createElement('span');
+          c.className = 'diff-line-content';
+          c.textContent = `+ ${row.mut}`;
+          r.appendChild(n);
+          r.appendChild(c);
+          uniBody.appendChild(r);
+        }
+      });
+
+      uniPane.appendChild(uniBody);
+      containerElement.appendChild(uniPane);
+    }
+  }
+
+  function extractMutantSnippets(mutant) {
+    if (!mutant) {
+      return { original: '', mutated: '', startLine: 1 };
+    }
+    const startLine = Number(mutant.line_number || mutant.line || mutant.lineno) || 1;
+
+    if (mutant.original_code_snippet && mutant.mutated_code_snippet) {
+      return {
+        original: mutant.original_code_snippet,
+        mutated: mutant.mutated_code_snippet,
+        startLine
+      };
+    }
+    if (mutant.original_line && mutant.mutated_line) {
+      return {
+        original: mutant.original_line,
+        mutated: mutant.mutated_line,
+        startLine
+      };
+    }
+    if (mutant.original_expression && mutant.mutated_expression) {
+      return {
+        original: mutant.original_expression,
+        mutated: mutant.mutated_expression,
+        startLine
+      };
+    }
+
+    const rawDiff = mutant.diff || mutant.unified_diff;
+    if (rawDiff) {
+      const lines = rawDiff.split('\n');
+      const orig = [];
+      const mut = [];
+      let hunkLine = startLine;
+      for (const line of lines) {
+        if (line.startsWith('@@')) {
+          const match = line.match(/@@\s*-(\d+)/);
+          if (match) hunkLine = parseInt(match[1], 10);
+        } else if (line.startsWith('-') && !line.startsWith('---')) {
+          orig.push(line.slice(1));
+        } else if (line.startsWith('+') && !line.startsWith('+++')) {
+          mut.push(line.slice(1));
+        } else if (!line.startsWith('---') && !line.startsWith('+++')) {
+          const text = line.startsWith(' ') ? line.slice(1) : line;
+          orig.push(text);
+          mut.push(text);
+        }
+      }
+      return {
+        original: orig.join('\n') || rawDiff,
+        mutated: mut.join('\n') || rawDiff,
+        startLine: hunkLine
+      };
+    }
+
+    return {
+      original: '// Source lines unavailable for this mutant',
+      mutated: '// Mutated replacement unavailable',
+      startLine
+    };
+  }
+
+  function populateMutantDiffModal(m) {
+    if (!m) return;
+    const id = m.id || m.mutant_id || 'MUT';
+    const type = m.type || m.mutation_type || 'AST_MOD';
+    const line = m.line || m.line_number || m.lineno || '-';
+    const rawOutcome = (m.outcome || m.status || m.result || (m.killed ? 'KILLED' : 'SURVIVED') || '').toUpperCase();
+    let st = 'SURVIVED';
+    if (rawOutcome.includes('KILL')) st = 'KILLED';
+    else if (rawOutcome.includes('EQUIV')) st = 'EQUIVALENT';
+    else if (rawOutcome.includes('TIMEOUT')) st = 'TIMEOUT';
+    else if (rawOutcome.includes('ERROR')) st = 'ERROR';
+    else if (rawOutcome.includes('SURVIV')) st = 'SURVIVED';
+
+    if (dom.mutantDiffModalTitle) {
+      dom.mutantDiffModalTitle.innerHTML = `<span class="icon">🔬</span> AST Mutant Diff: <code>${escapeHtml(id)}</code>`;
+    }
+
+    if (dom.mutantDiffOperatorPill) {
+      dom.mutantDiffOperatorPill.textContent = `Operator: ${type}`;
+    }
+
+    if (dom.mutantDiffLinePill) {
+      dom.mutantDiffLinePill.textContent = `Line: ${line}`;
+    }
+
+    if (dom.mutantDiffStatusPill) {
+      if (st === 'KILLED') {
+        dom.mutantDiffStatusPill.className = 'badge badge-green badge-success';
+        dom.mutantDiffStatusPill.textContent = 'KILLED 🟢';
+      } else if (st === 'EQUIVALENT') {
+        dom.mutantDiffStatusPill.className = 'badge badge-cyan';
+        dom.mutantDiffStatusPill.textContent = 'EQUIVALENT ⚪';
+      } else if (st === 'TIMEOUT') {
+        dom.mutantDiffStatusPill.className = 'badge badge-warning';
+        dom.mutantDiffStatusPill.textContent = 'TIMEOUT 🟠';
+      } else if (st === 'ERROR') {
+        dom.mutantDiffStatusPill.className = 'badge badge-purple';
+        dom.mutantDiffStatusPill.textContent = 'ERROR 🟣';
+      } else {
+        dom.mutantDiffStatusPill.className = 'badge badge-red badge-danger';
+        dom.mutantDiffStatusPill.textContent = 'SURVIVED 🔴';
+      }
+    }
+
+    const snippets = extractMutantSnippets(m);
+    if (dom.mutantDiffContainer) {
+      renderVisualDiff(snippets.original, snippets.mutated, dom.mutantDiffContainer, {
+        viewMode: (state.hardening && state.hardening.diffViewMode) || 'side-by-side',
+        startLine: snippets.startLine,
+        mutantId: id
+      });
+    }
+
+    updateDiffModeToggleButton();
+
+    if (dom.mutantDiffExplanationText) {
+      if (st === 'SURVIVED') {
+        const execText = m.is_executed
+          ? `Genuinely executed in isolated sandbox (${m.execution_time_ms ? `${Number(m.execution_time_ms).toFixed(1)}ms` : 'passed'})`
+          : 'Execution pending or statically inferred';
+        dom.mutantDiffExplanationText.innerHTML = `
+          <div style="color: #f87171; font-weight: 600; margin-bottom: 0.3rem;">🔴 Survivor Diagnosis: ${escapeHtml(getSurvivalExplanation(m))}</div>
+          <div style="font-size: 0.78rem; color: #94a3b8; margin-bottom: 0.2rem;">Execution: ${execText} | Equivalence: ${escapeHtml(m.equivalence_reason || 'Unknown or not analyzed')}</div>
+          ${m.stdout ? `<details style="margin-top: 0.4rem;"><summary style="cursor: pointer; color: #38bdf8; font-size: 0.76rem;">View Real Sandbox Pytest Execution Output</summary><pre style="margin-top: 0.3rem; font-size: 0.72rem; max-height: 120px; overflow-y: auto; background: rgba(0,0,0,0.3); padding: 0.4rem 0.6rem; border-radius: 4px;">${escapeHtml(m.stdout)}</pre></details>` : ''}
+        `;
+      } else if (st === 'KILLED') {
+        const execTime = m.execution_time_ms ? `${Number(m.execution_time_ms).toFixed(1)}ms` : '0ms';
+        dom.mutantDiffExplanationText.innerHTML = `
+          <div style="color: #4ade80; font-weight: 600; margin-bottom: 0.3rem;">🟢 Kill Verification: Mutant eliminated by assertions in synthesized test suite (Execution: ${execTime}).</div>
+          <div style="font-size: 0.78rem; color: #94a3b8;">Kill Classification: ${escapeHtml(m.kill_classification || 'ASSERTION_FAIL')}</div>
+          ${m.stdout ? `<details style="margin-top: 0.4rem;" open><summary style="cursor: pointer; color: #38bdf8; font-size: 0.76rem;">Assertion Failure Traceback</summary><pre style="margin-top: 0.3rem; font-size: 0.72rem; max-height: 120px; overflow-y: auto; background: rgba(0,0,0,0.3); padding: 0.4rem 0.6rem; border-radius: 4px;">${escapeHtml(m.stdout)}</pre></details>` : ''}
+        `;
+      } else if (st === 'EQUIVALENT') {
+        dom.mutantDiffExplanationText.innerHTML = `
+          <div style="color: #60a5fa; font-weight: 600; margin-bottom: 0.3rem;">⚪ Equivalence Analysis: Static bytecode/AST analysis proved semantic equivalence to clean code.</div>
+          <div style="font-size: 0.78rem; color: #94a3b8;">Method: ${escapeHtml(m.equivalence_method || 'STATIC_INVARIANT')} | Reason: ${escapeHtml(m.equivalence_reason || 'Invariant AST transformation')}</div>
+        `;
+      } else {
+        dom.mutantDiffExplanationText.innerHTML = `
+          <div style="color: #fbbf24; font-weight: 600; margin-bottom: 0.3rem;">🟠 Status: ${escapeHtml(st)}</div>
+          <div style="font-size: 0.78rem; color: #94a3b8;">Execution output: ${escapeHtml(m.stdout || m.stderr || 'No trace available')}</div>
+        `;
+      }
+    }
+  }
+
+  function inspectMutant(mutantId) {
+    dismissActiveTooltips();
+    let m = mutantId;
+    if (typeof mutantId === 'string') {
+      const mutants = (state.hardening && state.hardening.mutants) || [];
+      m = mutants.find(x => (x.id === mutantId || x.mutant_id === mutantId)) || mutants[0];
+    }
+    if (!m && state.hardening && state.hardening.selectedMutant) {
+      m = state.hardening.selectedMutant;
+    }
+    if (!m) {
+      m = {
+        id: 'MUT_COND_INV_001',
+        mutation_type: 'COND_INV',
+        line_number: 9,
+        original_line: 'if price <= 0.0:\n    return 0.0',
+        mutated_line: 'if price < 0.0:\n    return 0.0',
+        status: 'SURVIVED'
+      };
+    }
+
+    if (state.hardening) state.hardening.selectedMutant = m;
+    selectMutantForDiffInspection(m);
+    populateMutantDiffModal(m);
+
+    if (dom.mutantDiffModalBackdrop) {
+      dom.mutantDiffModalBackdrop.classList.remove('hidden');
+    }
+  }
+
+  function closeMutantDiffModal() {
+    if (!dom.mutantDiffModalBackdrop) return;
+    dom.mutantDiffModalBackdrop.classList.add('hidden');
+  }
+
+  function toggleDiffViewMode() {
+    if (!state.hardening) return;
+    state.hardening.diffViewMode = state.hardening.diffViewMode === 'side-by-side' ? 'unified' : 'side-by-side';
+    updateDiffModeToggleButton();
+    const m = state.hardening.selectedMutant;
+    if (m && dom.mutantDiffContainer) {
+      const snippets = extractMutantSnippets(m);
+      renderVisualDiff(snippets.original, snippets.mutated, dom.mutantDiffContainer, {
+        viewMode: state.hardening.diffViewMode,
+        startLine: snippets.startLine,
+        mutantId: m.id || m.mutant_id || 'MUT'
+      });
+    }
+  }
+
+  function updateDiffModeToggleButton() {
+    if (!dom.btnDiffModeToggle) return;
+    const mode = (state.hardening && state.hardening.diffViewMode) || 'side-by-side';
+    if (mode === 'side-by-side') {
+      dom.btnDiffModeToggle.innerHTML = '<span class="icon">◫</span> Side-by-Side';
+      dom.btnDiffModeToggle.title = 'Current: Side-by-Side. Click for Unified view.';
+    } else {
+      dom.btnDiffModeToggle.innerHTML = '<span class="icon">☰</span> Unified';
+      dom.btnDiffModeToggle.title = 'Current: Unified. Click for Side-by-Side view.';
+    }
+  }
+
+  function copySelectedMutantDiff() {
+    const m = state.hardening && state.hardening.selectedMutant;
+    if (!m) return;
+    const snippets = extractMutantSnippets(m);
+    const diffStr = m.diff || m.unified_diff || `--- Original (Line ${snippets.startLine})\n+++ Mutated\n- ${snippets.original}\n+ ${snippets.mutated}\n`;
+    copyTextToClipboard(diffStr, dom.btnCopyMutantDiff, '<span class="icon">📋</span> Copy Unified Diff');
+  }
+
+  if (dom.btnOpenMutantDiffModal) {
+    dom.btnOpenMutantDiffModal.addEventListener('click', () => {
+      inspectMutant(state.hardening.selectedMutant);
+    });
+  }
+  if (dom.btnCloseMutantDiffModal) {
+    dom.btnCloseMutantDiffModal.addEventListener('click', closeMutantDiffModal);
+  }
+  if (dom.btnCloseMutantDiffFooter) {
+    dom.btnCloseMutantDiffFooter.addEventListener('click', closeMutantDiffModal);
+  }
+  if (dom.btnDiffModeToggle) {
+    dom.btnDiffModeToggle.addEventListener('click', toggleDiffViewMode);
+  }
+  if (dom.btnCopyMutantDiff) {
+    dom.btnCopyMutantDiff.addEventListener('click', copySelectedMutantDiff);
+  }
+  if (dom.mutantDiffModalBackdrop) {
+    dom.mutantDiffModalBackdrop.addEventListener('click', (e) => {
+      if (e.target === dom.mutantDiffModalBackdrop) {
+        closeMutantDiffModal();
+      }
+    });
+  }
+
+  window.renderVisualDiff = renderVisualDiff;
+  window.inspectMutant = inspectMutant;
 
   function colorizeDiff(diffText) {
     const lines = diffText.split('\n');
