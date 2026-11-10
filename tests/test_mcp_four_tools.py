@@ -159,3 +159,4 @@ def test_hybrid_synthesizer_never_regress_guard():
     assert result.killed_mutants > 0
     assert result.total_mutants > 0
     assert result.line_coverage >= 70.0
+
