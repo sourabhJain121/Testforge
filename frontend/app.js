@@ -179,6 +179,11 @@ document.addEventListener('DOMContentLoaded', () => {
     inputGeminiKey: document.getElementById('input-gemini-key'),
     inputOpenrouterKey: document.getElementById('input-openrouter-key'),
 
+    // Theme Switcher Controller
+    btnThemeToggle: document.getElementById('btn-theme-toggle'),
+    themeToggleIcon: document.getElementById('theme-toggle-icon'),
+    themeToggleLabel: document.getElementById('theme-toggle-label'),
+
     // Target Hero Card
     targetModeBadge: document.getElementById('target-mode-badge'),
     targetModuleTitle: document.getElementById('target-module-title'),
@@ -2264,21 +2269,31 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.disabled = true;
         btn.setAttribute('disabled', 'true');
         btn.classList.add('loading');
-        btn.dataset.originalHtml = btn.dataset.originalHtml || btn.innerHTML;
-        btn.innerHTML = '<span class="spinner-sm"></span> <span class="icon">⏳</span> Hardening Active...';
+        if (btn.id === 'btn-banner-run-hardening') {
+          btn.classList.add('hidden');
+          btn.style.display = 'none';
+        } else {
+          btn.dataset.originalHtml = btn.dataset.originalHtml || btn.innerHTML;
+          btn.innerHTML = '<span class="spinner-sm"></span> <span class="icon">⏳</span> Hardening Active...';
+        }
       } else {
         btn.disabled = false;
         btn.removeAttribute('disabled');
-        btn.classList.remove('loading', 'hidden');
-        btn.style.display = 'inline-flex';
-        if (btn.dataset.originalHtml) {
-          btn.innerHTML = btn.dataset.originalHtml;
-        } else if (btn.id === 'btn-global-run-hardening' || btn.id === 'btn-run-hardening') {
-          btn.innerHTML = '<span id="btn-run-hardening"><span class="icon">⚡</span> Run Hardening</span>';
-        } else if (btn.id === 'btn-banner-run-hardening' || btn.id === 'btn-scroll-to-hardening') {
-          btn.innerHTML = '<span id="btn-scroll-to-hardening"><span class="icon">⚡</span> Run Hardening Pipeline</span>';
+        btn.classList.remove('loading');
+        if (btn.id === 'btn-banner-run-hardening') {
+          btn.classList.add('hidden');
+          btn.style.display = 'none';
+          btn.innerHTML = '<span id="btn-scroll-to-hardening"></span>';
         } else {
-          btn.innerHTML = '<span id="btn-start-hardening"><span class="icon">⚡</span> Run TestForge Autonomous Hardening</span>';
+          btn.classList.remove('hidden');
+          btn.style.display = 'inline-flex';
+          if (btn.dataset.originalHtml) {
+            btn.innerHTML = btn.dataset.originalHtml;
+          } else if (btn.id === 'btn-global-run-hardening' || btn.id === 'btn-run-hardening') {
+            btn.innerHTML = '<span id="btn-run-hardening"><span class="icon">⚡</span> Run Hardening</span>';
+          } else {
+            btn.innerHTML = '<span id="btn-start-hardening"><span class="icon">⚡</span> Run TestForge Autonomous Hardening</span>';
+          }
         }
       }
     });
@@ -6840,6 +6855,31 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // =========================================================================
+  // Theme Controller (MODULE 2)
+  // =========================================================================
+  function initThemeController() {
+    const toggleBtn = document.getElementById('btn-theme-toggle');
+    const iconEl = document.getElementById('theme-toggle-icon');
+    const labelEl = document.getElementById('theme-toggle-label');
+    const saved = localStorage.getItem('testforge-theme') || 'dark';
+    setTheme(saved);
+
+    function setTheme(t) {
+      document.documentElement.setAttribute('data-theme', t);
+      localStorage.setItem('testforge-theme', t);
+      if (iconEl) iconEl.textContent = t === 'light' ? '🌙' : '☀️';
+      if (labelEl) labelEl.textContent = t === 'light' ? 'Light' : 'Dark';
+    }
+
+    if (toggleBtn) {
+      toggleBtn.onclick = () => {
+        const curr = document.documentElement.getAttribute('data-theme') || 'dark';
+        setTheme(curr === 'dark' ? 'light' : 'dark');
+      };
+    }
+  }
+  initThemeController();
 
   // =========================================================================
   // Initial Bootstrapping
@@ -6922,6 +6962,7 @@ document.addEventListener('DOMContentLoaded', () => {
       initWebSocketEventStream,
       disconnectWebSocket,
       appendLiveWiretapEvent,
+      initThemeController,
       loadObservabilityTraceData: fetchTelemetry,
       loadCheckpointsList: fetchCheckpoints,
       state,

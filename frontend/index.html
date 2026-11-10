@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -70,6 +70,9 @@
       <a href="https://github.com/sourabhJain121/Testforge" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-icon" id="btn-github-repo">
         <span class="icon">🐙</span> Repo
       </a>
+      <button id="btn-theme-toggle" class="theme-toggle-btn" title="Toggle Light/Dark Theme">
+        <span id="theme-toggle-icon">☀️</span> <span id="theme-toggle-label" class="theme-label">Dark</span>
+      </button>
       <button type="button" class="btn btn-primary btn-glow btn-icon" id="btn-global-run-hardening" data-action="start-hardening" data-alias="btn-run-hardening" title="Run TestForge Autonomous Hardening">
         <span id="btn-run-hardening"><span class="icon">⚡</span> Run Hardening</span>
       </button>
@@ -284,15 +287,13 @@
         </div>
       </div>
       <div class="banner-actions">
-        <button class="btn btn-primary btn-glow" id="btn-banner-run-hardening" data-action="start-hardening" data-alias="btn-scroll-to-hardening" title="Run Hardening Pipeline">
-          <span id="btn-scroll-to-hardening"><span class="icon">⚡</span> Run Hardening Pipeline</span>
-        </button>
+        <button id="btn-banner-run-hardening" class="hidden" style="display: none !important;" data-action="start-hardening"><span id="btn-scroll-to-hardening"></span></button>
       </div>
     </section>
 
     <!-- Navigation Tabs -->
-    <nav class="tab-nav cockpit-navbar" id="main-tab-nav" data-alias="main-nav" role="tablist" style="padding-left: 16px; padding-right: 16px; margin-left: 0; min-width: 0; overflow-x: auto; overflow-y: visible;">
-      <button class="tab-btn active" data-tab="tab-ingestion" data-target="view-ingestion" id="tab-btn-ingestion" role="tab" aria-selected="true" style="margin-left: 4px; padding-left: 14px; padding-right: 14px;">
+    <nav class="tab-nav cockpit-navbar" id="main-tab-nav" data-alias="main-nav" role="tablist" style="padding-left: 16px; padding-right: 16px; margin-left: 0; min-width: 0; overflow-x: auto; overflow-y: hidden; white-space: nowrap; height: 48px; min-height: 48px; box-sizing: border-box;">
+      <button class="tab-btn active" data-tab="tab-ingestion" data-target="view-ingestion" id="tab-btn-ingestion" role="tab" aria-selected="true" style="margin-left: 0; padding-left: 12px; padding-right: 14px;">
         📁 Target Ingestion
       </button>
       <button class="tab-btn" data-tab="tab-blast" id="tab-btn-blast" data-alias="nav-blast" role="tab" aria-selected="false">

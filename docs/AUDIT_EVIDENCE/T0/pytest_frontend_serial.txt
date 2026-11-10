@@ -1,0 +1,26 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.18, pytest-9.1.1, pluggy-1.7.0 -- /Users/sourabh/TestForge/.venv-release/bin/python3.13
+cachedir: .pytest_cache
+hypothesis profile 'default'
+rootdir: /Users/sourabh/TestForge
+configfile: pyproject.toml
+plugins: hypothesis-6.170.15, cov-7.1.0, xdist-3.8.0, timeout-2.4.0, anyio-4.15.1, platformdirs-4.13.5
+collecting ... collected 14 items
+
+tests/test_frontend_playground_verification.py::TestFrontendStaticDOMAndAPIContracts::test_zero_dangling_element_id_references_in_app_js PASSED [  7%]
+tests/test_frontend_playground_verification.py::TestFrontendStaticDOMAndAPIContracts::test_query_selector_id_references_exist_in_index_html PASSED [ 14%]
+tests/test_frontend_playground_verification.py::TestFrontendStaticDOMAndAPIContracts::test_all_frontend_fetch_routes_match_server_routes PASSED [ 21%]
+tests/test_frontend_playground_verification.py::TestFrontendHeadlessBrowserPlayground::test_headless_cockpit_full_interactive_verification PASSED [ 28%]
+tests/test_frontend_playground_verification.py::TestFrontendHeadlessBrowserPlayground::test_b1_happy_path_hardening PASSED [ 35%]
+tests/test_frontend_playground_verification.py::TestFrontendHeadlessBrowserPlayground::test_b2_custom_target_hardening PASSED [ 42%]
+tests/test_frontend_playground_verification.py::TestFrontendHeadlessBrowserPlayground::test_b3_cancellation_and_resumption PASSED [ 50%]⏩ Restored from checkpoint: Skipping Ingestion & AST Extraction
+
+tests/test_frontend_playground_verification.py::TestFrontendHeadlessBrowserPlayground::test_b4_diff_inspector_and_artifact_downloads PASSED [ 57%]
+tests/test_frontend_playground_verification.py::TestFrontendHeadlessBrowserPlayground::test_b5_error_states_and_edge_cases PASSED [ 64%]
+tests/test_frontend_playground_verification.py::TestFrontendHeadlessBrowserPlayground::test_b6_benchmark_ablation_table_cell_counts_and_values PASSED [ 71%]
+tests/test_frontend_playground_verification.py::TestFrontendHeadlessBrowserPlayground::test_live_hardening_pipeline_runs_to_completion PASSED [ 78%]
+tests/test_frontend_playground_verification.py::TestFrontendHeadlessBrowserPlayground::test_header_run_button_triggers_hardening_from_any_tab PASSED [ 85%]
+tests/test_frontend_playground_verification.py::TestFrontendHeadlessBrowserPlayground::test_all_three_hardening_buttons_trigger_execution PASSED [ 92%]
+tests/test_frontend_playground_verification.py::TestFrontendHeadlessBrowserPlayground::test_theme_switcher_toggle PASSED [100%]
+
+======================== 14 passed in 69.30s (0:01:09) =========================
