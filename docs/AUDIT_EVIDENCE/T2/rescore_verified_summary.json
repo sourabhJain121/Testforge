@@ -1,0 +1,283 @@
+{
+  "canonical": {
+    "samples/discount.py": {
+      "baseline": {
+        "cov_pct": 70.0,
+        "branch_cov": 50.0,
+        "raw_ms": 31.58,
+        "adj_ms": 35.29,
+        "killed": 6,
+        "total": 19,
+        "baseline_passed": true,
+        "invalid_suite": false,
+        "duration_sec": 1.401
+      },
+      "deterministic_ast": {
+        "cov_pct": 100.0,
+        "branch_cov": 100.0,
+        "raw_ms": 94.74,
+        "adj_ms": 100.0,
+        "killed": 18,
+        "total": 19,
+        "baseline_passed": true,
+        "invalid_suite": false,
+        "duration_sec": 1.668
+      },
+      "agentic_reflection_empirical": {
+        "cov_pct": 100.0,
+        "branch_cov": 100.0,
+        "raw_ms": 94.74,
+        "adj_ms": 100.0,
+        "killed": 18,
+        "total": 19,
+        "duration_sec": 2.45
+      }
+    },
+    "samples/order_fsm.py": {
+      "baseline": {
+        "cov_pct": 40.0,
+        "branch_cov": 18.75,
+        "raw_ms": 10.38,
+        "adj_ms": 10.38,
+        "killed": 11,
+        "total": 106,
+        "baseline_passed": true,
+        "invalid_suite": false,
+        "duration_sec": 3.285
+      },
+      "deterministic_ast": {
+        "cov_pct": 100.0,
+        "branch_cov": 100.0,
+        "raw_ms": 76.42,
+        "adj_ms": 76.42,
+        "killed": 81,
+        "total": 106,
+        "baseline_passed": true,
+        "invalid_suite": false,
+        "duration_sec": 6.327
+      },
+      "agentic_reflection_empirical": {
+        "cov_pct": 100.0,
+        "branch_cov": 100.0,
+        "raw_ms": 97.17,
+        "adj_ms": 100.0,
+        "killed": 103,
+        "total": 106,
+        "duration_sec": 36.5
+      }
+    },
+    "samples/lru_cache.py": {
+      "baseline": {
+        "cov_pct": 40.27777777777778,
+        "branch_cov": 12.5,
+        "raw_ms": 9.52,
+        "adj_ms": 10.0,
+        "killed": 4,
+        "total": 42,
+        "baseline_passed": true,
+        "invalid_suite": false,
+        "duration_sec": 1.776
+      },
+      "deterministic_ast": {
+        "cov_pct": 69.44444444444444,
+        "branch_cov": 37.5,
+        "raw_ms": 30.95,
+        "adj_ms": 33.33,
+        "killed": 13,
+        "total": 42,
+        "baseline_passed": true,
+        "invalid_suite": false,
+        "duration_sec": 2.243
+      },
+      "agentic_reflection_empirical": {
+        "cov_pct": 34.7,
+        "branch_cov": 18.8,
+        "raw_ms": 30.95,
+        "adj_ms": 34.21,
+        "killed": 13,
+        "total": 42,
+        "duration_sec": 8.2
+      }
+    },
+    "samples/stats_calculator.py": {
+      "baseline": {
+        "cov_pct": 26.19047619047619,
+        "branch_cov": 6.25,
+        "raw_ms": 4.11,
+        "adj_ms": 4.11,
+        "killed": 3,
+        "total": 73,
+        "baseline_passed": true,
+        "invalid_suite": false,
+        "duration_sec": 1.741
+      },
+      "deterministic_ast": {
+        "cov_pct": 95.23809523809524,
+        "branch_cov": 87.5,
+        "raw_ms": 49.32,
+        "adj_ms": 50.7,
+        "killed": 36,
+        "total": 73,
+        "baseline_passed": true,
+        "invalid_suite": false,
+        "duration_sec": 4.009
+      },
+      "agentic_reflection_empirical": {
+        "cov_pct": 47.6,
+        "branch_cov": 43.8,
+        "raw_ms": 45.21,
+        "adj_ms": 46.48,
+        "killed": 33,
+        "total": 73,
+        "duration_sec": 12.4
+      }
+    }
+  },
+  "sealed_v2": {
+    "bisect_algo": {
+      "dev_baseline": {
+        "cov_pct": 16.0,
+        "branch_cov": 0.0,
+        "killed": 0,
+        "total": 70,
+        "raw_ms": 0.0,
+        "adj_ms": 0.0,
+        "baseline_passed": true,
+        "invalid_suite": false,
+        "duration_sec": 1.255
+      },
+      "deterministic": {
+        "cov_pct": 16.0,
+        "branch_cov": 0.0,
+        "killed": 0,
+        "total": 70,
+        "raw_ms": 0.0,
+        "adj_ms": 0.0,
+        "baseline_passed": false,
+        "invalid_suite": true,
+        "duration_sec": 0.41
+      }
+    },
+    "fractions_algo": {
+      "dev_baseline": {
+        "cov_pct": 0.0,
+        "branch_cov": 0.0,
+        "killed": 0,
+        "total": 57,
+        "raw_ms": 0.0,
+        "adj_ms": 0.0,
+        "baseline_passed": false,
+        "invalid_suite": true,
+        "duration_sec": 1.104
+      },
+      "deterministic": {
+        "cov_pct": 67.74193548387096,
+        "branch_cov": 33.333333333333336,
+        "killed": 12,
+        "total": 57,
+        "raw_ms": 21.82,
+        "adj_ms": 22.64,
+        "baseline_passed": true,
+        "invalid_suite": false,
+        "duration_sec": 2.571
+      }
+    },
+    "heapq_algo": {
+      "dev_baseline": {
+        "cov_pct": 76.0,
+        "branch_cov": 71.42857142857143,
+        "killed": 18,
+        "total": 49,
+        "raw_ms": 36.73,
+        "adj_ms": 39.13,
+        "baseline_passed": true,
+        "invalid_suite": false,
+        "duration_sec": 7.803
+      },
+      "deterministic": {
+        "cov_pct": 28.0,
+        "branch_cov": 14.285714285714286,
+        "killed": 0,
+        "total": 49,
+        "raw_ms": 0.0,
+        "adj_ms": 0.0,
+        "baseline_passed": false,
+        "invalid_suite": true,
+        "duration_sec": 0.449
+      }
+    },
+    "shlex_algo": {
+      "dev_baseline": {
+        "cov_pct": 0.0,
+        "branch_cov": 0.0,
+        "killed": 0,
+        "total": 23,
+        "raw_ms": 0.0,
+        "adj_ms": 0.0,
+        "baseline_passed": false,
+        "invalid_suite": true,
+        "duration_sec": 0.535
+      },
+      "deterministic": {
+        "cov_pct": 52.77777777777778,
+        "branch_cov": 54.54545454545455,
+        "killed": 14,
+        "total": 23,
+        "raw_ms": 60.87,
+        "adj_ms": 60.87,
+        "baseline_passed": true,
+        "invalid_suite": false,
+        "duration_sec": 1.378
+      }
+    },
+    "statistics_algo": {
+      "dev_baseline": {
+        "cov_pct": 0.0,
+        "branch_cov": 0.0,
+        "killed": 0,
+        "total": 37,
+        "raw_ms": 0.0,
+        "adj_ms": 0.0,
+        "baseline_passed": false,
+        "invalid_suite": true,
+        "duration_sec": 0.536
+      },
+      "deterministic": {
+        "cov_pct": 95.45454545454545,
+        "branch_cov": 87.5,
+        "killed": 22,
+        "total": 37,
+        "raw_ms": 59.46,
+        "adj_ms": 61.11,
+        "baseline_passed": true,
+        "invalid_suite": false,
+        "duration_sec": 2.156
+      }
+    },
+    "textwrap_algo": {
+      "dev_baseline": {
+        "cov_pct": 0.0,
+        "branch_cov": 0.0,
+        "killed": 0,
+        "total": 23,
+        "raw_ms": 0.0,
+        "adj_ms": 0.0,
+        "baseline_passed": false,
+        "invalid_suite": true,
+        "duration_sec": 0.514
+      },
+      "deterministic": {
+        "cov_pct": 72.22222222222223,
+        "branch_cov": 50.0,
+        "killed": 9,
+        "total": 23,
+        "raw_ms": 39.13,
+        "adj_ms": 42.86,
+        "baseline_passed": true,
+        "invalid_suite": false,
+        "duration_sec": 1.667
+      }
+    }
+  },
+  "mean_sealed_v2_deterministic": 30.21
+}

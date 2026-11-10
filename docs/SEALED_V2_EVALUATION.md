@@ -37,15 +37,20 @@ All 6 targets in `samples/sealed_v2/` were adapted from the CPython Standard Lib
 ### B. Statistical Power Warning on Small-Sample Cloud Paired Subsets
 Earlier drafts highlighted a 4-pair Cloud Gemini subset ($n=4$ across only 2 targets). **This subset is statistically under-powered ($N=4$, $\pm 51.9\%$ variance)** and suffered selection bias caused by API quota exhaustion. We remove this as a headline claim. The primary reproducible cross-target comparison is the full 18-run local model evaluation below.
 
-### C. Local Model Evaluation ($n=16$ paired runs, $6 \text{ targets} \times 3 \text{ seeds}$)
+### C. Historical Pre-Audit Local Model Evaluation ($n=16$ paired runs, $6 \text{ targets} \times 3 \text{ seeds}$) [SUPERSEDED]
 
-| Condition | Evaluated Engine / Model | Paired Raw Mutation Score (%) | Relative Delta vs Dev Baseline |
-| :--- | :--- | :---: | :---: |
-| **1. Developer Baseline** | Minimal starter assertion | 6.9% ± 14.8% | Baseline |
-| **2. Zero-Shot Local LLM** | `qwen2.5-coder:7b` | 91.5% ± 25.7% | +84.7% |
-| **3. Zero-Shot + 1 Retry** | `qwen2.5-coder:7b` | 97.8% ± 8.2% | +90.9% |
-| **4. TestForge Deterministic** | Heuristic AST Synthesizer | **62.8% ± 29.6%** | **+55.9%** |
-| **5. TestForge Full Agentic** | Multi-Agent Reflection Loop | 31.5% ± 26.2% | +24.6% |
+> [!CAUTION]
+> **DEF-022 Retraction Notice (Clean Reference False-Kill Correction):**  
+> The aggregate figures in the historical table below (Local Qwen Zero-Shot 91.5% ± 25.7%, Retry 97.8% ± 8.2%, Deterministic 62.8% ± 29.6%, Full Agentic 31.5% ± 26.2%) were computed using the pre-audit legacy evaluation harness. In that legacy harness, candidate test suites that threw errors on clean unmutated target code caused pytest to return non-zero exit codes that were erroneously scored as mutant kills (e.g. 70/70 on `bisect_algo`).  
+> Under the fixed DEF-022 harness (which enforces strict Pass@1 pre-flight validation), any candidate suite that fails on clean reference code is classified as `INVALID_SUITE` (0 kills, 0.0% MS). Under this verified harness, heuristic AST synthesis achieves **30.21%** mean raw mutation score across all 6 targets (with `bisect_algo` and `heapq_algo` strictly scored at 0.0% INVALID_SUITE). **The historical figures in the table below are formally RETRACTED and superseded by the audited per-target breakdown in Section 3.**
+
+| Condition | Evaluated Engine / Model | Paired Raw Mutation Score (%) [RETRACTED] | Relative Delta vs Dev Baseline | Status / Provenance |
+| :--- | :--- | :---: | :---: | :---: |
+| **1. Developer Baseline** | Minimal starter assertion | 6.9% ± 14.8% | Baseline | Historical (Pre-Audit) |
+| **2. Zero-Shot Local LLM** | `qwen2.5-coder:7b` | ~~91.5% ± 25.7%~~ | +84.7% | **RETRACTED** (DEF-022 unvalidated clean reference) |
+| **3. Zero-Shot + 1 Retry** | `qwen2.5-coder:7b` | ~~97.8% ± 8.2%~~ | +90.9% | **RETRACTED** (DEF-022 unvalidated clean reference) |
+| **4. TestForge Deterministic** | Heuristic AST Synthesizer | ~~**62.8% ± 29.6%**~~ | **+55.9%** | **RETRACTED** (Corrected to 30.21% in Section 3) |
+| **5. TestForge Full Agentic** | Multi-Agent Reflection Loop | ~~31.5% ± 26.2%~~ | +24.6% | **RETRACTED** (Pre-audit unvalidated harness) |
 
 ---
 
