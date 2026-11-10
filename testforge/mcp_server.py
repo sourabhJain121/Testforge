@@ -14,10 +14,14 @@ Provides standard Model Context Protocol (MCP) servers using the official FastMC
 
 from __future__ import annotations
 
+import ast
+import difflib
 import hashlib
 import json
 import os
+import re
 import sys
+import types
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -308,19 +312,251 @@ def create_github_server(
     return server
 
 
+# ==============================================================================
+# Protocol Suite 4-Tool Core Implementations
+# ==============================================================================
+
+def mcp_ast_symbol_analyzer(source_code: str) -> Dict[str, Any]:
+    """
+    Returns AST symbols, cyclomatic complexity, functions, and branch boundaries.
+    """
+    try:
+        tree = ast.parse(source_code)
+    except Exception as e:
+        return {
+            "status": "ERROR",
+            "error": f"Failed parsing AST: {e}",
+            "symbols": [],
+            "cyclomatic_complexity": 1,
+            "functions": [],
+            "classes": [],
+            "branch_boundaries": [],
+            "loc": 0,
+        }
+
+    symbols: List[str] = []
+    functions: List[Dict[str, Any]] = []
+    classes: List[Dict[str, Any]] = []
+    branch_boundaries: List[Dict[str, Any]] = []
+    total_complexity = 1
+
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.If, ast.While, ast.For, ast.AsyncFor, ast.ExceptHandler, ast.IfExp)):
+            total_complexity += 1
+            branch_boundaries.append({
+                "line": getattr(node, "lineno", 0),
+                "type": node.__class__.__name__,
+            })
+        elif isinstance(node, ast.BoolOp):
+            total_complexity += len(node.values) - 1
+            branch_boundaries.append({
+                "line": getattr(node, "lineno", 0),
+                "type": f"BoolOp_{node.op.__class__.__name__}",
+            })
+        elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            symbols.append(node.name)
+            fn_complexity = 1
+            for child in ast.walk(node):
+                if isinstance(child, (ast.If, ast.While, ast.For, ast.AsyncFor, ast.ExceptHandler, ast.IfExp)):
+                    fn_complexity += 1
+                elif isinstance(child, ast.BoolOp):
+                    fn_complexity += len(child.values) - 1
+            args = [a.arg for a in node.args.args]
+            functions.append({
+                "name": node.name,
+                "lineno": node.lineno,
+                "args": args,
+                "cyclomatic_complexity": fn_complexity,
+                "is_async": isinstance(node, ast.AsyncFunctionDef),
+            })
+        elif isinstance(node, ast.ClassDef):
+            symbols.append(node.name)
+            methods = [m.name for m in node.body if isinstance(m, (ast.FunctionDef, ast.AsyncFunctionDef))]
+            classes.append({
+                "name": node.name,
+                "lineno": node.lineno,
+                "methods": methods,
+            })
+
+    loc = len([l for l in source_code.splitlines() if l.strip() and not l.strip().startswith("#")])
+
+    return {
+        "status": "SUCCESS",
+        "symbols": symbols,
+        "cyclomatic_complexity": total_complexity,
+        "functions": functions,
+        "classes": classes,
+        "branch_boundaries": branch_boundaries,
+        "loc": loc,
+    }
+
+
+def mcp_mutant_generator(source_code: str, max_mutants: int = 30) -> List[Dict[str, Any]]:
+    """
+    Generates verified AST mutants (operator swap, boundary shift, condition inversion).
+    """
+    from testforge.mutator import ASTMutator
+
+    try:
+        mutants = ASTMutator.generate_mutants(source_code)
+    except Exception:
+        mutants = []
+
+    results: List[Dict[str, Any]] = []
+    for m in mutants[:max_mutants]:
+        results.append({
+            "id": m.mutant_id,
+            "type": m.mutation_type,
+            "line": m.line_number,
+            "original": m.original_code_snippet,
+            "mutated": m.mutated_code_snippet,
+            "diff": m.unified_diff,
+        })
+    return results
+
+
+def mcp_sandbox_runner(test_suite_code: str, target_source: str, timeout_seconds: float = 3.0) -> Dict[str, Any]:
+    """
+    Runs candidate tests inside subprocess sandbox, returning pass/fail, exit code, and clean code integrity.
+    """
+    from testforge.sandbox import ParallelSandboxRunner
+
+    runner = ParallelSandboxRunner(timeout_seconds=timeout_seconds)
+    res = runner.run_single(test_suite_code, target_source)
+    clean_passed = (
+        (res.get("exit_code") == 0)
+        and (not res.get("has_exec_error", False))
+        and (res.get("tests_failed", 0) == 0)
+    )
+
+    return {
+        "status": res.get("status", "UNKNOWN"),
+        "passed": clean_passed,
+        "exit_code": res.get("exit_code", 1),
+        "clean_code_integrity": clean_passed,
+        "tests_passed": res.get("tests_passed", 0),
+        "tests_failed": res.get("tests_failed", 0),
+        "tests_collected": res.get("tests_collected", 0),
+        "duration_ms": res.get("duration_ms", 0.0),
+        "stdout": res.get("stdout", ""),
+        "stderr": res.get("stderr", ""),
+    }
+
+
+def mcp_equivalence_classifier(original_source: str, mutant_source: str) -> Dict[str, Any]:
+    """
+    Checks AST structural invariants to classify semantic equivalent mutants.
+    """
+    from testforge.equivalence import EquivalentMutantAnalyzer, compare_bytecode_instructions
+
+    # 1. Syntactic AST equality
+    try:
+        orig_tree = ast.parse(original_source)
+        mut_tree = ast.parse(mutant_source)
+        if ast.dump(orig_tree) == ast.dump(mut_tree):
+            return {
+                "is_equivalent": True,
+                "status": "EQUIVALENT",
+                "method": "SYNTACTIC_IDENTITY",
+                "confidence": "HIGH",
+                "reason": "Abstract syntax trees are structurally identical.",
+            }
+    except Exception:
+        pass
+
+    # 2. Bytecode instruction equality
+    is_bc_ident, bc_reason = compare_bytecode_instructions(original_source, mutant_source)
+    if is_bc_ident:
+        return {
+            "is_equivalent": True,
+            "status": "EQUIVALENT",
+            "method": "BYTECODE_IDENTITY",
+            "confidence": "HIGH",
+            "reason": bc_reason or "Bytecode instruction streams and nested code objects are strictly identical.",
+        }
+
+    # 3. Dead code detection
+    try:
+        dead_lines = EquivalentMutantAnalyzer.find_dead_lines(original_source)
+        if dead_lines:
+            diff = difflib.unified_diff(
+                original_source.splitlines(keepends=True),
+                mutant_source.splitlines(keepends=True),
+            )
+            changed_lines = set()
+            cur_line = 0
+            for line in diff:
+                if line.startswith("@@"):
+                    m = re.search(r"@@ -(\d+)", line)
+                    if m:
+                        cur_line = int(m.group(1))
+                elif line.startswith("-") and not line.startswith("---"):
+                    changed_lines.add(cur_line)
+                    cur_line += 1
+                elif line.startswith("+") and not line.startswith("+++"):
+                    changed_lines.add(cur_line)
+                elif not line.startswith("---") and not line.startswith("+++"):
+                    cur_line += 1
+            if changed_lines and changed_lines.issubset(dead_lines):
+                return {
+                    "is_equivalent": True,
+                    "status": "EQUIVALENT",
+                    "method": "DEAD_CODE_MUTATION",
+                    "confidence": "HIGH",
+                    "reason": f"Mutation occurs on unreachable dead code lines: {sorted(list(changed_lines))}",
+                }
+    except Exception:
+        pass
+
+    return {
+        "is_equivalent": False,
+        "status": "NOT_EQUIVALENT",
+        "method": "NONE",
+        "confidence": "NONE",
+        "reason": "No equivalence proof found; AST and bytecode semantics diverge.",
+    }
+
+
+def create_protocol_suite_server() -> FastMCP:
+    """
+    Creates a FastMCP server exposing exclusively the 4-tool TestForge protocol suite:
+    1. mcp_ast_symbol_analyzer
+    2. mcp_mutant_generator
+    3. mcp_sandbox_runner
+    4. mcp_equivalence_classifier
+    """
+    server = FastMCP(
+        "testforge-protocol-suite",
+        instructions="TestForge FastMCP 4-Tool Protocol Suite for Multi-Agent Hardening & Verification"
+    )
+
+    server.tool()(mcp_ast_symbol_analyzer)
+    server.tool()(mcp_mutant_generator)
+    server.tool()(mcp_sandbox_runner)
+    server.tool()(mcp_equivalence_classifier)
+
+    return server
+
+
 TESTFORGE_JOBS: Dict[str, Dict[str, Any]] = {}
 
 
 def create_testforge_server(repo_root: Optional[Path] = None) -> FastMCP:
     """
     Creates a native TestForge Model Context Protocol (MCP) server.
-    Exposes autonomous test hardening, reporting, and job monitoring tools.
+    Exposes autonomous test hardening, reporting, job monitoring, and the 4 protocol suite tools.
     """
     root = (repo_root or Path.cwd()).resolve()
     server = FastMCP(
         "testforge-mcp-server",
         instructions="TestForge Autonomous Unit-Test Hardening & Verification MCP Server"
     )
+
+    # Register the 4 core protocol suite tools
+    server.tool()(mcp_ast_symbol_analyzer)
+    server.tool()(mcp_mutant_generator)
+    server.tool()(mcp_sandbox_runner)
+    server.tool()(mcp_equivalence_classifier)
 
     @server.tool()
     def harden_module(file_path: str, max_iterations: int = 3) -> Dict[str, Any]:
@@ -431,6 +667,9 @@ if __name__ == "__main__":
     elif server_type == "testforge":
         root = sys.argv[2] if len(sys.argv) > 2 else os.getcwd()
         server = create_testforge_server(Path(root))
+        server.run(transport="stdio")
+    elif server_type in ("protocol", "tools", "four_tools"):
+        server = create_protocol_suite_server()
         server.run(transport="stdio")
     else:
         sys.stderr.write(f"Unknown server type: {server_type}\n")

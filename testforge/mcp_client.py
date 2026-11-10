@@ -63,7 +63,10 @@ DEFAULT_ALLOWED_TOOLS = {
     "get_file_contents", "get_repository_info", "search_repositories",
     "get_repository_tree", "get_issue", "get_pull_request", "list_commits",
     # TestForge Native MCP tools
-    "harden_module", "get_report", "list_jobs"
+    "harden_module", "get_report", "list_jobs",
+    # FastMCP 4-Tool Protocol Suite
+    "mcp_ast_symbol_analyzer", "mcp_mutant_generator",
+    "mcp_sandbox_runner", "mcp_equivalence_classifier"
 }
 
 # Explicitly blocked destructive tools
