@@ -166,6 +166,7 @@ class TestForgeOrchestrator:
         feature_flags: Optional[FeatureFlags] = None,
         privacy_mode: Optional[bool] = None,
         output_path: Optional[str] = None,
+        enable_rag: bool = True,
     ):
         from testforge.privacy_mode import PrivacyModeManager
         privacy_mgr = PrivacyModeManager.get_instance()
@@ -182,6 +183,7 @@ class TestForgeOrchestrator:
         self.target_file_path = target_file_path
         self.output_path = output_path
         self.engine_mode = engine_mode
+        self.enable_rag = enable_rag
         self.target_lines = target_lines
         self.callbacks = callbacks or default_callback_registry
         self.feature_flags = feature_flags or FeatureFlags.from_env()
@@ -1111,6 +1113,16 @@ class TestForgeOrchestrator:
                 job_id=self.job_id,
                 workflow_id=self.workflow_id,
             )
+            if self.enable_rag:
+                from testforge.observability import trace_event
+                heuristics = getattr(test_plan, "rag_heuristics", [])
+                top_score = max((float(h.get("relevance_score", h.get("score", 0.0))) for h in heuristics), default=0.0)
+                trace_event("rag.retrieval", {
+                    "testforge.job_id": self.job_id or "job_default",
+                    "query": f"{intel_res.target_module} ast symbols",
+                    "top_score": round(top_score, 3),
+                    "rules_count": len(heuristics),
+                })
             if hasattr(self, "supervisor") and self.supervisor:
                 self.supervisor.set_agent_completed("TestPlanningAgent", success=True)
             self.state.metadata["test_plan"] = test_plan.model_dump()

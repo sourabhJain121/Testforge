@@ -196,6 +196,7 @@ class PlanSpace(BaseModel):
     planner_agent: str = "agent:google-adk:test-planner"
     strategy_notes: str = ""
     cot_reasoning_trace: List[Dict[str, Any]] = Field(default_factory=list, description="Step-by-step chain-of-thought boundary derivation trace")
+    rag_heuristics: List[Dict[str, Any]] = Field(default_factory=list, description="Retrieved RAG testing heuristics and recipes")
 
 
 class ExecutionSpace(BaseModel):

@@ -183,6 +183,7 @@ class AgenticKnowledgeRetriever:
             relevance = self.grade_chunk_relevance(ch, effective_query)
             if relevance >= min_score:
                 graded_item = dict(ch)
+                graded_item["id"] = ch.get("doc_id", "")
                 graded_item["relevance_score"] = relevance
                 graded_chunks.append(graded_item)
 

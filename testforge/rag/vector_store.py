@@ -97,9 +97,8 @@ class TestForgeVectorStore:
         # Load persisted local data from disk
         self._load_from_disk()
 
-        # Pre-seed default testing recipes if testing_patterns is empty
-        if not self._collections["testing_patterns"]:
-            self._seed_default_testing_patterns()
+        # Pre-seed default testing recipes and load standard heuristic corpus
+        self._seed_default_testing_patterns()
 
     def _get_collection_file(self, collection_name: str) -> pathlib.Path:
         return self.persist_dir / f"{collection_name}.json"
@@ -250,7 +249,16 @@ class TestForgeVectorStore:
                 self._save_collection_to_disk(col)
 
     def _seed_default_testing_patterns(self) -> None:
-        """Seeds the testing_patterns collection with essential testing recipes."""
+        """Seeds the testing_patterns collection with corpus rules and essential testing recipes."""
+        try:
+            from testforge.rag.corpus import load_all_corpus_documents
+            corpus_docs = load_all_corpus_documents()
+            if corpus_docs:
+                self.add_documents("testing_patterns", corpus_docs)
+                logger.info(f"TestForgeVectorStore: Ingested {len(corpus_docs)} heuristic corpus rules.")
+        except Exception as exc:
+            logger.debug(f"Failed to load corpus documents: {exc}")
+
         recipes = [
             {
                 "doc_id": "pattern_approx_floats",

@@ -1,0 +1,43 @@
+[
+  {
+    "doc_id": "rule_arith_zero_division",
+    "text": "# Arithmetic & Division: Zero-Division Boundary\n# Targets BinOp(Div), BinOp(FloorDiv), BinOp(Mod), zero denominator\n# Handles ZeroDivisionError, denominator validation, and division near zero threshold\nimport pytest\ndef test_zero_division_boundary():\n    with pytest.raises((ZeroDivisionError, ValueError)):\n        divide(10, 0)\n    assert divide(10, 1e-9) > 0\n",
+    "metadata": {
+      "category": "arithmetic_division",
+      "pattern_name": "zero_division",
+      "operator_type": "BIN_OP_DIV",
+      "ast_node_types": ["BinOp", "Div", "FloorDiv", "Mod"]
+    }
+  },
+  {
+    "doc_id": "rule_arith_overflow_bounds",
+    "text": "# Arithmetic & Division: Integer Overflow Bounds & Extreme Integers\n# Targets sys.maxsize, large integers, 32-bit and 64-bit integer boundaries\nimport sys\ndef test_integer_overflow_boundaries():\n    max_int = sys.maxsize\n    assert compute(max_int) is not None\n    assert compute(-max_int - 1) is not None\n",
+    "metadata": {
+      "category": "arithmetic_division",
+      "pattern_name": "integer_overflow",
+      "operator_type": "INT_OVERFLOW",
+      "ast_node_types": ["BinOp", "Add", "Mult", "Pow"]
+    }
+  },
+  {
+    "doc_id": "rule_arith_float_roundoff",
+    "text": "# Arithmetic & Division: Floating-Point Roundoff & math.isclose / pytest.approx\n# Targets IEEE-754 precision tolerance, rounding errors, and epsilon boundaries\nimport math\nimport pytest\ndef test_floating_point_roundoff():\n    res = compute_rate(0.1, 0.2)\n    assert math.isclose(res, 0.3, rel_tol=1e-5, abs_tol=1e-8)\n    assert res == pytest.approx(0.3, rel=1e-5)\n",
+    "metadata": {
+      "category": "arithmetic_division",
+      "pattern_name": "math.isclose",
+      "operator_type": "FLOAT_ROUNDOFF",
+      "ast_node_types": ["BinOp", "Div", "Mult", "Float"]
+    }
+  },
+  {
+    "doc_id": "rule_arith_negative_zero",
+    "text": "# Arithmetic & Division: Negative Zero (-0.0) Invariant\n# Tests IEEE-754 sign preservation, negative zero, and copysign behavior\nimport math\ndef test_negative_zero_sign():\n    val = -0.0\n    res = normalize(val)\n    assert math.copysign(1.0, res) == 1.0 or res == 0.0\n",
+    "metadata": {
+      "category": "arithmetic_division",
+      "pattern_name": "negative_zero",
+      "operator_type": "NEGATIVE_ZERO",
+      "ast_node_types": ["UnaryOp", "USub", "Constant"]
+    }
+  }
+]
+

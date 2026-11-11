@@ -29,6 +29,7 @@ Features:
 
 from __future__ import annotations
 
+import ast
 import asyncio
 import concurrent.futures
 import hashlib
@@ -61,6 +62,7 @@ from testforge.code_intelligence_agent import infer_parameter_types_from_ast
 from testforge.llm_client import HybridLLMClient
 from testforge.logger import TraceLogger
 from testforge.prompt_guard import get_defensive_system_instruction
+from testforge.rag.knowledge_retriever import AgenticKnowledgeRetriever
 
 logger = logging.getLogger("testforge.planning_agent")
 
@@ -201,6 +203,7 @@ class TestPlanningAgent:
         blackboard: Optional[Blackboard] = None,
         callbacks: Optional[CallbackRegistry] = None,
         logger_instance: Optional[TraceLogger] = None,
+        knowledge_retriever: Optional[AgenticKnowledgeRetriever] = None,
         app_name: str = "testforge",
     ):
         self.app_name = app_name
@@ -208,6 +211,7 @@ class TestPlanningAgent:
         self.callbacks = callbacks
         self.trace_logger = logger_instance or TraceLogger("testforge_trace.jsonl")
         self.agent_id = "agent:google-adk:test-planner"
+        self.knowledge_retriever = knowledge_retriever or AgenticKnowledgeRetriever()
 
         self.model_bridge = model_bridge or PlanningModelBridge(
             model=model_name,
@@ -467,12 +471,19 @@ class TestPlanningAgent:
             exception_paths=exception_paths,
         )
 
+        # 5. Derive RAG Testing Heuristics & Invariant Recipes
+        rag_heuristics = self.derive_test_plan(
+            ast_symbols=intel_dict,
+            inferred_types=intel_dict.get("inferred_types"),
+        )
+
         rationale = (
             f"Prioritized {len(selected_scenarios)} test scenarios ({nominal_count} nominal, "
             f"{boundary_count} boundary, {negative_count} negative, {exception_count} exception) "
             f"targeting {len(functions)} discovered functions and {len(branches)} branch conditions. "
             f"Allocated test budget: {allocated_budget}. Risk category: {complexity_risk.get('risk_category', 'LOW')}. "
-            f"Derived {len(cot_reasoning_trace)} Chain-of-Thought (CoT) boundary reasoning steps."
+            f"Derived {len(cot_reasoning_trace)} Chain-of-Thought (CoT) boundary reasoning steps. "
+            f"Retrieved {len(rag_heuristics)} RAG testing heuristics from local knowledge base."
         )
 
         payload = TestPlanPayload(
@@ -491,6 +502,7 @@ class TestPlanningAgent:
             created_at=time.time(),
             planner_agent=self.agent_id,
             cot_reasoning_trace=cot_reasoning_trace,
+            rag_heuristics=rag_heuristics,
         )
 
         # 6. Publish to Blackboard PlanSpace
@@ -524,8 +536,144 @@ class TestPlanningAgent:
             planning_status=payload.status,
             planner_agent=payload.planner_agent,
             cot_reasoning_trace=payload.cot_reasoning_trace,
+            rag_heuristics=payload.rag_heuristics,
         )
-        logger.info(f"Published test plan ({len(payload.scenarios)} scenarios) to Blackboard PlanSpace with {len(payload.cot_reasoning_trace)} CoT steps.")
+        logger.info(f"Published test plan ({len(payload.scenarios)} scenarios) to Blackboard PlanSpace with {len(payload.cot_reasoning_trace)} CoT steps and {len(payload.rag_heuristics)} RAG heuristics.")
+
+    def derive_test_plan(
+        self,
+        ast_symbols: Union[Dict[str, Any], ast.AST, str, CodeIntelligencePayload],
+        inferred_types: Optional[Dict[str, Any]] = None,
+    ) -> List[Dict[str, Any]]:
+        """
+        Derives targeted RAG testing heuristics and recipes by analyzing AST symbols,
+        synthesizing semantic search queries, and querying the local zero-egress knowledge base.
+        """
+        query_terms: List[str] = []
+        target_categories: List[str] = []
+
+        # 1. Normalize and extract from ast_symbols
+        data: Dict[str, Any] = {}
+        target_ast: Optional[ast.AST] = None
+
+        if isinstance(ast_symbols, CodeIntelligencePayload):
+            data = ast_symbols.model_dump()
+        elif isinstance(ast_symbols, dict):
+            data = ast_symbols
+        elif isinstance(ast_symbols, str):
+            if "BinOp(Div)" in ast_symbols or "Div" in ast_symbols or "/" in ast_symbols:
+                query_terms.extend(["BinOp(Div)", "division", "zero division", "ZeroDivisionError", "sys.maxsize"])
+                target_categories.append("arithmetic_division")
+            if "slice" in ast_symbols.lower() or "subscript" in ast_symbols.lower() or "[" in ast_symbols:
+                query_terms.extend(["Subscript", "sequence", "slicing", "empty list", "reverse slice", "off by one"])
+                target_categories.append("sequence_slicing")
+            try:
+                target_ast = ast.parse(ast_symbols)
+            except Exception:
+                query_terms.append(ast_symbols.strip())
+        elif isinstance(ast_symbols, ast.AST):
+            target_ast = ast_symbols
+
+        # If we have an AST Node or parsed tree, traverse nodes
+        if target_ast is not None:
+            for node in ast.walk(target_ast):
+                if isinstance(node, ast.BinOp):
+                    if isinstance(node.op, (ast.Div, ast.FloorDiv, ast.Mod)):
+                        query_terms.extend(["BinOp(Div)", "division", "zero division", "ZeroDivisionError", "sys.maxsize"])
+                        if "arithmetic_division" not in target_categories:
+                            target_categories.append("arithmetic_division")
+                    elif isinstance(node.op, (ast.Add, ast.Mult, ast.Pow)):
+                        query_terms.extend(["overflow", "sys.maxsize", "extreme boundaries"])
+                        if "arithmetic_division" not in target_categories:
+                            target_categories.append("arithmetic_division")
+                elif isinstance(node, (ast.Subscript, ast.Slice)):
+                    query_terms.extend(["Subscript", "sequence", "slicing", "empty list", "reverse slice", "off by one"])
+                    if "sequence_slicing" not in target_categories:
+                        target_categories.append("sequence_slicing")
+                elif isinstance(node, ast.Compare):
+                    query_terms.append("Compare boundary relational condition")
+                elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    query_terms.append(node.name)
+                elif isinstance(node, ast.ClassDef):
+                    query_terms.extend(["stateful", "class", "cache eviction", "fsm"])
+                    if "stateful_cache_fsm" not in target_categories:
+                        target_categories.append("stateful_cache_fsm")
+                elif isinstance(node, ast.Call):
+                    if isinstance(node.func, ast.Attribute):
+                        attr = node.func.attr.lower()
+                        if attr in ("search", "match", "findall", "sub", "compile"):
+                            query_terms.extend(["regex", "pattern", "empty string", "unicode"])
+                            if "string_regex" not in target_categories:
+                                target_categories.append("string_regex")
+                        elif attr in ("get", "set", "evict", "put", "cache"):
+                            query_terms.extend(["cache", "capacity", "lru", "idempotency"])
+                            if "stateful_cache_fsm" not in target_categories:
+                                target_categories.append("stateful_cache_fsm")
+
+        # Extract from dictionary if present
+        if data:
+            target_module = data.get("target_module", "")
+            if target_module:
+                query_terms.append(target_module)
+
+            functions = data.get("functions", [])
+            for fn in functions:
+                if isinstance(fn, dict):
+                    fname = fn.get("name", "")
+                    if fname:
+                        query_terms.append(fname)
+                    fn_inferred = fn.get("inferred_parameter_types", {})
+                    for p, ptype in fn_inferred.items():
+                        if "SEQUENCE" in str(ptype) or "LIST" in str(ptype):
+                            query_terms.extend(["sequence", "slicing", "empty list", "collection"])
+                            if "sequence_slicing" not in target_categories:
+                                target_categories.append("sequence_slicing")
+
+            branches = data.get("branches", [])
+            for br in branches:
+                if isinstance(br, dict):
+                    cond = br.get("condition", "")
+                    if any(sym in cond for sym in ("/", "//", "%")):
+                        query_terms.extend(["division", "zero division", "BinOp(Div)"])
+                        if "arithmetic_division" not in target_categories:
+                            target_categories.append("arithmetic_division")
+                    if any(sym in cond for sym in ("[", "]", "len(", "in ")):
+                        query_terms.extend(["sequence", "slicing", "empty list"])
+                        if "sequence_slicing" not in target_categories:
+                            target_categories.append("sequence_slicing")
+
+        # Inferred parameter types argument
+        if inferred_types and isinstance(inferred_types, dict):
+            for param, ptype in inferred_types.items():
+                ptype_str = str(ptype).upper()
+                if "SEQUENCE" in ptype_str or "LIST" in ptype_str:
+                    query_terms.extend(["sequence", "slicing", "empty list"])
+                    if "sequence_slicing" not in target_categories:
+                        target_categories.append("sequence_slicing")
+                elif "NUMERIC" in ptype_str or "INT" in ptype_str or "FLOAT" in ptype_str:
+                    query_terms.extend(["arithmetic", "division", "zero division", "overflow"])
+                    if "arithmetic_division" not in target_categories:
+                        target_categories.append("arithmetic_division")
+                elif "STR" in ptype_str:
+                    query_terms.extend(["string", "regex", "empty string", "unicode"])
+                    if "string_regex" not in target_categories:
+                        target_categories.append("string_regex")
+
+        primary_cat = target_categories[0] if target_categories else None
+        deduped_terms = list(dict.fromkeys(query_terms))
+        query_str = " ".join(deduped_terms) if deduped_terms else "pytest test pattern recipe"
+
+        try:
+            res = self.knowledge_retriever.retrieve(
+                query=query_str,
+                top_k=3,
+                min_score=0.1,
+                category=primary_cat,
+            )
+            return res.chunks
+        except Exception as exc:
+            logger.warning(f"derive_test_plan retrieval fallback triggered: {exc}")
+            return []
 
     @staticmethod
     def derive_cot_boundary_reasoning(
@@ -730,3 +878,15 @@ class TestPlanningAgent:
             "allocated_budget": payload.allocated_test_budget,
             "duration_sec": round(duration_sec, 4),
         }, correlation_id=correlation_id, workflow_id=correlation_id)
+
+
+def derive_test_plan(
+    ast_symbols: Union[Dict[str, Any], ast.AST, str, CodeIntelligencePayload],
+    inferred_types: Optional[Dict[str, Any]] = None,
+    retriever: Optional[AgenticKnowledgeRetriever] = None,
+) -> List[Dict[str, Any]]:
+    """
+    Convenience functional interface to derive RAG testing heuristics from AST symbols.
+    """
+    agent = TestPlanningAgent(knowledge_retriever=retriever)
+    return agent.derive_test_plan(ast_symbols=ast_symbols, inferred_types=inferred_types)

@@ -243,6 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
     uploadFilenamePreview: document.getElementById('upload-filename-preview'),
     btnSubmitUpload: document.getElementById('btn-submit-upload'),
     toggleGitDiff: document.getElementById('toggle-git-diff'),
+    chkEnableRag: document.getElementById('chk-enable-rag'),
     gitDiffAlert: document.getElementById('git-diff-alert'),
     modeAModuleName: document.getElementById('mode-a-module-name'),
     modeAFuncsList: document.getElementById('mode-a-funcs-list'),
@@ -3069,6 +3070,7 @@ document.addEventListener('DOMContentLoaded', () => {
         model_name: state.settings.modelName,
         engine_mode: state.settings.engineMode,
         target_lines: state.gitDiff.enabled && state.gitDiff.modifiedLines.length > 0 ? state.gitDiff.modifiedLines : null,
+        enable_rag: dom.chkEnableRag ? dom.chkEnableRag.checked : (document.getElementById('chk-enable-rag') ? document.getElementById('chk-enable-rag').checked : true),
       };
 
       const res = await fetch('/api/harden/start', {
@@ -5694,10 +5696,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const attrs = s.attributes ? Object.entries(s.attributes).map(([k, v]) => `${k}=${v}`).join(', ') : '-';
+        const nameDisplay = s.name === 'rag.retrieval'
+          ? `<span class="badge badge-purple" style="font-size: 0.7rem; margin-right: 4px;">🧠 RAG</span> <strong>${escapeHtml(s.name)}</strong>`
+          : `<strong>${escapeHtml(s.name || '')}</strong>`;
         return `
           <tr>
             <td><code>${escapeHtml(s.trace_id || '').substring(0, 12)}...</code></td>
-            <td><strong>${escapeHtml(s.name || '')}</strong></td>
+            <td>${nameDisplay}</td>
             <td><span class="badge badge-gray">${escapeHtml(s.kind || 'INTERNAL')}</span></td>
             <td>${durMs}</td>
             <td>${statusBadge}</td>

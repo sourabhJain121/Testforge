@@ -7,9 +7,9 @@
       "pattern_name": "pytest.approx",
       "operator_type": "MATH_FUNC",
       "source": "pytest_docs",
-      "created_at": "2026-11-07T05:30:46Z"
+      "created_at": "2026-11-11T08:14:50Z"
     },
-    "created_at": 1794029446.3901272
+    "created_at": 1794384890.2382479
   },
   {
     "doc_id": "pattern_exception_guards",
@@ -19,9 +19,9 @@
       "pattern_name": "pytest.raises",
       "operator_type": "NEGATIVE_INPUT",
       "source": "pytest_docs",
-      "created_at": "2026-11-07T05:30:46Z"
+      "created_at": "2026-11-11T08:14:50Z"
     },
-    "created_at": 1794029446.390239
+    "created_at": 1794384890.238548
   },
   {
     "doc_id": "pattern_boundary_off_by_one",
@@ -31,9 +31,9 @@
       "pattern_name": "boundary_triplet",
       "operator_type": "BOUNDARY_SWAP",
       "source": "qa_best_practices",
-      "created_at": "2026-11-07T05:30:46Z"
+      "created_at": "2026-11-11T08:14:50Z"
     },
-    "created_at": 1794029446.390335
+    "created_at": 1794384890.2388322
   },
   {
     "doc_id": "pattern_parameterized_matrix",
@@ -43,8 +43,264 @@
       "pattern_name": "pytest.mark.parametrize",
       "operator_type": "COMP_OP",
       "source": "pytest_docs",
-      "created_at": "2026-11-07T05:30:46Z"
+      "created_at": "2026-11-11T08:14:50Z"
     },
-    "created_at": 1794029446.3904262
+    "created_at": 1794384890.239095
+  },
+  {
+    "doc_id": "rule_arith_zero_division",
+    "text": "# Arithmetic & Division: Zero-Division Boundary\n# Targets BinOp(Div), BinOp(FloorDiv), BinOp(Mod), zero denominator\n# Handles ZeroDivisionError, denominator validation, and division near zero threshold\nimport pytest\ndef test_zero_division_boundary():\n    with pytest.raises((ZeroDivisionError, ValueError)):\n        divide(10, 0)\n    assert divide(10, 1e-9) > 0\n",
+    "metadata": {
+      "category": "arithmetic_division",
+      "pattern_name": "zero_division",
+      "operator_type": "BIN_OP_DIV",
+      "ast_node_types": [
+        "BinOp",
+        "Div",
+        "FloorDiv",
+        "Mod"
+      ],
+      "created_at": "2026-11-11T08:14:50Z"
+    },
+    "created_at": 1794384890.235447
+  },
+  {
+    "doc_id": "rule_arith_overflow_bounds",
+    "text": "# Arithmetic & Division: Integer Overflow Bounds & Extreme Integers\n# Targets sys.maxsize, large integers, 32-bit and 64-bit integer boundaries\nimport sys\ndef test_integer_overflow_boundaries():\n    max_int = sys.maxsize\n    assert compute(max_int) is not None\n    assert compute(-max_int - 1) is not None\n",
+    "metadata": {
+      "category": "arithmetic_division",
+      "pattern_name": "integer_overflow",
+      "operator_type": "INT_OVERFLOW",
+      "ast_node_types": [
+        "BinOp",
+        "Add",
+        "Mult",
+        "Pow"
+      ],
+      "created_at": "2026-11-11T08:14:50Z"
+    },
+    "created_at": 1794384890.235719
+  },
+  {
+    "doc_id": "rule_arith_float_roundoff",
+    "text": "# Arithmetic & Division: Floating-Point Roundoff & math.isclose / pytest.approx\n# Targets IEEE-754 precision tolerance, rounding errors, and epsilon boundaries\nimport math\nimport pytest\ndef test_floating_point_roundoff():\n    res = compute_rate(0.1, 0.2)\n    assert math.isclose(res, 0.3, rel_tol=1e-5, abs_tol=1e-8)\n    assert res == pytest.approx(0.3, rel=1e-5)\n",
+    "metadata": {
+      "category": "arithmetic_division",
+      "pattern_name": "math.isclose",
+      "operator_type": "FLOAT_ROUNDOFF",
+      "ast_node_types": [
+        "BinOp",
+        "Div",
+        "Mult",
+        "Float"
+      ],
+      "created_at": "2026-11-11T08:14:50Z"
+    },
+    "created_at": 1794384890.235921
+  },
+  {
+    "doc_id": "rule_arith_negative_zero",
+    "text": "# Arithmetic & Division: Negative Zero (-0.0) Invariant\n# Tests IEEE-754 sign preservation, negative zero, and copysign behavior\nimport math\ndef test_negative_zero_sign():\n    val = -0.0\n    res = normalize(val)\n    assert math.copysign(1.0, res) == 1.0 or res == 0.0\n",
+    "metadata": {
+      "category": "arithmetic_division",
+      "pattern_name": "negative_zero",
+      "operator_type": "NEGATIVE_ZERO",
+      "ast_node_types": [
+        "UnaryOp",
+        "USub",
+        "Constant"
+      ],
+      "created_at": "2026-11-11T08:14:50Z"
+    },
+    "created_at": 1794384890.236093
+  },
+  {
+    "doc_id": "rule_seq_empty_containers",
+    "text": "# Sequence & Slicing: Empty List and Dict Boundaries\n# Tests empty sequence and dictionary behavior when length is zero\ndef test_empty_containers():\n    assert process_sequence([]) == [] or process_sequence([]) is None\n    assert process_mapping({}) == {} or process_mapping({}) is None\n",
+    "metadata": {
+      "category": "sequence_slicing",
+      "pattern_name": "empty_container",
+      "operator_type": "EMPTY_CONTAINER",
+      "ast_node_types": [
+        "List",
+        "Dict",
+        "Set",
+        "Subscript"
+      ],
+      "created_at": "2026-11-11T08:14:50Z"
+    },
+    "created_at": 1794384890.236254
+  },
+  {
+    "doc_id": "rule_seq_single_element",
+    "text": "# Sequence & Slicing: Single Element Sequence\n# Tests singleton collections where len(seq) == 1 boundary is asserted\ndef test_single_element_sequence():\n    assert process_sequence([42]) is not None\n",
+    "metadata": {
+      "category": "sequence_slicing",
+      "pattern_name": "single_element",
+      "operator_type": "SINGLE_ELEMENT",
+      "ast_node_types": [
+        "List",
+        "Tuple",
+        "For"
+      ],
+      "created_at": "2026-11-11T08:14:50Z"
+    },
+    "created_at": 1794384890.2364118
+  },
+  {
+    "doc_id": "rule_seq_reverse_slice",
+    "text": "# Sequence & Slicing: Reverse Slice Step [::-1]\n# Tests reverse slicing, negative step indexing, and inverted traversal\ndef test_reverse_slice_step():\n    seq = [1, 2, 3, 4]\n    assert seq[::-1] == [4, 3, 2, 1]\n",
+    "metadata": {
+      "category": "sequence_slicing",
+      "pattern_name": "reverse_slice",
+      "operator_type": "REVERSE_SLICE",
+      "ast_node_types": [
+        "Subscript",
+        "Slice"
+      ],
+      "created_at": "2026-11-11T08:14:50Z"
+    },
+    "created_at": 1794384890.236567
+  },
+  {
+    "doc_id": "rule_seq_off_by_one_index",
+    "text": "# Sequence & Slicing: Off-By-One Index Boundaries\n# Evaluates index 0, len-1, and raises IndexError on boundary index len\nimport pytest\ndef test_off_by_one_index_bounds():\n    items = [10, 20, 30]\n    assert items[0] == 10\n    assert items[len(items) - 1] == 30\n    with pytest.raises(IndexError):\n        _ = items[len(items)]\n",
+    "metadata": {
+      "category": "sequence_slicing",
+      "pattern_name": "off_by_one_index",
+      "operator_type": "OFF_BY_ONE_INDEX",
+      "ast_node_types": [
+        "Subscript",
+        "Index",
+        "Compare"
+      ],
+      "created_at": "2026-11-11T08:14:50Z"
+    },
+    "created_at": 1794384890.2367349
+  },
+  {
+    "doc_id": "rule_seq_key_lookup_miss",
+    "text": "# Sequence & Slicing: Key Lookup Misses & KeyError\n# Tests dictionary key lookup misses and .get(key, default) fallback\nimport pytest\ndef test_key_lookup_miss():\n    data = {'present': 1}\n    with pytest.raises(KeyError):\n        _ = data['missing']\n    assert data.get('missing', None) is None\n",
+    "metadata": {
+      "category": "sequence_slicing",
+      "pattern_name": "key_lookup_miss",
+      "operator_type": "KEY_LOOKUP_MISS",
+      "ast_node_types": [
+        "Subscript",
+        "Dict"
+      ],
+      "created_at": "2026-11-11T08:14:50Z"
+    },
+    "created_at": 1794384890.236907
+  },
+  {
+    "doc_id": "rule_fsm_cache_eviction",
+    "text": "# Stateful / Cache / FSM: Cache Eviction on Capacity\n# Tests boundary condition when cache reaches capacity limit and evicts oldest element\ndef test_cache_eviction_on_capacity():\n    cache = Cache(capacity=2)\n    cache.put('k1', 'v1')\n    cache.put('k2', 'v2')\n    cache.put('k3', 'v3')\n    assert cache.get('k1') is None\n    assert cache.get('k2') == 'v2'\n",
+    "metadata": {
+      "category": "stateful_cache_fsm",
+      "pattern_name": "cache_eviction",
+      "operator_type": "CACHE_EVICTION",
+      "ast_node_types": [
+        "ClassDef",
+        "FunctionDef",
+        "Subscript"
+      ],
+      "created_at": "2026-11-11T08:14:50Z"
+    },
+    "created_at": 1794384890.237089
+  },
+  {
+    "doc_id": "rule_fsm_transition_idempotency",
+    "text": "# Stateful / Cache / FSM: Transition Idempotency\n# Verifies that transitioning from State S to State S is a valid idempotent no-op\ndef test_transition_idempotency():\n    fsm = StateMachine()\n    fsm.start()\n    assert fsm.is_active is True\n    fsm.start()\n    assert fsm.is_active is True\n",
+    "metadata": {
+      "category": "stateful_cache_fsm",
+      "pattern_name": "transition_idempotency",
+      "operator_type": "TRANSITION_IDEMPOTENCY",
+      "ast_node_types": [
+        "ClassDef",
+        "Assign",
+        "Attribute"
+      ],
+      "created_at": "2026-11-11T08:14:50Z"
+    },
+    "created_at": 1794384890.2372632
+  },
+  {
+    "doc_id": "rule_fsm_duplicate_insertions",
+    "text": "# Stateful / Cache / FSM: Duplicate Insertions\n# Verifies that inserting an already existing key updates value without duplicating entry\ndef test_duplicate_insertions():\n    store = KeyValueStore()\n    store.add('key', 1)\n    store.add('key', 2)\n    assert store.get('key') == 2\n    assert store.count() == 1\n",
+    "metadata": {
+      "category": "stateful_cache_fsm",
+      "pattern_name": "duplicate_insertions",
+      "operator_type": "DUPLICATE_INSERTIONS",
+      "ast_node_types": [
+        "ClassDef",
+        "Dict",
+        "Set"
+      ],
+      "created_at": "2026-11-11T08:14:50Z"
+    },
+    "created_at": 1794384890.2374358
+  },
+  {
+    "doc_id": "rule_str_empty_string",
+    "text": "# String & Regex: Empty String Boundary\n# Tests empty string inputs \"\" and zero-length string guard verification\ndef test_empty_string():\n    assert format_text(\"\") == \"\"\n    assert validate_string(\"\") is False or validate_string(\"\") is None\n",
+    "metadata": {
+      "category": "string_regex",
+      "pattern_name": "empty_string",
+      "operator_type": "EMPTY_STRING",
+      "ast_node_types": [
+        "Constant",
+        "Str"
+      ],
+      "created_at": "2026-11-11T08:14:50Z"
+    },
+    "created_at": 1794384890.237589
+  },
+  {
+    "doc_id": "rule_str_multibyte_utf8",
+    "text": "# String & Regex: Multi-byte UTF-8 Characters\n# Tests unicode multi-byte characters, non-ASCII glyphs, and emojis\ndef test_multibyte_utf8():\n    s = \"Hello \ud83d\ude80 \u4e16\u754c \\u200b\"\n    assert len(s.encode('utf-8')) > len(s)\n    assert process_text(s) is not None\n",
+    "metadata": {
+      "category": "string_regex",
+      "pattern_name": "multibyte_utf8",
+      "operator_type": "MULTIBYTE_UTF8",
+      "ast_node_types": [
+        "Constant",
+        "Str",
+        "Encode"
+      ],
+      "created_at": "2026-11-11T08:14:50Z"
+    },
+    "created_at": 1794384890.237749
+  },
+  {
+    "doc_id": "rule_str_regex_backtracking",
+    "text": "# String & Regex: Regex Catastrophic Backtracking Boundaries\n# Tests regex expressions with nested repetition or catastrophic backtracking guard\nimport re\ndef test_regex_backtracking_bounds():\n    pattern = re.compile(r\"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$status\")\n    assert pattern.match(\"test@example.com\") is not None\n    assert pattern.match(\"a\" * 50 + \"!@invalid.com\") is None\n",
+    "metadata": {
+      "category": "string_regex",
+      "pattern_name": "regex_backtracking",
+      "operator_type": "REGEX_BACKTRACKING",
+      "ast_node_types": [
+        "Call",
+        "Attribute",
+        "Regex"
+      ],
+      "created_at": "2026-11-11T08:14:50Z"
+    },
+    "created_at": 1794384890.2379131
+  },
+  {
+    "doc_id": "rule_str_newline_stripping",
+    "text": "# String & Regex: Newline & CRLF Stripping\n# Tests \\r\\n (CRLF), trailing \\n, and whitespace trimming\ndef test_newline_stripping():\n    raw = \"  token\\r\\n\\t\"\n    assert clean_line(raw) == \"token\"\n",
+    "metadata": {
+      "category": "string_regex",
+      "pattern_name": "newline_stripping",
+      "operator_type": "NEWLINE_STRIP",
+      "ast_node_types": [
+        "Call",
+        "Strip"
+      ],
+      "created_at": "2026-11-11T08:14:50Z"
+    },
+    "created_at": 1794384890.2380779
   }
 ]

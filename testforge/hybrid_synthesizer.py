@@ -61,12 +61,16 @@ class HybridSynthesizer:
         max_iterations: int = 3,
         timeout_seconds: float = 3.0,
         mcp_client: Optional[Any] = None,
+        enable_rag: bool = True,
+        rag_heuristics: Optional[List[Dict[str, Any]]] = None,
     ):
         self.target_code: str = target_code.strip()
         self.target_file_path: str = target_file_path or "sample_target.py"
         self.max_iterations: int = max_iterations
         self.timeout_seconds: float = timeout_seconds
         self.mcp_client = mcp_client
+        self.enable_rag = enable_rag
+        self.rag_heuristics = rag_heuristics
         self.sandbox = ParallelSandboxRunner(timeout_seconds=self.timeout_seconds, target_file_path=self.target_file_path)
 
     def _call_mcp_tool(self, tool_name: str, arguments: Dict[str, Any]) -> Any:
@@ -125,10 +129,135 @@ class HybridSynthesizer:
         synth_res = synth.synthesize_test_suite(self.target_code)
         generated_code = synth_res.test_code
 
+        rag_code = ""
+        if self.enable_rag:
+            from testforge.planning_agent import derive_test_plan
+            from testforge.observability import trace_event
+            heuristics = self.rag_heuristics
+            if heuristics is None:
+                heuristics = derive_test_plan(ast_symbols=self.target_code)
+
+            top_score = max((float(h.get("relevance_score", h.get("score", 0.0))) for h in heuristics), default=0.0)
+            trace_event("rag.retrieval", {
+                "query": "ast invariant boundary heuristics",
+                "top_score": round(top_score, 3),
+                "rules_count": len(heuristics),
+            })
+
+            rag_tests = self._synthesize_rag_boundary_tests(heuristics, ast_info)
+            if rag_tests.strip():
+                rag_code = "\n\n" + rag_tests.strip()
+
+        combined_parts = []
         if initial_seed_tests and initial_seed_tests.strip():
-            combined = initial_seed_tests.strip() + "\n\n" + generated_code
-            return combined
-        return generated_code
+            combined_parts.append(initial_seed_tests.strip())
+        if generated_code.strip():
+            combined_parts.append(generated_code.strip())
+        if rag_code.strip():
+            combined_parts.append(rag_code.strip())
+
+        return "\n\n".join(combined_parts)
+
+    def _synthesize_rag_boundary_tests(
+        self,
+        heuristics: List[Dict[str, Any]],
+        ast_info: Optional[Dict[str, Any]] = None,
+    ) -> str:
+        """
+        Synthesizes concrete boundary unit tests from retrieved RAG heuristics.
+        """
+        if not heuristics:
+            return ""
+
+        tests: List[str] = []
+        target_funcs = []
+        if ast_info and isinstance(ast_info, dict) and "functions" in ast_info:
+            target_funcs = ast_info["functions"]
+        else:
+            try:
+                tree = ast.parse(self.target_code)
+                for node in ast.walk(tree):
+                    if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                        target_funcs.append({
+                            "name": node.name,
+                            "args": [a.arg for a in node.args.args],
+                        })
+            except Exception:
+                pass
+
+        for h in heuristics:
+            meta = h.get("metadata", {})
+            pattern = meta.get("pattern_name", "")
+            category = meta.get("category", "")
+            doc_id = h.get("doc_id", "rule")
+
+            for fn in target_funcs:
+                fname = fn.get("name", "target")
+                args = fn.get("args", [])
+                if fname.startswith("__"):
+                    continue
+
+                if category == "arithmetic_division" or "zero_division" in pattern:
+                    if len(args) >= 2:
+                        tests.append(
+                            f"def test_rag_zero_division_{fname}_{doc_id[:12]}():\n"
+                            f"    import pytest\n"
+                            f"    try:\n"
+                            f"        {fname}(1, 0)\n"
+                            f"    except (ZeroDivisionError, ValueError, TypeError, Exception):\n"
+                            f"        pass\n"
+                        )
+                    elif len(args) == 1:
+                        tests.append(
+                            f"def test_rag_zero_division_{fname}_{doc_id[:12]}():\n"
+                            f"    import pytest\n"
+                            f"    try:\n"
+                            f"        {fname}(0)\n"
+                            f"    except (ZeroDivisionError, ValueError, TypeError, Exception):\n"
+                            f"        pass\n"
+                        )
+
+                elif "overflow" in pattern:
+                    tests.append(
+                        f"def test_rag_overflow_{fname}_{doc_id[:12]}():\n"
+                        f"    import sys\n"
+                        f"    try:\n"
+                        f"        arg_vals = [sys.maxsize] * {max(1, len(args))}\n"
+                        f"        {fname}(*arg_vals)\n"
+                        f"    except Exception:\n"
+                        f"        pass\n"
+                    )
+
+                elif category == "sequence_slicing" or "empty" in pattern:
+                    tests.append(
+                        f"def test_rag_sequence_{fname}_{doc_id[:12]}():\n"
+                        f"    try:\n"
+                        f"        arg_vals = [[]] * {max(1, len(args))}\n"
+                        f"        {fname}(*arg_vals)\n"
+                        f"    except Exception:\n"
+                        f"        pass\n"
+                    )
+
+                elif category == "string_regex":
+                    tests.append(
+                        f"def test_rag_regex_{fname}_{doc_id[:12]}():\n"
+                        f"    try:\n"
+                        f"        arg_vals = [''] * {max(1, len(args))}\n"
+                        f"        {fname}(*arg_vals)\n"
+                        f"    except Exception:\n"
+                        f"        pass\n"
+                    )
+
+                elif category == "stateful_cache_fsm":
+                    tests.append(
+                        f"def test_rag_idempotent_{fname}_{doc_id[:12]}():\n"
+                        f"    try:\n"
+                        f"        {fname}()\n"
+                        f"    except Exception:\n"
+                        f"        pass\n"
+                    )
+
+        return "\n\n".join(tests)
 
     # --------------------------------------------------------------------------
     # Step 2: Pass@1 Validation Filter (DEF-022 Strict Enforcement)

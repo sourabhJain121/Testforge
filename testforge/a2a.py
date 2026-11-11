@@ -278,6 +278,7 @@ class TestPlanPayload(BaseModel):
     created_at: float = Field(default_factory=time.time, description="Creation timestamp")
     planner_agent: str = Field(default="agent:google-adk:test-planner", description="Identifier of the planner agent")
     cot_reasoning_trace: List[Dict[str, Any]] = Field(default_factory=list, description="Step-by-step chain-of-thought boundary derivation trace")
+    rag_heuristics: List[Dict[str, Any]] = Field(default_factory=list, description="Retrieved RAG testing heuristics and recipes")
 
     @model_validator(mode="after")
     def validate_plan_invariants(self) -> "TestPlanPayload":

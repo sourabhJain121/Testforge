@@ -1,0 +1,53 @@
+[
+  {
+    "doc_id": "rule_seq_empty_containers",
+    "text": "# Sequence & Slicing: Empty List and Dict Boundaries\n# Tests empty sequence and dictionary behavior when length is zero\ndef test_empty_containers():\n    assert process_sequence([]) == [] or process_sequence([]) is None\n    assert process_mapping({}) == {} or process_mapping({}) is None\n",
+    "metadata": {
+      "category": "sequence_slicing",
+      "pattern_name": "empty_container",
+      "operator_type": "EMPTY_CONTAINER",
+      "ast_node_types": ["List", "Dict", "Set", "Subscript"]
+    }
+  },
+  {
+    "doc_id": "rule_seq_single_element",
+    "text": "# Sequence & Slicing: Single Element Sequence\n# Tests singleton collections where len(seq) == 1 boundary is asserted\ndef test_single_element_sequence():\n    assert process_sequence([42]) is not None\n",
+    "metadata": {
+      "category": "sequence_slicing",
+      "pattern_name": "single_element",
+      "operator_type": "SINGLE_ELEMENT",
+      "ast_node_types": ["List", "Tuple", "For"]
+    }
+  },
+  {
+    "doc_id": "rule_seq_reverse_slice",
+    "text": "# Sequence & Slicing: Reverse Slice Step [::-1]\n# Tests reverse slicing, negative step indexing, and inverted traversal\ndef test_reverse_slice_step():\n    seq = [1, 2, 3, 4]\n    assert seq[::-1] == [4, 3, 2, 1]\n",
+    "metadata": {
+      "category": "sequence_slicing",
+      "pattern_name": "reverse_slice",
+      "operator_type": "REVERSE_SLICE",
+      "ast_node_types": ["Subscript", "Slice"]
+    }
+  },
+  {
+    "doc_id": "rule_seq_off_by_one_index",
+    "text": "# Sequence & Slicing: Off-By-One Index Boundaries\n# Evaluates index 0, len-1, and raises IndexError on boundary index len\nimport pytest\ndef test_off_by_one_index_bounds():\n    items = [10, 20, 30]\n    assert items[0] == 10\n    assert items[len(items) - 1] == 30\n    with pytest.raises(IndexError):\n        _ = items[len(items)]\n",
+    "metadata": {
+      "category": "sequence_slicing",
+      "pattern_name": "off_by_one_index",
+      "operator_type": "OFF_BY_ONE_INDEX",
+      "ast_node_types": ["Subscript", "Index", "Compare"]
+    }
+  },
+  {
+    "doc_id": "rule_seq_key_lookup_miss",
+    "text": "# Sequence & Slicing: Key Lookup Misses & KeyError\n# Tests dictionary key lookup misses and .get(key, default) fallback\nimport pytest\ndef test_key_lookup_miss():\n    data = {'present': 1}\n    with pytest.raises(KeyError):\n        _ = data['missing']\n    assert data.get('missing', None) is None\n",
+    "metadata": {
+      "category": "sequence_slicing",
+      "pattern_name": "key_lookup_miss",
+      "operator_type": "KEY_LOOKUP_MISS",
+      "ast_node_types": ["Subscript", "Dict"]
+    }
+  }
+]
+

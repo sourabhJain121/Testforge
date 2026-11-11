@@ -292,6 +292,7 @@ class HardeningRunPayload(BaseModel):
     timeout_seconds: Optional[int] = Field(default=300, ge=5, le=3600)
     resume_checkpoint_id: Optional[str] = None
     resume_job_id: Optional[str] = None
+    enable_rag: bool = True
 
 
 class CheckpointResumePayload(BaseModel):
@@ -1271,6 +1272,7 @@ def _run_orchestration_job(job_id: str, payload: HardeningRunPayload):
             checkpoint_db_path=DEFAULT_CHECKPOINT_DB_PATH,
             mcp_client=mcp_client,
             resume_checkpoint_id=resume_cp_id,
+            enable_rag=payload.enable_rag,
         )
 
         with JOB_LOCK:

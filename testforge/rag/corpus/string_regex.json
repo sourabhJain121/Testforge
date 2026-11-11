@@ -1,0 +1,43 @@
+[
+  {
+    "doc_id": "rule_str_empty_string",
+    "text": "# String & Regex: Empty String Boundary\n# Tests empty string inputs \"\" and zero-length string guard verification\ndef test_empty_string():\n    assert format_text(\"\") == \"\"\n    assert validate_string(\"\") is False or validate_string(\"\") is None\n",
+    "metadata": {
+      "category": "string_regex",
+      "pattern_name": "empty_string",
+      "operator_type": "EMPTY_STRING",
+      "ast_node_types": ["Constant", "Str"]
+    }
+  },
+  {
+    "doc_id": "rule_str_multibyte_utf8",
+    "text": "# String & Regex: Multi-byte UTF-8 Characters\n# Tests unicode multi-byte characters, non-ASCII glyphs, and emojis\ndef test_multibyte_utf8():\n    s = \"Hello 🚀 世界 \\u200b\"\n    assert len(s.encode('utf-8')) > len(s)\n    assert process_text(s) is not None\n",
+    "metadata": {
+      "category": "string_regex",
+      "pattern_name": "multibyte_utf8",
+      "operator_type": "MULTIBYTE_UTF8",
+      "ast_node_types": ["Constant", "Str", "Encode"]
+    }
+  },
+  {
+    "doc_id": "rule_str_regex_backtracking",
+    "text": "# String & Regex: Regex Catastrophic Backtracking Boundaries\n# Tests regex expressions with nested repetition or catastrophic backtracking guard\nimport re\ndef test_regex_backtracking_bounds():\n    pattern = re.compile(r\"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$status\")\n    assert pattern.match(\"test@example.com\") is not None\n    assert pattern.match(\"a\" * 50 + \"!@invalid.com\") is None\n",
+    "metadata": {
+      "category": "string_regex",
+      "pattern_name": "regex_backtracking",
+      "operator_type": "REGEX_BACKTRACKING",
+      "ast_node_types": ["Call", "Attribute", "Regex"]
+    }
+  },
+  {
+    "doc_id": "rule_str_newline_stripping",
+    "text": "# String & Regex: Newline & CRLF Stripping\n# Tests \\r\\n (CRLF), trailing \\n, and whitespace trimming\ndef test_newline_stripping():\n    raw = \"  token\\r\\n\\t\"\n    assert clean_line(raw) == \"token\"\n",
+    "metadata": {
+      "category": "string_regex",
+      "pattern_name": "newline_stripping",
+      "operator_type": "NEWLINE_STRIP",
+      "ast_node_types": ["Call", "Strip"]
+    }
+  }
+]
+
