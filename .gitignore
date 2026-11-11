@@ -52,3 +52,11 @@ job_bench_*
 trace_*.jsonl
 testforge_trace.jsonl*
 *.db
+
+# Ephemeral runtime traces and scratch files
+job_bench_*
+job_bench_sync_*
+trace_*.jsonl
+testforge_trace.jsonl*
+*.db
+*.lock
