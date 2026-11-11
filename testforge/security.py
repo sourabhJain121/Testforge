@@ -33,6 +33,62 @@ class SecuritySeverity(str, Enum):
     BLOCK = "BLOCK"
 
 
+class SecurityWarning(UserWarning):
+    """Warning emitted for non-blocking framework dynamic constructs (e.g. template eval/exec)."""
+    pass
+
+
+class SecurityRefusal(Exception):
+    """Exception raised when ingested code or inputs violate hard security policies."""
+    def __init__(self, message: str, findings: Optional[List[Dict[str, Any]]] = None, is_fatal: bool = True):
+        super().__init__(message)
+        self.message = message
+        self.findings = findings or []
+        self.is_fatal = is_fatal
+
+
+class SafeASTSanitizer(ast.NodeVisitor):
+    """
+    AST visitor that identifies dynamic code execution nodes (eval, exec, compile, __import__, etc.)
+    and marks them and all their descendant nodes with mutatable = False, preventing
+    mutation operators from tampering with dynamic runtime evaluation arguments.
+    """
+    def __init__(self):
+        self.sanitized_nodes_count = 0
+
+    def visit_Call(self, node: ast.Call):
+        func_name = None
+        if isinstance(node.func, ast.Name):
+            func_name = node.func.id
+        elif isinstance(node.func, ast.Attribute):
+            func_name = node.func.attr
+
+        if func_name in ("eval", "exec", "compile", "__import__", "import_module"):
+            for child in ast.walk(node):
+                setattr(child, "mutatable", False)
+            self.sanitized_nodes_count += 1
+
+        self.generic_visit(node)
+
+    def visit_Expr(self, node: ast.Expr):
+        if isinstance(node.value, ast.Call):
+            func_name = None
+            if isinstance(node.value.func, ast.Name):
+                func_name = node.value.func.id
+            elif isinstance(node.value.func, ast.Attribute):
+                func_name = node.value.func.attr
+            if func_name in ("eval", "exec", "compile", "__import__", "import_module"):
+                setattr(node, "mutatable", False)
+        self.generic_visit(node)
+
+
+def mark_dynamic_nodes_immutable(tree: ast.AST) -> ast.AST:
+    """Marks all dynamic code execution nodes in the AST with mutatable = False."""
+    sanitizer = SafeASTSanitizer()
+    sanitizer.visit(tree)
+    return tree
+
+
 class SecurityRiskLevel(str, Enum):
     SAFE = "SAFE"
     LOW = "LOW"

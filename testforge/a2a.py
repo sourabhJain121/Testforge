@@ -254,6 +254,16 @@ class CodeIntelligencePayload(BaseModel):
             raise ValueError("CodeIntelligencePayload requires a non-empty task_id or job_id.")
         return self
 
+    def get(self, key: str, default: Any = None) -> Any:
+        """Allow dict-like attribute access."""
+        return getattr(self, key, default)
+
+    def __getitem__(self, key: str) -> Any:
+        """Allow dict-like subscription access."""
+        if hasattr(self, key):
+            return getattr(self, key)
+        raise KeyError(key)
+
 
 class TestPlanPayload(BaseModel):
     """

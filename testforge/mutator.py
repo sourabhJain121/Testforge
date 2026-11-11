@@ -53,6 +53,11 @@ class MutationTransformer(ast.NodeTransformer):
         self._in_compare = False
         self._in_docstring = False
 
+    def visit(self, node: ast.AST) -> ast.AST:
+        if getattr(node, "mutatable", True) is False:
+            return self.generic_visit(node)
+        return super().visit(node)
+
     def _mark_applied(self, node: ast.AST, mutant_type: str, orig_node: Optional[ast.AST] = None, mutated_node: Optional[ast.AST] = None):
         self.applied = True
         self.mutant_type = mutant_type
@@ -450,6 +455,8 @@ class ASTMutator:
             tree = ast.parse(source_code)
         except SyntaxError:
             return 0
+        from testforge.security import mark_dynamic_nodes_immutable
+        mark_dynamic_nodes_immutable(tree)
         inspector = MutationTransformer(target_node_id=0, target_lines=target_lines, include_held_out=include_held_out)
         inspector.visit(tree)
         return inspector.current_node_id
@@ -478,6 +485,8 @@ class ASTMutator:
 
         for target_id in range(1, num_targets + 1):
             tree = ast.parse(source_code)
+            from testforge.security import mark_dynamic_nodes_immutable
+            mark_dynamic_nodes_immutable(tree)
             transformer = MutationTransformer(target_node_id=target_id, target_lines=target_lines, include_held_out=include_held_out)
             mutated_tree = transformer.visit(tree)
             ast.fix_missing_locations(mutated_tree)

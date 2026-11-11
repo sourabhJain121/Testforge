@@ -276,6 +276,73 @@ def _compute_cyclomatic_complexity(node: Union[ast.FunctionDef, ast.AsyncFunctio
     return complexity
 
 
+def _extract_callable_symbols(tree_or_code: Union[str, ast.AST]) -> List[Dict[str, Any]]:
+    """
+    Parses ast.FunctionDef, ast.AsyncFunctionDef, and methods inside ast.ClassDef
+    across the entire AST tree regardless of security warnings or dynamic execution blocks.
+    Returns list of discovered callable symbol dictionaries.
+    """
+    if isinstance(tree_or_code, str):
+        try:
+            tree = ast.parse(tree_or_code)
+        except Exception:
+            return []
+    else:
+        tree = tree_or_code
+
+    callables: List[Dict[str, Any]] = []
+
+    class _CallableVisitor(ast.NodeVisitor):
+        def __init__(self):
+            self.current_class: Optional[str] = None
+
+        def visit_ClassDef(self, node: ast.ClassDef):
+            prev_class = self.current_class
+            self.current_class = node.name
+            self.generic_visit(node)
+            self.current_class = prev_class
+
+        def visit_FunctionDef(self, node: ast.FunctionDef):
+            self._record_func(node, is_async=False)
+            self.generic_visit(node)
+
+        def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef):
+            self._record_func(node, is_async=True)
+            self.generic_visit(node)
+
+        def _record_func(self, node: Union[ast.FunctionDef, ast.AsyncFunctionDef], is_async: bool):
+            args = [a.arg for a in getattr(node.args, "args", [])]
+            required_pos = []
+            defaults_offset = len(args) - len(getattr(node.args, "defaults", []))
+            for idx, arg_name in enumerate(args):
+                if idx < defaults_offset:
+                    required_pos.append(arg_name)
+
+            ret_annotation = None
+            if getattr(node, "returns", None):
+                try:
+                    ret_annotation = ast.unparse(node.returns)
+                except Exception:
+                    ret_annotation = None
+
+            callables.append({
+                "name": node.name,
+                "scope": "class" if self.current_class else "module",
+                "parent_class": self.current_class,
+                "line_number": getattr(node, "lineno", 1),
+                "is_async": is_async,
+                "all_args": args,
+                "required_pos": required_pos,
+                "return_type": ret_annotation,
+                "cyclomatic_complexity": _compute_cyclomatic_complexity(node),
+                "inferred_parameter_types": infer_parameter_types_from_ast(node),
+            })
+
+    visitor = _CallableVisitor()
+    visitor.visit(tree)
+    return callables
+
+
 def _run_coroutine_sync(coro: Any) -> Any:
     """Safely executes an async coroutine synchronously."""
     try:
@@ -538,22 +605,19 @@ class CodeIntelligenceAgent:
             return payload
 
         # 3. Extract Functions with Lexical Scope and Signatures
-        func_sigs = extract_function_signatures(source_code)
+        func_sigs = _extract_callable_symbols(tree)
+        if not func_sigs:
+            func_sigs = extract_function_signatures(source_code)
         functions: List[Dict[str, Any]] = []
         function_complexities: Dict[str, int] = {}
-
-        # Discover top-level and method AST nodes for complexity and parameter type inference
         function_inferred_types: Dict[str, Dict[str, str]] = {}
-        for node in ast.walk(tree):
-            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                c = _compute_cyclomatic_complexity(node)
-                function_complexities[node.name] = c
-                inferred = infer_parameter_types_from_ast(node)
-                function_inferred_types[node.name] = inferred
 
         for sig in func_sigs:
             name = sig.get("name", "")
-            complexity = function_complexities.get(name, 1)
+            complexity = sig.get("cyclomatic_complexity", 1)
+            inferred = sig.get("inferred_parameter_types", {})
+            function_complexities[name] = complexity
+            function_inferred_types[name] = inferred
             functions.append({
                 "name": name,
                 "scope": sig.get("scope", "module"),
@@ -563,7 +627,7 @@ class CodeIntelligenceAgent:
                 "return_annotation": sig.get("return_type"),
                 "is_async": sig.get("is_async", False),
                 "cyclomatic_complexity": complexity,
-                "inferred_parameter_types": function_inferred_types.get(name, {}),
+                "inferred_parameter_types": inferred,
             })
 
         # 4. Extract Classes
@@ -692,6 +756,8 @@ class CodeIntelligenceAgent:
 
         self.blackboard.update_target_space(
             functions=func_names,
+            function_count=len(func_names),
+            functions_count=len(func_names),
             classes=class_names,
             dependencies=payload.dependencies,
             blast_risk=blast_risk,

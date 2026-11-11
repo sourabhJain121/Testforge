@@ -46,6 +46,19 @@ TERMINAL_LIFECYCLE_STATES: Set[TaskLifecycleState] = {
 }
 
 
+class HardeningStage(str, Enum):
+    """Canonical stage identifiers for orchestrator hardening flow."""
+    VALIDATING = "VALIDATING"
+    VALIDATED = "VALIDATED"
+    INGESTING = "INGESTING"
+    PLANNING = "PLANNING"
+    GENERATING = "GENERATING"
+    EXECUTING = "EXECUTING"
+    MUTATING = "MUTATING"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+
+
 class StageRecord(BaseModel):
     """Immutable record of an individual stage entry, exit, duration, and metadata."""
     stage: TaskLifecycleState
@@ -510,6 +523,7 @@ class TestForgeState(BaseModel):
     # Canonical Lifecycle Tracking
     task_id: str = Field(default_factory=lambda: f"task_{uuid.uuid4().hex[:8]}")
     lifecycle_state: TaskLifecycleState = TaskLifecycleState.CREATED
+    stage: Union[HardeningStage, str, None] = Field(default=HardeningStage.VALIDATING, description="Active hardening stage alias")
     stage_durations: Dict[str, float] = Field(default_factory=dict)
     stage_history: List[StageRecord] = Field(default_factory=list)
     metadata: Dict[str, Any] = Field(default_factory=dict)

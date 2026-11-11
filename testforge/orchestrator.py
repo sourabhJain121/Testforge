@@ -400,6 +400,23 @@ class TestForgeOrchestrator:
             if hasattr(self.sandbox, "terminate_all_workers"):
                 self.sandbox.terminate_all_workers()
 
+    def emit_event(self, event_type: str, payload: Optional[Dict[str, Any]] = None) -> None:
+        """Broadcasts an event via the global WebSocket hub."""
+        try:
+            from testforge.websocket_hub import global_websocket_hub
+            ev: Dict[str, Any] = {
+                "event_type": event_type,
+                "job_id": getattr(self, "job_id", None),
+                "workflow_id": getattr(self, "workflow_id", None),
+                "timestamp": time.time(),
+            }
+            if payload:
+                ev.update(payload)
+                ev["payload"] = payload
+            global_websocket_hub.broadcast_event(ev)
+        except Exception as e:
+            logger.debug(f"Failed to broadcast websocket event {event_type}: {e}")
+
     def _sync_lifecycle(
         self,
         target_state: TaskLifecycleState,
@@ -407,6 +424,7 @@ class TestForgeOrchestrator:
         metadata: Optional[Dict[str, Any]] = None,
     ) -> None:
         """Transitions FSM and synchronizes state and blackboard partitions."""
+        prev_state = getattr(self.fsm, "current_state", None)
         try:
             if self.fsm.current_state != target_state:
                 if self.fsm.can_transition_to(target_state):
@@ -420,15 +438,25 @@ class TestForgeOrchestrator:
         self.state.lifecycle_state = self.fsm.current_state
         self.state.stage_durations = self.fsm.get_stage_durations()
         self.state.stage_history = self.fsm.get_history()
+        curr_val = self.fsm.current_state.value if hasattr(self.fsm.current_state, "value") else str(self.fsm.current_state)
+        if hasattr(self.state, "stage"):
+            self.state.stage = curr_val
         if self.blackboard is not None:
             try:
                 self.blackboard.update_metrics_space(
                     task_id=self.fsm.task_id,
-                    lifecycle_state=self.fsm.current_state.value,
+                    lifecycle_state=curr_val,
                     stage_durations=self.fsm.get_stage_durations(),
                 )
             except Exception:
                 pass
+        prev_val = prev_state.value if hasattr(prev_state, "value") else str(prev_state)
+        self.emit_event("STAGE_CHANGED", {
+            "previous_stage": prev_val,
+            "new_stage": curr_val,
+            "stage": curr_val,
+            "reason": reason,
+        })
 
 
     def check_cancellation_or_timeout(self) -> None:
@@ -906,16 +934,48 @@ class TestForgeOrchestrator:
                     }
                 )
                 self.supervisor.set_agent_executing("SecurityAgent", True)
-            from testforge.security import SecurityGuardrail
+            from testforge.security import SecurityGuardrail, SecurityRefusal
             guardrail = SecurityGuardrail()
             # Authoritative evaluation via SecurityAgent (Google ADK)
-            sec_res = self.security_agent.evaluate_source(
-                source_code=self.state.target_source_code,
-                stage="INPUT_INSPECTION",
-                target_ref=self.target_file_path or "target_source_code",
-                job_id=self.job_id,
-                workflow_id=self.workflow_id,
-            )
+            try:
+                sec_res = self.security_agent.evaluate_source(
+                    source_code=self.state.target_source_code,
+                    stage="INPUT_INSPECTION",
+                    target_ref=self.target_file_path or "target_source_code",
+                    job_id=self.job_id,
+                    workflow_id=self.workflow_id,
+                )
+            except SecurityRefusal as err:
+                refusal_reason = str(err)
+                if hasattr(self, "supervisor") and self.supervisor:
+                    self.supervisor.set_agent_completed("SecurityAgent", success=False, failure_reason=refusal_reason)
+                    self.supervisor.decide_next_step(
+                        WorkflowStage.SECURITY_SCREENING,
+                        context={"job_id": self.job_id, "task_id": self.state.task_id}
+                    )
+                self.callbacks.dispatch(LifecycleEvent(
+                    event_type=EventType.SECURITY_REFUSAL,
+                    emitter="SecurityAgent",
+                    workflow_id=self.workflow_id,
+                    correlation_id=self.workflow_id,
+                    outcome="REFUSED",
+                    error_code="INPUT_SECURITY_REFUSAL",
+                    payload={
+                        "policy": "INPUT_PROMPT_INSPECTION",
+                        "risk_level": "CRITICAL",
+                        "reason": refusal_reason,
+                        "findings": [{"rule_id": "HOSTILE_AST_PAYLOAD", "severity": "BLOCK", "message": refusal_reason}],
+                    }
+                ))
+                self.state.terminated = True
+                self.state.termination_reason = f"SecurityRefusal: {refusal_reason}"
+                self.state.final_hardening_status = "FAILED"
+                if hasattr(self.state, "stage"):
+                    self.state.stage = "FAILED"
+                self._sync_lifecycle(TaskLifecycleState.FAILED, reason=f"SecurityRefusal: {refusal_reason}")
+                console.print(f"[bold red]⛔ SECURITY REFUSAL: {refusal_reason}[/bold red]\n")
+                return self.state
+
             if hasattr(self, "supervisor") and self.supervisor:
                 self.supervisor.set_agent_completed("SecurityAgent", success=sec_res.allowed, failure_reason=sec_res.remediation_notes if not sec_res.allowed else None)
             if not sec_res.allowed:
@@ -942,9 +1002,38 @@ class TestForgeOrchestrator:
                 self.state.terminated = True
                 self.state.termination_reason = f"SecurityRefusal: {refusal_reason}"
                 self.state.final_hardening_status = "FAILED"
+                if hasattr(self.state, "stage"):
+                    self.state.stage = "FAILED"
                 self._sync_lifecycle(TaskLifecycleState.FAILED, reason=f"SecurityRefusal: {refusal_reason}")
                 console.print(f"[bold red]⛔ SECURITY REFUSAL: {refusal_reason}[/bold red]\n")
                 return self.state
+
+            if hasattr(self.state, "stage"):
+                self.state.stage = "VALIDATED"
+            if sec_res.status == "WARNING":
+                advisories = [f for f in sec_res.findings if f.get("severity") == "WARN"]
+                if self.blackboard is not None:
+                    self.blackboard.update_security_space(
+                        status="WARNING",
+                        advisories=advisories,
+                    )
+                self.emit_event("security_advisory", {
+                    "findings": advisories,
+                    "action": "downgraded_to_warning",
+                    "risk_level": sec_res.risk_level,
+                })
+
+            self.emit_event("SECURITY_AUDIT_COMPLETED", {
+                "status": sec_res.status,
+                "risk_level": sec_res.risk_level,
+                "findings_count": len(sec_res.findings),
+            })
+            self.emit_event("STAGE_CHANGED", {
+                "previous_stage": "VALIDATING",
+                "new_stage": "VALIDATED",
+                "stage": "VALIDATED",
+            })
+
             if not hasattr(self.state, "metadata") or self.state.metadata is None:
                 self.state.metadata = {}
             self.state.metadata["security_assessment"] = sec_res.model_dump()

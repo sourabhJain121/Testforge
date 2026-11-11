@@ -41,6 +41,7 @@ import logging
 import os
 import time
 import uuid
+import warnings
 from typing import Any, AsyncGenerator, Dict, List, Optional, Union
 
 from google.adk.agents.llm_agent import LlmAgent
@@ -66,9 +67,13 @@ from testforge.prompt_guard import (
     inspect_source_for_indirect_injections,
 )
 from testforge.security import (
+    SafeASTSanitizer,
     SecurityGuardrail,
+    SecurityRefusal,
     SecurityRiskLevel,
     SecuritySeverity,
+    SecurityWarning,
+    mark_dynamic_nodes_immutable,
     redact_sensitive_data,
 )
 
@@ -369,17 +374,66 @@ class SecurityAgent:
 
         # 5. Deterministic AST Security Policy Check (eval, exec, os.system, etc.)
         ast_res = self.guardrail.inspect_code_ast(source_code, enforce_policy=True, is_test_code=False)
-        if not ast_res.allowed:
+
+        # Differentiate Hostile Ingestion vs. Framework Dynamic Constructs
+        hostile_violations = []
+        framework_warnings = []
+        code_lines = source_code.splitlines()
+
+        for v in ast_res.violations:
+            rule = v.rule_id
+            lno = v.line_number
+            target_line = code_lines[lno - 1].lower() if (lno and lno <= len(code_lines)) else ""
+
+            is_hostile = False
+            # Check for standalone hostile command execution (rm -rf, reverse shells, etc.)
+            if rule in ("SEC_AST_OS_COMMAND", "SEC_AST_SUBPROCESS"):
+                hostile_patterns = [
+                    "rm -rf", "rm -r", "mkfs", "reverse_shell", "socket.connect",
+                    "/bin/sh", "/bin/bash", ":(){ :|:& };:", "shutil.rmtree", "dd if="
+                ]
+                if any(p in target_line for p in hostile_patterns) or ("rm" in target_line and "-rf" in target_line):
+                    is_hostile = True
+            elif "INJECTION" in rule:
+                is_hostile = True
+
+            if stage != "INPUT_INSPECTION":
+                # In AST_SAFETY stage (evaluating candidate tests), all AST policy violations are blocked
+                hostile_violations.append(v)
+            elif is_hostile:
+                hostile_violations.append(v)
+            else:
+                # Framework Dynamic Construct: in-memory template eval/exec, dynamic imports, benign subprocess
+                warn_msg = f"DYNAMIC_CODE_EXECUTION_DETECTED: In-memory dynamic construct '{rule}' detected on line {lno}."
+                warnings.warn(SecurityWarning(warn_msg), stacklevel=2)
+                framework_warnings.append({
+                    "rule_id": "DYNAMIC_CODE_EXECUTION_DETECTED",
+                    "severity": "WARN",
+                    "message": warn_msg,
+                    "original_rule": rule,
+                    "node_type": v.node_type or "AST_NODE",
+                    "line_number": lno,
+                    "is_framework_construct": True,
+                })
+
+        if hostile_violations:
             is_blocked = True
             highest_risk = SecurityRiskLevel.CRITICAL
-            for v in ast_res.violations:
+            for v in hostile_violations:
                 collected_findings.append({
                     "rule_id": v.rule_id,
                     "severity": "BLOCK",
                     "message": v.message,
                     "node_type": v.node_type or "AST_NODE",
                     "line_number": v.line_number,
+                    "is_hostile": True,
                 })
+
+        if framework_warnings:
+            collected_findings.extend(framework_warnings)
+            if highest_risk in (SecurityRiskLevel.SAFE, SecurityRiskLevel.LOW):
+                highest_risk = SecurityRiskLevel.MEDIUM
+
         for f in ast_res.findings:
             if f.severity != SecuritySeverity.BLOCK:
                 collected_findings.append({
@@ -391,6 +445,13 @@ class SecurityAgent:
                 })
                 if highest_risk == SecurityRiskLevel.SAFE and f.severity == SecuritySeverity.WARN:
                     highest_risk = SecurityRiskLevel.LOW
+
+        # Sanitize and mark dynamic nodes immutable in AST
+        try:
+            tree = ast.parse(source_code)
+            mark_dynamic_nodes_immutable(tree)
+        except Exception:
+            pass
 
         # 6. Determine Final Verdict and Status
         risk_level_str = highest_risk.value if isinstance(highest_risk, SecurityRiskLevel) else str(highest_risk)
@@ -468,6 +529,8 @@ class SecurityAgent:
             if f.get("line_number"):
                 locations.append(f"line {f['line_number']}")
 
+        advisories = [f for f in payload.findings if f.get("rule_id") == "DYNAMIC_CODE_EXECUTION_DETECTED" or f.get("is_framework_construct")]
+
         self.blackboard.update_security_space(
             assessment_id=payload.evaluation_id,
             task_id=payload.task_id,
@@ -478,6 +541,7 @@ class SecurityAgent:
             allowed=payload.allowed,
             applied_policies=[payload.assessment_stage],
             findings=payload.findings,
+            advisories=advisories,
             defused_injection_count=1 if payload.defused_text else 0,
             redacted_secret_count=len(payload.redacted_credentials),
             affected_locations=locations,

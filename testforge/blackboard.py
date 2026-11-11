@@ -27,7 +27,7 @@ import uuid
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Literal, Optional, Set, Union
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from testforge.callbacks import CallbackRegistry, EventType, LifecycleEvent
 from testforge.persistence import (
@@ -54,6 +54,8 @@ class TargetSpace(BaseModel):
     target_file_path: Optional[str] = None
     target_lines: Optional[List[int]] = None
     functions: List[str] = Field(default_factory=list)
+    function_count: int = 0
+    functions_count: int = 0
     classes: List[str] = Field(default_factory=list)
     blast_risk: str = "LOW"
     source_sha: str = ""
@@ -67,6 +69,18 @@ class TargetSpace(BaseModel):
     is_untrusted: bool = True
     provenance: str = "ingestion"
     injection_findings: List[Dict[str, Any]] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def sync_function_counts(self) -> "TargetSpace":
+        cnt = len(self.functions)
+        if cnt > 0:
+            self.function_count = cnt
+            self.functions_count = cnt
+        elif self.function_count > 0:
+            self.functions_count = self.function_count
+        elif self.functions_count > 0:
+            self.function_count = self.functions_count
+        return self
 
 
 class MutantSpace(BaseModel):
@@ -250,6 +264,7 @@ class SecuritySpace(BaseModel):
     allowed: bool = True
     applied_policies: List[str] = Field(default_factory=list)
     findings: List[Dict[str, Any]] = Field(default_factory=list)
+    advisories: List[Dict[str, Any]] = Field(default_factory=list)
     defused_injection_count: int = 0
     redacted_secret_count: int = 0
     affected_locations: List[str] = Field(default_factory=list)
