@@ -562,6 +562,29 @@
                 <span class="slider round"></span>
               </label>
             </div>
+
+            <!-- Multi-File Companion Context Drawer -->
+            <div class="divider"></div>
+            <div class="toggle-card" style="flex-direction: column; align-items: stretch; gap: 8px;">
+              <div class="collapsible-header" id="btn-toggle-companion-drawer" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <div class="toggle-info">
+                  <h4>📦 Multi-File Companion Context</h4>
+                  <p>Auto-resolved sibling imports or custom companion modules mounted into isolated sandbox.</p>
+                </div>
+                <span class="badge" id="badge-companion-count" style="margin-left: 8px; font-size: 0.75rem;">0 Dependencies</span>
+              </div>
+              <div class="collapsible-body" id="body-companion-drawer" style="display: none; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.08);">
+                <div id="companion-files-list" style="margin-bottom: 8px; font-size: 0.85rem; max-height: 120px; overflow-y: auto;">
+                  <span class="text-muted" style="color: var(--text-muted, #888); font-size: 0.8rem;">No companion files attached. Local sibling imports are auto-resolved.</span>
+                </div>
+                <div style="display: flex; gap: 6px; margin-bottom: 6px;">
+                  <input type="text" id="companion-filename" class="form-control" placeholder="Filename (e.g. models.py)" style="font-size: 0.8rem; padding: 4px 8px; flex: 1;">
+                  <button class="btn btn-secondary" id="btn-add-companion" style="font-size: 0.8rem; padding: 4px 10px; white-space: nowrap;">+ Add</button>
+                </div>
+                <textarea id="companion-code" class="form-control" rows="3" placeholder="Companion Python source code..." style="font-family: monospace; font-size: 0.8rem; width: 100%; box-sizing: border-box; margin-bottom: 6px;"></textarea>
+                <button class="btn btn-secondary" id="btn-clear-companions" style="font-size: 0.75rem; padding: 2px 8px;">Clear Companions</button>
+              </div>
+            </div>
           </div>
 
           <!-- Right: AST & Source Code Inspection -->

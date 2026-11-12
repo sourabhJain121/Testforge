@@ -271,8 +271,13 @@ def write_sandbox_network_guard(tmpdir: str) -> str:
     return conftest_path
 
 
-def _populate_target_aliases(tmpdir: str, code: str, target_file_path: Optional[str] = None) -> None:
-    """Writes target code to target.py and module name aliases for robust import resolution."""
+def _populate_target_aliases(
+    tmpdir: str,
+    code: str,
+    target_file_path: Optional[str] = None,
+    companion_files: Optional[Dict[str, str]] = None
+) -> None:
+    """Writes target code to target.py, module name aliases, and materializes companion dependencies."""
     with open(os.path.join(tmpdir, "target.py"), "w", encoding="utf-8") as f:
         f.write(code)
     if target_file_path:
@@ -294,6 +299,29 @@ def _populate_target_aliases(tmpdir: str, code: str, target_file_path: Optional[
                         f.write(code)
                 except Exception:
                     pass
+
+    # Materialize companion modules for multi-file dependency resolution in isolated sandbox
+    if companion_files:
+        abs_tmp = os.path.abspath(tmpdir)
+        for rel_path, comp_code in companion_files.items():
+            dest_file = os.path.normpath(os.path.join(tmpdir, rel_path))
+            if not dest_file.startswith(abs_tmp):
+                continue
+            parent = os.path.dirname(dest_file)
+            if parent:
+                os.makedirs(parent, exist_ok=True)
+                init_file = os.path.join(parent, "__init__.py")
+                if not os.path.exists(init_file):
+                    try:
+                        with open(init_file, "w", encoding="utf-8") as init_f:
+                            pass
+                    except Exception:
+                        pass
+            try:
+                with open(dest_file, "w", encoding="utf-8") as f:
+                    f.write(comp_code)
+            except Exception:
+                pass
 
 
 def is_docker_available() -> bool:
@@ -471,7 +499,8 @@ def _run_single_test_task(
     target_code: str,
     timeout_seconds: int,
     enforce_security: bool = True,
-    target_file_path: Optional[str] = None
+    target_file_path: Optional[str] = None,
+    companion_files: Optional[Dict[str, str]] = None
 ) -> Dict[str, Any]:
     """
     Isolated worker function designed for ProcessPoolExecutor execution.
@@ -504,7 +533,7 @@ def _run_single_test_task(
         src_file = os.path.join(tmpdir, "target.py")
         test_file = os.path.join(tmpdir, "test_target.py")
 
-        _populate_target_aliases(tmpdir, target_code, target_file_path)
+        _populate_target_aliases(tmpdir, target_code, target_file_path, companion_files=companion_files)
 
         with open(test_file, "w", encoding="utf-8") as f:
             f.write(test_code)
@@ -575,14 +604,20 @@ class ParallelSandboxRunner:
         timeout_seconds: int = 5,
         max_workers: Optional[int] = None,
         cancel_event: Optional[Any] = None,
-        target_file_path: Optional[str] = None
+        target_file_path: Optional[str] = None,
+        companion_files: Optional[Dict[str, str]] = None
     ):
         self.timeout = timeout_seconds
         self.max_workers = max_workers or hw_profile.recommended_workers
         self.cancel_event = cancel_event
         self.target_file_path = target_file_path
+        self.companion_files: Dict[str, str] = dict(companion_files or {})
         self.active_pids: Set[int] = set()
         self._executor: Optional[Any] = None
+
+    def set_companion_files(self, companion_files: Dict[str, str]) -> None:
+        """Dynamically registers or updates companion files to materialize in isolated sandbox."""
+        self.companion_files = dict(companion_files or {})
 
     @property
     def active_processes(self) -> List[Any]:
@@ -676,7 +711,8 @@ class ParallelSandboxRunner:
             target_code,
             self.timeout,
             enforce_security=enforce_security,
-            target_file_path=target_path
+            target_file_path=target_path,
+            companion_files=self.companion_files
         )
 
     def evaluate_mutants_parallel(
@@ -802,7 +838,8 @@ class ParallelSandboxRunner:
                     m.mutated_code_snippet,
                     int(mutant_timeout),
                     True,
-                    self.target_file_path
+                    self.target_file_path,
+                    self.companion_files
                 ): m for m in executable_mutants
             }
 
@@ -950,7 +987,7 @@ class ParallelSandboxRunner:
             test_file = os.path.join(tmpdir, "test_target.py")
             cov_json_path = os.path.join(tmpdir, "cov.json")
 
-            _populate_target_aliases(tmpdir, target_code, target_path)
+            _populate_target_aliases(tmpdir, target_code, target_path, companion_files=self.companion_files)
 
             with open(test_file, "w", encoding="utf-8") as f:
                 f.write(test_code)

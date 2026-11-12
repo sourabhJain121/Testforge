@@ -69,6 +69,8 @@ class TargetSpace(BaseModel):
     is_untrusted: bool = True
     provenance: str = "ingestion"
     injection_findings: List[Dict[str, Any]] = Field(default_factory=list)
+    companion_files: Dict[str, str] = Field(default_factory=dict)
+    resolved_symbols: List[str] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def sync_function_counts(self) -> "TargetSpace":

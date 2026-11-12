@@ -8,6 +8,7 @@ while hosting the modern HTML/CSS/JavaScript web frontend.
 
 from __future__ import annotations
 
+import ast
 import asyncio
 import json
 import logging
@@ -279,6 +280,16 @@ class BlastRadiusPayload(BaseModel):
 class GitDiffPayload(BaseModel):
     target_file_path: str
 
+class TargetIngestPayload(BaseModel):
+    target_file_path: Optional[str] = None
+    source_code: Optional[str] = None
+    companion_files: Optional[Dict[str, str]] = None
+
+class MultiTargetIngestPayload(BaseModel):
+    primary_filename: str = "primary.py"
+    primary_code: str
+    companion_files: Dict[str, str] = Field(default_factory=dict)
+
 class HardeningRunPayload(BaseModel):
     target_file_path: Optional[str] = None
     target_source_code: Optional[str] = None
@@ -293,6 +304,7 @@ class HardeningRunPayload(BaseModel):
     resume_checkpoint_id: Optional[str] = None
     resume_job_id: Optional[str] = None
     enable_rag: bool = True
+    companion_files: Optional[Dict[str, str]] = None
 
 
 class CheckpointResumePayload(BaseModel):
@@ -867,6 +879,19 @@ def ingest_sample(payload: SampleIngestPayload):
     supervisor = TargetManagerAgent()
     analysis = supervisor.ingest_file(str(target_path))
 
+    dep_dict = {"companion_count": 0, "companion_files": {}, "resolved_symbols": []}
+    try:
+        from testforge.dependency_resolver import MultiFileDependencyResolver
+        resolver = MultiFileDependencyResolver()
+        bundle = resolver.resolve_local_dependencies(str(target_path), analysis.source_code)
+        dep_dict = {
+            "companion_count": len(bundle.companion_files),
+            "companion_files": bundle.companion_files,
+            "resolved_symbols": bundle.resolved_symbols,
+        }
+    except Exception as exc:
+        logger.debug(f"Auto-resolving dependencies on sample ingest: {exc}")
+
     return {
         "status": "success",
         "mode": "Mode A",
@@ -880,7 +905,111 @@ def ingest_sample(payload: SampleIngestPayload):
         "line_count": analysis.line_count,
         "dependencies": getattr(analysis, "dependencies", []),
         "source_code": analysis.source_code,
+        "resolved_dependencies": dep_dict,
     }
+
+
+@app.post("/api/targets/ingest")
+def ingest_target(payload: TargetIngestPayload):
+    """
+    Ingests an arbitrary Python target (by path or code) and auto-resolves local dependencies.
+    """
+    dep_dict = {"companion_count": 0, "companion_files": {}, "resolved_symbols": []}
+    code = payload.source_code or ""
+    module_name = "target"
+    functions = []
+    classes = []
+    methods = {}
+    all_callables = []
+    dependencies = []
+    target_path = payload.target_file_path
+
+    if target_path and os.path.exists(target_path):
+        supervisor = TargetManagerAgent()
+        analysis = supervisor.ingest_file(str(target_path))
+        code = analysis.source_code
+        module_name = analysis.module_name
+        functions = analysis.functions
+        classes = analysis.classes
+        methods = analysis.methods
+        all_callables = analysis.all_callables
+        dependencies = getattr(analysis, "dependencies", [])
+
+        try:
+            from testforge.dependency_resolver import MultiFileDependencyResolver
+            resolver = MultiFileDependencyResolver()
+            bundle = resolver.resolve_local_dependencies(str(target_path), code)
+            dep_dict = {
+                "companion_count": len(bundle.companion_files),
+                "companion_files": bundle.companion_files,
+                "resolved_symbols": bundle.resolved_symbols,
+            }
+        except Exception as exc:
+            logger.debug(f"Dependency resolution error: {exc}")
+    elif code:
+        try:
+            tree = ast.parse(code)
+            for node in tree.body:
+                if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    functions.append(node.name)
+                    all_callables.append(node.name)
+                elif isinstance(node, ast.ClassDef):
+                    classes.append(node.name)
+                    c_methods = [
+                        item.name for item in node.body
+                        if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef))
+                    ]
+                    methods[node.name] = c_methods
+                    for m in c_methods:
+                        all_callables.append(f"{node.name}.{m}")
+                elif isinstance(node, ast.Import):
+                    for alias in node.names:
+                        dependencies.append(alias.name)
+                elif isinstance(node, ast.ImportFrom):
+                    if node.module:
+                        dependencies.append(node.module)
+        except Exception as exc:
+            raise HTTPException(status_code=400, detail=f"Syntax error in target source: {exc}")
+
+    if payload.companion_files:
+        try:
+            from testforge.dependency_resolver import MultiFileDependencyResolver
+            resolver = MultiFileDependencyResolver()
+            for c_path, c_code in payload.companion_files.items():
+                dep_dict["companion_files"][c_path] = c_code
+                syms, _ = resolver.extract_compact_symbols(c_code, c_path)
+                for s in syms:
+                    if s not in dep_dict["resolved_symbols"]:
+                        dep_dict["resolved_symbols"].append(s)
+            dep_dict["companion_count"] = len(dep_dict["companion_files"])
+        except Exception as exc:
+            logger.debug(f"Companion merge error: {exc}")
+
+    return {
+        "status": "success",
+        "target_file_path": target_path or "target.py",
+        "module_name": module_name,
+        "functions": functions,
+        "classes": classes,
+        "methods": methods,
+        "all_callables": all_callables,
+        "line_count": len(code.splitlines()) if code else 0,
+        "dependencies": dependencies,
+        "source_code": code,
+        "resolved_dependencies": dep_dict,
+    }
+
+
+@app.post("/api/targets/ingest-multi")
+def ingest_multi_targets(payload: MultiTargetIngestPayload):
+    """
+    Ingests primary module with multi-file companion modules, extracting symbols from all companions.
+    """
+    return ingest_target(TargetIngestPayload(
+        target_file_path=payload.primary_filename,
+        source_code=payload.primary_code,
+        companion_files=payload.companion_files
+    ))
 
 
 @app.post("/api/ingest/upload")
@@ -1273,6 +1402,7 @@ def _run_orchestration_job(job_id: str, payload: HardeningRunPayload):
             mcp_client=mcp_client,
             resume_checkpoint_id=resume_cp_id,
             enable_rag=payload.enable_rag,
+            companion_files=payload.companion_files,
         )
 
         with JOB_LOCK:
@@ -1501,7 +1631,10 @@ async def get_hardening_job_status(job_id: str):
                                 "status": "active" if bb.target.target_source_code else "empty",
                                 "module": bb.target.target_module_path,
                                 "functions_count": len(bb.target.functions),
-                                "blast_risk": bb.target.blast_risk
+                                "blast_risk": bb.target.blast_risk,
+                                "companion_count": len(getattr(bb.target, "companion_files", {}) or {}),
+                                "companion_files": list((getattr(bb.target, "companion_files", {}) or {}).keys()),
+                                "resolved_symbols": getattr(bb.target, "resolved_symbols", []) or [],
                             },
                             "SuiteSpace": {
                                 "status": "active" if bb.suite.current_test_code else "empty",

@@ -172,6 +172,7 @@ class TestForgeOrchestrator:
         privacy_mode: Optional[bool] = None,
         output_path: Optional[str] = None,
         enable_rag: bool = True,
+        companion_files: Optional[Dict[str, str]] = None,
     ):
         from testforge.privacy_mode import PrivacyModeManager
         privacy_mgr = PrivacyModeManager.get_instance()
@@ -215,20 +216,59 @@ class TestForgeOrchestrator:
             target_mutation_score=target_mutation_score,
             hardware_info=hw_profile.summary()
         )
+        self.companion_files: Dict[str, str] = dict(companion_files or {})
+        self.dependency_bundle = None
+        if self.target_file_path and os.path.exists(self.target_file_path):
+            try:
+                from testforge.dependency_resolver import MultiFileDependencyResolver
+                resolver = MultiFileDependencyResolver()
+                self.dependency_bundle = resolver.resolve_local_dependencies(
+                    self.target_file_path,
+                    self.state.target_source_code
+                )
+                for rel_path, c_code in self.dependency_bundle.companion_files.items():
+                    if rel_path not in self.companion_files:
+                        self.companion_files[rel_path] = c_code
+            except Exception as e:
+                logger.warning(f"Auto-resolving local dependencies failed: {e}")
+
+        if not self.dependency_bundle and self.companion_files:
+            try:
+                from testforge.dependency_resolver import DependencyBundle, MultiFileDependencyResolver
+                resolver = MultiFileDependencyResolver()
+                syms = []
+                sigs = {}
+                for c_path, c_code in self.companion_files.items():
+                    s_list, s_dict = resolver.extract_compact_symbols(c_code, c_path)
+                    syms.extend(s_list)
+                    sigs.update(s_dict)
+                self.dependency_bundle = DependencyBundle(
+                    primary_filename=os.path.basename(self.target_file_path or "target.py"),
+                    companion_files=dict(self.companion_files),
+                    resolved_symbols=syms,
+                    symbol_signatures=sigs,
+                )
+            except Exception as e:
+                logger.warning(f"Creating dependency bundle from manual companions failed: {e}")
+
         self.blackboard = blackboard or Blackboard.from_testforge_state(
             self.state,
             callback_registry=self.callbacks,
             checkpoint_db_path=self.checkpoint_db_path,
         )
+        resolved_syms = self.dependency_bundle.resolved_symbols if self.dependency_bundle else []
         self.blackboard.update_target_space(
             target_file_path=self.target_file_path,
-            target_lines=self.target_lines or []
+            target_lines=self.target_lines or [],
+            companion_files=self.companion_files,
+            resolved_symbols=resolved_syms,
         )
         self.logger = TraceLogger(log_path=trace_log_path)
         self.sandbox = ParallelSandboxRunner(
             timeout_seconds=5,
             cancel_event=self.cancel_event,
-            target_file_path=self.target_file_path
+            target_file_path=self.target_file_path,
+            companion_files=self.companion_files,
         )
         self.llm_client = HybridLLMClient(
             cloud_model=model_name,
@@ -1435,6 +1475,10 @@ class TestForgeOrchestrator:
             test_plan_data = self.state.metadata.get("test_plan") if hasattr(self.state, "metadata") and self.state.metadata else None
             sliced_source, allowed_line_ranges = get_sliced_target_scope(self.state.target_source_code, max_lines=350, max_functions=15)
             self._allowed_line_ranges = allowed_line_ranges if len(self.state.target_source_code.splitlines()) > 350 else None
+            if self.dependency_bundle and self.dependency_bundle.companion_files:
+                companion_ctx = self.dependency_bundle.format_prompt_context()
+                if companion_ctx:
+                    sliced_source = f"{companion_ctx}\n\n{sliced_source}"
 
             def _perform_initial_generation() -> str:
                 gen_tests = ""
@@ -1870,6 +1914,10 @@ class TestForgeOrchestrator:
                 hardened_tests = ""
                 provider_used = self.generator.active_provider
                 sliced_refl_source = _slice_large_target_context(self.state.target_source_code, max_lines=350, max_functions=15)
+                if self.dependency_bundle and self.dependency_bundle.companion_files:
+                    companion_ctx = self.dependency_bundle.format_prompt_context()
+                    if companion_ctx:
+                        sliced_refl_source = f"{companion_ctx}\n\n{sliced_refl_source}"
 
                 # Prioritize top 5 surviving mutants for targeted reflection repair
                 surviving_records = [

@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
       allCallables: [],
       lineCount: 0,
       dependencies: [],
+      companionFiles: {},
       metadata: null,
     },
     gitDiff: {
@@ -244,6 +245,14 @@ document.addEventListener('DOMContentLoaded', () => {
     btnSubmitUpload: document.getElementById('btn-submit-upload'),
     toggleGitDiff: document.getElementById('toggle-git-diff'),
     chkEnableRag: document.getElementById('chk-enable-rag'),
+    btnToggleCompanionDrawer: document.getElementById('btn-toggle-companion-drawer'),
+    bodyCompanionDrawer: document.getElementById('body-companion-drawer'),
+    badgeCompanionCount: document.getElementById('badge-companion-count'),
+    companionFilesList: document.getElementById('companion-files-list'),
+    companionFilenameInput: document.getElementById('companion-filename'),
+    companionCodeInput: document.getElementById('companion-code'),
+    btnAddCompanion: document.getElementById('btn-add-companion'),
+    btnClearCompanions: document.getElementById('btn-clear-companions'),
     gitDiffAlert: document.getElementById('git-diff-alert'),
     modeAModuleName: document.getElementById('mode-a-module-name'),
     modeAFuncsList: document.getElementById('mode-a-funcs-list'),
@@ -1649,6 +1658,12 @@ document.addEventListener('DOMContentLoaded', () => {
     state.activeTarget.lineCount = analysisData.line_count || 0;
     state.activeTarget.dependencies = analysisData.dependencies || [];
     state.activeTarget.metadata = analysisData.metadata || null;
+    if (analysisData.resolved_dependencies && analysisData.resolved_dependencies.companion_files) {
+      state.activeTarget.companionFiles = Object.assign({}, analysisData.resolved_dependencies.companion_files);
+    } else if (!state.activeTarget.companionFiles) {
+      state.activeTarget.companionFiles = {};
+    }
+    renderCompanionList();
 
     // UI Banner
     dom.targetModeBadge.textContent = `Active Target: ${state.activeTarget.mode}`;
@@ -1731,6 +1746,75 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.btnLoadSample.addEventListener('click', () => {
       const selected = dom.sampleFileSelect.value;
       if (selected) loadSampleModule(selected);
+    });
+  }
+
+  // Multi-File Companion Context UI Handlers
+  function renderCompanionList() {
+    if (!dom.companionFilesList) return;
+    const comps = state.activeTarget.companionFiles || {};
+    const keys = Object.keys(comps);
+    const count = keys.length;
+    if (dom.badgeCompanionCount) {
+      dom.badgeCompanionCount.textContent = `${count} ${count === 1 ? 'Dependency' : 'Dependencies'}`;
+      dom.badgeCompanionCount.className = count > 0 ? 'badge badge-green' : 'badge';
+    }
+    if (count === 0) {
+      dom.companionFilesList.innerHTML = '<span class="text-muted" style="color: var(--text-muted, #888); font-size: 0.8rem;">No companion files attached. Local sibling imports are auto-resolved.</span>';
+      return;
+    }
+    dom.companionFilesList.innerHTML = keys.map(k => `
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 8px; background: rgba(255,255,255,0.05); border-radius: 4px; margin-bottom: 4px;">
+        <span style="font-family: monospace; font-size: 0.8rem; color: var(--accent, #38bdf8);">📄 ${escapeHtml(k)}</span>
+        <button class="btn btn-secondary btn-sm btn-del-companion" data-file="${escapeHtml(k)}" style="font-size: 0.7rem; padding: 1px 6px; color: #ef4444; border: none; background: rgba(239,68,68,0.15); cursor: pointer;">✕</button>
+      </div>
+    `).join('');
+
+    dom.companionFilesList.querySelectorAll('.btn-del-companion').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const fileKey = e.currentTarget.getAttribute('data-file');
+        if (fileKey && state.activeTarget.companionFiles && state.activeTarget.companionFiles[fileKey]) {
+          delete state.activeTarget.companionFiles[fileKey];
+          renderCompanionList();
+          showToast(`Removed companion module ${fileKey}`, 'info');
+        }
+      });
+    });
+  }
+
+  if (dom.btnToggleCompanionDrawer && dom.bodyCompanionDrawer) {
+    dom.btnToggleCompanionDrawer.addEventListener('click', () => {
+      const isHidden = dom.bodyCompanionDrawer.style.display === 'none';
+      dom.bodyCompanionDrawer.style.display = isHidden ? 'block' : 'none';
+    });
+  }
+
+  if (dom.btnAddCompanion) {
+    dom.btnAddCompanion.addEventListener('click', () => {
+      const filename = (dom.companionFilenameInput && dom.companionFilenameInput.value.trim()) || '';
+      const code = (dom.companionCodeInput && dom.companionCodeInput.value.trim()) || '';
+      if (!filename) {
+        showToast('Please provide a companion module filename (e.g. models.py)', 'warning');
+        return;
+      }
+      if (!code) {
+        showToast('Please provide companion Python code', 'warning');
+        return;
+      }
+      if (!state.activeTarget.companionFiles) state.activeTarget.companionFiles = {};
+      state.activeTarget.companionFiles[filename] = code;
+      if (dom.companionFilenameInput) dom.companionFilenameInput.value = '';
+      if (dom.companionCodeInput) dom.companionCodeInput.value = '';
+      renderCompanionList();
+      showToast(`Added companion module ${filename}`, 'success');
+    });
+  }
+
+  if (dom.btnClearCompanions) {
+    dom.btnClearCompanions.addEventListener('click', () => {
+      state.activeTarget.companionFiles = {};
+      renderCompanionList();
+      showToast('Cleared all companion modules', 'info');
     });
   }
 
@@ -3182,6 +3266,7 @@ document.addEventListener('DOMContentLoaded', () => {
         engine_mode: state.settings.engineMode,
         target_lines: state.gitDiff.enabled && state.gitDiff.modifiedLines.length > 0 ? state.gitDiff.modifiedLines : null,
         enable_rag: dom.chkEnableRag ? dom.chkEnableRag.checked : (document.getElementById('chk-enable-rag') ? document.getElementById('chk-enable-rag').checked : true),
+        companion_files: (state.activeTarget.companionFiles && Object.keys(state.activeTarget.companionFiles).length > 0) ? state.activeTarget.companionFiles : null,
       };
 
       const res = await fetch('/api/harden/start', {
@@ -3292,7 +3377,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (dom.bbTargetSummary && spaces.TargetSpace) {
         const ts = spaces.TargetSpace;
         const modName = ts.module ? ts.module.split('/').pop() : 'target.py';
-        dom.bbTargetSummary.textContent = `${modName} (${ts.functions_count || 0} funcs, Risk: ${ts.blast_risk || 'LOW'})`;
+        const depPill = (ts.companion_count && ts.companion_count > 0)
+          ? ` (+${ts.companion_count} dep${ts.companion_files && ts.companion_files.length ? ': ' + ts.companion_files.join(', ') : ''})`
+          : '';
+        dom.bbTargetSummary.textContent = `${modName}${depPill} (${ts.functions_count || 0} funcs, Risk: ${ts.blast_risk || 'LOW'})`;
       }
 
       // 2. SuiteSpace
