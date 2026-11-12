@@ -767,3 +767,23 @@ class HybridSynthesizer:
             guard_interventions=guard_interventions,
             history=history,
         )
+
+
+def synthesize_symbolic_repairs(
+    source_code: str,
+    surviving_mutants: List[Any],
+    target_module: str = "target",
+    companion_context: str = ""
+) -> str:
+    """
+    Deterministically synthesizes targeted boundary tests for surviving mutants
+    using NeuroSymbolicBoundarySolver without relying on LLM reflection calls.
+    """
+    from testforge.symbolic_solver import NeuroSymbolicBoundarySolver
+    solver = NeuroSymbolicBoundarySolver()
+    return solver.synthesize_boundary_tests(
+        source_code=source_code,
+        surviving_mutants=surviving_mutants,
+        target_module=target_module,
+        companion_context=companion_context
+    )

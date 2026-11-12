@@ -1893,6 +1893,64 @@ class TestForgeOrchestrator:
             self.blackboard.update_metrics_space(current_iteration=iteration)
             console.print(f"[bold magenta]▶ Iteration {iteration} of {self.state.max_iterations} (Target Score: {self.state.target_mutation_score}%)[/bold magenta]")
 
+            # Neuro-Symbolic Boundary & Path Constraint Solver (Priority 1)
+            # Deterministically synthesize and merge verified boundary assertions before/alongside LLM reflection
+            surviving_mutants_for_symbolic = [
+                m for m in self.state.mutants if m.status in ("SURVIVED", "POTENTIALLY_EQUIVALENT")
+            ]
+            if surviving_mutants_for_symbolic:
+                try:
+                    from testforge.hybrid_synthesizer import synthesize_symbolic_repairs
+                    companion_ctx = ""
+                    if self.dependency_bundle and self.dependency_bundle.companion_files:
+                        companion_ctx = self.dependency_bundle.format_prompt_context()
+
+                    target_mod = "target"
+                    if self.target_file_path:
+                        base = os.path.basename(self.target_file_path)
+                        target_mod = os.path.splitext(base)[0] or "target"
+
+                    symbolic_tests = synthesize_symbolic_repairs(
+                        source_code=self.state.target_source_code,
+                        surviving_mutants=surviving_mutants_for_symbolic,
+                        target_module=target_mod,
+                        companion_context=companion_ctx,
+                    )
+                    if symbolic_tests and symbolic_tests.strip():
+                        val_sym = self.sandbox.validate_and_filter_candidate_suite(
+                            candidate_test_code=symbolic_tests,
+                            target_code=self.state.target_source_code,
+                            existing_test_code=self.state.current_test_code,
+                            surviving_mutants=surviving_mutants_for_symbolic,
+                        )
+                        if val_sym.retained_count > 0 and val_sym.retained_test_code:
+                            self.state.current_test_code = val_sym.retained_test_code
+                            self.blackboard.update_suite_space(
+                                current_test_code=self.state.current_test_code,
+                                hardened_test_code=self.state.current_test_code,
+                            )
+                            console.print(f"  [green]• Neuro-Symbolic Solver: Synthesized and merged {val_sym.retained_count} verified boundary test(s).[/green]")
+                            self.logger.log_event("SYMBOLIC_BOUNDARY_SOLVER_APPLIED", {
+                                "iteration": iteration,
+                                "tests_added": val_sym.retained_count,
+                                "mutants_targeted": len(surviving_mutants_for_symbolic),
+                                "mutants_killed": len(val_sym.mutants_killed),
+                            })
+                            try:
+                                from testforge.websocket_hub import global_websocket_hub
+                                global_websocket_hub.broadcast_event({
+                                    "event_type": "SYMBOLIC_BOUNDARY_SOLVER_APPLIED",
+                                    "phase": "EXECUTING",
+                                    "stage": "SYMBOLIC_REPAIR",
+                                    "tests_added": val_sym.retained_count,
+                                    "iteration": iteration,
+                                    "detail": f"Neuro-Symbolic Solver merged {val_sym.retained_count} verified boundary test(s)."
+                                })
+                            except Exception:
+                                pass
+                except Exception as exc:
+                    logger.debug(f"Neuro-symbolic solver pass error: {exc}")
+
             # A. If we have reflection feedback from previous iteration, regenerate/harden tests first
             if critic_directive and self.state.surviving_mutant_diffs:
                 self._sync_lifecycle(TaskLifecycleState.PLANNING, metadata={"iteration": iteration, "step": "hardening_plan"})
