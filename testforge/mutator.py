@@ -40,9 +40,16 @@ class MutationTransformer(ast.NodeTransformer):
     Supports restricting mutations to specific line numbers via target_lines.
     Tracks exact original and mutated expressions for full provenance.
     """
-    def __init__(self, target_node_id: int, target_lines: Optional[List[int]] = None, include_held_out: bool = False):
+    def __init__(
+        self,
+        target_node_id: int,
+        target_lines: Optional[List[int]] = None,
+        include_held_out: bool = False,
+        allowed_line_ranges: Optional[List[Tuple[int, int]]] = None,
+    ):
         self.target_node_id = target_node_id
         self.target_lines: Optional[Set[int]] = set(target_lines) if target_lines else None
+        self.allowed_line_ranges: Optional[List[Tuple[int, int]]] = allowed_line_ranges
         self.include_held_out = include_held_out
         self.current_node_id = 0
         self.sites: Dict[int, str] = {}
@@ -53,6 +60,16 @@ class MutationTransformer(ast.NodeTransformer):
         self.mutated_expr: Optional[str] = None
         self._in_compare = False
         self._in_docstring = False
+
+    def _line_allowed(self, node: ast.AST) -> bool:
+        lineno = getattr(node, "lineno", None)
+        if lineno is not None:
+            if self.target_lines is not None and lineno not in self.target_lines:
+                return False
+            if self.allowed_line_ranges is not None:
+                if not any(start <= lineno <= end for start, end in self.allowed_line_ranges):
+                    return False
+        return True
 
     def _inc_id(self, op_name: str) -> bool:
         self.current_node_id += 1
@@ -78,7 +95,7 @@ class MutationTransformer(ast.NodeTransformer):
             self.mutated_expr = None
 
     def visit_Compare(self, node: ast.Compare) -> ast.AST:
-        if self.target_lines is not None and getattr(node, "lineno", None) not in self.target_lines:
+        if not self._line_allowed(node):
             return self.generic_visit(node)
         comp_map: Dict[Type[ast.AST], Type[ast.AST]] = {
             ast.Gt: ast.LtE,
@@ -173,7 +190,7 @@ class MutationTransformer(ast.NodeTransformer):
         return res
 
     def visit_BinOp(self, node: ast.BinOp) -> ast.AST:
-        if self.target_lines is not None and getattr(node, "lineno", None) not in self.target_lines:
+        if not self._line_allowed(node):
             return self.generic_visit(node)
         arith_map: Dict[Type[ast.AST], Type[ast.AST]] = {
             ast.Add: ast.Sub,
@@ -210,7 +227,7 @@ class MutationTransformer(ast.NodeTransformer):
         return self.generic_visit(node)
 
     def visit_BoolOp(self, node: ast.BoolOp) -> ast.AST:
-        if self.target_lines is not None and getattr(node, "lineno", None) not in self.target_lines:
+        if not self._line_allowed(node):
             return self.generic_visit(node)
         # Logical Connective Swaps (LOGICAL_CONN: and <-> or)
         if isinstance(node.op, ast.And):
@@ -228,7 +245,7 @@ class MutationTransformer(ast.NodeTransformer):
         return self.generic_visit(node)
 
     def visit_Call(self, node: ast.Call) -> ast.AST:
-        if self.target_lines is not None and getattr(node, "lineno", None) not in self.target_lines:
+        if not self._line_allowed(node):
             return self.generic_visit(node)
         # Math Function & Precision Flips (MATH_FUNC)
         if isinstance(node.func, ast.Name):
@@ -253,7 +270,7 @@ class MutationTransformer(ast.NodeTransformer):
         return self.generic_visit(node)
 
     def visit_If(self, node: ast.If) -> ast.AST:
-        if self.target_lines is not None and getattr(node, "lineno", None) not in self.target_lines:
+        if not self._line_allowed(node):
             return self.generic_visit(node)
         if self._inc_id("COND_INV"):
             new_test = ast.UnaryOp(op=ast.Not(), operand=node.test)
@@ -264,7 +281,7 @@ class MutationTransformer(ast.NodeTransformer):
         return self.generic_visit(node)
 
     def visit_Return(self, node: ast.Return) -> ast.AST:
-        if self.target_lines is not None and getattr(node, "lineno", None) not in self.target_lines:
+        if not self._line_allowed(node):
             return self.generic_visit(node)
         if self._inc_id("RETURN_VAL"):
             if isinstance(node.value, ast.Constant):
@@ -285,7 +302,7 @@ class MutationTransformer(ast.NodeTransformer):
     def visit_AugAssign(self, node: ast.AugAssign) -> ast.AST:
         # 13. Statement Deletion Mutations (STATEMENT_DELETION - Extended operator)
         if self.include_held_out:
-            if self.target_lines is not None and getattr(node, "lineno", None) not in self.target_lines:
+            if not self._line_allowed(node):
                 return self.generic_visit(node)
             if self._inc_id("STATEMENT_DELETION"):
                 new_node = ast.Pass()
@@ -305,7 +322,7 @@ class MutationTransformer(ast.NodeTransformer):
 
         # Statement Deletion on standalone function/method calls (when include_held_out)
         if self.include_held_out and isinstance(node.value, ast.Call):
-            if self.target_lines is not None and getattr(node, "lineno", None) not in self.target_lines:
+            if not self._line_allowed(node):
                 return self.generic_visit(node)
             if self._inc_id("STATEMENT_DELETION"):
                 new_node = ast.Pass()
@@ -319,7 +336,7 @@ class MutationTransformer(ast.NodeTransformer):
         # Constant / literal mutations (CONST_VAL)
         if self._in_compare or self._in_docstring:
             return self.generic_visit(node)
-        if self.target_lines is not None and getattr(node, "lineno", None) not in self.target_lines:
+        if not self._line_allowed(node):
             return self.generic_visit(node)
 
         val = node.value
@@ -350,7 +367,7 @@ class MutationTransformer(ast.NodeTransformer):
 
     def visit_ExceptHandler(self, node: ast.ExceptHandler) -> ast.AST:
         # Exception handler mutations (EXCEPT_HANDLER)
-        if self.target_lines is not None and getattr(node, "lineno", None) not in self.target_lines:
+        if not self._line_allowed(node):
             return self.generic_visit(node)
 
         exc_swap = {
@@ -375,7 +392,7 @@ class MutationTransformer(ast.NodeTransformer):
         # 12. Exception Raising Mutations (EXCEPTION_SWAP - Held-out evaluation operator)
         if not self.include_held_out:
             return self.generic_visit(node)
-        if self.target_lines is not None and getattr(node, "lineno", None) not in self.target_lines:
+        if not self._line_allowed(node):
             return self.generic_visit(node)
 
         exc_swap = {
@@ -451,7 +468,7 @@ class ASTMutator:
     High-level orchestrator for discovering mutation sites and generating
     deterministic, syntax-validated AST mutants with provenance and equivalence analysis.
     """
-    _MUTANT_CACHE: Dict[Tuple[int, Optional[Tuple[int, ...]], bool, Optional[int]], List[MutantRecord]] = {}
+    _MUTANT_CACHE: Dict[Any, List[MutantRecord]] = {}
 
     @classmethod
     def clear_cache(cls) -> None:
@@ -464,6 +481,7 @@ class ASTMutator:
         source_code: str,
         target_lines: Optional[List[int]] = None,
         include_held_out: bool = False,
+        allowed_line_ranges: Optional[List[Tuple[int, int]]] = None,
     ) -> Dict[int, str]:
         """
         Inspects all mutation points and returns mapping of target_id -> mutation_type.
@@ -474,12 +492,22 @@ class ASTMutator:
             return {}
         from testforge.security import mark_dynamic_nodes_immutable
         mark_dynamic_nodes_immutable(tree)
-        inspector = MutationTransformer(target_node_id=0, target_lines=target_lines, include_held_out=include_held_out)
+        inspector = MutationTransformer(
+            target_node_id=0,
+            target_lines=target_lines,
+            include_held_out=include_held_out,
+            allowed_line_ranges=allowed_line_ranges,
+        )
         inspector.visit(tree)
         return inspector.sites
 
     @staticmethod
-    def inspect_mutation_points(source_code: str, target_lines: Optional[List[int]] = None, include_held_out: bool = False) -> int:
+    def inspect_mutation_points(
+        source_code: str,
+        target_lines: Optional[List[int]] = None,
+        include_held_out: bool = False,
+        allowed_line_ranges: Optional[List[Tuple[int, int]]] = None,
+    ) -> int:
         """
         Walks AST using MutationTransformer in inspection mode (target_node_id=0)
         to count the exact number of mutation sites deterministically.
@@ -491,7 +519,12 @@ class ASTMutator:
             return 0
         from testforge.security import mark_dynamic_nodes_immutable
         mark_dynamic_nodes_immutable(tree)
-        inspector = MutationTransformer(target_node_id=0, target_lines=target_lines, include_held_out=include_held_out)
+        inspector = MutationTransformer(
+            target_node_id=0,
+            target_lines=target_lines,
+            include_held_out=include_held_out,
+            allowed_line_ranges=allowed_line_ranges,
+        )
         inspector.visit(tree)
         return inspector.current_node_id
 
@@ -502,10 +535,12 @@ class ASTMutator:
         target_lines: Optional[List[int]] = None,
         include_held_out: bool = False,
         max_mutants: Optional[int] = None,
+        allowed_line_ranges: Optional[List[Tuple[int, int]]] = None,
     ) -> List[MutantRecord]:
         """
         Generates deterministic AST mutants. If target_lines is provided and non-empty,
         only mutates AST nodes residing on those lines.
+        If allowed_line_ranges is provided, only mutates nodes inside those line spans.
         If file exceeds 1,000 lines or max_mutants is specified, stratifies mutants up to max_mutants (default 150).
         Never modifies original source files in place.
         Validates output syntax with ast.parse and attaches provenance.
@@ -519,11 +554,22 @@ class ASTMutator:
         effective_max = max_mutants if max_mutants is not None else (150 if is_large else None)
 
         # Check in-memory AST cache for idempotent acceleration
-        cache_key = (hash(source_code), tuple(sorted(target_lines)) if target_lines else None, include_held_out, effective_max)
+        cache_key = (
+            hash(source_code),
+            tuple(sorted(target_lines)) if target_lines else None,
+            include_held_out,
+            effective_max,
+            tuple(sorted(allowed_line_ranges)) if allowed_line_ranges else None,
+        )
         if cache_key in cls._MUTANT_CACHE:
             return [m.model_copy() for m in cls._MUTANT_CACHE[cache_key]]
 
-        sites = cls.inspect_mutation_sites(source_code, target_lines=target_lines, include_held_out=include_held_out)
+        sites = cls.inspect_mutation_sites(
+            source_code,
+            target_lines=target_lines,
+            include_held_out=include_held_out,
+            allowed_line_ranges=allowed_line_ranges,
+        )
         num_targets = len(sites)
         if num_targets == 0:
             return []
@@ -551,20 +597,18 @@ class ASTMutator:
 
         mutants: List[MutantRecord] = []
         from testforge.security import mark_dynamic_nodes_immutable
-        if is_large:
-            base_tree = ast.parse(source_code)
-            mark_dynamic_nodes_immutable(base_tree)
-            norm_code = ast.unparse(base_tree)
-            original_lines = norm_code.splitlines(keepends=True)
-            source_for_mutation = norm_code
-        else:
-            original_lines = source_code.splitlines(keepends=True)
-            source_for_mutation = source_code
+        original_lines = source_code.splitlines(keepends=True)
+        source_for_mutation = source_code
 
         for target_id in target_ids:
             tree = ast.parse(source_for_mutation)
             mark_dynamic_nodes_immutable(tree)
-            transformer = MutationTransformer(target_node_id=target_id, target_lines=target_lines, include_held_out=include_held_out)
+            transformer = MutationTransformer(
+                target_node_id=target_id,
+                target_lines=target_lines,
+                include_held_out=include_held_out,
+                allowed_line_ranges=allowed_line_ranges,
+            )
             mutated_tree = transformer.visit(tree)
             ast.fix_missing_locations(mutated_tree)
 
@@ -580,28 +624,36 @@ class ASTMutator:
                     is_valid_syntax = False
                     initial_status = "INVALID"
 
-                mutated_lines = mutated_code.splitlines(keepends=True)
-                diff_lines = list(difflib.unified_diff(
-                    original_lines,
-                    mutated_lines,
-                    fromfile="target.py (original)",
-                    tofile=f"target.py (mutant_{target_id})",
-                    lineterm=""
-                ))
-                diff = "\n".join(diff_lines)
-
-                line_no = 1
-                for line in diff_lines:
-                    if line.startswith("@@"):
-                        parts = line.split("+")
-                        if len(parts) > 1:
-                            try:
-                                line_no = int(parts[1].split(",")[0].split(" ")[0])
-                            except ValueError:
-                                line_no = 1
-                        break
-
-                resolved_line = transformer.line_number if transformer.line_number > 0 else line_no
+                resolved_line = transformer.line_number if transformer.line_number > 0 else 1
+                if is_large:
+                    diff = (
+                        f"--- target.py (original)\n"
+                        f"+++ target.py (mutant_{target_id})\n"
+                        f"@@ -{resolved_line},1 +{resolved_line},1 @@\n"
+                        f"-{transformer.original_expr or ''}\n"
+                        f"+{transformer.mutated_expr or ''}"
+                    )
+                else:
+                    mutated_lines = mutated_code.splitlines(keepends=True)
+                    diff_lines = list(difflib.unified_diff(
+                        original_lines,
+                        mutated_lines,
+                        fromfile="target.py (original)",
+                        tofile=f"target.py (mutant_{target_id})",
+                        lineterm=""
+                    ))
+                    diff = "\n".join(diff_lines)
+                    for line in diff_lines:
+                        if line.startswith("@@"):
+                            parts = line.split("+")
+                            if len(parts) > 1:
+                                try:
+                                    line_no = int(parts[1].split(",")[0].split(" ")[0])
+                                    if transformer.line_number <= 0:
+                                        resolved_line = line_no
+                                except ValueError:
+                                    pass
+                            break
 
                 record = MutantRecord(
                     mutant_id=f"MUT_{transformer.mutant_type}_{target_id:03d}",
@@ -641,17 +693,33 @@ class ASTMutator:
         source_code: str,
         target_lines: Optional[List[int]] = None,
         max_mutants: Optional[int] = None,
+        allowed_line_ranges: Optional[List[Tuple[int, int]]] = None,
     ) -> List[MutantRecord]:
         """
         Alias for mutate() to preserve backward compatibility.
         """
-        return cls.mutate(source_code, target_lines=target_lines, max_mutants=max_mutants)
+        return cls.mutate(
+            source_code,
+            target_lines=target_lines,
+            max_mutants=max_mutants,
+            allowed_line_ranges=allowed_line_ranges,
+        )
 
     @classmethod
-    def generate_held_out_mutants(cls, source_code: str, target_lines: Optional[List[int]] = None) -> List[MutantRecord]:
+    def generate_held_out_mutants(
+        cls,
+        source_code: str,
+        target_lines: Optional[List[int]] = None,
+        allowed_line_ranges: Optional[List[Tuple[int, int]]] = None,
+    ) -> List[MutantRecord]:
         """
         Generates exclusively the held-out mutation operators (BITWISE_OP, EXCEPTION_SWAP)
         for empirical generalization evaluation (Stage 1.5).
         """
-        all_with_held = cls.mutate(source_code, target_lines=target_lines, include_held_out=True)
+        all_with_held = cls.mutate(
+            source_code,
+            target_lines=target_lines,
+            include_held_out=True,
+            allowed_line_ranges=allowed_line_ranges,
+        )
         return [m for m in all_with_held if m.mutation_type in ("BITWISE_OP", "EXCEPTION_SWAP")]

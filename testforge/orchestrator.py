@@ -48,6 +48,7 @@ from testforge.guidance import derive_guidance_for_surviving_mutants
 from testforge.hybrid_synthesizer import (
     _slice_large_target_context,
     execute_llm_synthesis_with_timeout,
+    get_sliced_target_scope,
 )
 from testforge.logger import TraceLogger
 from testforge.mcp_client import ToolSelectionDecision
@@ -1342,7 +1343,8 @@ class TestForgeOrchestrator:
             ))
 
             test_plan_data = self.state.metadata.get("test_plan") if hasattr(self.state, "metadata") and self.state.metadata else None
-            sliced_source = _slice_large_target_context(self.state.target_source_code, max_lines=350, max_functions=15)
+            sliced_source, allowed_line_ranges = get_sliced_target_scope(self.state.target_source_code, max_lines=350, max_functions=15)
+            self._allowed_line_ranges = allowed_line_ranges if len(self.state.target_source_code.splitlines()) > 350 else None
 
             def _perform_initial_generation() -> str:
                 gen_tests = ""
@@ -1551,9 +1553,10 @@ class TestForgeOrchestrator:
                     self.check_cancellation_or_timeout()
                     console.print("[yellow][!] Self-repaired tests failed clean target check. Engaging deterministic AST synthesis...[/yellow]")
                     from testforge.agents import CodeSanitizer, extract_function_signatures
-                    sigs = extract_function_signatures(self.state.target_source_code)
+                    target_for_ast = sliced_source if len(self.state.target_source_code.splitlines()) > 350 else self.state.target_source_code
+                    sigs = extract_function_signatures(target_for_ast)
                     raw_ast_code = self.generator._synthesize_ast_aware_tests(
-                        source_code=self.state.target_source_code,
+                        source_code=target_for_ast,
                         signatures=sigs,
                         surviving_diffs=None
                     )
@@ -1776,15 +1779,37 @@ class TestForgeOrchestrator:
                 provider_used = self.generator.active_provider
                 sliced_refl_source = _slice_large_target_context(self.state.target_source_code, max_lines=350, max_functions=15)
 
+                # Prioritize top 5 surviving mutants for targeted reflection repair
+                surviving_records = [
+                    {
+                        "mutant_id": m.mutant_id,
+                        "mutation_type": m.mutation_type,
+                        "line_number": m.line_number,
+                        "original_expr": getattr(m, "original_expression", "") or "",
+                        "mutated_expr": getattr(m, "mutated_expression", "") or "",
+                        "diff": getattr(m, "unified_diff", "") or "",
+                    }
+                    for m in self.state.mutants if m.status in ("SURVIVED", "POTENTIALLY_EQUIVALENT")
+                ]
+                top_5_survivors = surviving_records[:5]
+                top_5_diff_snippets = []
+                for s in top_5_survivors:
+                    d_txt = s.get("diff", "").strip() or f"Line {s['line_number']}: {s.get('original_expr', '')} -> {s.get('mutated_expr', '')}"
+                    top_5_diff_snippets.append(f"Mutant [{s['mutant_id']}] Line {s['line_number']} ({s['mutation_type']}):\n{d_txt}")
+
+                targeted_repair_directive = critic_directive or ""
+                if top_5_diff_snippets:
+                    targeted_repair_directive += (
+                        "\n\n### PRIORITY SURVIVING MUTANTS TO KILL IN THIS CYCLE:\n"
+                        + "\n\n".join(top_5_diff_snippets)
+                        + "\nSynthesize specific Pytest assertions with inputs causing each surviving mutated expression to evaluate differently from the clean original code."
+                    )
+
                 def _perform_reflection_repair() -> str:
                     refl_tests = ""
                     nonlocal provider_used
                     if self.engine_mode != "legacy":
                         try:
-                            surviving_records = [
-                                {"mutant_id": m.mutant_id, "mutation_type": m.mutation_type, "line_number": m.line_number}
-                                for m in self.state.mutants if m.status == "SURVIVED"
-                            ]
                             req = A2AMessage(
                                 correlation_id=f"refl_{iteration}_{uuid.uuid4().hex[:8]}",
                                 sender="agent:orchestrator",
@@ -1794,8 +1819,9 @@ class TestForgeOrchestrator:
                                 payload={
                                     "target_source_code": sliced_refl_source,
                                     "existing_test_code": self.state.current_test_code,
-                                    "surviving_diffs": self.state.surviving_mutant_diffs,
+                                    "surviving_diffs": top_5_diff_snippets or self.state.surviving_mutant_diffs,
                                     "surviving_mutants": surviving_records,
+                                    "targeted_directive": targeted_repair_directive,
                                     "iteration": iteration,
                                     "max_iterations": self.state.max_iterations,
                                     "target_mutation_score": self.state.target_mutation_score,
@@ -1815,8 +1841,8 @@ class TestForgeOrchestrator:
                     if not refl_tests:
                         refl_tests = self.generator.generate_tests(
                             source_code=sliced_refl_source,
-                            surviving_diffs=self.state.surviving_mutant_diffs,
-                            critic_feedback=critic_directive,
+                            surviving_diffs=top_5_diff_snippets or self.state.surviving_mutant_diffs,
+                            critic_feedback=targeted_repair_directive,
                             iteration=iteration,
                             surviving_guidance=self.blackboard.get_critic_space().semantic_guidance
                         )
@@ -1896,7 +1922,13 @@ class TestForgeOrchestrator:
             # B. Invert AST to generate deterministic mutants
             self.check_cancellation_or_timeout()
             self._sync_lifecycle(TaskLifecycleState.MUTATION_ANALYSIS, metadata={"iteration": iteration, "step": "ast_mutation"})
-            mutants = ASTMutator.mutate(self.state.target_source_code, target_lines=self.target_lines, max_mutants=150)
+            allowed_ranges = getattr(self, "_allowed_line_ranges", None)
+            mutants = ASTMutator.mutate(
+                self.state.target_source_code,
+                target_lines=self.target_lines,
+                max_mutants=150,
+                allowed_line_ranges=allowed_ranges,
+            )
             if len(self.state.target_source_code.splitlines()) > 1000 and len(mutants) > 150:
                 mutants = _stratify_mutants(mutants, max_limit=150)
             self.state.mutants = mutants

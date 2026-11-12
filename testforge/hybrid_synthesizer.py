@@ -32,20 +32,35 @@ from testforge.mutator import ASTMutator, MutantRecord, _stratify_mutants
 from testforge.sandbox import GranularTestValidator, ParallelSandboxRunner
 
 
-def _slice_large_target_context(source_code: str, max_lines: int = 350, max_functions: int = 15) -> str:
+BLOCKLIST_CALLABLES = {
+    "run", "serve", "start", "main", "_cli_parse", "_cli_patch", "listen", "listen_and_serve"
+}
+
+
+def is_blocklisted_callable(name: str) -> bool:
+    low = name.lower()
+    return low in BLOCKLIST_CALLABLES or low.startswith(("_cli_", "serve_", "run_"))
+
+
+def get_sliced_target_scope(
+    source_code: str,
+    max_lines: int = 350,
+    max_functions: int = 15
+) -> Tuple[str, List[Tuple[int, int]]]:
     """
-    Slices large target code to the top-complexity/most-connected functions
-    (and their enclosing class signatures) when source exceeds max_lines.
-    Preserves module imports and returns code unchanged for small/medium files.
+    Returns (sliced_source_code, target_line_ranges).
+    For targets <= max_lines, returns source unmodified and full line range.
+    For targets > max_lines, slices to the top max_functions testable functions
+    (excluding server/CLI blocklisted functions) and returns their exact line spans.
     """
     lines = source_code.splitlines()
     if len(lines) <= max_lines:
-        return source_code
+        return source_code, [(1, len(lines))]
 
     try:
         tree = ast.parse(source_code)
     except Exception:
-        return source_code
+        return source_code, [(1, len(lines))]
 
     imports: List[str] = []
     for node in tree.body:
@@ -64,6 +79,8 @@ def _slice_large_target_context(source_code: str, max_lines: int = 350, max_func
             classes[node.name] = f"class {node.name}{bases_str}:"
             for subnode in node.body:
                 if isinstance(subnode, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    if is_blocklisted_callable(subnode.name):
+                        continue
                     cc = 1
                     for child in ast.walk(subnode):
                         if isinstance(child, (ast.If, ast.For, ast.AsyncFor, ast.While, ast.Try, ast.ExceptHandler, ast.With, ast.AsyncWith, ast.BoolOp, ast.comprehension)):
@@ -75,28 +92,37 @@ def _slice_large_target_context(source_code: str, max_lines: int = 350, max_func
                         "class_name": node.name,
                         "score": cc + params,
                         "lineno": subnode.lineno,
+                        "end_lineno": getattr(subnode, "end_lineno", subnode.lineno) or subnode.lineno,
                     })
         elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            if is_blocklisted_callable(node.name):
+                continue
             cc = 1
             for child in ast.walk(node):
                 if isinstance(child, (ast.If, ast.For, ast.AsyncFor, ast.While, ast.Try, ast.ExceptHandler, ast.With, ast.AsyncWith, ast.BoolOp, ast.comprehension)):
                     cc += 1
             params = len(node.args.args) + len(getattr(node.args, "posonlyargs", [])) + len(node.args.kwonlyargs)
+            bonus = 12 if not node.name.startswith("_") else 2
             callables.append({
                 "node": node,
                 "name": node.name,
                 "class_name": None,
-                "score": cc + params,
+                "score": cc + params + bonus,
                 "lineno": node.lineno,
+                "end_lineno": getattr(node, "end_lineno", node.lineno) or node.lineno,
             })
 
     total_funcs = len(callables)
     if total_funcs == 0:
-        return source_code
+        return source_code, [(1, len(lines))]
 
     callables.sort(key=lambda c: c["score"], reverse=True)
     selected = callables[:max_functions]
     selected.sort(key=lambda c: c["lineno"])
+
+    target_line_ranges: List[Tuple[int, int]] = [
+        (c["lineno"], c["end_lineno"]) for c in selected
+    ]
 
     chunks: List[str] = [f"# [Context Sliced: Top {len(selected)} functions of {total_funcs}]"]
     if imports:
@@ -118,7 +144,18 @@ def _slice_large_target_context(source_code: str, max_lines: int = 350, max_func
             curr_class = None
             chunks.append(seg)
 
-    return "\n\n".join(chunks)
+    sliced_source = "\n\n".join(chunks)
+    return sliced_source, target_line_ranges
+
+
+def _slice_large_target_context(source_code: str, max_lines: int = 350, max_functions: int = 15) -> str:
+    """
+    Slices large target code to the top-complexity/most-connected functions
+    (and their enclosing class signatures) when source exceeds max_lines.
+    Preserves module imports and returns code unchanged for small/medium files.
+    """
+    sliced, _ = get_sliced_target_scope(source_code, max_lines=max_lines, max_functions=max_functions)
+    return sliced
 
 
 def execute_llm_synthesis_with_timeout(

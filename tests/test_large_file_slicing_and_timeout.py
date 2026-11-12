@@ -14,6 +14,7 @@ import pytest
 from testforge.hybrid_synthesizer import (
     _slice_large_target_context,
     execute_llm_synthesis_with_timeout,
+    get_sliced_target_scope,
 )
 from testforge.mutator import ASTMutator, _stratify_mutants
 from testforge.orchestrator import TestForgeOrchestrator
@@ -98,4 +99,54 @@ def test_stratify_mutants_distributes_categories():
     assert len(sampled) == 20
     sampled_types = set(m.mutation_type for m in sampled)
     assert len(sampled_types) == len(types)
+
+
+def test_get_sliced_target_scope_and_allowed_line_ranges():
+    """Verify get_sliced_target_scope returns valid line ranges and ASTMutator respects them."""
+    bottle_path = Path("samples/bottle.py")
+    if not bottle_path.exists():
+        pytest.skip("samples/bottle.py not found")
+    source = bottle_path.read_text()
+
+    sliced_code, line_ranges = get_sliced_target_scope(source, max_lines=350, max_functions=15)
+    assert len(line_ranges) <= 15
+    assert len(line_ranges) > 0
+    for start, end in line_ranges:
+        assert start <= end
+
+    # Test that ASTMutator restricts mutants strictly to allowed_line_ranges
+    mutants = ASTMutator.mutate(source, max_mutants=30, allowed_line_ranges=line_ranges)
+    assert len(mutants) > 0
+    for m in mutants:
+        in_range = any(start <= m.line_number <= end for start, end in line_ranges)
+        assert in_range, f"Mutant {m.mutant_id} on line {m.line_number} is outside allowed_line_ranges!"
+
+
+def test_small_file_mutates_all_functions_without_restriction():
+    """Verify small/medium files (<=350 lines) are not restricted in mutant generation."""
+    discount_path = Path("samples/discount.py")
+    if not discount_path.exists():
+        pytest.skip("samples/discount.py not found")
+    source = discount_path.read_text()
+
+    sliced, ranges = get_sliced_target_scope(source, max_lines=350, max_functions=15)
+    assert ranges == [(1, len(source.splitlines()))]
+    mutants = ASTMutator.mutate(source)
+    assert len(mutants) > 0
+
+
+def test_frontend_finalization_banner_and_bb_sync_contracts():
+    """Verify frontend/app.js handles score comparison and updates #bb-suite-status."""
+    app_js = Path("frontend/app.js").read_text()
+    index_html = Path("frontend/index.html").read_text()
+
+    # Element exists in index.html
+    assert 'id="bb-suite-status"' in index_html or 'id="bb-suite-summary"' in index_html
+    # Suite status updated upon finalization
+    assert "Finalized (${basePass} clean tests)" in app_js or "Finalized (${passedCount} clean tests)" in app_js
+    # Score check renders amber warning when below target
+    assert "Hardening Complete: Finalized below target" in app_js
+    assert "Hardening Complete: Achieved target score!" in app_js
+
+
 

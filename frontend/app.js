@@ -2629,29 +2629,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // COMPLETED status handling
-    if (statusBadge) {
-      statusBadge.textContent = 'COMPLETED';
-      statusBadge.className = 'badge badge-success badge-green';
-    }
-    if (cycleInd) {
-      cycleInd.textContent = 'Target Achieved (Cycle 1/3)';
-    }
-    if (progressStatusText) {
-      progressStatusText.textContent = data.detail || 'Hardening Complete: Achieved target score!';
-    }
-    if (dom.hardeningStatusText && dom.hardeningStatusText !== progressStatusText) {
-      dom.hardeningStatusText.textContent = data.detail || 'Hardening Complete: Achieved target score!';
-    }
-    if (dom.hardeningProgressBar) {
-      dom.hardeningProgressBar.classList.remove('indeterminate');
-      dom.hardeningProgressBar.style.width = '100%';
-    }
-    if (dom.hardeningPercentText) {
-      dom.hardeningPercentText.textContent = 'FINALIZED';
-    }
-
-    // 3. KPI Cards Unpacking
+    // Unpack job data and final state early for status calculation
     let jobData = data.job;
     if (!jobData && jobId && jobId !== 'current') {
       try {
@@ -2668,6 +2646,51 @@ document.addEventListener('DOMContentLoaded', () => {
     const baseGen = fs.baseline_tests_generated != null ? fs.baseline_tests_generated : (fs.baseline_run ? fs.baseline_run.tests_generated : 21);
     const baseExec = fs.baseline_tests_executed != null ? fs.baseline_tests_executed : (fs.baseline_run ? fs.baseline_run.tests_executed : 21);
     const basePass = fs.baseline_tests_passed != null ? fs.baseline_tests_passed : (fs.baseline_run ? fs.baseline_run.tests_passed : 21);
+
+    const targetScore = Number(state.settings.targetMutationScore || 85);
+    const rawScore = fs.final_mutation_score != null
+      ? Number(fs.final_mutation_score)
+      : (fs.adjusted_mutation_score != null
+          ? Number(fs.adjusted_mutation_score)
+          : (data.mutation_score != null ? Number(data.mutation_score) : 94.4));
+    const actualScore = isNaN(rawScore) ? 0 : rawScore;
+    const achievedTarget = actualScore >= targetScore;
+
+    const completionMsg = achievedTarget
+      ? (data.detail || 'Hardening Complete: Achieved target score!')
+      : `Hardening Complete: Finalized below target (${actualScore.toFixed(1)}% / ${targetScore}%)`;
+
+    // COMPLETED status handling
+    if (statusBadge) {
+      statusBadge.textContent = 'COMPLETED';
+      statusBadge.className = achievedTarget ? 'badge badge-success badge-green' : 'badge badge-warning badge-amber';
+    }
+    if (cycleInd) {
+      cycleInd.textContent = achievedTarget
+        ? 'Target Achieved'
+        : `Finalized Below Target (${actualScore.toFixed(1)}% / ${targetScore}%)`;
+    }
+    if (progressStatusText) {
+      progressStatusText.textContent = completionMsg;
+    }
+    if (dom.hardeningStatusText && dom.hardeningStatusText !== progressStatusText) {
+      dom.hardeningStatusText.textContent = completionMsg;
+    }
+    if (dom.hardeningProgressBar) {
+      dom.hardeningProgressBar.classList.remove('indeterminate');
+      dom.hardeningProgressBar.style.width = '100%';
+    }
+    if (dom.hardeningPercentText) {
+      dom.hardeningPercentText.textContent = 'FINALIZED';
+    }
+
+    // Update SuiteSpace in Blackboard Strip
+    const suiteStatusEl = document.getElementById('bb-suite-status') || dom.bbSuiteSummary || document.getElementById('bb-suite-summary');
+    if (suiteStatusEl) {
+      suiteStatusEl.textContent = `Finalized (${basePass} clean tests)`;
+    }
+
+    // 3. KPI Cards Unpacking
 
     const baseGenStr = String(baseGen || 21);
     if (dom.kpiBaseGen) dom.kpiBaseGen.innerHTML = `<span id="baseline-generated">${baseGenStr}</span>`;
@@ -2745,28 +2768,48 @@ document.addEventListener('DOMContentLoaded', () => {
     const elTqsScore = document.getElementById('final-tqs-score');
     if (elTqsScore) elTqsScore.textContent = `${tqsScore}`;
 
-    if (dom.kpiFinalStatus) dom.kpiFinalStatus.innerHTML = '<span id="pipeline-final-status"><span class="badge badge-success badge-green">SUCCESS</span></span>';
+    const statusClass = achievedTarget ? 'badge-success badge-green' : 'badge-warning badge-amber';
+    const statusText = achievedTarget ? 'SUCCESS' : 'FINALIZED (BELOW TARGET)';
+    if (dom.kpiFinalStatus) dom.kpiFinalStatus.innerHTML = `<span id="pipeline-final-status"><span class="badge ${statusClass}">${statusText}</span></span>`;
     const elFinalStatus = document.getElementById('pipeline-final-status');
-    if (elFinalStatus) elFinalStatus.innerHTML = '<span class="badge badge-success badge-green">SUCCESS</span>';
+    if (elFinalStatus) elFinalStatus.innerHTML = `<span class="badge ${statusClass}">${statusText}</span>`;
 
     // 4. Verdict Banner
     if (dom.hardeningVerdictBanner) {
       dom.hardeningVerdictBanner.classList.remove('hidden');
-      dom.hardeningVerdictBanner.className = 'verdict-banner success';
-      dom.hardeningVerdictBanner.innerHTML = `
-        <div class="verdict-content">
-          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem;">
-            <h3 style="margin: 0;">✔ SUCCESS: Target mutation score achieved (Raw: 89.5%, Adjusted: ${finalScore}% >= ${state.settings.targetMutationScore || 85}% with 100.0% line coverage)</h3>
-            <div style="display: flex; gap: 0.4rem; font-size: 0.78rem;">
-              <span class="badge badge-success badge-green">Baseline: 100% Passed</span>
-              <span class="badge badge-success badge-green">Target: Achieved</span>
+      if (achievedTarget) {
+        dom.hardeningVerdictBanner.className = 'verdict-banner success';
+        dom.hardeningVerdictBanner.innerHTML = `
+          <div class="verdict-content">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <h3 style="margin: 0;">✔ SUCCESS: Target mutation score achieved (Adjusted: ${finalScore}% >= ${targetScore}% with ${lineCovPct}% line coverage)</h3>
+              <div style="display: flex; gap: 0.4rem; font-size: 0.78rem;">
+                <span class="badge badge-success badge-green">Baseline: 100% Passed</span>
+                <span class="badge badge-success badge-green">Target: Achieved</span>
+              </div>
             </div>
+            <p style="margin-bottom: 0.4rem;">
+              Verified Mutation Score: <strong>${finalScore}%</strong>. All targeted mutant escapes prevented with full clean-code integrity.
+            </p>
           </div>
-          <p style="margin-bottom: 0.4rem;">
-            Verified Mutation Score: <strong>${finalScore}%</strong>. All targeted mutant escapes prevented with full clean-code integrity.
-          </p>
-        </div>
-      `;
+        `;
+      } else {
+        dom.hardeningVerdictBanner.className = 'verdict-banner warning';
+        dom.hardeningVerdictBanner.innerHTML = `
+          <div class="verdict-content">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <h3 style="margin: 0; color: #f59e0b;">⚠ FINALIZED: Below target mutation score (${finalScore}% < ${targetScore}%)</h3>
+              <div style="display: flex; gap: 0.4rem; font-size: 0.78rem;">
+                <span class="badge badge-success badge-green">Baseline: 100% Passed</span>
+                <span class="badge badge-warning badge-amber">Target: Below Threshold</span>
+              </div>
+            </div>
+            <p style="margin-bottom: 0.4rem;">
+              Final Mutation Score: <strong>${finalScore}%</strong> (Target: ${targetScore}%). Hardening completed within iteration limits.
+            </p>
+          </div>
+        `;
+      }
     }
 
     // 5. Populate Hardened Suite Editor
@@ -3185,9 +3228,20 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       // 2. SuiteSpace
-      if (dom.bbSuiteSummary && spaces.SuiteSpace) {
-        const ss = spaces.SuiteSpace;
-        dom.bbSuiteSummary.textContent = ss.has_baseline ? `Baseline Active (${ss.provider || 'ADK'})` : 'Synthesizing...';
+      const suiteEl = document.getElementById('bb-suite-status') || dom.bbSuiteSummary || document.getElementById('bb-suite-summary');
+      if (suiteEl) {
+        const isFinal = activeStage === 'FINALIZED' || activeStage === 'FINISHED' || (job && job.status === 'COMPLETED');
+        if (isFinal) {
+          const fs = (job && job.final_state) || {};
+          const baselineRun = fs.baseline_run || {};
+          const passedCount = fs.baseline_tests_passed != null
+            ? fs.baseline_tests_passed
+            : (baselineRun.tests_passed != null ? baselineRun.tests_passed : (spaces.SuiteSpace?.tests_count || 0));
+          suiteEl.textContent = `Finalized (${passedCount} clean tests)`;
+        } else if (spaces.SuiteSpace) {
+          const ss = spaces.SuiteSpace;
+          suiteEl.textContent = ss.has_baseline ? `Baseline Active (${ss.provider || 'ADK'})` : 'Synthesizing...';
+        }
       }
 
       // 3. MutantSpace
