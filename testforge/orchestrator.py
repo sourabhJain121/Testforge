@@ -45,9 +45,13 @@ from testforge.callbacks import (
 from testforge.equivalence import calculate_mutation_scores
 from testforge.feature_flags import FeatureFlags
 from testforge.guidance import derive_guidance_for_surviving_mutants
+from testforge.hybrid_synthesizer import (
+    _slice_large_target_context,
+    execute_llm_synthesis_with_timeout,
+)
 from testforge.logger import TraceLogger
 from testforge.mcp_client import ToolSelectionDecision
-from testforge.mutator import ASTMutator
+from testforge.mutator import ASTMutator, _stratify_mutants
 from testforge.persistence import (
     CheckpointError,
     ResumptionPlan,
@@ -1124,6 +1128,14 @@ class TestForgeOrchestrator:
                     else:
                         console.print(f"[yellow]⚠️ MCP tool '{tool_decision.tool_name}' failed: {mcp_res.error}. Continuing in fallback mode.[/yellow]")
 
+            # Fallback direct filesystem read if not ingested via MCP
+            if (not self.state.target_source_code or not self.state.target_source_code.strip()) and self.target_file_path and os.path.exists(self.target_file_path):
+                try:
+                    with open(self.target_file_path, "r", encoding="utf-8") as f:
+                        self.state.target_source_code = f.read()
+                except Exception as e:
+                    console.print(f"[yellow]⚠️ Could not read {self.target_file_path}: {e}[/yellow]")
+
             # Validate that we have target source code available before proceeding
             if not self.state.target_source_code or not self.state.target_source_code.strip():
                 err_msg = "No target source code available after ingestion stage."
@@ -1330,34 +1342,59 @@ class TestForgeOrchestrator:
             ))
 
             test_plan_data = self.state.metadata.get("test_plan") if hasattr(self.state, "metadata") and self.state.metadata else None
-            if self.engine_mode != "legacy":
-                try:
-                    req = A2AMessage(
-                        correlation_id=step1_corr_id,
-                        sender="agent:orchestrator",
-                        recipient="agent:google-adk:generator",
-                        performative=A2APerformative.REQUEST,
-                        action="generate_tests",
-                        payload={
-                            "target_source_code": self.state.target_source_code,
-                            "iteration": 0,
-                            "test_plan": test_plan_data,
-                        }
-                    )
-                    resp = self.broker.send_message(req)
-                    if resp.performative == A2APerformative.INFORM and "test_code" in resp.payload:
-                        initial_tests = resp.payload["test_code"]
-                        provider_used = "Google ADK Generator"
-                except Exception as exc:
-                    console.print(f"[dim]ADK generator failover: {exc}[/dim]")
+            sliced_source = _slice_large_target_context(self.state.target_source_code, max_lines=350, max_functions=15)
 
-            if not initial_tests:
-                initial_tests = self.generator.generate_tests(
-                    source_code=self.state.target_source_code,
-                    iteration=0,
-                    test_plan=test_plan_data,
-                )
-                provider_used = self.generator.active_provider
+            def _perform_initial_generation() -> str:
+                gen_tests = ""
+                nonlocal provider_used
+                if self.engine_mode != "legacy":
+                    try:
+                        req = A2AMessage(
+                            correlation_id=step1_corr_id,
+                            sender="agent:orchestrator",
+                            recipient="agent:google-adk:generator",
+                            performative=A2APerformative.REQUEST,
+                            action="generate_tests",
+                            payload={
+                                "target_source_code": sliced_source,
+                                "iteration": 0,
+                                "test_plan": test_plan_data,
+                            }
+                        )
+                        resp = self.broker.send_message(req)
+                        if resp.performative == A2APerformative.INFORM and "test_code" in resp.payload:
+                            gen_tests = resp.payload["test_code"]
+                            provider_used = "Google ADK Generator"
+                    except Exception as exc:
+                        console.print(f"[dim]ADK generator failover: {exc}[/dim]")
+
+                if not gen_tests:
+                    gen_tests = self.generator.generate_tests(
+                        source_code=sliced_source,
+                        iteration=0,
+                        test_plan=test_plan_data,
+                    )
+                    provider_used = self.generator.active_provider
+                return gen_tests
+
+            initial_tests, timed_out = execute_llm_synthesis_with_timeout(
+                _perform_initial_generation,
+                timeout_seconds=25.0,
+                source_code=self.state.target_source_code,
+            )
+            if timed_out:
+                provider_used = "IntelligentASTSynthesizer"
+                self.logger.log_event("LLM_SYNTHESIS_TIMEOUT_FALLBACK", {
+                    "timeout_seconds": 25.0,
+                    "fallback": "IntelligentASTSynthesizer",
+                    "target_file": self.target_file_path,
+                })
+                self.emit_event("STAGE_CHANGED", {
+                    "previous_stage": "GENERATING_TESTS",
+                    "new_stage": "BASELINE_VALIDATION",
+                    "stage": "BASELINE_VALIDATION",
+                    "reason": "LLM_SYNTHESIS_TIMEOUT_FALLBACK",
+                })
 
             step1_duration = (time.perf_counter() - t0_step1) * 1000.0
             self.callbacks.dispatch(LifecycleEvent(
@@ -1521,6 +1558,13 @@ class TestForgeOrchestrator:
                         surviving_diffs=None
                     )
                     _, sanitized_ast, _ = CodeSanitizer.extract_and_validate(raw_ast_code)
+                    if hasattr(self, "sandbox") and self.sandbox and sanitized_ast:
+                        val_ast = self.sandbox.validate_and_filter_candidate_suite(
+                            candidate_test_code=sanitized_ast,
+                            target_code=self.state.target_source_code,
+                        )
+                        if val_ast.retained_count > 0:
+                            sanitized_ast = val_ast.retained_test_code
                     self.state.current_test_code = sanitized_ast
                     self.state.active_provider = "AST Deterministic Synthesizer"
                     self.blackboard.update_suite_space(
@@ -1730,49 +1774,70 @@ class TestForgeOrchestrator:
                     pass
                 hardened_tests = ""
                 provider_used = self.generator.active_provider
-                if self.engine_mode != "legacy":
-                    try:
-                        surviving_records = [
-                            {"mutant_id": m.mutant_id, "mutation_type": m.mutation_type, "line_number": m.line_number}
-                            for m in self.state.mutants if m.status == "SURVIVED"
-                        ]
-                        req = A2AMessage(
-                            correlation_id=f"refl_{iteration}_{uuid.uuid4().hex[:8]}",
-                            sender="agent:orchestrator",
-                            recipient="agent:google-adk:reflection-repair",
-                            performative=A2APerformative.REQUEST,
-                            action="repair_tests",
-                            payload={
-                                "target_source_code": self.state.target_source_code,
-                                "existing_test_code": self.state.current_test_code,
-                                "surviving_diffs": self.state.surviving_mutant_diffs,
-                                "surviving_mutants": surviving_records,
-                                "iteration": iteration,
-                                "max_iterations": self.state.max_iterations,
-                                "target_mutation_score": self.state.target_mutation_score,
-                                "task_id": self.state.task_id,
-                            }
+                sliced_refl_source = _slice_large_target_context(self.state.target_source_code, max_lines=350, max_functions=15)
+
+                def _perform_reflection_repair() -> str:
+                    refl_tests = ""
+                    nonlocal provider_used
+                    if self.engine_mode != "legacy":
+                        try:
+                            surviving_records = [
+                                {"mutant_id": m.mutant_id, "mutation_type": m.mutation_type, "line_number": m.line_number}
+                                for m in self.state.mutants if m.status == "SURVIVED"
+                            ]
+                            req = A2AMessage(
+                                correlation_id=f"refl_{iteration}_{uuid.uuid4().hex[:8]}",
+                                sender="agent:orchestrator",
+                                recipient="agent:google-adk:reflection-repair",
+                                performative=A2APerformative.REQUEST,
+                                action="repair_tests",
+                                payload={
+                                    "target_source_code": sliced_refl_source,
+                                    "existing_test_code": self.state.current_test_code,
+                                    "surviving_diffs": self.state.surviving_mutant_diffs,
+                                    "surviving_mutants": surviving_records,
+                                    "iteration": iteration,
+                                    "max_iterations": self.state.max_iterations,
+                                    "target_mutation_score": self.state.target_mutation_score,
+                                    "task_id": self.state.task_id,
+                                }
+                            )
+                            resp = self.broker.send_message(req)
+                            if resp.performative == A2APerformative.INFORM and "retained_test_code" in resp.payload:
+                                retained = resp.payload["retained_test_code"]
+                                accepted = resp.payload.get("accepted", False)
+                                if accepted and retained:
+                                    refl_tests = retained
+                                    provider_used = "Google ADK Reflection & Repair"
+                        except Exception as exc:
+                            console.print(f"  [dim]ADK reflection repair failover: {exc}[/dim]")
+
+                    if not refl_tests:
+                        refl_tests = self.generator.generate_tests(
+                            source_code=sliced_refl_source,
+                            surviving_diffs=self.state.surviving_mutant_diffs,
+                            critic_feedback=critic_directive,
+                            iteration=iteration,
+                            surviving_guidance=self.blackboard.get_critic_space().semantic_guidance
                         )
-                        resp = self.broker.send_message(req)
-                        if resp.performative == A2APerformative.INFORM and "retained_test_code" in resp.payload:
-                            retained = resp.payload["retained_test_code"]
-                            accepted = resp.payload.get("accepted", False)
-                            if accepted and retained:
-                                hardened_tests = retained
-                                provider_used = "Google ADK Reflection & Repair"
-                    except Exception as exc:
-                        console.print(f"  [dim]ADK reflection repair failover: {exc}[/dim]")
+                        provider_used = self.generator.active_provider
+                    return refl_tests
+
+                hardened_tests, refl_timed_out = execute_llm_synthesis_with_timeout(
+                    _perform_reflection_repair,
+                    timeout_seconds=25.0,
+                    source_code=self.state.target_source_code,
+                    fallback_code=self.state.current_test_code,
+                )
+                if refl_timed_out:
+                    self.logger.log_event("LLM_SYNTHESIS_TIMEOUT_FALLBACK", {
+                        "timeout_seconds": 25.0,
+                        "fallback": "RetainedPreviousSuite",
+                        "iteration": iteration,
+                        "target_file": self.target_file_path,
+                    })
 
                 surviving_mutants_list = [m for m in self.state.mutants if m.status in ("SURVIVED", "POTENTIALLY_EQUIVALENT")]
-                if not hardened_tests:
-                    hardened_tests = self.generator.generate_tests(
-                        source_code=self.state.target_source_code,
-                        surviving_diffs=self.state.surviving_mutant_diffs,
-                        critic_feedback=critic_directive,
-                        iteration=iteration,
-                        surviving_guidance=self.blackboard.get_critic_space().semantic_guidance
-                    )
-                    provider_used = self.generator.active_provider
 
                 # Granular Candidate Test Validation: validate tests individually so one broken test doesn't discard all
                 try:
@@ -1831,7 +1896,9 @@ class TestForgeOrchestrator:
             # B. Invert AST to generate deterministic mutants
             self.check_cancellation_or_timeout()
             self._sync_lifecycle(TaskLifecycleState.MUTATION_ANALYSIS, metadata={"iteration": iteration, "step": "ast_mutation"})
-            mutants = ASTMutator.mutate(self.state.target_source_code, target_lines=self.target_lines)
+            mutants = ASTMutator.mutate(self.state.target_source_code, target_lines=self.target_lines, max_mutants=150)
+            if len(self.state.target_source_code.splitlines()) > 1000 and len(mutants) > 150:
+                mutants = _stratify_mutants(mutants, max_limit=150)
             self.state.mutants = mutants
 
             # CASE 3 / CASE 6: Baseline passes, but no mutants could be generated

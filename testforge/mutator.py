@@ -45,6 +45,7 @@ class MutationTransformer(ast.NodeTransformer):
         self.target_lines: Optional[Set[int]] = set(target_lines) if target_lines else None
         self.include_held_out = include_held_out
         self.current_node_id = 0
+        self.sites: Dict[int, str] = {}
         self.applied = False
         self.mutant_type: str = ""
         self.line_number: int = 1
@@ -52,6 +53,11 @@ class MutationTransformer(ast.NodeTransformer):
         self.mutated_expr: Optional[str] = None
         self._in_compare = False
         self._in_docstring = False
+
+    def _inc_id(self, op_name: str) -> bool:
+        self.current_node_id += 1
+        self.sites[self.current_node_id] = op_name
+        return self.current_node_id == self.target_node_id and not self.applied
 
     def visit(self, node: ast.AST) -> ast.AST:
         if getattr(node, "mutatable", True) is False:
@@ -97,8 +103,7 @@ class MutationTransformer(ast.NodeTransformer):
         for i, op in enumerate(node.ops):
             op_cls = op.__class__
             if op_cls in comp_map:
-                self.current_node_id += 1
-                if self.current_node_id == self.target_node_id and not self.applied:
+                if self._inc_id("COMP_OP"):
                     new_ops = list(node.ops)
                     new_ops[i] = comp_map[op_cls]()
                     new_node = ast.Compare(left=node.left, ops=new_ops, comparators=node.comparators)
@@ -110,8 +115,7 @@ class MutationTransformer(ast.NodeTransformer):
         for i, op in enumerate(node.ops):
             op_cls = op.__class__
             if op_cls in boundary_map:
-                self.current_node_id += 1
-                if self.current_node_id == self.target_node_id and not self.applied:
+                if self._inc_id("BOUNDARY_SWAP"):
                     new_ops = list(node.ops)
                     new_ops[i] = boundary_map[op_cls]()
                     new_node = ast.Compare(left=node.left, ops=new_ops, comparators=node.comparators)
@@ -125,16 +129,14 @@ class MutationTransformer(ast.NodeTransformer):
             val = node.left.value
             delta = 1.0 if isinstance(val, float) else 1
             # Site n + 1
-            self.current_node_id += 1
-            if self.current_node_id == self.target_node_id and not self.applied:
+            if self._inc_id("OFF_BY_ONE"):
                 new_left = ast.Constant(value=val + delta)
                 new_node = ast.Compare(left=new_left, ops=node.ops, comparators=node.comparators)
                 ast.copy_location(new_node, node)
                 self._mark_applied(node, "OFF_BY_ONE", orig_node=node, mutated_node=new_node)
                 return new_node
             # Site n - 1
-            self.current_node_id += 1
-            if self.current_node_id == self.target_node_id and not self.applied:
+            if self._inc_id("OFF_BY_ONE"):
                 new_left = ast.Constant(value=val - delta)
                 new_node = ast.Compare(left=new_left, ops=node.ops, comparators=node.comparators)
                 ast.copy_location(new_node, node)
@@ -147,8 +149,7 @@ class MutationTransformer(ast.NodeTransformer):
                 val = comp.value
                 delta = 1.0 if isinstance(val, float) else 1
                 # Site n + 1
-                self.current_node_id += 1
-                if self.current_node_id == self.target_node_id and not self.applied:
+                if self._inc_id("OFF_BY_ONE"):
                     new_comps = list(node.comparators)
                     new_comps[j] = ast.Constant(value=val + delta)
                     new_node = ast.Compare(left=node.left, ops=node.ops, comparators=new_comps)
@@ -156,8 +157,7 @@ class MutationTransformer(ast.NodeTransformer):
                     self._mark_applied(node, "OFF_BY_ONE", orig_node=node, mutated_node=new_node)
                     return new_node
                 # Site n - 1
-                self.current_node_id += 1
-                if self.current_node_id == self.target_node_id and not self.applied:
+                if self._inc_id("OFF_BY_ONE"):
                     new_comps = list(node.comparators)
                     new_comps[j] = ast.Constant(value=val - delta)
                     new_node = ast.Compare(left=node.left, ops=node.ops, comparators=new_comps)
@@ -186,8 +186,7 @@ class MutationTransformer(ast.NodeTransformer):
         }
         op_cls = node.op.__class__
         if op_cls in arith_map:
-            self.current_node_id += 1
-            if self.current_node_id == self.target_node_id and not self.applied:
+            if self._inc_id("ARITH_OP"):
                 new_node = ast.BinOp(left=node.left, op=arith_map[op_cls](), right=node.right)
                 ast.copy_location(new_node, node)
                 self._mark_applied(node, "ARITH_OP", orig_node=node, mutated_node=new_node)
@@ -203,8 +202,7 @@ class MutationTransformer(ast.NodeTransformer):
                 ast.RShift: ast.LShift,
             }
             if op_cls in bitwise_map:
-                self.current_node_id += 1
-                if self.current_node_id == self.target_node_id and not self.applied:
+                if self._inc_id("BITWISE_OP"):
                     new_node = ast.BinOp(left=node.left, op=bitwise_map[op_cls](), right=node.right)
                     ast.copy_location(new_node, node)
                     self._mark_applied(node, "BITWISE_OP", orig_node=node, mutated_node=new_node)
@@ -216,15 +214,13 @@ class MutationTransformer(ast.NodeTransformer):
             return self.generic_visit(node)
         # Logical Connective Swaps (LOGICAL_CONN: and <-> or)
         if isinstance(node.op, ast.And):
-            self.current_node_id += 1
-            if self.current_node_id == self.target_node_id and not self.applied:
+            if self._inc_id("LOGICAL_CONN"):
                 new_node = ast.BoolOp(op=ast.Or(), values=node.values)
                 ast.copy_location(new_node, node)
                 self._mark_applied(node, "LOGICAL_CONN", orig_node=node, mutated_node=new_node)
                 return new_node
         elif isinstance(node.op, ast.Or):
-            self.current_node_id += 1
-            if self.current_node_id == self.target_node_id and not self.applied:
+            if self._inc_id("LOGICAL_CONN"):
                 new_node = ast.BoolOp(op=ast.And(), values=node.values)
                 ast.copy_location(new_node, node)
                 self._mark_applied(node, "LOGICAL_CONN", orig_node=node, mutated_node=new_node)
@@ -240,8 +236,7 @@ class MutationTransformer(ast.NodeTransformer):
             if node.func.id == "round" and len(node.args) >= 2:
                 prec_arg = node.args[1]
                 if isinstance(prec_arg, ast.Constant) and isinstance(prec_arg.value, int) and prec_arg.value > 0:
-                    self.current_node_id += 1
-                    if self.current_node_id == self.target_node_id and not self.applied:
+                    if self._inc_id("MATH_FUNC"):
                         new_args = list(node.args)
                         new_args[1] = ast.Constant(value=prec_arg.value - 1)
                         new_node = ast.Call(func=node.func, args=new_args, keywords=node.keywords)
@@ -250,8 +245,7 @@ class MutationTransformer(ast.NodeTransformer):
                         return new_node
             # abs(x) -> x
             elif node.func.id == "abs" and len(node.args) == 1:
-                self.current_node_id += 1
-                if self.current_node_id == self.target_node_id and not self.applied:
+                if self._inc_id("MATH_FUNC"):
                     new_node = node.args[0]
                     ast.copy_location(new_node, node)
                     self._mark_applied(node, "MATH_FUNC", orig_node=node, mutated_node=new_node)
@@ -261,8 +255,7 @@ class MutationTransformer(ast.NodeTransformer):
     def visit_If(self, node: ast.If) -> ast.AST:
         if self.target_lines is not None and getattr(node, "lineno", None) not in self.target_lines:
             return self.generic_visit(node)
-        self.current_node_id += 1
-        if self.current_node_id == self.target_node_id and not self.applied:
+        if self._inc_id("COND_INV"):
             new_test = ast.UnaryOp(op=ast.Not(), operand=node.test)
             new_node = ast.If(test=new_test, body=node.body, orelse=node.orelse)
             ast.copy_location(new_node, node)
@@ -273,8 +266,7 @@ class MutationTransformer(ast.NodeTransformer):
     def visit_Return(self, node: ast.Return) -> ast.AST:
         if self.target_lines is not None and getattr(node, "lineno", None) not in self.target_lines:
             return self.generic_visit(node)
-        self.current_node_id += 1
-        if self.current_node_id == self.target_node_id and not self.applied:
+        if self._inc_id("RETURN_VAL"):
             if isinstance(node.value, ast.Constant):
                 if node.value.value is True:
                     new_val = ast.Constant(value=False)
@@ -295,8 +287,7 @@ class MutationTransformer(ast.NodeTransformer):
         if self.include_held_out:
             if self.target_lines is not None and getattr(node, "lineno", None) not in self.target_lines:
                 return self.generic_visit(node)
-            self.current_node_id += 1
-            if self.current_node_id == self.target_node_id and not self.applied:
+            if self._inc_id("STATEMENT_DELETION"):
                 new_node = ast.Pass()
                 ast.copy_location(new_node, node)
                 self._mark_applied(node, "STATEMENT_DELETION", orig_node=node, mutated_node=new_node)
@@ -316,8 +307,7 @@ class MutationTransformer(ast.NodeTransformer):
         if self.include_held_out and isinstance(node.value, ast.Call):
             if self.target_lines is not None and getattr(node, "lineno", None) not in self.target_lines:
                 return self.generic_visit(node)
-            self.current_node_id += 1
-            if self.current_node_id == self.target_node_id and not self.applied:
+            if self._inc_id("STATEMENT_DELETION"):
                 new_node = ast.Pass()
                 ast.copy_location(new_node, node)
                 self._mark_applied(node, "STATEMENT_DELETION", orig_node=node, mutated_node=new_node)
@@ -335,16 +325,14 @@ class MutationTransformer(ast.NodeTransformer):
         val = node.value
         # Booleans
         if isinstance(val, bool):
-            self.current_node_id += 1
-            if self.current_node_id == self.target_node_id and not self.applied:
+            if self._inc_id("CONST_VAL"):
                 new_node = ast.Constant(value=not val)
                 ast.copy_location(new_node, node)
                 self._mark_applied(node, "CONST_VAL", orig_node=node, mutated_node=new_node)
                 return new_node
         # Integers (excluding booleans)
         elif isinstance(val, int):
-            self.current_node_id += 1
-            if self.current_node_id == self.target_node_id and not self.applied:
+            if self._inc_id("CONST_VAL"):
                 new_val = 1 if val == 0 else (0 if val == 1 else -val)
                 new_node = ast.Constant(value=new_val)
                 ast.copy_location(new_node, node)
@@ -352,8 +340,7 @@ class MutationTransformer(ast.NodeTransformer):
                 return new_node
         # Strings (non-empty)
         elif isinstance(val, str) and len(val) > 0:
-            self.current_node_id += 1
-            if self.current_node_id == self.target_node_id and not self.applied:
+            if self._inc_id("CONST_VAL"):
                 new_node = ast.Constant(value="")
                 ast.copy_location(new_node, node)
                 self._mark_applied(node, "CONST_VAL", orig_node=node, mutated_node=new_node)
@@ -374,8 +361,7 @@ class MutationTransformer(ast.NodeTransformer):
             "ZeroDivisionError": "ValueError",
         }
         if isinstance(node.type, ast.Name) and node.type.id in exc_swap:
-            self.current_node_id += 1
-            if self.current_node_id == self.target_node_id and not self.applied:
+            if self._inc_id("EXCEPT_HANDLER"):
                 new_type = ast.Name(id=exc_swap[node.type.id], ctx=ast.Load())
                 ast.copy_location(new_type, node.type)
                 new_node = ast.ExceptHandler(type=new_type, name=node.name, body=node.body)
@@ -406,8 +392,7 @@ class MutationTransformer(ast.NodeTransformer):
             if isinstance(node.exc, ast.Call) and isinstance(node.exc.func, ast.Name):
                 func_name = node.exc.func.id
                 if func_name in exc_swap:
-                    self.current_node_id += 1
-                    if self.current_node_id == self.target_node_id and not self.applied:
+                    if self._inc_id("EXCEPTION_SWAP"):
                         new_func = ast.Name(id=exc_swap[func_name], ctx=ast.Load())
                         ast.copy_location(new_func, node.exc.func)
                         new_call = ast.Call(func=new_func, args=node.exc.args, keywords=node.exc.keywords)
@@ -420,8 +405,7 @@ class MutationTransformer(ast.NodeTransformer):
             elif isinstance(node.exc, ast.Name):
                 func_name = node.exc.id
                 if func_name in exc_swap:
-                    self.current_node_id += 1
-                    if self.current_node_id == self.target_node_id and not self.applied:
+                    if self._inc_id("EXCEPTION_SWAP"):
                         new_exc = ast.Name(id=exc_swap[func_name], ctx=ast.Load())
                         ast.copy_location(new_exc, node.exc)
                         new_node = ast.Raise(exc=new_exc, cause=node.cause)
@@ -432,17 +416,67 @@ class MutationTransformer(ast.NodeTransformer):
         return self.generic_visit(node)
 
 
+def _stratify_mutants(mutants: List[MutantRecord], max_limit: int = 150) -> List[MutantRecord]:
+    """
+    Samples up to max_limit mutants evenly stratified across all present mutation categories.
+    Preserves original relative line ordering.
+    """
+    if len(mutants) <= max_limit:
+        return mutants
+    from collections import defaultdict
+    by_category: Dict[str, List[MutantRecord]] = defaultdict(list)
+    for m in mutants:
+        by_category[m.mutation_type].append(m)
+
+    selected: List[MutantRecord] = []
+    categories = sorted(by_category.keys())
+    cat_indices = {cat: 0 for cat in categories}
+
+    while len(selected) < max_limit and any(cat_indices[c] < len(by_category[c]) for c in categories):
+        for c in categories:
+            idx = cat_indices[c]
+            if idx < len(by_category[c]):
+                selected.append(by_category[c][idx])
+                cat_indices[c] += 1
+                if len(selected) >= max_limit:
+                    break
+
+    # Retain natural code line order
+    selected.sort(key=lambda m: (m.line_number, m.mutant_id))
+    return selected
+
+
 class ASTMutator:
     """
     High-level orchestrator for discovering mutation sites and generating
     deterministic, syntax-validated AST mutants with provenance and equivalence analysis.
     """
-    _MUTANT_CACHE: Dict[Tuple[int, Optional[Tuple[int, ...]], bool], List[MutantRecord]] = {}
+    _MUTANT_CACHE: Dict[Tuple[int, Optional[Tuple[int, ...]], bool, Optional[int]], List[MutantRecord]] = {}
 
     @classmethod
     def clear_cache(cls) -> None:
         """Clears the in-memory AST mutant cache."""
         cls._MUTANT_CACHE.clear()
+
+    @classmethod
+    def inspect_mutation_sites(
+        cls,
+        source_code: str,
+        target_lines: Optional[List[int]] = None,
+        include_held_out: bool = False,
+    ) -> Dict[int, str]:
+        """
+        Inspects all mutation points and returns mapping of target_id -> mutation_type.
+        """
+        try:
+            tree = ast.parse(source_code)
+        except SyntaxError:
+            return {}
+        from testforge.security import mark_dynamic_nodes_immutable
+        mark_dynamic_nodes_immutable(tree)
+        inspector = MutationTransformer(target_node_id=0, target_lines=target_lines, include_held_out=include_held_out)
+        inspector.visit(tree)
+        return inspector.sites
 
     @staticmethod
     def inspect_mutation_points(source_code: str, target_lines: Optional[List[int]] = None, include_held_out: bool = False) -> int:
@@ -462,10 +496,17 @@ class ASTMutator:
         return inspector.current_node_id
 
     @classmethod
-    def mutate(cls, source_code: str, target_lines: Optional[List[int]] = None, include_held_out: bool = False) -> List[MutantRecord]:
+    def mutate(
+        cls,
+        source_code: str,
+        target_lines: Optional[List[int]] = None,
+        include_held_out: bool = False,
+        max_mutants: Optional[int] = None,
+    ) -> List[MutantRecord]:
         """
         Generates deterministic AST mutants. If target_lines is provided and non-empty,
         only mutates AST nodes residing on those lines.
+        If file exceeds 1,000 lines or max_mutants is specified, stratifies mutants up to max_mutants (default 150).
         Never modifies original source files in place.
         Validates output syntax with ast.parse and attaches provenance.
         """
@@ -474,18 +515,54 @@ class ASTMutator:
         except SyntaxError:
             return []
 
+        is_large = len(source_code.splitlines()) > 1000
+        effective_max = max_mutants if max_mutants is not None else (150 if is_large else None)
+
         # Check in-memory AST cache for idempotent acceleration
-        cache_key = (hash(source_code), tuple(sorted(target_lines)) if target_lines else None, include_held_out)
+        cache_key = (hash(source_code), tuple(sorted(target_lines)) if target_lines else None, include_held_out, effective_max)
         if cache_key in cls._MUTANT_CACHE:
             return [m.model_copy() for m in cls._MUTANT_CACHE[cache_key]]
 
-        num_targets = cls.inspect_mutation_points(source_code, target_lines=target_lines, include_held_out=include_held_out)
-        mutants: List[MutantRecord] = []
-        original_lines = source_code.splitlines(keepends=True)
+        sites = cls.inspect_mutation_sites(source_code, target_lines=target_lines, include_held_out=include_held_out)
+        num_targets = len(sites)
+        if num_targets == 0:
+            return []
 
-        for target_id in range(1, num_targets + 1):
-            tree = ast.parse(source_code)
-            from testforge.security import mark_dynamic_nodes_immutable
+        if effective_max is not None and num_targets > effective_max:
+            from collections import defaultdict
+            by_cat: Dict[str, List[int]] = defaultdict(list)
+            for tid, cat in sites.items():
+                by_cat[cat].append(tid)
+
+            selected_ids: List[int] = []
+            cats = sorted(by_cat.keys())
+            cat_idx = {c: 0 for c in cats}
+            while len(selected_ids) < effective_max and any(cat_idx[c] < len(by_cat[c]) for c in cats):
+                for c in cats:
+                    idx = cat_idx[c]
+                    if idx < len(by_cat[c]):
+                        selected_ids.append(by_cat[c][idx])
+                        cat_idx[c] += 1
+                        if len(selected_ids) >= effective_max:
+                            break
+            target_ids = sorted(selected_ids)
+        else:
+            target_ids = list(range(1, num_targets + 1))
+
+        mutants: List[MutantRecord] = []
+        from testforge.security import mark_dynamic_nodes_immutable
+        if is_large:
+            base_tree = ast.parse(source_code)
+            mark_dynamic_nodes_immutable(base_tree)
+            norm_code = ast.unparse(base_tree)
+            original_lines = norm_code.splitlines(keepends=True)
+            source_for_mutation = norm_code
+        else:
+            original_lines = source_code.splitlines(keepends=True)
+            source_for_mutation = source_code
+
+        for target_id in target_ids:
+            tree = ast.parse(source_for_mutation)
             mark_dynamic_nodes_immutable(tree)
             transformer = MutationTransformer(target_node_id=target_id, target_lines=target_lines, include_held_out=include_held_out)
             mutated_tree = transformer.visit(tree)
@@ -499,7 +576,7 @@ class ASTMutator:
                     is_valid_syntax = True
                     initial_status = "PENDING"
                 except Exception:
-                    mutated_code = source_code
+                    mutated_code = source_for_mutation
                     is_valid_syntax = False
                     initial_status = "INVALID"
 
@@ -530,7 +607,7 @@ class ASTMutator:
                     mutant_id=f"MUT_{transformer.mutant_type}_{target_id:03d}",
                     mutation_type=transformer.mutant_type,
                     line_number=resolved_line,
-                    original_code_snippet=source_code,
+                    original_code_snippet=source_for_mutation,
                     mutated_code_snippet=mutated_code,
                     unified_diff=diff,
                     status=initial_status,
@@ -541,7 +618,7 @@ class ASTMutator:
                 )
 
                 # Early static equivalence check (e.g. dead code, algebraic identity)
-                eq_result = EquivalentMutantAnalyzer.analyze_mutant(record, original_source=source_code)
+                eq_result = EquivalentMutantAnalyzer.analyze_mutant(record, original_source=source_for_mutation)
                 if eq_result.status == EquivalenceClassification.EQUIVALENT:
                     record.equivalence_status = eq_result.status.value
                     record.equivalence_method = eq_result.method.value
@@ -559,11 +636,16 @@ class ASTMutator:
         return mutants
 
     @classmethod
-    def generate_mutants(cls, source_code: str, target_lines: Optional[List[int]] = None) -> List[MutantRecord]:
+    def generate_mutants(
+        cls,
+        source_code: str,
+        target_lines: Optional[List[int]] = None,
+        max_mutants: Optional[int] = None,
+    ) -> List[MutantRecord]:
         """
         Alias for mutate() to preserve backward compatibility.
         """
-        return cls.mutate(source_code, target_lines=target_lines)
+        return cls.mutate(source_code, target_lines=target_lines, max_mutants=max_mutants)
 
     @classmethod
     def generate_held_out_mutants(cls, source_code: str, target_lines: Optional[List[int]] = None) -> List[MutantRecord]:

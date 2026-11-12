@@ -11,10 +11,14 @@ Combines:
 from __future__ import annotations
 
 import ast
+import concurrent.futures
+import logging
 import re
 import time
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+
+logger = logging.getLogger("testforge.hybrid_synthesizer")
 
 from testforge.equivalence import calculate_mutation_scores
 from testforge.intelligent_generator import IntelligentASTSynthesizer
@@ -24,8 +28,146 @@ from testforge.mcp_server import (
     mcp_mutant_generator,
     mcp_sandbox_runner,
 )
-from testforge.mutator import ASTMutator, MutantRecord
+from testforge.mutator import ASTMutator, MutantRecord, _stratify_mutants
 from testforge.sandbox import GranularTestValidator, ParallelSandboxRunner
+
+
+def _slice_large_target_context(source_code: str, max_lines: int = 350, max_functions: int = 15) -> str:
+    """
+    Slices large target code to the top-complexity/most-connected functions
+    (and their enclosing class signatures) when source exceeds max_lines.
+    Preserves module imports and returns code unchanged for small/medium files.
+    """
+    lines = source_code.splitlines()
+    if len(lines) <= max_lines:
+        return source_code
+
+    try:
+        tree = ast.parse(source_code)
+    except Exception:
+        return source_code
+
+    imports: List[str] = []
+    for node in tree.body:
+        if isinstance(node, (ast.Import, ast.ImportFrom)):
+            seg = ast.get_source_segment(source_code, node)
+            if seg:
+                imports.append(seg)
+
+    callables: List[Dict[str, Any]] = []
+    classes: Dict[str, str] = {}
+
+    for node in tree.body:
+        if isinstance(node, ast.ClassDef):
+            base_names = [ast.unparse(b) for b in node.bases]
+            bases_str = f"({', '.join(base_names)})" if base_names else ""
+            classes[node.name] = f"class {node.name}{bases_str}:"
+            for subnode in node.body:
+                if isinstance(subnode, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    cc = 1
+                    for child in ast.walk(subnode):
+                        if isinstance(child, (ast.If, ast.For, ast.AsyncFor, ast.While, ast.Try, ast.ExceptHandler, ast.With, ast.AsyncWith, ast.BoolOp, ast.comprehension)):
+                            cc += 1
+                    params = len(subnode.args.args) + len(getattr(subnode.args, "posonlyargs", [])) + len(subnode.args.kwonlyargs)
+                    callables.append({
+                        "node": subnode,
+                        "name": subnode.name,
+                        "class_name": node.name,
+                        "score": cc + params,
+                        "lineno": subnode.lineno,
+                    })
+        elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            cc = 1
+            for child in ast.walk(node):
+                if isinstance(child, (ast.If, ast.For, ast.AsyncFor, ast.While, ast.Try, ast.ExceptHandler, ast.With, ast.AsyncWith, ast.BoolOp, ast.comprehension)):
+                    cc += 1
+            params = len(node.args.args) + len(getattr(node.args, "posonlyargs", [])) + len(node.args.kwonlyargs)
+            callables.append({
+                "node": node,
+                "name": node.name,
+                "class_name": None,
+                "score": cc + params,
+                "lineno": node.lineno,
+            })
+
+    total_funcs = len(callables)
+    if total_funcs == 0:
+        return source_code
+
+    callables.sort(key=lambda c: c["score"], reverse=True)
+    selected = callables[:max_functions]
+    selected.sort(key=lambda c: c["lineno"])
+
+    chunks: List[str] = [f"# [Context Sliced: Top {len(selected)} functions of {total_funcs}]"]
+    if imports:
+        chunks.append("\n".join(imports[:30]))
+
+    curr_class = None
+    for item in selected:
+        seg = ast.get_source_segment(source_code, item["node"])
+        if not seg:
+            continue
+        cname = item["class_name"]
+        if cname:
+            if cname != curr_class:
+                curr_class = cname
+                chunks.append(f"{classes.get(cname, f'class {cname}:')}\n    # [Enclosing class context preserved]")
+            indented = "\n".join(("    " + l if not l.startswith("    ") else l) for l in seg.splitlines())
+            chunks.append(indented)
+        else:
+            curr_class = None
+            chunks.append(seg)
+
+    return "\n\n".join(chunks)
+
+
+def execute_llm_synthesis_with_timeout(
+    generate_fn: Any,
+    timeout_seconds: float = 25.0,
+    source_code: Optional[str] = None,
+    fallback_code: Optional[str] = None,
+    log: Optional[Any] = None,
+) -> Tuple[str, bool]:
+    """
+    Wraps LLM synthesis invocation in a strict timeout (default 25.0s).
+    Catches TimeoutError, asyncio.TimeoutError, API timeouts, and general generation errors.
+    If a timeout or failure occurs, logs LLM_SYNTHESIS_TIMEOUT_FALLBACK and falls back
+    to IntelligentASTSynthesizer (or fallback_code).
+    Returns (test_suite_code, timed_out_bool).
+    """
+    logger_inst = log or logger
+    timed_out = False
+    result_tests = ""
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+        future = executor.submit(generate_fn)
+        try:
+            result_tests = future.result(timeout=timeout_seconds)
+        except (TimeoutError, concurrent.futures.TimeoutError) as exc:
+            timed_out = True
+            msg = f"LLM_SYNTHESIS_TIMEOUT_FALLBACK: Generation exceeded {timeout_seconds}s limit ({exc}). Falling back to deterministic AST synthesizer."
+            logger_inst.warning(msg)
+            try:
+                from testforge.observability import trace_event
+                trace_event("LLM_SYNTHESIS_TIMEOUT_FALLBACK", {
+                    "timeout_seconds": timeout_seconds,
+                    "fallback": "IntelligentASTSynthesizer",
+                })
+            except Exception:
+                pass
+        except Exception as exc:
+            logger_inst.warning(f"LLM synthesis call failed: {exc}. Falling back to deterministic AST synthesizer.")
+
+    if timed_out or not result_tests or not result_tests.strip():
+        if fallback_code and fallback_code.strip():
+            return fallback_code.strip(), timed_out
+        if source_code:
+            synth = IntelligentASTSynthesizer()
+            synth_res = synth.synthesize_test_suite(source_code)
+            return synth_res.test_code, timed_out
+        return "", timed_out
+
+    return result_tests, False
 
 
 @dataclass
@@ -63,6 +205,7 @@ class HybridSynthesizer:
         mcp_client: Optional[Any] = None,
         enable_rag: bool = True,
         rag_heuristics: Optional[List[Dict[str, Any]]] = None,
+        llm_generator: Optional[Any] = None,
     ):
         self.target_code: str = target_code.strip()
         self.target_file_path: str = target_file_path or "sample_target.py"
@@ -71,6 +214,7 @@ class HybridSynthesizer:
         self.mcp_client = mcp_client
         self.enable_rag = enable_rag
         self.rag_heuristics = rag_heuristics
+        self.llm_generator = llm_generator
         self.sandbox = ParallelSandboxRunner(timeout_seconds=self.timeout_seconds, target_file_path=self.target_file_path)
 
     def _call_mcp_tool(self, tool_name: str, arguments: Dict[str, Any]) -> Any:
@@ -128,6 +272,26 @@ class HybridSynthesizer:
         synth = IntelligentASTSynthesizer()
         synth_res = synth.synthesize_test_suite(self.target_code)
         generated_code = synth_res.test_code
+
+        # If LLM generator attached, invoke under 25s timeout with slicing
+        if self.llm_generator is not None:
+            sliced = _slice_large_target_context(self.target_code)
+
+            def _call_llm() -> str:
+                if hasattr(self.llm_generator, "generate_tests"):
+                    return self.llm_generator.generate_tests(source_code=sliced, iteration=0)
+                elif callable(self.llm_generator):
+                    return self.llm_generator(sliced)
+                return ""
+
+            llm_tests, timed_out = execute_llm_synthesis_with_timeout(
+                _call_llm,
+                timeout_seconds=25.0,
+                source_code=self.target_code,
+                fallback_code=generated_code,
+            )
+            if llm_tests.strip():
+                generated_code = llm_tests.strip()
 
         rag_code = ""
         if self.enable_rag:
@@ -388,8 +552,10 @@ class HybridSynthesizer:
         """
         Executes the 4-step hybrid synthesis loop with Never-Regress Guard.
         """
-        # Discover all mutants
+        # Discover all mutants (stratified to 150 on files > 1,000 lines)
         raw_mutants = ASTMutator.generate_mutants(self.target_code)
+        if len(self.target_code.splitlines()) > 1000 and len(raw_mutants) > 150:
+            raw_mutants = _stratify_mutants(raw_mutants, max_limit=150)
         total_mutants_count = len(raw_mutants)
 
         # Step 1: Ingest Initial Seed / AST Invariant Baseline

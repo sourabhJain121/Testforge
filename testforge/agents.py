@@ -1176,6 +1176,11 @@ def test_{parent_class}_{fn}_class():
 # Note: Method '{parent_class}.{fn}' omitted from standalone generic test due to instance receiver requirement.
 """)
                 else:
+                    if fn.lower() in {"run", "serve", "start", "main", "_cli_parse", "_cli_patch", "listen"} or fn.startswith(("_cli_", "serve_", "run_")):
+                        test_functions.append(f"""
+# Note: Function '{fn}' omitted from standalone generic test due to server/cli execution hazard.
+""")
+                        continue
                     args_str = build_nominal_arguments(sig)
                     if args_str is None:
                         test_functions.append(f"""

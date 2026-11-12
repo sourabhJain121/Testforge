@@ -170,15 +170,24 @@ def normalize_bytecode(code_obj: types.CodeType) -> List[Tuple[str, str]]:
     return instructions
 
 
+_BYTECODE_CACHE: Dict[int, List[Any]] = {}
+
+
 def compare_bytecode_instructions(orig_code: str, mut_code: str) -> Tuple[bool, Optional[str]]:
     """
     Compiles both code snippets and compares their recursive bytecode instruction streams.
     Returns (is_identical, explanation).
     """
     try:
-        co_orig = compile(orig_code, "<orig>", "exec")
+        h_orig = hash(orig_code)
+        if h_orig in _BYTECODE_CACHE:
+            norm_orig = _BYTECODE_CACHE[h_orig]
+        else:
+            co_orig = compile(orig_code, "<orig>", "exec")
+            norm_orig = normalize_bytecode(co_orig)
+            _BYTECODE_CACHE[h_orig] = norm_orig
+
         co_mut = compile(mut_code, "<mut>", "exec")
-        norm_orig = normalize_bytecode(co_orig)
         norm_mut = normalize_bytecode(co_mut)
         if norm_orig == norm_mut:
             return True, "Bytecode instruction streams and nested code objects are strictly identical after compilation."
@@ -273,14 +282,20 @@ class EquivalentMutantAnalyzer:
     - Never classifies INVALID or ERROR mutants as equivalent.
     - Explicitly records classification, method, confidence, and human-readable reason.
     """
+    _DEAD_LINES_CACHE: Dict[int, Set[int]] = {}
+    _UNPARSED_CACHE: Dict[int, str] = {}
 
     @classmethod
     def find_dead_lines(cls, source_code: str) -> Set[int]:
         """Returns set of 1-indexed line numbers in source_code that are provably dead code."""
+        h = hash(source_code)
+        if h in cls._DEAD_LINES_CACHE:
+            return cls._DEAD_LINES_CACHE[h]
         try:
             tree = ast.parse(source_code)
             visitor = DeadCodeVisitor()
             visitor.visit(tree)
+            cls._DEAD_LINES_CACHE[h] = visitor.dead_lines
             return visitor.dead_lines
         except Exception:
             return set()
@@ -328,18 +343,32 @@ class EquivalentMutantAnalyzer:
         # 2. Rule: Syntactic Identity after AST Unparsing (HIGH confidence EQUIVALENT)
         if orig_code and mut_code:
             try:
-                tree_orig = ast.parse(orig_code)
-                tree_mut = ast.parse(mut_code)
-                unparsed_orig = ast.unparse(tree_orig).strip()
-                unparsed_mut = ast.unparse(tree_mut).strip()
-                if unparsed_orig == unparsed_mut:
-                    return EquivalenceResult(
-                        status=EquivalenceClassification.EQUIVALENT,
-                        method=EquivalenceMethod.SYNTACTIC_IDENTITY,
-                        reason="AST normalization of mutated code produces identical source representation to original.",
-                        confidence=EquivalenceConfidence.HIGH,
-                        evidence={"unparsed_match": True}
-                    )
+                orig_expr = (mutant.original_expression or "").strip()
+                mut_expr = (mutant.mutated_expression or "").strip()
+                check_full = True
+                if orig_expr and mut_expr and orig_expr != mut_expr:
+                    try:
+                        e_orig = ast.unparse(ast.parse(orig_expr)).strip()
+                        e_mut = ast.unparse(ast.parse(mut_expr)).strip()
+                        check_full = (e_orig == e_mut)
+                    except Exception:
+                        check_full = False
+
+                if check_full:
+                    h_orig = hash(orig_code)
+                    if h_orig not in cls._UNPARSED_CACHE:
+                        cls._UNPARSED_CACHE[h_orig] = ast.unparse(ast.parse(orig_code)).strip()
+                    unparsed_orig = cls._UNPARSED_CACHE[h_orig]
+                    tree_mut = ast.parse(mut_code)
+                    unparsed_mut = ast.unparse(tree_mut).strip()
+                    if unparsed_orig == unparsed_mut:
+                        return EquivalenceResult(
+                            status=EquivalenceClassification.EQUIVALENT,
+                            method=EquivalenceMethod.SYNTACTIC_IDENTITY,
+                            reason="AST normalization of mutated code produces identical source representation to original.",
+                            confidence=EquivalenceConfidence.HIGH,
+                            evidence={"unparsed_match": True}
+                        )
             except Exception:
                 pass
 
@@ -357,7 +386,7 @@ class EquivalentMutantAnalyzer:
                 )
 
         # 3b. Rule: Bytecode Compilation Identity (HIGH confidence EQUIVALENT)
-        if orig_code and mut_code:
+        if orig_code and mut_code and len(orig_code.splitlines()) <= 1000:
             is_bc, bc_reason = compare_bytecode_instructions(orig_code, mut_code)
             if is_bc:
                 return EquivalenceResult(
