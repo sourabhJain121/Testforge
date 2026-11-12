@@ -29,7 +29,7 @@ from concurrent.futures import TimeoutError as FuturesTimeoutError
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Literal, Optional, Set, Union
 
-from pydantic import BaseModel, Field, ValidationError, model_validator
+from pydantic import BaseModel, Field, ValidationError, field_validator, model_validator
 
 from testforge.callbacks import (
     CallbackRegistry,
@@ -319,6 +319,16 @@ class TestExecutionPayload(BaseModel):
     status: Literal["NOT_STARTED", "RUNNING", "PASSED", "FAILED", "ERROR", "TIMEOUT"] = Field(
         default="PASSED", description="Overall execution status"
     )
+
+    @field_validator("status", mode="before")
+    @classmethod
+    def _normalize_status(cls, v: Any) -> Any:
+        if isinstance(v, str):
+            v_str = v.strip().upper()
+            if v_str == "TIMED_OUT":
+                return "TIMEOUT"
+            return v_str
+        return v
     total_tests: int = Field(default=0, ge=0, description="Total tests collected and executed")
     passed_tests: int = Field(default=0, ge=0, description="Tests passing cleanly")
     failed_tests: int = Field(default=0, ge=0, description="Tests failing assertions")

@@ -369,3 +369,73 @@ class TestBlackboardInterop:
         # Check synchronization with final state
         assert final_state.final_hardening_status == bb.get_metrics_space().final_hardening_status
         assert final_state.current_test_code == bb.get_suite_space().current_test_code
+
+    def test_mutant_record_coerces_timed_out_status(self):
+        """Verify MutantRecord normalizes status='TIMED_OUT' to 'TIMEOUT' without validation error."""
+        mutant = MutantRecord(
+            mutant_id="MUT_TEST_TIMEOUT_001",
+            mutation_type="COMP_OP",
+            line_number=42,
+            original_code_snippet="x > 0",
+            mutated_code_snippet="x >= 0",
+            unified_diff="--- a\n+++ b",
+            status="TIMED_OUT",
+        )
+        assert mutant.status == "TIMEOUT"
+
+        # Also case-insensitive
+        mutant_lower = MutantRecord(
+            mutant_id="MUT_TEST_TIMEOUT_002",
+            mutation_type="COMP_OP",
+            line_number=43,
+            original_code_snippet="x > 0",
+            mutated_code_snippet="x >= 0",
+            unified_diff="--- a\n+++ b",
+            status="timed_out",
+        )
+        assert mutant_lower.status == "TIMEOUT"
+
+    def test_mutant_space_coerces_timed_out_status_in_dict(self):
+        """Verify MutantSpace normalizes mutant dicts containing status='TIMED_OUT'."""
+        space = MutantSpace(
+            mutants=[
+                {
+                    "mutant_id": "MUT_DICT_001",
+                    "mutation_type": "ARITH_OP",
+                    "line_number": 10,
+                    "original_code_snippet": "a + b",
+                    "mutated_code_snippet": "a - b",
+                    "unified_diff": "",
+                    "status": "TIMED_OUT",
+                }
+            ]
+        )
+        assert len(space.mutants) == 1
+        assert space.mutants[0].status == "TIMEOUT"
+
+    def test_blackboard_update_mutant_space_with_timed_out_status(self):
+        """Verify Blackboard.update_mutant_space accepts mutants with status='TIMED_OUT'."""
+        bb = Blackboard()
+        mutant = MutantRecord(
+            mutant_id="MUT_BB_001",
+            mutation_type="COMP_OP",
+            line_number=5,
+            original_code_snippet="x == y",
+            mutated_code_snippet="x != y",
+            unified_diff="",
+            status="TIMED_OUT",
+        )
+        space = bb.update_mutant_space(
+            mutants=[mutant],
+            mutants_generated=1,
+            mutants_executed=1,
+            mutants_timed_out=1,
+        )
+        assert space.mutants[0].status == "TIMEOUT"
+        assert space.mutants_timed_out == 1
+
+    def test_execution_space_coerces_timed_out_status(self):
+        """Verify ExecutionSpace normalizes status='TIMED_OUT' to 'TIMEOUT'."""
+        from testforge.blackboard import ExecutionSpace
+        exec_sp = ExecutionSpace(status="TIMED_OUT")
+        assert exec_sp.status == "TIMEOUT"

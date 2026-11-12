@@ -27,7 +27,7 @@ import uuid
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Literal, Optional, Set, Union
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 from testforge.callbacks import CallbackRegistry, EventType, LifecycleEvent
 from testforge.persistence import (
@@ -99,6 +99,19 @@ class MutantSpace(BaseModel):
     raw_mutation_score: Optional[float] = 0.0
     adjusted_mutation_score: Optional[float] = 0.0
     surviving_mutant_diffs: List[str] = Field(default_factory=list)
+
+    @field_validator("mutants", mode="before")
+    @classmethod
+    def _normalize_mutants_list(cls, v: Any) -> Any:
+        if isinstance(v, list):
+            for item in v:
+                if isinstance(item, dict) and "status" in item:
+                    st = item["status"]
+                    if isinstance(st, str) and st.strip().upper() == "TIMED_OUT":
+                        item["status"] = "TIMEOUT"
+                elif hasattr(item, "status") and getattr(item, "status", None) == "TIMED_OUT":
+                    item.status = "TIMEOUT"
+        return v
 
 
 class CriticSpace(BaseModel):
@@ -223,6 +236,16 @@ class ExecutionSpace(BaseModel):
     workflow_id: Optional[str] = None
     task_id: Optional[str] = None
     status: Literal["NOT_STARTED", "RUNNING", "PASSED", "FAILED", "ERROR", "TIMEOUT"] = "NOT_STARTED"
+
+    @field_validator("status", mode="before")
+    @classmethod
+    def _normalize_status(cls, v: Any) -> Any:
+        if isinstance(v, str):
+            v_str = v.strip().upper()
+            if v_str == "TIMED_OUT":
+                return "TIMEOUT"
+            return v_str
+        return v
     total_tests: int = 0
     passed_tests: int = 0
     failed_tests: int = 0

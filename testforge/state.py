@@ -12,7 +12,7 @@ import uuid
 from enum import Enum
 from typing import Any, Dict, List, Literal, Optional, Set, Union
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class TaskLifecycleState(str, Enum):
@@ -427,6 +427,16 @@ class MutantRecord(BaseModel):
     stdout: str = ""
     stderr: str = ""
     execution_time_ms: float = 0.0
+
+    @field_validator("status", mode="before")
+    @classmethod
+    def normalize_status(cls, v: Any) -> Any:
+        if isinstance(v, str):
+            v_str = v.strip().upper()
+            if v_str == "TIMED_OUT":
+                return "TIMEOUT"
+            return v_str
+        return v
 
     # Milestone 2: Equivalent-mutant analysis metadata
     equivalence_status: Optional[str] = Field(default=None, description="EQUIVALENT, POTENTIALLY_EQUIVALENT, NOT_EQUIVALENT, UNKNOWN")

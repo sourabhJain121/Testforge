@@ -836,7 +836,7 @@ class ParallelSandboxRunner:
                             mutant.equivalence_status = "UNKNOWN"
                             mutant.equivalence_reason = "Baseline test suite failed; cannot evaluate mutant."
                         elif result.get("timed_out") or result.get("status") in ("TIMEOUT", "TIMED_OUT"):
-                            mutant.status = "TIMED_OUT"
+                            mutant.status = "TIMEOUT"
                             mutant.kill_classification = "TIMEOUT"
                             mutant.equivalence_status = "NOT_EQUIVALENT"
                             mutant.equivalence_confidence = "HIGH"
@@ -894,7 +894,7 @@ class ParallelSandboxRunner:
                             mutant.status = "ERROR"
                     except (TimeoutError, subprocess.TimeoutExpired):
                         mutant.is_executed = True
-                        mutant.status = "TIMED_OUT"
+                        mutant.status = "TIMEOUT"
                         mutant.kill_classification = "TIMEOUT"
                         mutant.equivalence_status = "NOT_EQUIVALENT"
                         mutant.equivalence_confidence = "HIGH"
@@ -930,7 +930,7 @@ class ParallelSandboxRunner:
                     if not f.done():
                         f.cancel()
                         m.is_executed = True
-                        m.status = "TIMED_OUT"
+                        m.status = "TIMEOUT"
                         m.kill_classification = "TIMEOUT"
                         m.equivalence_status = "NOT_EQUIVALENT"
                         m.equivalence_confidence = "HIGH"
