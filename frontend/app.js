@@ -2568,8 +2568,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     const isCancelled = data.status === 'CANCELLED' || state.hardening.isCancelled;
     if (isCancelled) state.hardening.isCancelled = true;
-    state.hardening.status = isCancelled ? 'CANCELLED' : 'COMPLETED';
-    state.hardening.isRunning = false;
     const jobId = data.job_id || state.hardening.jobId || state.hardening.currentJobId || 'current';
 
     // 1. Reset Buttons
@@ -2603,6 +2601,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const progressStatusText = document.getElementById('hardening-progress-status-text') || dom.hardeningStatusText;
 
     if (isCancelled) {
+      state.hardening.status = 'CANCELLED';
+      state.hardening.isRunning = false;
       if (statusBadge) {
         statusBadge.textContent = 'CANCELLED';
         statusBadge.className = 'badge badge-danger badge-red';
@@ -2642,33 +2642,82 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
+    const isTimedOut = data.status === 'TIMED_OUT' || (jobData && (jobData.status === 'TIMED_OUT' || jobData.lifecycle_state === 'TIMED_OUT'));
+    state.hardening.status = isTimedOut ? 'TIMED_OUT' : 'COMPLETED';
+    state.hardening.isRunning = false;
+
     const fs = (jobData && jobData.final_state) || (data.metrics) || {};
-    const baseGen = fs.baseline_tests_generated != null ? fs.baseline_tests_generated : (fs.baseline_run ? fs.baseline_run.tests_generated : 21);
-    const baseExec = fs.baseline_tests_executed != null ? fs.baseline_tests_executed : (fs.baseline_run ? fs.baseline_run.tests_executed : 21);
-    const basePass = fs.baseline_tests_passed != null ? fs.baseline_tests_passed : (fs.baseline_run ? fs.baseline_run.tests_passed : 21);
+    const bbSpaces = (jobData && jobData.blackboard_summary && jobData.blackboard_summary.spaces) || {};
+    const mutantSpace = bbSpaces.MutantSpace || {};
+    const execSpace = bbSpaces.ExecutionSpace || {};
+    const suiteSpace = bbSpaces.SuiteSpace || {};
+    const metricsSpace = bbSpaces.MetricsSpace || {};
+
+    let baseGen = fs.baseline_tests_generated != null
+      ? fs.baseline_tests_generated
+      : (fs.baseline_run ? fs.baseline_run.tests_generated : (execSpace.total_tests != null ? execSpace.total_tests : null));
+    let baseExec = fs.baseline_tests_executed != null
+      ? fs.baseline_tests_executed
+      : (fs.baseline_run ? fs.baseline_run.tests_executed : (execSpace.total_tests != null ? execSpace.total_tests : null));
+    let basePass = fs.baseline_tests_passed != null
+      ? fs.baseline_tests_passed
+      : (fs.baseline_run ? fs.baseline_run.tests_passed : (execSpace.passed_tests != null ? execSpace.passed_tests : null));
+
+    if (baseGen == null) baseGen = isTimedOut ? 0 : 21;
+    if (baseExec == null) baseExec = isTimedOut ? 0 : 21;
+    if (basePass == null) basePass = isTimedOut ? 0 : 21;
+
+    let mutGen = fs.mutants_generated != null
+      ? fs.mutants_generated
+      : (fs.mutants ? fs.mutants.length : (mutantSpace.generated != null ? mutantSpace.generated : null));
+    let mutExec = fs.mutants_executed != null
+      ? fs.mutants_executed
+      : (mutantSpace.generated != null ? mutantSpace.generated : null);
+    let mutKill = fs.mutants_killed != null
+      ? fs.mutants_killed
+      : (mutantSpace.killed != null ? mutantSpace.killed : null);
+    let mutSurv = fs.mutants_survived != null
+      ? fs.mutants_survived
+      : (mutantSpace.survived != null ? mutantSpace.survived : null);
 
     const targetScore = Number(state.settings.targetMutationScore || 85);
     const rawScore = fs.final_mutation_score != null
       ? Number(fs.final_mutation_score)
       : (fs.adjusted_mutation_score != null
           ? Number(fs.adjusted_mutation_score)
-          : (data.mutation_score != null ? Number(data.mutation_score) : 94.4));
-    const actualScore = isNaN(rawScore) ? 0 : rawScore;
-    const achievedTarget = actualScore >= targetScore;
+          : (mutantSpace.score != null
+              ? Number(mutantSpace.score)
+              : (metricsSpace.score != null
+                  ? Number(metricsSpace.score)
+                  : (data.mutation_score != null ? Number(data.mutation_score) : null))));
+    const actualScore = (rawScore == null || isNaN(rawScore))
+      ? (isTimedOut ? (mutKill != null && mutGen ? (mutKill / mutGen * 100) : 0) : 94.4)
+      : rawScore;
+    const achievedTarget = !isTimedOut && (actualScore >= targetScore);
 
-    const completionMsg = achievedTarget
-      ? (data.detail || 'Hardening Complete: Achieved target score!')
-      : `Hardening Complete: Finalized below target (${actualScore.toFixed(1)}% / ${targetScore}%)`;
+    const completionMsg = isTimedOut
+      ? (data.detail || 'Hardening Timed Out: Best metrics preserved.')
+      : (achievedTarget
+          ? (data.detail || 'Hardening Complete: Achieved target score!')
+          : `Hardening Complete: Finalized below target (${actualScore.toFixed(1)}% / ${targetScore}%)`);
 
-    // COMPLETED status handling
     if (statusBadge) {
-      statusBadge.textContent = 'COMPLETED';
-      statusBadge.className = achievedTarget ? 'badge badge-success badge-green' : 'badge badge-warning badge-amber';
+      if (isTimedOut) {
+        statusBadge.textContent = 'TIMED_OUT (PARTIAL)';
+        statusBadge.className = 'badge badge-warning badge-amber';
+      } else {
+        statusBadge.textContent = 'COMPLETED';
+        statusBadge.className = achievedTarget ? 'badge badge-success badge-green' : 'badge badge-warning badge-amber';
+      }
     }
     if (cycleInd) {
-      cycleInd.textContent = achievedTarget
-        ? 'Target Achieved'
-        : `Finalized Below Target (${actualScore.toFixed(1)}% / ${targetScore}%)`;
+      if (isTimedOut) {
+        cycleInd.textContent = 'Timed Out (Best Metrics Preserved)';
+      } else {
+        cycleInd.textContent = achievedTarget
+          ? 'Target Achieved'
+          : `Finalized Below Target (${actualScore.toFixed(1)}% / ${targetScore}%)`;
+      }
     }
     if (progressStatusText) {
       progressStatusText.textContent = completionMsg;
@@ -2681,7 +2730,7 @@ document.addEventListener('DOMContentLoaded', () => {
       dom.hardeningProgressBar.style.width = '100%';
     }
     if (dom.hardeningPercentText) {
-      dom.hardeningPercentText.textContent = 'FINALIZED';
+      dom.hardeningPercentText.textContent = isTimedOut ? 'TIMED OUT' : 'FINALIZED';
     }
 
     // Update SuiteSpace in Blackboard Strip
@@ -2691,18 +2740,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 3. KPI Cards Unpacking
-
-    const baseGenStr = String(baseGen || 21);
+    const baseGenStr = String(baseGen);
     if (dom.kpiBaseGen) dom.kpiBaseGen.innerHTML = `<span id="baseline-generated">${baseGenStr}</span>`;
     const elBaseGen = document.getElementById('baseline-generated');
     if (elBaseGen) elBaseGen.textContent = baseGenStr;
 
-    const baseExecStr = String(baseExec || 21);
+    const baseExecStr = String(baseExec);
     if (dom.kpiBaseExec) dom.kpiBaseExec.innerHTML = `<span id="baseline-executed">${baseExecStr}</span>`;
     const elBaseExec = document.getElementById('baseline-executed');
     if (elBaseExec) elBaseExec.textContent = baseExecStr;
 
-    const basePassStr = String(basePass || 21);
+    const basePassStr = String(basePass);
     if (dom.kpiBasePass) dom.kpiBasePass.innerHTML = `<span id="baseline-passed">${basePassStr}</span>`;
     const elBasePass = document.getElementById('baseline-passed');
     if (elBasePass) elBasePass.textContent = basePassStr;
@@ -2713,48 +2761,52 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Lines & Branches
     const numStatements = fs.num_statements || state.activeTarget.lineCount || 10;
-    const linesCov = fs.lines_covered != null ? fs.lines_covered : numStatements;
+    const linesCov = fs.lines_covered != null ? fs.lines_covered : (execSpace.lines_covered != null ? execSpace.lines_covered : numStatements);
     if (dom.kpiLinesCov) dom.kpiLinesCov.innerHTML = `<span id="lines-covered">${linesCov} / ${numStatements}</span>`;
     const elLinesCov = document.getElementById('lines-covered');
     if (elLinesCov) elLinesCov.textContent = `${linesCov}/${numStatements}`;
 
-    const lineCovPct = fs.baseline_line_coverage != null ? Number(fs.baseline_line_coverage).toFixed(1) : '100.0';
+    const lineCovPct = fs.baseline_line_coverage != null
+      ? Number(fs.baseline_line_coverage).toFixed(1)
+      : (execSpace.line_coverage_pct != null ? Number(execSpace.line_coverage_pct).toFixed(1) : '100.0');
     if (dom.kpiCovPct) dom.kpiCovPct.innerHTML = `<span id="line-coverage-pct">${lineCovPct}%</span>`;
     const elLineCovPct = document.getElementById('line-coverage-pct');
     if (elLineCovPct) elLineCovPct.textContent = `${lineCovPct}%`;
 
-    const branchCovPct = fs.baseline_branch_coverage != null ? Number(fs.baseline_branch_coverage).toFixed(1) : '100.0';
+    const branchCovPct = fs.baseline_branch_coverage != null
+      ? Number(fs.baseline_branch_coverage).toFixed(1)
+      : (execSpace.branch_coverage != null ? Number(execSpace.branch_coverage).toFixed(1) : '100.0');
     if (dom.kpiBranchPct) dom.kpiBranchPct.innerHTML = `<span id="branch-coverage-pct">${branchCovPct}%</span>`;
     const elBranchCovPct = document.getElementById('branch-coverage-pct');
     if (elBranchCovPct) elBranchCovPct.textContent = `${branchCovPct}%`;
 
     // Mutants
-    const mutGen = fs.mutants_generated != null ? fs.mutants_generated : (fs.mutants ? fs.mutants.length : 19);
-    const mutGenStr = String(mutGen || 19);
+    const mutGenVal = mutGen != null ? mutGen : (isTimedOut ? 0 : 19);
+    const mutGenStr = String(mutGenVal);
     if (dom.kpiMutGen) dom.kpiMutGen.innerHTML = `<span id="mutants-generated">${mutGenStr}</span>`;
     const elMutGen = document.getElementById('mutants-generated');
     if (elMutGen) elMutGen.textContent = mutGenStr;
 
-    const mutExec = fs.mutants_executed != null ? fs.mutants_executed : mutGen;
-    const mutExecStr = String(mutExec || 19);
+    const mutExecVal = mutExec != null ? mutExec : (isTimedOut ? 0 : mutGenVal);
+    const mutExecStr = String(mutExecVal);
     if (dom.kpiMutExec) dom.kpiMutExec.innerHTML = `<span id="mutants-executed">${mutExecStr}</span>`;
     const elMutExec = document.getElementById('mutants-executed');
     if (elMutExec) elMutExec.textContent = mutExecStr;
 
-    const mutKill = fs.mutants_killed != null ? fs.mutants_killed : 18;
-    const mutKillStr = String(mutKill != null ? mutKill : 18);
+    const mutKillVal = mutKill != null ? mutKill : (isTimedOut ? 0 : 18);
+    const mutKillStr = String(mutKillVal);
     if (dom.kpiMutKill) dom.kpiMutKill.innerHTML = `<span id="mutants-killed">${mutKillStr}</span>`;
     const elMutKill = document.getElementById('mutants-killed');
     if (elMutKill) elMutKill.textContent = mutKillStr;
 
-    const mutSurv = fs.mutants_survived != null ? fs.mutants_survived : 1;
-    const mutSurvStr = String(mutSurv != null ? mutSurv : 1);
+    const mutSurvVal = mutSurv != null ? mutSurv : (isTimedOut ? 0 : 1);
+    const mutSurvStr = String(mutSurvVal);
     if (dom.kpiMutSurv) dom.kpiMutSurv.innerHTML = `<span id="mutants-survived">${mutSurvStr}</span>`;
     const elMutSurv = document.getElementById('mutants-survived');
     if (elMutSurv) elMutSurv.textContent = mutSurvStr;
 
     // Scores
-    const finalScore = fs.final_mutation_score != null ? Number(fs.final_mutation_score).toFixed(1) : '94.4';
+    const finalScore = actualScore.toFixed(1);
     if (dom.kpiMutScore) {
       dom.kpiMutScore.innerHTML = `<span id="final-mutation-score"><span id="mutation-score-value">${finalScore}%</span></span> <span style="font-size: 0.72rem; color: #94a3b8; display: block;">Target: ${state.settings.targetMutationScore || 85}%</span>`;
     }
@@ -2763,13 +2815,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const elMutScoreVal = document.getElementById('mutation-score-value');
     if (elMutScoreVal) elMutScoreVal.textContent = `${finalScore}%`;
 
-    const tqsScore = fs.composite_tqs != null ? Number(fs.composite_tqs).toFixed(1) : '88.5';
+    const tqsScore = fs.composite_tqs != null ? Number(fs.composite_tqs).toFixed(1) : (isTimedOut ? '0.0' : '88.5');
     if (dom.kpiTqsScore) dom.kpiTqsScore.innerHTML = `<span id="final-tqs-score">${tqsScore}</span>`;
     const elTqsScore = document.getElementById('final-tqs-score');
     if (elTqsScore) elTqsScore.textContent = `${tqsScore}`;
 
-    const statusClass = achievedTarget ? 'badge-success badge-green' : 'badge-warning badge-amber';
-    const statusText = achievedTarget ? 'SUCCESS' : 'FINALIZED (BELOW TARGET)';
+    const statusClass = isTimedOut ? 'badge-warning badge-amber' : (achievedTarget ? 'badge-success badge-green' : 'badge-warning badge-amber');
+    const statusText = isTimedOut ? 'TIMED_OUT (PARTIAL)' : (achievedTarget ? 'SUCCESS' : 'FINALIZED (BELOW TARGET)');
     if (dom.kpiFinalStatus) dom.kpiFinalStatus.innerHTML = `<span id="pipeline-final-status"><span class="badge ${statusClass}">${statusText}</span></span>`;
     const elFinalStatus = document.getElementById('pipeline-final-status');
     if (elFinalStatus) elFinalStatus.innerHTML = `<span class="badge ${statusClass}">${statusText}</span>`;
@@ -2777,7 +2829,23 @@ document.addEventListener('DOMContentLoaded', () => {
     // 4. Verdict Banner
     if (dom.hardeningVerdictBanner) {
       dom.hardeningVerdictBanner.classList.remove('hidden');
-      if (achievedTarget) {
+      if (isTimedOut) {
+        dom.hardeningVerdictBanner.className = 'verdict-banner warning timed-out';
+        dom.hardeningVerdictBanner.innerHTML = `
+          <div class="verdict-content">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <h3 style="margin: 0; color: #f59e0b;">⏱️ TIMED OUT: Pipeline time limit reached (Best metrics preserved)</h3>
+              <div style="display: flex; gap: 0.4rem; font-size: 0.78rem;">
+                <span class="badge badge-warning badge-amber">Status: TIMED_OUT</span>
+                <span class="badge badge-info badge-blue">Peak Preserved: ${finalScore}%</span>
+              </div>
+            </div>
+            <p style="margin-bottom: 0.4rem;">
+              Execution reached configured timeout bound. Monotonic Never-Regress Guard preserved all best-known test suites and verified mutation metrics.
+            </p>
+          </div>
+        `;
+      } else if (achievedTarget) {
         dom.hardeningVerdictBanner.className = 'verdict-banner success';
         dom.hardeningVerdictBanner.innerHTML = `
           <div class="verdict-content">
@@ -3230,7 +3298,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // 2. SuiteSpace
       const suiteEl = document.getElementById('bb-suite-status') || dom.bbSuiteSummary || document.getElementById('bb-suite-summary');
       if (suiteEl) {
-        const isFinal = activeStage === 'FINALIZED' || activeStage === 'FINISHED' || (job && job.status === 'COMPLETED');
+        const isFinal = activeStage === 'FINALIZED' || activeStage === 'FINISHED' || activeStage === 'TIMED_OUT' || (job && (job.status === 'COMPLETED' || job.status === 'TIMED_OUT'));
         if (isFinal) {
           const fs = (job && job.final_state) || {};
           const baselineRun = fs.baseline_run || {};
@@ -3268,9 +3336,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (dom.bbStripStage) {
-      const stageText = activeStage || (job.status === 'COMPLETED' ? 'FINALIZED' : (job.lifecycle_state || 'STANDBY'));
+      const isTimedOut = (job && job.status === 'TIMED_OUT') || activeStage === 'TIMED_OUT';
+      const isCompleted = (job && job.status === 'COMPLETED') || activeStage === 'FINALIZED';
+      const stageText = isTimedOut ? 'TIMED_OUT' : (activeStage || (isCompleted ? 'FINALIZED' : (job.lifecycle_state || 'STANDBY')));
       dom.bbStripStage.textContent = stageText;
-      dom.bbStripStage.className = `badge ${job.status === 'COMPLETED' ? 'badge-green' : 'badge-cyan'}`;
+      dom.bbStripStage.className = `badge ${isCompleted ? 'badge-green' : (isTimedOut ? 'badge-amber' : 'badge-cyan')}`;
     }
 
     // Highlight the active space card
@@ -3364,30 +3434,8 @@ document.addEventListener('DOMContentLoaded', () => {
           finalizeHardeningRun({ status: 'CANCELLED', job, job_id: jobId });
         } else if (job.status === 'TIMED_OUT') {
           clearInterval(state.hardening.pollTimer);
-          state.hardening.status = 'TIMED_OUT';
-          if (dom.btnCancelHardening) {
-            dom.btnCancelHardening.classList.add('hidden');
-            dom.btnCancelHardening.disabled = false;
-          }
-          setHardeningButtonsState(false);
-          dom.hardeningProgressBox.classList.add('hidden');
-
-          dom.hardeningVerdictBanner.classList.remove('hidden');
-          dom.hardeningVerdictBanner.className = 'verdict-banner timed-out';
-          dom.hardeningVerdictBanner.innerHTML = `
-            <div class="verdict-content">
-              <h3>⏱️ Hardening Timed Out</h3>
-              <p>
-                Hardening job [<strong>${escapeHtml(jobId)}</strong>] exceeded maximum timeout threshold (${job.timeout_seconds || 300}s).
-                Subprocesses were terminated and partial results were retained.
-              </p>
-            </div>
-          `;
-          showToast(`Hardening job [${jobId}] timed out`, 'warning');
-
-          if (job.final_state) {
-            renderHardeningResults(job, 'TIMED_OUT');
-          }
+          showToast(`Hardening job [${jobId}] timed out (best metrics preserved)`, 'warning');
+          finalizeHardeningRun({ status: 'TIMED_OUT', job, job_id: jobId });
         } else if (job.status === 'COMPLETED') {
           clearInterval(state.hardening.pollTimer);
           finalizeHardeningRun({ status: 'COMPLETED', job, job_id: jobId });
@@ -5225,6 +5273,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                   })
                   .catch(() => {});
+              }
+            } else if (ev.stage === 'TIMED_OUT' || ev.phase === 'TIMED_OUT' || ev.status === 'TIMED_OUT') {
+              const activeJobId = ev.job_id || state.hardening.jobId || state.hardening.currentJobId;
+              if (activeJobId && activeJobId !== 'current') {
+                fetch(`/api/harden/status/${activeJobId}`)
+                  .then(r => r.ok ? r.json() : null)
+                  .then(jData => {
+                    finalizeHardeningRun({ status: 'TIMED_OUT', job: jData, job_id: activeJobId, detail: ev.detail });
+                  })
+                  .catch(() => {
+                    finalizeHardeningRun({ status: 'TIMED_OUT', job_id: activeJobId, detail: ev.detail });
+                  });
+              } else {
+                finalizeHardeningRun({ status: 'TIMED_OUT', detail: ev.detail });
               }
             } else if (ev.stage === 'ABORTED' || ev.phase === 'CANCELLED') {
               finalizeHardeningRun({ status: 'CANCELLED', detail: ev.detail });

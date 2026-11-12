@@ -42,6 +42,49 @@ def is_blocklisted_callable(name: str) -> bool:
     return low in BLOCKLIST_CALLABLES or low.startswith(("_cli_", "serve_", "run_"))
 
 
+def _score_callable_testability(
+    node: Union[ast.FunctionDef, ast.AsyncFunctionDef],
+    class_name: Optional[str] = None
+) -> int:
+    """
+    Ranks function/method testability for large-file AST context slicing.
+    Prioritizes pure data structures, parsers, validators, and encoders while
+    penalizing unmocked server loops, WSGI adapters, and subprocess handlers.
+    """
+    cc = 1
+    for child in ast.walk(node):
+        if isinstance(child, (ast.If, ast.For, ast.AsyncFor, ast.While, ast.Try, ast.ExceptHandler, ast.With, ast.AsyncWith, ast.BoolOp, ast.comprehension)):
+            cc += 1
+    all_args = [a.arg for a in node.args.args + getattr(node.args, "posonlyargs", []) + node.args.kwonlyargs]
+    params = len(all_args)
+    testability_score = 0
+
+    # 1. Parameter checks
+    if any(p in {"environ", "start_response", "socket", "wsgiref", "subprocess", "threading", "exc_info"} for p in all_args):
+        testability_score -= 25
+    if any(p in {"key", "val", "value", "name", "data", "s", "text", "status", "code", "n", "items", "shift", "default", "secret"} for p in all_args):
+        testability_score += 10
+
+    # 2. Semantic name checks
+    nl = node.name.lower()
+    cl = class_name.lower() if class_name else ""
+    boost_kw = ("dict", "config", "parser", "cookie", "header", "route", "token", "encode", "decode", "escape", "quote", "parse", "validate", "check", "clean")
+    if any(k in nl or k in cl for k in boost_kw):
+        testability_score += 15
+    penalize_kw = ("server", "wsgi", "serveradapter", "app", "application", "handle", "dispatch", "match", "main")
+    if any(k in nl or k in cl for k in penalize_kw):
+        testability_score -= 20
+
+    # 3. Static / standalone bonus
+    is_static = any(isinstance(d, ast.Name) and d.id == "staticmethod" for d in getattr(node, "decorator_list", []))
+    if class_name is None or is_static:
+        testability_score += 10
+    if not node.name.startswith("_"):
+        testability_score += 5
+
+    return (cc * 2) + params + testability_score
+
+
 def get_sliced_target_scope(
     source_code: str,
     max_lines: int = 350,
@@ -51,7 +94,7 @@ def get_sliced_target_scope(
     Returns (sliced_source_code, target_line_ranges).
     For targets <= max_lines, returns source unmodified and full line range.
     For targets > max_lines, slices to the top max_functions testable functions
-    (excluding server/CLI blocklisted functions) and returns their exact line spans.
+    (ranked by unit testability and cyclomatic complexity) and returns their exact line spans.
     """
     lines = source_code.splitlines()
     if len(lines) <= max_lines:
@@ -81,33 +124,24 @@ def get_sliced_target_scope(
                 if isinstance(subnode, (ast.FunctionDef, ast.AsyncFunctionDef)):
                     if is_blocklisted_callable(subnode.name):
                         continue
-                    cc = 1
-                    for child in ast.walk(subnode):
-                        if isinstance(child, (ast.If, ast.For, ast.AsyncFor, ast.While, ast.Try, ast.ExceptHandler, ast.With, ast.AsyncWith, ast.BoolOp, ast.comprehension)):
-                            cc += 1
-                    params = len(subnode.args.args) + len(getattr(subnode.args, "posonlyargs", [])) + len(subnode.args.kwonlyargs)
+                    score = _score_callable_testability(subnode, class_name=node.name)
                     callables.append({
                         "node": subnode,
                         "name": subnode.name,
                         "class_name": node.name,
-                        "score": cc + params,
+                        "score": score,
                         "lineno": subnode.lineno,
                         "end_lineno": getattr(subnode, "end_lineno", subnode.lineno) or subnode.lineno,
                     })
         elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             if is_blocklisted_callable(node.name):
                 continue
-            cc = 1
-            for child in ast.walk(node):
-                if isinstance(child, (ast.If, ast.For, ast.AsyncFor, ast.While, ast.Try, ast.ExceptHandler, ast.With, ast.AsyncWith, ast.BoolOp, ast.comprehension)):
-                    cc += 1
-            params = len(node.args.args) + len(getattr(node.args, "posonlyargs", [])) + len(node.args.kwonlyargs)
-            bonus = 12 if not node.name.startswith("_") else 2
+            score = _score_callable_testability(node, class_name=None)
             callables.append({
                 "node": node,
                 "name": node.name,
                 "class_name": None,
-                "score": cc + params + bonus,
+                "score": score,
                 "lineno": node.lineno,
                 "end_lineno": getattr(node, "end_lineno", node.lineno) or node.lineno,
             })
@@ -175,6 +209,10 @@ def execute_llm_synthesis_with_timeout(
     logger_inst = log or logger
     timed_out = False
     result_tests = ""
+
+    # Cap reflection/synthesis per-cycle timeout to 15.0s on massive targets (>1000 lines)
+    if source_code and len(source_code.splitlines()) > 1000 and timeout_seconds > 15.0:
+        timeout_seconds = 15.0
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
         future = executor.submit(generate_fn)

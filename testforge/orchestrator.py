@@ -536,12 +536,78 @@ class TestForgeOrchestrator:
         """
         guard_rolled_back = self._apply_never_regress_guard()
         if not guard_rolled_back:
-            self.state.mutants_generated = len(self.state.mutants)
-            self.state.mutants_executed = sum(1 for m in self.state.mutants if m.status in ("KILLED", "SURVIVED", "TIMEOUT"))
-            self.state.mutants_killed = sum(1 for m in self.state.mutants if m.status in ("KILLED", "TIMEOUT"))
-            self.state.mutants_survived = sum(1 for m in self.state.mutants if m.status == "SURVIVED")
-            self.state.mutation_execution_errors = sum(1 for m in self.state.mutants if m.status == "ERROR")
-            self.state.final_mutation_score = self.state.history[-1].mutation_score if self.state.history else 0.0
+            if self._best_iteration > 0:
+                self.state.mutants_killed = self._best_mutants_killed
+                self.state.mutants_executed = self._best_mutants_executed
+                self.state.mutants_survived = self._best_mutants_survived
+                self.state.mutants_generated = self._best_mutants_generated
+                self.state.final_mutation_score = self._best_raw_mutation_score
+                if self._best_test_code:
+                    self.state.current_test_code = self._best_test_code
+                if self._best_mutants and not self.state.mutants:
+                    self.state.mutants = list(self._best_mutants)
+                if self._best_surviving_diffs and not self.state.surviving_mutant_diffs:
+                    self.state.surviving_mutant_diffs = list(self._best_surviving_diffs)
+            elif self.state.mutants:
+                self.state.mutants_generated = len(self.state.mutants)
+                self.state.mutants_executed = sum(1 for m in self.state.mutants if m.status in ("KILLED", "SURVIVED", "TIMEOUT"))
+                self.state.mutants_killed = sum(1 for m in self.state.mutants if m.status in ("KILLED", "TIMEOUT"))
+                self.state.mutants_survived = sum(1 for m in self.state.mutants if m.status == "SURVIVED")
+                self.state.mutation_execution_errors = sum(1 for m in self.state.mutants if m.status == "ERROR")
+                self.state.final_mutation_score = self.state.history[-1].mutation_score if self.state.history else 0.0
+
+        # Backfill any missing baseline or mutant values from Blackboard partitions if available
+        if self.blackboard is not None:
+            suite_sp = self.blackboard.get_suite_space()
+            if suite_sp:
+                if not getattr(self.state, "baseline_tests_generated", 0) and getattr(suite_sp, "baseline_tests_count", 0):
+                    self.state.baseline_tests_generated = suite_sp.baseline_tests_count
+                if not getattr(self.state, "baseline_tests_passed", 0) and getattr(suite_sp, "baseline_tests_passed", 0):
+                    self.state.baseline_tests_passed = suite_sp.baseline_tests_passed
+                if not getattr(self.state, "current_test_code", None) and suite_sp.current_test_code:
+                    self.state.current_test_code = suite_sp.current_test_code
+
+            mutant_sp = self.blackboard.get_mutant_space()
+            if mutant_sp:
+                if not getattr(self.state, "mutants_generated", 0) and getattr(mutant_sp, "mutants_generated", 0):
+                    self.state.mutants_generated = mutant_sp.mutants_generated
+                if not getattr(self.state, "mutants_executed", 0) and getattr(mutant_sp, "mutants_executed", 0):
+                    self.state.mutants_executed = mutant_sp.mutants_executed
+                if not getattr(self.state, "mutants_killed", 0) and getattr(mutant_sp, "mutants_killed", 0):
+                    self.state.mutants_killed = mutant_sp.mutants_killed
+                if not getattr(self.state, "mutants_survived", 0) and getattr(mutant_sp, "mutants_survived", 0):
+                    self.state.mutants_survived = mutant_sp.mutants_survived
+                if (not getattr(self.state, "final_mutation_score", 0.0)) and getattr(mutant_sp, "raw_mutation_score", 0.0):
+                    self.state.final_mutation_score = mutant_sp.raw_mutation_score
+
+            exec_sp = self.blackboard.get_execution_space()
+            if exec_sp:
+                if not getattr(self.state, "baseline_line_coverage", 0.0) and getattr(exec_sp, "line_coverage_pct", 0.0):
+                    self.state.baseline_line_coverage = exec_sp.line_coverage_pct
+                if not getattr(self.state, "baseline_branch_coverage", 0.0) and getattr(exec_sp, "branch_coverage", 0.0):
+                    self.state.baseline_branch_coverage = exec_sp.branch_coverage
+                if not getattr(self.state, "baseline_tests_passed", 0) and getattr(exec_sp, "passed_tests", 0):
+                    self.state.baseline_tests_passed = exec_sp.passed_tests
+                if not getattr(self.state, "baseline_tests_executed", 0) and getattr(exec_sp, "total_tests", 0):
+                    self.state.baseline_tests_executed = exec_sp.total_tests
+
+            # Ensure Blackboard partitions persist the best-known values before final sync
+            if getattr(self.state, "mutants_generated", 0) > 0:
+                self.blackboard.update_mutant_space(
+                    mutants_generated=self.state.mutants_generated,
+                    mutants_executed=self.state.mutants_executed,
+                    mutants_killed=self.state.mutants_killed,
+                    mutants_survived=self.state.mutants_survived,
+                    raw_mutation_score=self.state.final_mutation_score,
+                )
+            if getattr(self.state, "current_test_code", None):
+                self.blackboard.update_suite_space(
+                    current_test_code=self.state.current_test_code,
+                    hardened_test_code=self.state.current_test_code,
+                    baseline_tests_passed=getattr(self.state, "baseline_tests_passed", 0),
+                    baseline_tests_count=getattr(self.state, "baseline_tests_generated", 0),
+                )
+
         self.state.reflection_iterations_performed = len(self.state.history)
 
         if status == "CANCELLED":
@@ -551,26 +617,32 @@ class TestForgeOrchestrator:
         else:
             self._sync_lifecycle(TaskLifecycleState.FAILED, reason=reason)
 
-        self.blackboard.update_metrics_space(
-            terminated=True,
-            termination_reason=reason,
-            final_mutation_score=self.state.final_mutation_score,
-            final_hardening_status=status,
-            reflection_iterations_performed=self.state.reflection_iterations_performed,
-        )
-        self.blackboard.sync_to_state(self.state)
-        self.blackboard.save_checkpoint(
-            stage=status,
-            job_id=self.job_id,
-            workflow_id=self.workflow_id,
-            status=status,
-            extra_meta={
-                "reason": reason,
-                "iterations": len(self.state.history),
-                "lifecycle_state": self.fsm.current_state.value,
-                "stage_durations": self.fsm.get_stage_durations(),
-            }
-        )
+        if self.blackboard is not None:
+            self.blackboard.update_metrics_space(
+                terminated=True,
+                termination_reason=reason,
+                final_mutation_score=self.state.final_mutation_score,
+                raw_mutation_score=self.state.final_mutation_score,
+                final_hardening_status=status,
+                reflection_iterations_performed=self.state.reflection_iterations_performed,
+                lines_covered=getattr(self.state, "lines_covered", 0),
+                num_statements=getattr(self.state, "num_statements", 0),
+                baseline_line_coverage=getattr(self.state, "baseline_line_coverage", 0.0),
+                branch_coverage=getattr(self.state, "baseline_branch_coverage", 0.0),
+            )
+            self.blackboard.sync_to_state(self.state)
+            self.blackboard.save_checkpoint(
+                stage=status,
+                job_id=self.job_id,
+                workflow_id=self.workflow_id,
+                status=status,
+                extra_meta={
+                    "reason": reason,
+                    "iterations": len(self.state.history),
+                    "lifecycle_state": self.fsm.current_state.value,
+                    "stage_durations": self.fsm.get_stage_durations(),
+                }
+            )
 
         self.logger.log_event(
             f"PIPELINE_{status}",
@@ -586,6 +658,19 @@ class TestForgeOrchestrator:
             workflow_id=self.workflow_id
         )
 
+        self.emit_event("STAGE_CHANGED", {
+            "stage": status,
+            "status": status,
+            "reason": reason,
+            "final_score": self.state.final_mutation_score,
+            "mutants_generated": getattr(self.state, "mutants_generated", 0),
+            "mutants_killed": getattr(self.state, "mutants_killed", 0),
+            "mutants_survived": getattr(self.state, "mutants_survived", 0),
+            "baseline_passed": getattr(self.state, "baseline_tests_passed", 0),
+            "baseline_generated": getattr(self.state, "baseline_tests_generated", 0),
+            "lines_covered": getattr(self.state, "lines_covered", 0),
+        })
+
         self.callbacks.dispatch(LifecycleEvent(
             event_type=EventType.WORKFLOW_OUTCOME,
             emitter="TestForgeOrchestrator",
@@ -596,7 +681,12 @@ class TestForgeOrchestrator:
                 "status": status,
                 "reason": reason,
                 "final_score": self.state.final_mutation_score,
-                "iterations": len(self.state.history)
+                "iterations": len(self.state.history),
+                "mutants_generated": getattr(self.state, "mutants_generated", 0),
+                "mutants_killed": getattr(self.state, "mutants_killed", 0),
+                "mutants_survived": getattr(self.state, "mutants_survived", 0),
+                "baseline_passed": getattr(self.state, "baseline_tests_passed", 0),
+                "baseline_generated": getattr(self.state, "baseline_tests_generated", 0),
             }
         ))
 
@@ -1379,15 +1469,17 @@ class TestForgeOrchestrator:
                     provider_used = self.generator.active_provider
                 return gen_tests
 
+            target_lines_count = len((self.state.target_source_code or "").splitlines())
+            llm_timeout = 15.0 if target_lines_count > 1000 else 25.0
             initial_tests, timed_out = execute_llm_synthesis_with_timeout(
                 _perform_initial_generation,
-                timeout_seconds=25.0,
+                timeout_seconds=llm_timeout,
                 source_code=self.state.target_source_code,
             )
             if timed_out:
                 provider_used = "IntelligentASTSynthesizer"
                 self.logger.log_event("LLM_SYNTHESIS_TIMEOUT_FALLBACK", {
-                    "timeout_seconds": 25.0,
+                    "timeout_seconds": llm_timeout,
                     "fallback": "IntelligentASTSynthesizer",
                     "target_file": self.target_file_path,
                 })
@@ -1849,15 +1941,17 @@ class TestForgeOrchestrator:
                         provider_used = self.generator.active_provider
                     return refl_tests
 
+                target_lines_count = len((self.state.target_source_code or "").splitlines())
+                refl_timeout = 15.0 if target_lines_count > 1000 else 25.0
                 hardened_tests, refl_timed_out = execute_llm_synthesis_with_timeout(
                     _perform_reflection_repair,
-                    timeout_seconds=25.0,
+                    timeout_seconds=refl_timeout,
                     source_code=self.state.target_source_code,
                     fallback_code=self.state.current_test_code,
                 )
                 if refl_timed_out:
                     self.logger.log_event("LLM_SYNTHESIS_TIMEOUT_FALLBACK", {
-                        "timeout_seconds": 25.0,
+                        "timeout_seconds": refl_timeout,
                         "fallback": "RetainedPreviousSuite",
                         "iteration": iteration,
                         "target_file": self.target_file_path,

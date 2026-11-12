@@ -147,6 +147,73 @@ def test_frontend_finalization_banner_and_bb_sync_contracts():
     # Score check renders amber warning when below target
     assert "Hardening Complete: Finalized below target" in app_js
     assert "Hardening Complete: Achieved target score!" in app_js
+    # TIMED_OUT handling
+    assert "TIMED_OUT (PARTIAL)" in app_js
+    assert "Timed Out (Best Metrics Preserved)" in app_js
+
+
+def test_testability_ranking_penalizes_servers_and_boosts_pure_helpers():
+    """Verify testability scoring formula prioritizes pure data structures over WSGI servers."""
+    import ast
+    from testforge.hybrid_synthesizer import _score_callable_testability
+
+    code_helper = "def parse_token_cookie(key, secret, default=None): return key + secret"
+    tree_helper = ast.parse(code_helper)
+    score_helper = _score_callable_testability(tree_helper.body[0], class_name="CookieDict")
+
+    code_server = "def wsgi_handler(environ, start_response): pass"
+    tree_server = ast.parse(code_server)
+    score_server = _score_callable_testability(tree_server.body[0], class_name="WSGIServerAdapter")
+
+    assert score_helper > score_server
+    assert score_helper >= 30
+    assert score_server < 0
+
+
+def test_orchestrator_finalize_timeout_preserves_best_metrics():
+    """Verify orchestrator _finalize_cancellation_or_timeout hydrates and preserves peak metrics."""
+    from testforge.orchestrator import TestForgeOrchestrator
+    from testforge.blackboard import Blackboard
+    from testforge.state import MutantRecord
+
+    orch = TestForgeOrchestrator(
+        target_file_path="samples/discount.py",
+        timeout_seconds=90.0,
+    )
+    orch.blackboard = Blackboard()
+
+    # Simulate best metrics achieved
+    orch._best_iteration = 1
+    orch._best_mutants_generated = 20
+    orch._best_mutants_killed = 14
+    orch._best_mutants_survived = 6
+    orch._best_mutants_executed = 20
+    orch._best_raw_mutation_score = 70.0
+    orch._best_test_code = "def test_peak(): assert True"
+    orch._best_mutants = [
+        MutantRecord(
+            mutant_id="MUT_01",
+            mutation_type="COMP_OP",
+            line_number=10,
+            original_code_snippet="a < b",
+            mutated_code_snippet="a <= b",
+            unified_diff="",
+            status="KILLED",
+        )
+    ]
+
+    orch._finalize_cancellation_or_timeout("TIMED_OUT", "Job execution exceeded time bound")
+
+    assert orch.state.final_hardening_status == "TIMED_OUT"
+    assert orch.state.mutants_killed == 14
+    assert orch.state.mutants_generated == 20
+    assert orch.state.final_mutation_score == 70.0
+
+    bb_mutant = orch.blackboard.get_mutant_space()
+    assert bb_mutant.mutants_killed == 14
+    assert bb_mutant.mutants_generated == 20
+    assert bb_mutant.raw_mutation_score == 70.0
+
 
 
 
