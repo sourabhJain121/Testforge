@@ -119,7 +119,19 @@ class HybridLLMClient:
         self.local_model = local_model
         self.local_url = local_url
         self.engine_mode = engine_mode.lower()  # "auto", "cloud", "openrouter", "local"
-        self.api_key = api_key or os.environ.get("GEMINI_API_KEY", "").strip()
+        self.api_key = (
+            api_key
+            or os.environ.get("GEMINI_API_KEY", "").strip()
+            or os.environ.get("GOOGLE_API_KEY", "").strip()
+        )
+        self.api_key_2 = (
+            os.environ.get("GEMINI_API_KEY_2", "").strip()
+            or os.environ.get("GEMINI_FALLBACK_API_KEY", "").strip()
+        )
+        if not self.api_key and self.api_key_2:
+            self.api_key = self.api_key_2
+            self.api_key_2 = ""
+        self.gemini_key_index = 1
         self.openrouter_api_key = openrouter_api_key or os.environ.get("OPENROUTER_API_KEY", "").strip()
         self.logger = logger
         self.active_provider: str = "None"
@@ -227,6 +239,32 @@ class HybridLLMClient:
                     is_503 = any(token in err_msg for token in ("503", "UNAVAILABLE", "overloaded"))
 
                     if is_429:
+                        if self.api_key_2 and self.gemini_key_index == 1:
+                            print(f"\n[!] Primary Gemini key 429 quota reached. Rotating to secondary GEMINI_API_KEY_2...")
+                            try:
+                                from google import genai
+                                self.genai_client = genai.Client(api_key=self.api_key_2)
+                                self.api_key = self.api_key_2
+                                self.gemini_key_index = 2
+                                if self.logger:
+                                    self.logger.log_event("GEMINI_KEY_ROTATED", {
+                                        "reason": "429 RESOURCE_EXHAUSTED",
+                                        "switched_to": "GEMINI_API_KEY_2"
+                                    })
+                                try:
+                                    from testforge.websocket_hub import global_websocket_hub
+                                    global_websocket_hub.broadcast_event({
+                                        "event_type": "PIPELINE_TELEMETRY",
+                                        "phase": "EXECUTING",
+                                        "stage": "KEY_ROTATED",
+                                        "detail": "Gemini 429 quota reached -> Switched to secondary GEMINI_API_KEY_2..."
+                                    })
+                                except Exception:
+                                    pass
+                                # Retry immediately with secondary key
+                                continue
+                            except Exception as rot_exc:
+                                print(f"[!] Secondary Gemini key rotation failed: {rot_exc}")
                         if attempt < 2:
                             delay = 6.0
                             print(f"[*] Transient GenAI 429 quota/rate limit (attempt {attempt}/2). Retrying in {delay:.1f}s...")

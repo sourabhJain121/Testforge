@@ -252,6 +252,7 @@ app.mount("/qa_artifacts", StaticFiles(directory=str(BASE_DIR / "qa_artifacts"))
 
 class KeyConfigPayload(BaseModel):
     gemini_api_key: Optional[str] = None
+    gemini_api_key_2: Optional[str] = None
     openrouter_api_key: Optional[str] = None
 
 class SampleIngestPayload(BaseModel):
@@ -299,6 +300,7 @@ class HardeningRunPayload(BaseModel):
     engine_mode: str = "auto"
     target_lines: Optional[List[int]] = None
     gemini_api_key: Optional[str] = None
+    gemini_api_key_2: Optional[str] = None
     openrouter_api_key: Optional[str] = None
     timeout_seconds: Optional[int] = Field(default=300, ge=5, le=3600)
     resume_checkpoint_id: Optional[str] = None
@@ -817,7 +819,8 @@ async def get_system_status():
         },
         "providers": {
             "ollama_online": ollama_online,
-            "has_gemini": bool(os.environ.get("GEMINI_API_KEY", "").strip()),
+            "has_gemini": bool(os.environ.get("GEMINI_API_KEY", "").strip() or os.environ.get("GEMINI_API_KEY_2", "").strip() or os.environ.get("GEMINI_FALLBACK_API_KEY", "").strip() or os.environ.get("GOOGLE_API_KEY", "").strip()),
+            "has_gemini_fallback": bool(os.environ.get("GEMINI_API_KEY_2", "").strip() or os.environ.get("GEMINI_FALLBACK_API_KEY", "").strip()),
             "has_openrouter": bool(os.environ.get("OPENROUTER_API_KEY", "").strip()),
         },
         "supported_models": [
@@ -836,12 +839,16 @@ async def update_api_keys(payload: KeyConfigPayload):
     """
     if payload.gemini_api_key is not None:
         os.environ["GEMINI_API_KEY"] = payload.gemini_api_key.strip()
+    if payload.gemini_api_key_2 is not None:
+        os.environ["GEMINI_API_KEY_2"] = payload.gemini_api_key_2.strip()
     if payload.openrouter_api_key is not None:
         os.environ["OPENROUTER_API_KEY"] = payload.openrouter_api_key.strip()
 
+    has_gem = bool(os.environ.get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY_2") or os.environ.get("GOOGLE_API_KEY"))
     return {
         "status": "success",
-        "has_gemini": bool(os.environ.get("GEMINI_API_KEY")),
+        "has_gemini": has_gem,
+        "has_gemini_fallback": bool(os.environ.get("GEMINI_API_KEY_2") or os.environ.get("GEMINI_FALLBACK_API_KEY")),
         "has_openrouter": bool(os.environ.get("OPENROUTER_API_KEY")),
     }
 
@@ -1393,7 +1400,14 @@ def _run_orchestration_job(job_id: str, payload: HardeningRunPayload):
             model_name=payload.model_name,
             trace_log_path=trace_log,
             target_file_path=payload.target_file_path or "",
-            api_key=payload.gemini_api_key or os.environ.get("GEMINI_API_KEY"),
+            api_key=(
+                payload.gemini_api_key
+                or payload.gemini_api_key_2
+                or os.environ.get("GEMINI_API_KEY")
+                or os.environ.get("GEMINI_API_KEY_2")
+                or os.environ.get("GEMINI_FALLBACK_API_KEY")
+                or os.environ.get("GOOGLE_API_KEY")
+            ),
             openrouter_api_key=payload.openrouter_api_key or os.environ.get("OPENROUTER_API_KEY"),
             engine_mode=payload.engine_mode,
             target_lines=payload.target_lines,

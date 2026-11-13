@@ -51,7 +51,13 @@ class CrewCodeIntelligenceCriticCrew:
         model_name: str = "gemini/gemini-2.5-flash",
         verbose: bool = False
     ):
-        self.api_key = api_key or os.environ.get("GEMINI_API_KEY", "")
+        self.api_key = (
+            api_key
+            or os.environ.get("GEMINI_API_KEY", "").strip()
+            or os.environ.get("GEMINI_API_KEY_2", "").strip()
+            or os.environ.get("GEMINI_FALLBACK_API_KEY", "").strip()
+            or os.environ.get("GOOGLE_API_KEY", "").strip()
+        )
         self.model_name = model_name
         self.verbose = verbose
         self.has_crewai = HAS_CREWAI
