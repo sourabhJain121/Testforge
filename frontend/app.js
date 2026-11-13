@@ -578,9 +578,79 @@ document.addEventListener('DOMContentLoaded', () => {
   // =========================================================================
   // [FROZEN / LOCKED] Tab Navigation Handling & Unified Target Ingestion Switching (#view-ingestion)
   // =========================================================================
-  function switchTab(tabId) {
+  const VALID_TABS = new Set([
+    'tab-ingestion',
+    'tab-blast',
+    'tab-hardening',
+    'tab-wiretap',
+    'tab-telemetry',
+    'tab-benchmark',
+    'tab-checkpoints',
+  ]);
+
+  function resolveTabId(rawId) {
+    if (!rawId) return null;
+    let id = String(rawId).trim().replace(/^#+/, '');
+    if (id === 'tab-lab' || id === 'view-lab' || id === 'lab' || id === 'hardening') return 'tab-hardening';
+    if (id === 'blast' || id === 'view-blast') return 'tab-blast';
+    if (id === 'wiretap' || id === 'view-wiretap') return 'tab-wiretap';
+    if (id === 'telemetry' || id === 'observability' || id === 'view-telemetry') return 'tab-telemetry';
+    if (id === 'benchmark' || id === 'benchmarks' || id === 'view-benchmark') return 'tab-benchmark';
+    if (id === 'checkpoints' || id === 'history' || id === 'view-checkpoints') return 'tab-checkpoints';
+    if (id === 'ingestion' || id === 'view-ingestion') return 'tab-ingestion';
+    return id;
+  }
+
+  function isValidTab(tabId) {
+    if (!tabId) return false;
+    if (VALID_TABS.has(tabId)) return true;
+    const pane = document.getElementById(tabId);
+    return !!(pane && pane.classList.contains('tab-pane'));
+  }
+
+  async function rehydrateHardeningState() {
+    let savedJobId = state.hardening.jobId || state.hardening.currentJobId;
+    if (!savedJobId) {
+      try {
+        savedJobId = sessionStorage.getItem('testforge_active_job_id');
+      } catch (_) {}
+    }
+    if (!savedJobId || savedJobId === 'current') return;
+    try {
+      const res = await fetch(`/api/harden/status/${encodeURIComponent(savedJobId)}`);
+      if (!res.ok) return;
+      const job = await res.json();
+      state.hardening.jobId = job.job_id || savedJobId;
+      state.hardening.currentJobId = job.job_id || savedJobId;
+      if (job.status === 'RUNNING') {
+        state.hardening.status = 'RUNNING';
+        setHardeningButtonsState(true);
+        pollHardeningJob(savedJobId);
+      } else if (job.final_state || job.status === 'COMPLETED' || job.status === 'TIMED_OUT' || job.status === 'CANCELLED') {
+        renderHardeningResults(job, job.status);
+      }
+    } catch (_) {}
+  }
+
+  function switchTab(tabId, updateUrl = true) {
+    tabId = resolveTabId(tabId) || tabId;
     if (tabId === 'tab-lab' || tabId === 'view-lab') tabId = 'tab-hardening';
     state.currentTab = tabId;
+
+    // Sync Active Tab to URL Hash & sessionStorage
+    if (updateUrl && tabId) {
+      try {
+        if (window.location.hash !== '#' + tabId) {
+          history.replaceState(null, '', '#' + tabId);
+        }
+      } catch (_) {
+        try { window.location.hash = tabId; } catch (__) {}
+      }
+      try {
+        sessionStorage.setItem('testforge_active_tab', tabId);
+      } catch (_) {}
+    }
+
     const isModeA = (tabId === 'tab-mode-a' || tabId === 'mode_a' || tabId === 'mode-a');
     const isModeB = (tabId === 'tab-mode-b' || tabId === 'mode_b' || tabId === 'mode-b');
     const isModeC = (tabId === 'tab-mode-c' || tabId === 'mode_c' || tabId === 'mode-c');
@@ -637,6 +707,8 @@ document.addEventListener('DOMContentLoaded', () => {
       loadApprovalRequests();
       loadMinimizerSummary();
       updateExportButtonsState();
+      fetchHardenedSuiteCode();
+      rehydrateHardeningState();
     } else if (tabId === 'tab-wiretap') {
       fetchWiretap();
     } else if (tabId === 'tab-telemetry') {
@@ -648,6 +720,37 @@ document.addEventListener('DOMContentLoaded', () => {
       loadMultiTargetBenchmark();
     } else if (tabId === 'tab-checkpoints') {
       fetchCheckpoints();
+    }
+  }
+
+  function restoreActiveTabFromHashOrStorage() {
+    let targetTab = null;
+
+    // 1. Try URL hash first
+    const hash = window.location.hash ? window.location.hash.replace(/^#+/, '') : '';
+    if (hash) {
+      const resolvedHash = resolveTabId(hash);
+      if (resolvedHash && isValidTab(resolvedHash)) {
+        targetTab = resolvedHash;
+      }
+    }
+
+    // 2. Fall back to sessionStorage if hash is empty or unhandled
+    if (!targetTab) {
+      try {
+        const stored = sessionStorage.getItem('testforge_active_tab');
+        if (stored) {
+          const resolvedStored = resolveTabId(stored);
+          if (resolvedStored && isValidTab(resolvedStored)) {
+            targetTab = resolvedStored;
+          }
+        }
+      } catch (_) {}
+    }
+
+    // 3. If a valid saved tab was found, switch to it and trigger its data refresh hook
+    if (targetTab) {
+      switchTab(targetTab, true);
     }
   }
 
@@ -730,8 +833,19 @@ document.addEventListener('DOMContentLoaded', () => {
   dom.tabButtons.forEach(btn => {
     btn.addEventListener('click', () => {
       const tabId = btn.getAttribute('data-tab');
-      switchTab(tabId);
+      switchTab(tabId, true);
     });
+  });
+
+  window.addEventListener('hashchange', () => {
+    const rawHash = window.location.hash ? window.location.hash.replace(/^#+/, '') : '';
+    const resolved = resolveTabId(rawHash);
+    if (resolved && isValidTab(resolved) && resolved !== state.currentTab) {
+      switchTab(resolved, false);
+      try {
+        sessionStorage.setItem('testforge_active_tab', resolved);
+      } catch (_) {}
+    }
   });
 
   if (dom.btnScrollToHardening) {
@@ -3314,6 +3428,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       state.hardening.jobId = jobData.job_id;
       state.hardening.currentJobId = jobData.job_id;
+      try { sessionStorage.setItem('testforge_active_job_id', jobData.job_id); } catch (_) {}
       state.hardening.status = 'RUNNING';
 
       // Reveal Cancel Button now that job is verified and active
@@ -8035,8 +8150,13 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchSupervisorDecisions();
     loadMinimizerSummary();
 
-    // 11. Expose test helpers for QA automation
+    // 11. Restore exact active tab on page reload from URL hash or sessionStorage
+    restoreActiveTabFromHashOrStorage();
+
+    // 12. Expose test helpers for QA automation
     window.__testforge = {
+      restoreActiveTabFromHashOrStorage,
+      resolveTabId,
       showApiAlertModal,
       showToast,
       switchTab,
