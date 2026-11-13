@@ -434,6 +434,7 @@
             <span class="tag" id="tag-funcs">⚡ 1 Function</span>
             <span class="tag" id="tag-classes">🏛️ 0 Classes</span>
             <span class="tag" id="tag-lines">📄 24 Lines</span>
+            <span class="tag badge-purple" id="tag-dual-framework" style="background: rgba(168, 85, 247, 0.2); border: 1px solid rgba(168, 85, 247, 0.4); color: #c084fc; font-weight: 600;">⚡ Google ADK + CrewAI Hybrid MAS</span>
           </div>
         </div>
       </div>
@@ -1409,6 +1410,87 @@
               </tbody>
               <tbody id="table-recent-inferences" style="display:none;"></tbody>
             </table>
+          </div>
+
+          <!-- Dual-Framework MAS 8-Agent Latency Table -->
+          <div style="margin-top: 2rem;">
+            <div class="panel-header-flex">
+              <div>
+                <h4 class="metric-row-title"><span class="icon">⚡</span> Dual-Framework Multi-Agent Latency Telemetry (Google ADK + CrewAI)</h4>
+                <p class="panel-desc">Real-time wall-clock execution latency measured per specialized agent role.</p>
+              </div>
+            </div>
+            <div class="table-responsive" style="margin-top: 0.75rem;">
+              <table class="data-table" id="agent-latency-table">
+                <thead>
+                  <tr>
+                    <th>Agent Role</th>
+                    <th>Framework</th>
+                    <th>Specialization / Stage</th>
+                    <th>Wall-Clock Latency</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="agent-latency-tbody">
+                  <tr>
+                    <td><strong>SecurityGuardrailAgent</strong></td>
+                    <td><span class="badge badge-blue">Google ADK</span></td>
+                    <td>AST Security Ingestion & Refusal Guard</td>
+                    <td id="lat-SecurityGuardrailAgent" class="text-cyan">0.0 ms</td>
+                    <td><span class="badge badge-green">READY</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>CrewCodeIntelligenceAgent</strong></td>
+                    <td><span class="badge badge-purple">CrewAI</span></td>
+                    <td>Static AST Complexity & Risk Scoring</td>
+                    <td id="lat-CrewCodeIntelligenceAgent" class="text-cyan">0.0 ms</td>
+                    <td><span class="badge badge-green">READY</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>AdkGeneratorAgent</strong></td>
+                    <td><span class="badge badge-blue">Google ADK</span></td>
+                    <td>Initial Test Suite Synthesis & Context Slicing</td>
+                    <td id="lat-AdkGeneratorAgent" class="text-cyan">0.0 ms</td>
+                    <td><span class="badge badge-green">READY</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>SandboxExecutionEngine</strong></td>
+                    <td><span class="badge badge-outline">Subprocess</span></td>
+                    <td>Parallel Zero-Egress Sandbox Execution</td>
+                    <td id="lat-SandboxExecutionEngine" class="text-cyan">0.0 ms</td>
+                    <td><span class="badge badge-green">READY</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>EquivalencePrunerAgent</strong></td>
+                    <td><span class="badge badge-outline">Compiler AST</span></td>
+                    <td>Bytecode Equivalence Pruning</td>
+                    <td id="lat-EquivalencePrunerAgent" class="text-cyan">0.0 ms</td>
+                    <td><span class="badge badge-green">READY</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>NeuroSymbolicSolver</strong></td>
+                    <td><span class="badge badge-green">Symbolic AST</span></td>
+                    <td>Boundary Value & Path Constraint Solver</td>
+                    <td id="lat-NeuroSymbolicSolver" class="text-cyan">0.0 ms</td>
+                    <td><span class="badge badge-green">READY</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>CrewCriticAgent</strong></td>
+                    <td><span class="badge badge-purple">CrewAI</span></td>
+                    <td>Surviving Mutant Root-Cause Critic & Guidance</td>
+                    <td id="lat-CrewCriticAgent" class="text-cyan">0.0 ms</td>
+                    <td><span class="badge badge-green">READY</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>AdkReflectionAgent</strong></td>
+                    <td><span class="badge badge-blue">Google ADK</span></td>
+                    <td>Iterative Reflection & Targeted Mutation Repair</td>
+                    <td id="lat-AdkReflectionAgent" class="text-cyan">0.0 ms</td>
+                    <td><span class="badge badge-green">READY</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
 
           <!-- OpenTelemetry Distributed Spans (Sub-Task 3.4) -->

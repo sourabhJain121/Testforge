@@ -12,3 +12,4 @@ __pycache__
 *.log
 scratch
 brain
+qa_artifacts/scratch_runs

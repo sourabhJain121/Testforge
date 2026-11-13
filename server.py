@@ -362,12 +362,14 @@ async def serve_index():
 @app.get("/healthz")
 async def healthz():
     """
-    Standard liveness probe endpoint for Docker and Kubernetes.
+    Standard liveness probe endpoint for Cloud Run, Render, Docker and Kubernetes.
     """
     return {
-        "status": "healthy",
+        "status": "ok",
         "service": "testforge-backend",
         "version": "2.0.0",
+        "frameworks": ["google-adk", "crewai"],
+        "mcp": "fastmcp-stdio",
         "timestamp": time.time(),
     }
 
@@ -1621,6 +1623,7 @@ async def get_hardening_job_status(job_id: str):
                         m.model_dump() if hasattr(m, "model_dump") else m
                         for m in orch.state.mutants
                     ]
+                job["agent_latencies_ms"] = getattr(orch.state, "agent_latencies_ms", {}) or (getattr(orch.blackboard.metrics, "agent_latencies_ms", {}) if hasattr(orch, "blackboard") and orch.blackboard else {})
             if hasattr(orch, "blackboard") and orch.blackboard:
                 bb = orch.blackboard
                 with bb._lock:
@@ -1672,7 +1675,8 @@ async def get_hardening_job_status(job_id: str):
                                 "branch_coverage": getattr(bb.metrics, "branch_coverage", 0.0),
                                 "total_branches": getattr(bb.metrics, "total_branches", 0),
                                 "covered_branches": getattr(bb.metrics, "covered_branches", 0),
-                                "status_val": bb.metrics.final_hardening_status
+                                "status_val": bb.metrics.final_hardening_status,
+                                "agent_latencies_ms": getattr(orch.state, "agent_latencies_ms", {}) or getattr(bb.metrics, "agent_latencies_ms", {}) or {}
                             }
                         }
                     }
@@ -1680,6 +1684,7 @@ async def get_hardening_job_status(job_id: str):
         # If job is finalized/completed and blackboard_summary is not yet set, build from final_state
         if "blackboard_summary" not in job and "final_state" in job:
             fs = job["final_state"]
+            job.setdefault("agent_latencies_ms", fs.get("agent_latencies_ms", {}))
             mut_records = fs.get("mutants", [])
             gen_count = len(mut_records)
             kill_count = sum(1 for m in mut_records if m.get("status") == "KILLED")
@@ -1727,7 +1732,8 @@ async def get_hardening_job_status(job_id: str):
                         "branch_coverage": fs.get("baseline_branch_coverage", fs.get("branch_coverage", 0.0)),
                         "total_branches": fs.get("total_branches", 0),
                         "covered_branches": fs.get("covered_branches", 0),
-                        "status_val": fs.get("final_hardening_status", "COMPLETED")
+                        "status_val": fs.get("final_hardening_status", "COMPLETED"),
+                        "agent_latencies_ms": fs.get("agent_latencies_ms", {})
                     }
                 }
             }
@@ -3109,4 +3115,5 @@ def run_multi_target_benchmark_endpoint(payload: Optional[MultiTargetBenchmarkRu
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("server:app", host="0.0.0.0", port=8000, reload=True)
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("server:app", host="0.0.0.0", port=port, reload=True)

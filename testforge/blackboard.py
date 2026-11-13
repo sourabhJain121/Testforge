@@ -188,6 +188,7 @@ class MetricsSpace(BaseModel):
     lifecycle_state: str = "CREATED"
     stage_durations: Dict[str, float] = Field(default_factory=dict)
     stage_history: List[Dict[str, Any]] = Field(default_factory=list)
+    agent_latencies_ms: Dict[str, float] = Field(default_factory=dict)
     # Phase 7: Supervisor Agent enhancements
     supervisor_decisions: List[Dict[str, Any]] = Field(default_factory=list)
     current_stage: str = "INITIALIZING"

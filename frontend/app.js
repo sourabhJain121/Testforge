@@ -2823,6 +2823,15 @@ document.addEventListener('DOMContentLoaded', () => {
       suiteStatusEl.textContent = `Finalized (${basePass} clean tests)`;
     }
 
+    // Update Dual-Framework Agent Latencies
+    const finalLatencies = (jobData && jobData.agent_latencies_ms) || (metricsSpace && metricsSpace.agent_latencies_ms) || (fs && fs.agent_latencies_ms) || {};
+    for (const [agentName, latMs] of Object.entries(finalLatencies)) {
+      const cell = document.getElementById(`lat-${agentName}`);
+      if (cell && latMs !== undefined && latMs !== null) {
+        cell.textContent = `${Number(latMs).toFixed(1)} ms`;
+      }
+    }
+
     // 3. KPI Cards Unpacking
     const baseGenStr = String(baseGen);
     if (dom.kpiBaseGen) dom.kpiBaseGen.innerHTML = `<span id="baseline-generated">${baseGenStr}</span>`;
@@ -3420,6 +3429,15 @@ document.addEventListener('DOMContentLoaded', () => {
       if (dom.bbMetricsSummary && spaces.MetricsSpace) {
         const ms = spaces.MetricsSpace;
         dom.bbMetricsSummary.textContent = `Cycle ${ms.iteration || 1} | Score: ${ms.score ?? 0}%`;
+      }
+
+      // 6. Update Dual-Framework Agent Latencies
+      const latencies = (job && job.agent_latencies_ms) || (spaces.MetricsSpace && spaces.MetricsSpace.agent_latencies_ms) || {};
+      for (const [agentName, latMs] of Object.entries(latencies)) {
+        const cell = document.getElementById(`lat-${agentName}`);
+        if (cell && latMs !== undefined && latMs !== null) {
+          cell.textContent = `${Number(latMs).toFixed(1)} ms`;
+        }
       }
     }
 

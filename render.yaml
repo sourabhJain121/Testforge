@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: testforge-backend
+    env: python
+    region: oregon
+    plan: standard
+    branch: release/v1.0.0
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    startCommand: uvicorn server:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.0
+      - key: TESTFORGE_PRIVACY_MODE
+        value: "false"
+      - key: TESTFORGE_SANDBOX_WORKERS
+        value: "4"

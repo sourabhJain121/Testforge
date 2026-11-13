@@ -10,7 +10,8 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
-    DEBIAN_FRONTEND=noninteractive
+    DEBIAN_FRONTEND=noninteractive \
+    PORT=8000
 
 # Install essential OS runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -37,12 +38,12 @@ RUN chown -R testforge:testforge /app
 # Switch to non-root user
 USER testforge
 
-# Expose FastAPI backend (8000) and Streamlit dashboard (8501)
+# Expose dynamic Cloud Run / Render port
 EXPOSE 8000 8501
 
 # Container healthcheck targeting standard healthz probe
 HEALTHCHECK --interval=15s --timeout=5s --start-period=10s --retries=3 \
-    CMD curl -f http://localhost:8000/healthz || exit 1
+    CMD curl -f http://localhost:${PORT:-8000}/healthz || exit 1
 
-# Default entrypoint: Start FastAPI server
-CMD ["python", "-m", "uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8000"]
+# Default entrypoint: Start FastAPI server respecting $PORT
+CMD exec uvicorn server:app --host 0.0.0.0 --port ${PORT:-8000}

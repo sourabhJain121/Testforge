@@ -536,4 +536,5 @@ class TestForgeState(BaseModel):
     stage: Union[HardeningStage, str, None] = Field(default=HardeningStage.VALIDATING, description="Active hardening stage alias")
     stage_durations: Dict[str, float] = Field(default_factory=dict)
     stage_history: List[StageRecord] = Field(default_factory=list)
+    agent_latencies_ms: Dict[str, float] = Field(default_factory=dict)
     metadata: Dict[str, Any] = Field(default_factory=dict)

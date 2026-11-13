@@ -293,6 +293,18 @@ class TestForgeOrchestrator:
         self.broker = broker or A2ABroker(blackboard=self.blackboard, callback_registry=self.callbacks)
         self.adk_generator = GoogleADKTestGenerator(api_key=api_key)
         self.crew_critic = MutationQualityCriticAgent(api_key=api_key, verbose=False)
+        from testforge.crewai_agents import CrewCodeIntelligenceCriticCrew
+        self.crewai_crew = CrewCodeIntelligenceCriticCrew(api_key=api_key)
+        self.agent_latencies_ms: Dict[str, float] = {
+            "SecurityGuardrailAgent": 0.0,
+            "CrewCodeIntelligenceAgent": 0.0,
+            "AdkGeneratorAgent": 0.0,
+            "SandboxExecutionEngine": 0.0,
+            "EquivalencePrunerAgent": 0.0,
+            "NeuroSymbolicSolver": 0.0,
+            "CrewCriticAgent": 0.0,
+            "AdkReflectionAgent": 0.0,
+        }
         from testforge.code_intelligence_agent import CodeIntelligenceAgent
         from testforge.security_agent import SecurityAgent
         self.code_intel_agent = CodeIntelligenceAgent(
@@ -341,6 +353,11 @@ class TestForgeOrchestrator:
             "agent:crewai:cooperative-crew",
             self.crew_critic.handle_a2a_message,
             description="Official 3-Agent Cooperative Critic Crew"
+        )
+        self.broker.register_handler(
+            "agent:crewai:code-intelligence",
+            self.crewai_crew.handle_a2a_message,
+            description="Official CrewAI Code Intelligence & Static Risk Analyst Agent"
         )
         self.broker.register_handler(
             "agent:google-adk:code-intelligence",
@@ -1069,6 +1086,7 @@ class TestForgeOrchestrator:
                     }
                 )
                 self.supervisor.set_agent_executing("SecurityAgent", True)
+            t_sec_start = time.perf_counter()
             from testforge.security import SecurityGuardrail, SecurityRefusal
             guardrail = SecurityGuardrail()
             # Authoritative evaluation via SecurityAgent (Google ADK)
@@ -1172,6 +1190,8 @@ class TestForgeOrchestrator:
             if not hasattr(self.state, "metadata") or self.state.metadata is None:
                 self.state.metadata = {}
             self.state.metadata["security_assessment"] = sec_res.model_dump()
+            self.agent_latencies_ms["SecurityGuardrailAgent"] = round((time.perf_counter() - t_sec_start) * 1000, 2)
+            self.blackboard.update_metrics_space(agent_latencies_ms=dict(self.agent_latencies_ms))
         else:
             console.print("[bold cyan]⏩ Restored from checkpoint: Skipping Step 0 security inspection (already validated)[/bold cyan]")
 
@@ -1289,12 +1309,23 @@ class TestForgeOrchestrator:
                     }
                 )
                 self.supervisor.set_agent_executing("CodeIntelligenceAgent", True)
+            t_intel_start = time.perf_counter()
             intel_res = self.code_intel_agent.analyze_source(
                 source_code=self.state.target_source_code,
                 target_file_path=self.target_file_path,
                 job_id=self.job_id,
                 workflow_id=self.workflow_id,
             )
+            # Execute CrewAI Code Intelligence & Static Risk Analyst Agent
+            try:
+                crew_risk = self.crewai_crew.analyze_code_risk(self.state.target_source_code, self.target_file_path or "")
+                if not hasattr(self.state, "metadata") or self.state.metadata is None:
+                    self.state.metadata = {}
+                self.state.metadata["crewai_risk_analysis"] = crew_risk
+            except Exception as exc:
+                logger.debug(f"CrewAI risk analysis error: {exc}")
+            self.agent_latencies_ms["CrewCodeIntelligenceAgent"] = round((time.perf_counter() - t_intel_start) * 1000, 2)
+            self.blackboard.update_metrics_space(agent_latencies_ms=dict(self.agent_latencies_ms))
             if hasattr(self, "supervisor") and self.supervisor:
                 self.supervisor.set_agent_completed("CodeIntelligenceAgent", success=True)
             if not hasattr(self.state, "metadata") or self.state.metadata is None:
@@ -1551,6 +1582,8 @@ class TestForgeOrchestrator:
 
             self.state.current_test_code = initial_tests
             self.state.active_provider = provider_used
+            self.agent_latencies_ms["AdkGeneratorAgent"] = round(step1_duration, 2)
+            self.blackboard.update_metrics_space(agent_latencies_ms=dict(self.agent_latencies_ms))
             self.blackboard.update_suite_space(
                 current_test_code=self.state.current_test_code,
                 active_provider=self.state.active_provider
@@ -1638,6 +1671,8 @@ class TestForgeOrchestrator:
                 "tests_failed": exec_res.failed_tests,
                 "tests_errors": exec_res.error_tests,
             }
+            self.agent_latencies_ms["SandboxExecutionEngine"] = round(exec_res.duration_seconds * 1000.0, 2)
+            self.blackboard.update_metrics_space(agent_latencies_ms=dict(self.agent_latencies_ms))
 
             if baseline_exec["status"] != "PASS" or baseline_exec.get("tests_passed", 0) == 0:
                 self.check_cancellation_or_timeout()
@@ -1899,6 +1934,7 @@ class TestForgeOrchestrator:
                 m for m in self.state.mutants if m.status in ("SURVIVED", "POTENTIALLY_EQUIVALENT")
             ]
             if surviving_mutants_for_symbolic:
+                t_sym_start = time.perf_counter()
                 try:
                     from testforge.hybrid_synthesizer import synthesize_symbolic_repairs
                     companion_ctx = ""
@@ -1950,6 +1986,9 @@ class TestForgeOrchestrator:
                                 pass
                 except Exception as exc:
                     logger.debug(f"Neuro-symbolic solver pass error: {exc}")
+                finally:
+                    self.agent_latencies_ms["NeuroSymbolicSolver"] = round((time.perf_counter() - t_sym_start) * 1000, 2)
+                    self.blackboard.update_metrics_space(agent_latencies_ms=dict(self.agent_latencies_ms))
 
             # A. If we have reflection feedback from previous iteration, regenerate/harden tests first
             if critic_directive and self.state.surviving_mutant_diffs:
@@ -2049,12 +2088,15 @@ class TestForgeOrchestrator:
 
                 target_lines_count = len((self.state.target_source_code or "").splitlines())
                 refl_timeout = 15.0 if target_lines_count > 1000 else 25.0
+                t_refl_start = time.perf_counter()
                 hardened_tests, refl_timed_out = execute_llm_synthesis_with_timeout(
                     _perform_reflection_repair,
                     timeout_seconds=refl_timeout,
                     source_code=self.state.target_source_code,
                     fallback_code=self.state.current_test_code,
                 )
+                self.agent_latencies_ms["AdkReflectionAgent"] = round((time.perf_counter() - t_refl_start) * 1000, 2)
+                self.blackboard.update_metrics_space(agent_latencies_ms=dict(self.agent_latencies_ms))
                 if refl_timed_out:
                     self.logger.log_event("LLM_SYNTHESIS_TIMEOUT_FALLBACK", {
                         "timeout_seconds": refl_timeout,
@@ -2191,6 +2233,7 @@ class TestForgeOrchestrator:
                 )
                 self.supervisor.set_agent_executing("TestExecutionAgent", True)
             console.print(f"  [cyan]• TestExecutionAgent evaluating mutants across {self.sandbox.max_workers} CPU workers...[/cyan]")
+            t_mut_start = time.perf_counter()
             evaluated_mutants = self.execution_agent.evaluate_mutants(
                 test_code=self.state.current_test_code,
                 mutants=mutants,
@@ -2199,12 +2242,18 @@ class TestForgeOrchestrator:
                 job_id=self.job_id,
                 workflow_id=self.workflow_id,
             )
+            self.agent_latencies_ms["SandboxExecutionEngine"] = round(
+                self.agent_latencies_ms.get("SandboxExecutionEngine", 0.0) + (time.perf_counter() - t_mut_start) * 1000, 2
+            )
             if hasattr(self, "supervisor") and self.supervisor:
                 self.supervisor.set_agent_completed("TestExecutionAgent", success=True)
 
             # D. Compute score & surviving diffs with Milestone 2 equivalence analysis
             self._sync_lifecycle(TaskLifecycleState.EVALUATING, metadata={"iteration": iteration, "step": "score_evaluation"})
+            t_eq_start = time.perf_counter()
             score_data = calculate_mutation_scores(evaluated_mutants)
+            self.agent_latencies_ms["EquivalencePrunerAgent"] = round((time.perf_counter() - t_eq_start) * 1000, 2)
+            self.blackboard.update_metrics_space(agent_latencies_ms=dict(self.agent_latencies_ms))
             total = score_data["total_mutants"]
             killed = score_data["killed_mutants"]
             survived = score_data["survived_mutants"]
@@ -2479,6 +2528,7 @@ class TestForgeOrchestrator:
             if hasattr(self, "supervisor") and self.supervisor:
                 self.supervisor.set_agent_executing("MutationQualityCriticAgent", True)
             console.print(f"  [magenta]• Adversarial Critic analyzing {survived} surviving mutant(s)...[/magenta]")
+            t_crit_start = time.perf_counter()
             critic_directive = ""
             critic_agent_name = "AdversarialCriticAgent"
             if not getattr(self.feature_flags, "critic", True):
@@ -2550,6 +2600,10 @@ class TestForgeOrchestrator:
             )
             if hasattr(self, "supervisor") and self.supervisor:
                 self.supervisor.set_agent_completed("MutationQualityCriticAgent", success=True)
+            self.agent_latencies_ms["CrewCriticAgent"] = round(
+                self.agent_latencies_ms.get("CrewCriticAgent", 0.0) + (time.perf_counter() - t_crit_start) * 1000, 2
+            )
+            self.blackboard.update_metrics_space(agent_latencies_ms=dict(self.agent_latencies_ms))
 
             self.logger.log_event("AGENT_HANDOFF", {
                 "from_agent": critic_agent_name,
@@ -2598,6 +2652,7 @@ class TestForgeOrchestrator:
             pass
 
         self._sync_lifecycle(TaskLifecycleState.COMPLETED, reason=self.state.termination_reason)
+        self.state.agent_latencies_ms = dict(self.agent_latencies_ms)
         self.blackboard.update_metrics_space(
             terminated=self.state.terminated,
             termination_reason=self.state.termination_reason,
@@ -2608,6 +2663,7 @@ class TestForgeOrchestrator:
             potentially_equivalent_mutants=pot_equiv_final,
             final_hardening_status=self.state.final_hardening_status,
             reflection_iterations_performed=self.state.reflection_iterations_performed,
+            agent_latencies_ms=dict(self.agent_latencies_ms),
         )
         self.blackboard.sync_to_state(self.state)
         self.blackboard.save_checkpoint(
