@@ -40,27 +40,27 @@
       <div class="brand">
         <span class="brand-icon">⚡</span>
         <div class="brand-text">
-          <h1 class="brand-title">TestForge</h1>
+          <h1 class="brand-title" style="color: #f8fafc; -webkit-text-fill-color: #f8fafc; font-weight: 800; text-shadow: 0 1px 3px rgba(0,0,0,0.5);">TestForge</h1>
           <span class="brand-subtitle">Autonomous Agentic Test Hardening</span>
         </div>
       </div>
     </div>
 
     <!-- Live Status Bar -->
-    <div class="nav-center status-pills" id="system-status-pills">
-      <div class="pill" id="pill-hardware" title="Hardware Profile">
+    <div class="nav-center status-pills" id="system-status-pills" style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 6px; align-items: center;">
+      <div class="pill" id="pill-hardware" title="Hardware Profile" style="white-space: nowrap;">
         <span class="indicator-dot green"></span>
         <span id="label-hardware">Apple Silicon (arm64)</span>
       </div>
-      <div class="pill" id="pill-ollama" title="Local Model Engine">
+      <div class="pill" id="pill-ollama" title="Local Model Engine" style="white-space: nowrap;">
         <span class="indicator-dot" id="dot-ollama"></span>
         <span id="label-ollama">Local Ollama</span>
       </div>
-      <div class="pill" id="pill-gemini" title="Google Gemini Cloud">
+      <div class="pill" id="pill-gemini" title="Google Gemini Cloud" style="white-space: nowrap;">
         <span class="indicator-dot" id="dot-gemini"></span>
         <span id="label-gemini">Gemini Live</span>
       </div>
-      <div class="pill" id="pill-openrouter" title="OpenRouter Cloud Fallback">
+      <div class="pill" id="pill-openrouter" title="OpenRouter Cloud Fallback" style="white-space: nowrap;">
         <span class="indicator-dot" id="dot-openrouter"></span>
         <span id="label-openrouter">OpenRouter</span>
       </div>
@@ -1223,12 +1223,12 @@
                       <span class="w-dot dot-yellow"></span>
                       <span class="w-dot dot-green"></span>
                     </div>
-                    <h4 id="ast-diff-card-title" class="diff-card-title diff-inspector-title ast-diff-title" data-alias="ast-diff-viewer-title diff-selected-mutant-title">AST Diff: MUT_COND_INV_001 (COND_INV) at line 9</h4>
+                    <h4 id="ast-diff-card-title" class="diff-card-title diff-inspector-title ast-diff-title" data-alias="ast-diff-viewer-title diff-selected-mutant-title">AST Diff: No Mutant Selected</h4>
                     <span id="ast-diff-viewer-title" class="diff-inspector-title ast-diff-title" style="display:none;">Unified AST Diff Viewer</span>
                     <span id="diff-selected-mutant-title" class="diff-inspector-title ast-diff-title" style="display:none;">Unified AST Diff Viewer</span>
                   </div>
                   <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <span class="badge badge-danger diff-outcome-pill" id="diff-status-badge" data-alias="diff-viewer-outcome-badge ast-diff-viewer-outcome-badge"><span id="diff-viewer-outcome-badge"><span id="ast-diff-viewer-outcome-badge" class="badge badge-danger">● SURVIVED TEST EXECUTION</span></span></span>
+                    <span class="badge badge-secondary diff-outcome-pill" id="diff-status-badge" data-alias="diff-viewer-outcome-badge ast-diff-viewer-outcome-badge"><span id="diff-viewer-outcome-badge"><span id="ast-diff-viewer-outcome-badge" class="badge badge-secondary">No Mutant Selected</span></span></span>
                     <button type="button" class="btn btn-outline btn-sm" id="btn-open-mutant-diff-modal" title="Open full visual side-by-side diff modal" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;">🔍 Side-by-Side</button>
                   </div>
                 </div>
@@ -1252,7 +1252,7 @@
                 <button class="btn btn-warning btn-icon" id="btn-request-repo-write" title="Request Human Approval to write hardened suite to repo">🛡 Request Repo Write</button>
               </div>
             </div>
-            <pre class="code-block" id="final-hardened-suite-editor"><code id="hardened-suite-code">// Hardened tests will appear here after completion.</code></pre>
+            <pre class="code-block" id="final-hardened-suite-editor"><code id="hardened-suite-code">// Run TestForge Autonomous Hardening to synthesize verified pytest assertions...</code></pre>
           </div>
 
           <!-- Human Approval Gate Panel (Sub-Task 3.3) -->
@@ -1960,7 +1960,7 @@
       <span>⚡ TestForge v2.0 &bull; Autonomous Multi-Agent Hardening Engine &bull; Authors: Sourabh & Shreshth</span>
     </div>
     <div class="footer-right">
-      <span>Hardware Optimized for Apple Silicon Neural Engine & Multi-core Sandboxing</span>
+      <span id="footer-hardware-label">Hardware Optimized for Apple Silicon Neural Engine & Multi-core Sandboxing</span>
     </div>
   </footer>
 

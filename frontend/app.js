@@ -107,6 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
     labelGemini: document.getElementById('label-gemini'),
     dotOpenrouter: document.getElementById('dot-openrouter'),
     labelOpenrouter: document.getElementById('label-openrouter'),
+    footerHardwareLabel: document.getElementById('footer-hardware-label'),
 
     // Privacy Mode (Sub-Task 4.1)
     btnTogglePrivacy: document.getElementById('btn-toggle-privacy'),
@@ -1761,6 +1762,20 @@ document.addEventListener('DOMContentLoaded', () => {
         // OpenRouter
         dom.dotOpenrouter.className = `indicator-dot ${has_openrouter ? 'green' : 'gray'}`;
         dom.labelOpenrouter.textContent = has_openrouter ? 'OpenRouter (Active)' : 'OpenRouter (Idle)';
+      }
+
+      // Dynamic Cloud Footer Label
+      const isCloud = Boolean(
+        (data.providers && (data.providers.cloud_mode || data.providers.ollama_mode === 'cloud_disabled')) ||
+        (data.hardware && (data.hardware.os_system || '').toLowerCase().includes('linux'))
+      );
+      const footerHardware = (dom && dom.footerHardwareLabel) || document.getElementById('footer-hardware-label');
+      if (footerHardware) {
+        if (isCloud) {
+          footerHardware.textContent = 'Cloud-Native Container • Zero-Egress Multi-Core Sandboxing';
+        } else {
+          footerHardware.textContent = 'Hardware Optimized for Apple Silicon Neural Engine & Multi-core Sandboxing';
+        }
       }
 
       // Refresh MCP status pill in background
@@ -4844,8 +4859,42 @@ document.addEventListener('DOMContentLoaded', () => {
     }).join('\n');
   }
 
+  function resetAstDiffViewer() {
+    const titleText = 'AST Diff: No Mutant Selected';
+    const titleEl = document.getElementById('ast-diff-card-title') ||
+                    document.getElementById('ast-diff-viewer-title') ||
+                    document.getElementById('diff-selected-mutant-title') ||
+                    (dom && dom.diffTitle);
+    if (titleEl) titleEl.textContent = titleText;
+    const cardTitle = document.getElementById('ast-diff-card-title');
+    if (cardTitle) cardTitle.textContent = titleText;
+
+    const badge = document.getElementById('diff-status-badge') || (dom && dom.diffStatusBadge);
+    if (badge) {
+      badge.className = 'badge badge-secondary diff-outcome-pill';
+      badge.innerHTML = '<span id="diff-viewer-outcome-badge"><span id="ast-diff-viewer-outcome-badge" class="badge badge-secondary">No Mutant Selected</span></span>';
+    }
+
+    const codeEl = document.getElementById('diff-code-display') || (dom && dom.diffCodeDisplay);
+    if (codeEl) {
+      codeEl.textContent = '// Click on any mutant in the table to inspect its unified AST diff...';
+    }
+  }
+
   async function fetchHardenedSuiteCode() {
     try {
+      const hasExecuted = Boolean(
+        (state.hardening && (state.hardening.jobId || state.hardening.currentJobId || state.hardening.status === 'COMPLETED' || state.hardening.status === 'TIMED_OUT')) ||
+        (state.blackboardRevision && state.blackboardRevision > 0) ||
+        (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('testforge_active_job_id'))
+      );
+      if (!hasExecuted) {
+        if (dom.hardenedSuiteCode) {
+          dom.hardenedSuiteCode.textContent = '// Run TestForge Autonomous Hardening to synthesize verified pytest assertions...';
+        }
+        resetAstDiffViewer();
+        return;
+      }
       const res = await fetch('/api/hardened-code');
       const data = await res.json();
       if (data.exists && data.code) {
@@ -8155,6 +8204,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 12. Expose test helpers for QA automation
     window.__testforge = {
+      resetAstDiffViewer,
       restoreActiveTabFromHashOrStorage,
       resolveTabId,
       showApiAlertModal,
