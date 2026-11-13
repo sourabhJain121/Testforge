@@ -35,7 +35,7 @@
   </div>
 
   <!-- Header Section -->
-  <header class="navbar" id="main-header" style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: nowrap; padding: 10px 20px; overflow-x: auto; min-height: 52px; box-sizing: border-box;">
+  <header class="navbar" id="main-header" style="display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: nowrap; padding: 8px 16px; overflow-x: auto; min-height: 52px; box-sizing: border-box;">
     <div class="nav-left" style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
       <div class="brand" style="display: flex; align-items: center; gap: 8px;">
         <span class="brand-icon" style="font-size: 1.4rem;">⚡</span>
@@ -47,46 +47,46 @@
     </div>
 
     <!-- Center / Right Utility Cluster -->
-    <div class="nav-right-cluster" style="display: flex; align-items: center; gap: 8px; flex-shrink: 0; margin-left: auto;">
+    <div class="nav-right-cluster" style="display: flex; align-items: center; flex-wrap: wrap; justify-content: flex-end; gap: 6px; margin-left: auto;">
       <!-- Live Status Bar -->
-      <div class="nav-center status-pills" id="system-status-pills" style="display: flex; align-items: center; gap: 5px; flex-shrink: 0;">
-        <div class="pill" id="pill-hardware" title="Hardware Profile" style="white-space: nowrap; padding: 2px 7px; font-size: 0.72rem;">
+      <div class="nav-center status-pills" id="system-status-pills" style="display: flex; align-items: center; flex-wrap: wrap; gap: 5px; flex-shrink: 0;">
+        <div class="pill" id="pill-hardware" title="Hardware Profile" style="white-space: nowrap; padding: 4px 8px; font-size: 11px; line-height: 1.2;">
           <span class="indicator-dot green"></span>
           <span id="label-hardware">Apple Silicon (arm64)</span>
         </div>
-        <div class="pill" id="pill-ollama" title="Local Model Engine" style="white-space: nowrap; padding: 2px 7px; font-size: 0.72rem;">
+        <div class="pill" id="pill-ollama" title="Local Model Engine" style="white-space: nowrap; padding: 4px 8px; font-size: 11px; line-height: 1.2;">
           <span class="indicator-dot" id="dot-ollama"></span>
           <span id="label-ollama">Local Ollama</span>
         </div>
-        <div class="pill" id="pill-gemini" title="Google Gemini Cloud" style="white-space: nowrap; padding: 2px 7px; font-size: 0.72rem;">
+        <div class="pill" id="pill-gemini" title="Google Gemini Cloud" style="white-space: nowrap; padding: 4px 8px; font-size: 11px; line-height: 1.2;">
           <span class="indicator-dot" id="dot-gemini"></span>
           <span id="label-gemini">Gemini Live</span>
         </div>
-        <div class="pill" id="pill-openrouter" title="OpenRouter Cloud Fallback" style="white-space: nowrap; padding: 2px 7px; font-size: 0.72rem;">
+        <div class="pill" id="pill-openrouter" title="OpenRouter Cloud Fallback" style="white-space: nowrap; padding: 4px 8px; font-size: 11px; line-height: 1.2;">
           <span class="indicator-dot" id="dot-openrouter"></span>
           <span id="label-openrouter">OpenRouter</span>
         </div>
       </div>
 
-      <div class="nav-right cockpit-header-actions" style="display: flex; align-items: center; gap: 5px; flex-shrink: 0;">
-        <button type="button" class="btn btn-outline btn-icon" id="btn-toggle-privacy" title="Zero-Egress Privacy Mode Toggle" style="padding: 3px 8px; font-size: 0.75rem;">
+      <div class="nav-right cockpit-header-actions" style="display: flex; align-items: center; flex-wrap: wrap; justify-content: flex-end; gap: 5px; flex-shrink: 0;">
+        <button type="button" class="btn btn-outline btn-icon" id="btn-toggle-privacy" title="Zero-Egress Privacy Mode Toggle" style="padding: 4px 8px; font-size: 11px; white-space: nowrap;">
           <span class="icon" id="icon-privacy">🔓</span> <span id="label-privacy">Privacy Mode: OFF</span>
         </button>
-        <button type="button" class="btn btn-outline btn-icon" id="btn-a2a-card" title="A2A AgentCard Discovery" style="padding: 3px 8px; font-size: 0.75rem;">
+        <button type="button" class="btn btn-outline btn-icon" id="btn-a2a-card" title="A2A AgentCard Discovery" style="padding: 4px 8px; font-size: 11px; white-space: nowrap;">
           <span class="icon">🤖</span> A2A Card
         </button>
-        <button type="button" class="btn btn-secondary" id="btn-mcp-status" title="Model Context Protocol (FastMCP) Tools Status" style="padding: 3px 8px; font-size: 0.75rem;"><span class="btn-icon">📦</span> MCP Tools (<span id="mcp-tool-count">4</span>)</button>
-        <button id="btn-open-mcp-studio" class="btn btn-secondary" title="Open Interactive FastMCP Protocol Studio" style="padding: 3px 8px; font-size: 0.75rem;">🛠️ MCP Studio</button>
-        <button class="btn btn-secondary btn-icon" id="btn-toggle-settings" title="System Settings" style="padding: 3px 8px; font-size: 0.75rem;">
+        <button type="button" class="btn btn-secondary" id="btn-mcp-status" title="Model Context Protocol (FastMCP) Tools Status" style="padding: 4px 8px; font-size: 11px; white-space: nowrap;"><span class="btn-icon">📦</span> MCP Tools (<span id="mcp-tool-count">4</span>)</button>
+        <button id="btn-open-mcp-studio" class="btn btn-secondary" title="Open Interactive FastMCP Protocol Studio" style="padding: 4px 8px; font-size: 11px; white-space: nowrap;">🛠️ MCP Studio</button>
+        <button class="btn btn-secondary btn-icon" id="btn-toggle-settings" title="System Settings" style="padding: 4px 8px; font-size: 11px; white-space: nowrap;">
           <span class="icon">⚙️</span> Settings
         </button>
-        <a href="https://github.com/sourabhJain121/Testforge" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-icon" id="btn-github-repo" style="padding: 3px 8px; font-size: 0.75rem;">
+        <a href="https://github.com/sourabhJain121/Testforge" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-icon" id="btn-github-repo" style="padding: 4px 8px; font-size: 11px; white-space: nowrap;">
           <span class="icon">🐙</span> Repo
         </a>
-        <button id="btn-theme-toggle" class="theme-toggle-btn" title="Toggle Light/Dark Theme" style="padding: 3px 8px; font-size: 0.75rem;">
+        <button id="btn-theme-toggle" class="theme-toggle-btn" title="Toggle Light/Dark Theme" style="padding: 4px 8px; font-size: 11px; white-space: nowrap;">
           <span id="theme-toggle-icon">☀️</span> <span id="theme-toggle-label" class="theme-label">Dark</span>
         </button>
-        <button type="button" class="btn btn-primary btn-icon" id="btn-global-run-hardening" data-action="start-hardening" data-alias="btn-run-hardening" title="Quick-Trigger TestForge Hardening" style="padding: 3px 8px; font-size: 0.75rem; font-weight: 600; white-space: nowrap;">
+        <button type="button" class="btn btn-primary btn-icon" id="btn-global-run-hardening" data-action="start-hardening" data-alias="btn-run-hardening" title="Quick-Trigger TestForge Hardening" style="padding: 4px 8px; font-size: 11px; font-weight: 600; white-space: nowrap;">
           <span id="btn-run-hardening"><span class="icon">⚡</span> Run</span>
         </button>
       </div>
