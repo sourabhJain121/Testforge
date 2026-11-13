@@ -34,6 +34,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import time
 import uuid
 from datetime import datetime, timezone
@@ -92,7 +93,7 @@ TESTFORGE_AGENT_VERSION = "1.0.0"
 # ==============================================================================
 
 def build_testforge_agent_card(
-    rpc_url: str = "http://127.0.0.1:8000/",
+    rpc_url: Optional[str] = None,
     name: str = TESTFORGE_AGENT_NAME,
     version: str = TESTFORGE_AGENT_VERSION,
 ) -> AgentCard:
@@ -108,6 +109,12 @@ def build_testforge_agent_card(
     Guarantees that no internal credentials, absolute file paths, or private
     keys are present in the public card.
     """
+    if not rpc_url:
+        rpc_url = (
+            os.environ.get("TESTFORGE_PUBLIC_URL")
+            or os.environ.get("RENDER_EXTERNAL_URL")
+            or "http://127.0.0.1:8000/"
+        )
     clean_url = rpc_url.rstrip("/") + "/"
     skills = [
         AgentSkill(

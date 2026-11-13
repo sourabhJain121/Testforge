@@ -916,11 +916,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
+      const originUrl = window.location.origin ? (window.location.origin.replace(/\/+$/, '') + '/') : 'http://127.0.0.1:8000/';
       const resp = await fetch('/.well-known/agent-card.json', { cache: 'no-store' });
       if (!resp.ok) {
         throw new Error(`Endpoint returned HTTP ${resp.status} (${resp.statusText})`);
       }
       const data = await resp.json();
+      if (data) {
+        if (!data.url || data.url.includes('127.0.0.1') || data.url.includes('localhost')) {
+          if (window.location.origin && !window.location.origin.includes('127.0.0.1') && !window.location.origin.includes('localhost')) {
+            data.url = originUrl;
+          }
+        }
+      }
       state.a2a.card = data;
       state.a2a.rawJson = JSON.stringify(data, null, 2);
 
@@ -983,8 +991,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const grid = document.createElement('div');
     grid.style.cssText = 'display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-bottom: 1.25rem;';
 
+    const publicOrigin = window.location.origin ? (window.location.origin.replace(/\/+$/, '') + '/') : 'http://127.0.0.1:8000/';
+    const rawCardUrl = card.url || publicOrigin;
+    const resolvedCardUrl = (rawCardUrl.includes('127.0.0.1') || rawCardUrl.includes('localhost')) && window.location.origin && !window.location.origin.includes('127.0.0.1') && !window.location.origin.includes('localhost')
+      ? publicOrigin
+      : rawCardUrl;
+
     const metaFields = [
-      { label: 'Endpoint URL', val: card.url || '-' },
+      { label: 'Endpoint URL', val: resolvedCardUrl },
       { label: 'Preferred Transport', val: card.preferredTransport || card.preferred_transport || 'JSONRPC' },
       { label: 'Provider Organization', val: card.provider?.organization || 'TestForge Systems' },
       { label: 'Streaming', val: card.capabilities?.streaming ? 'Enabled' : 'Disabled (Batch RPC)' },
@@ -1442,10 +1456,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (dom.a2aTestOutputJson) dom.a2aTestOutputJson.textContent = 'Validating protocol compliance...';
 
     try {
+      const currentOrigin = window.location.origin ? (window.location.origin.replace(/\/+$/, '') + '/') : 'http://127.0.0.1:8000/';
       const resp = await fetch('/api/a2a/test', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ target_url: 'http://127.0.0.1:8000/' })
+        body: JSON.stringify({ target_url: currentOrigin })
       });
       const data = await resp.json();
 

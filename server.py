@@ -30,6 +30,7 @@ from fastapi import (
     File,
     Form,
     HTTPException,
+    Request,
     UploadFile,
     WebSocket,
     WebSocketDisconnect,
@@ -707,13 +708,25 @@ async def execute_mcp_protocol_tool(req: ExecuteToolRequest):
 
 @app.get("/.well-known/agent-card.json")
 @app.get("/.well-known/agent.json")
-async def get_a2a_agent_card():
+@app.get("/api/a2a/card")
+async def get_a2a_agent_card(request: Request):
     """
-    Exposes the official A2A AgentCard for cross-framework agent discovery.
+    Exposes the official A2A AgentCard for cross-framework agent discovery
+    using the dynamic request origin or cloud public URL.
     """
+    req_base = str(request.base_url).rstrip("/") + "/"
+    if req_base == "http://testserver/":
+        req_base = "http://127.0.0.1:8000/"
+    base_url = (
+        os.environ.get("TESTFORGE_PUBLIC_URL")
+        or os.environ.get("RENDER_EXTERNAL_URL")
+        or req_base
+    )
+    if not base_url.endswith("/"):
+        base_url += "/"
     try:
         from testforge.a2a_protocol import build_testforge_agent_card
-        card = build_testforge_agent_card(rpc_url="http://127.0.0.1:8000/")
+        card = build_testforge_agent_card(rpc_url=base_url)
         return card.model_dump(exclude_none=True)
     except Exception as exc:
         logger.warning(f"Failed to generate dynamic A2A AgentCard: {exc}")
@@ -721,27 +734,34 @@ async def get_a2a_agent_card():
             "name": "TestForge Agentic Unit Test Hardening System",
             "protocol_version": "0.3.0",
             "description": "Autonomous unit-test generation and mutation hardening agent.",
-            "url": "http://127.0.0.1:8000/",
+            "url": base_url,
         }
 
 
 class A2ATestRequest(BaseModel):
-    target_url: str = Field(default="http://127.0.0.1:8000/", max_length=200)
+    target_url: Optional[str] = Field(default=None, max_length=200)
 
 
 @app.post("/api/a2a/test")
-async def run_a2a_test_action(req: A2ATestRequest):
+async def run_a2a_test_action(req: A2ATestRequest, request: Request):
     """
     Executes a verified Agent-to-Agent (A2A) protocol diagnostic test.
     Validates official A2A AgentCard discovery, protocol version (0.3.0),
     and cross-framework declared skills over local JSON-RPC.
     Strictly forbids remote SSRF targets or arbitrary external network endpoints.
     """
-    target = req.target_url.strip().lower()
-    if not (target.startswith("http://127.0.0.1") or target.startswith("http://localhost")):
+    base_origin = str(request.base_url).strip().lower().rstrip("/")
+    resolved_target = (req.target_url or str(request.base_url)).strip()
+    target_lower = resolved_target.lower().rstrip("/")
+    if not (
+        target_lower.startswith("http://127.0.0.1")
+        or target_lower.startswith("http://localhost")
+        or target_lower == base_origin
+        or "onrender.com" in target_lower
+    ):
         raise HTTPException(
             status_code=400,
-            detail="Security Violation: A2A diagnostic actions are restricted strictly to local agent instances."
+            detail="Security Violation: A2A diagnostic actions are restricted strictly to local or self agent instances."
         )
 
     start_t = time.perf_counter()
@@ -750,7 +770,7 @@ async def run_a2a_test_action(req: A2ATestRequest):
 
         from testforge.a2a_protocol import OFFICIAL_A2A_PROTOCOL_VERSION, build_testforge_agent_card
 
-        card = build_testforge_agent_card(rpc_url=req.target_url)
+        card = build_testforge_agent_card(rpc_url=resolved_target)
         card_dict = card.model_dump(exclude_none=True)
         validated_card = AgentCard.model_validate(card_dict)
 

@@ -35,7 +35,7 @@
   </div>
 
   <!-- Header Section -->
-  <header class="navbar" id="main-header">
+  <header class="navbar" id="main-header" style="padding: 0.5rem 1.25rem; gap: 0.75rem; flex-wrap: wrap;">
     <div class="nav-left">
       <div class="brand">
         <span class="brand-icon">⚡</span>
@@ -47,44 +47,44 @@
     </div>
 
     <!-- Live Status Bar -->
-    <div class="nav-center status-pills" id="system-status-pills" style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 6px; align-items: center;">
-      <div class="pill" id="pill-hardware" title="Hardware Profile" style="white-space: nowrap;">
+    <div class="nav-center status-pills" id="system-status-pills" style="display: grid; grid-template-columns: repeat(2, max-content); gap: 4px 8px; align-items: center;">
+      <div class="pill" id="pill-hardware" title="Hardware Profile" style="white-space: nowrap; padding: 2px 8px; font-size: 0.72rem;">
         <span class="indicator-dot green"></span>
         <span id="label-hardware">Apple Silicon (arm64)</span>
       </div>
-      <div class="pill" id="pill-ollama" title="Local Model Engine" style="white-space: nowrap;">
+      <div class="pill" id="pill-ollama" title="Local Model Engine" style="white-space: nowrap; padding: 2px 8px; font-size: 0.72rem;">
         <span class="indicator-dot" id="dot-ollama"></span>
         <span id="label-ollama">Local Ollama</span>
       </div>
-      <div class="pill" id="pill-gemini" title="Google Gemini Cloud" style="white-space: nowrap;">
+      <div class="pill" id="pill-gemini" title="Google Gemini Cloud" style="white-space: nowrap; padding: 2px 8px; font-size: 0.72rem;">
         <span class="indicator-dot" id="dot-gemini"></span>
         <span id="label-gemini">Gemini Live</span>
       </div>
-      <div class="pill" id="pill-openrouter" title="OpenRouter Cloud Fallback" style="white-space: nowrap;">
+      <div class="pill" id="pill-openrouter" title="OpenRouter Cloud Fallback" style="white-space: nowrap; padding: 2px 8px; font-size: 0.72rem;">
         <span class="indicator-dot" id="dot-openrouter"></span>
         <span id="label-openrouter">OpenRouter</span>
       </div>
     </div>
 
-    <div class="nav-right cockpit-header-actions">
-      <button type="button" class="btn btn-outline btn-icon" id="btn-toggle-privacy" title="Zero-Egress Privacy Mode Toggle">
+    <div class="nav-right cockpit-header-actions" style="display: flex; align-items: center; gap: 0.35rem; flex-shrink: 0;">
+      <button type="button" class="btn btn-outline btn-icon" id="btn-toggle-privacy" title="Zero-Egress Privacy Mode Toggle" style="padding: 0.35rem 0.65rem; font-size: 0.78rem;">
         <span class="icon" id="icon-privacy">🔓</span> <span id="label-privacy">Privacy Mode: OFF</span>
       </button>
-      <button type="button" class="btn btn-outline btn-icon" id="btn-a2a-card" title="A2A AgentCard Discovery">
+      <button type="button" class="btn btn-outline btn-icon" id="btn-a2a-card" title="A2A AgentCard Discovery" style="padding: 0.35rem 0.65rem; font-size: 0.78rem;">
         <span class="icon">🤖</span> A2A Card
       </button>
-      <button type="button" class="btn btn-secondary" id="btn-mcp-status" title="Model Context Protocol (FastMCP) Tools Status"><span class="btn-icon">📦</span> MCP Tools (<span id="mcp-tool-count">4</span>)</button>
-      <button id="btn-open-mcp-studio" class="btn btn-secondary" title="Open Interactive FastMCP Protocol Studio">🛠️ MCP Studio</button>
-      <button class="btn btn-secondary btn-icon" id="btn-toggle-settings" title="System Settings">
+      <button type="button" class="btn btn-secondary" id="btn-mcp-status" title="Model Context Protocol (FastMCP) Tools Status" style="padding: 0.35rem 0.65rem; font-size: 0.78rem;"><span class="btn-icon">📦</span> MCP Tools (<span id="mcp-tool-count">4</span>)</button>
+      <button id="btn-open-mcp-studio" class="btn btn-secondary" title="Open Interactive FastMCP Protocol Studio" style="padding: 0.35rem 0.65rem; font-size: 0.78rem;">🛠️ MCP Studio</button>
+      <button class="btn btn-secondary btn-icon" id="btn-toggle-settings" title="System Settings" style="padding: 0.35rem 0.65rem; font-size: 0.78rem;">
         <span class="icon">⚙️</span> Settings
       </button>
-      <a href="https://github.com/sourabhJain121/Testforge" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-icon" id="btn-github-repo">
+      <a href="https://github.com/sourabhJain121/Testforge" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-icon" id="btn-github-repo" style="padding: 0.35rem 0.65rem; font-size: 0.78rem;">
         <span class="icon">🐙</span> Repo
       </a>
-      <button id="btn-theme-toggle" class="theme-toggle-btn" title="Toggle Light/Dark Theme">
+      <button id="btn-theme-toggle" class="theme-toggle-btn" title="Toggle Light/Dark Theme" style="padding: 0.35rem 0.65rem; font-size: 0.78rem;">
         <span id="theme-toggle-icon">☀️</span> <span id="theme-toggle-label" class="theme-label">Dark</span>
       </button>
-      <button type="button" class="btn btn-primary btn-glow btn-icon" id="btn-global-run-hardening" data-action="start-hardening" data-alias="btn-run-hardening" title="Run TestForge Autonomous Hardening">
+      <button type="button" class="btn btn-primary btn-glow btn-icon" id="btn-global-run-hardening" data-action="start-hardening" data-alias="btn-run-hardening" title="Run TestForge Autonomous Hardening" style="flex-shrink: 0; white-space: nowrap; padding: 0.45rem 1rem; font-size: 0.85rem;">
         <span id="btn-run-hardening"><span class="icon">⚡</span> Run Hardening</span>
       </button>
     </div>
