@@ -196,6 +196,8 @@ document.addEventListener('DOMContentLoaded', () => {
     valMutationScore: document.getElementById('val-mutation-score'),
     inputGeminiKey: document.getElementById('input-gemini-key'),
     inputOpenrouterKey: document.getElementById('input-openrouter-key'),
+    inputOllamaModel: document.getElementById('ollama-model-input'),
+    datalistOllamaModels: document.getElementById('ollama-detected-models-datalist'),
 
     // Theme Switcher Controller
     btnThemeToggle: document.getElementById('btn-theme-toggle'),
@@ -877,6 +879,9 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.valIterations.textContent = state.settings.maxIterations;
     dom.sliderMutationScore.value = state.settings.targetMutationScore;
     dom.valMutationScore.textContent = `${state.settings.targetMutationScore}%`;
+    if (dom.inputOllamaModel && !dom.inputOllamaModel.value) {
+      dom.inputOllamaModel.value = 'qwen2.5-coder:7b';
+    }
   }
 
   function closeSettings() {
@@ -1709,24 +1714,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const gKey = dom.inputGeminiKey.value.trim();
     const orKey = dom.inputOpenrouterKey.value.trim();
+    const ollamaModel = dom.inputOllamaModel ? dom.inputOllamaModel.value.trim() : null;
 
-    if (gKey || orKey) {
-      try {
-        const res = await fetch('/api/config/keys', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            gemini_api_key: gKey || null,
-            openrouter_api_key: orKey || null,
-          }),
-        });
-        const data = await res.json();
-        showToast('API Configuration saved successfully!', 'success');
-      } catch (err) {
-        showToast(`Failed to update keys: ${err.message}`, 'error');
-      }
-    } else {
-      showToast('Settings saved successfully!', 'success');
+    try {
+      const res = await fetch('/api/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          engine_mode: state.settings.engineMode,
+          provider_mode: state.settings.engineMode,
+          model_name: state.settings.modelName,
+          ollama_model: ollamaModel || null,
+          max_iterations: state.settings.maxIterations,
+          target_mutation_score: state.settings.targetMutationScore,
+          gemini_api_key: gKey || null,
+          openrouter_api_key: orKey || null,
+        }),
+      });
+      const data = await res.json();
+      showToast('System configuration saved successfully!', 'success');
+    } catch (err) {
+      showToast(`Configuration update failed: ${err.message}`, 'error');
     }
 
     closeSettings();
@@ -1750,7 +1758,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Providers
       if (data.providers) {
-        const { ollama_online, ollama_mode, has_gemini, has_gemini_fallback, has_openrouter } = data.providers;
+        const { ollama_online, ollama_mode, ollama_model, detected_ollama_models, has_gemini, has_gemini_fallback, has_openrouter } = data.providers;
 
         // Ollama
         if (ollama_mode === 'cloud_disabled') {
@@ -1759,7 +1767,23 @@ document.addEventListener('DOMContentLoaded', () => {
           if (dom.pillOllama) dom.pillOllama.title = 'Production Cloud Deployment: Local Ollama bypassed in favor of Cloud GenAI / OpenRouter / Deterministic AST Synthesizer';
         } else {
           dom.dotOllama.className = `indicator-dot ${ollama_online ? 'green' : 'red'}`;
-          dom.labelOllama.textContent = ollama_online ? 'Ollama (Online)' : 'Ollama (Offline)';
+          const currentOllamaModel = ollama_model || 'qwen2.5-coder:7b';
+          dom.labelOllama.textContent = ollama_online ? `🟢 Ollama (${currentOllamaModel})` : 'Ollama (Offline)';
+          if (dom.pillOllama) {
+            dom.pillOllama.title = ollama_online
+              ? `Local Apple Silicon Engine Active: model ${currentOllamaModel} ready`
+              : 'Local Ollama Daemon Offline (start with: ollama serve)';
+          }
+        }
+
+        // Populate detected models in settings datalist
+        if (Array.isArray(detected_ollama_models) && dom.datalistOllamaModels) {
+          if (detected_ollama_models.length > 0) {
+            dom.datalistOllamaModels.innerHTML = detected_ollama_models.map(m => `<option value="${m}"></option>`).join('');
+          }
+        }
+        if (ollama_model && dom.inputOllamaModel && !dom.inputOllamaModel.matches(':focus')) {
+          dom.inputOllamaModel.value = ollama_model;
         }
 
         // Gemini

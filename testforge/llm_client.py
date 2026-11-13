@@ -31,16 +31,36 @@ import requests
 from testforge.logger import TraceLogger
 
 
-def is_ollama_running(url: str = "http://localhost:11434/api/tags", timeout: float = 1.0) -> bool:
+def probe_ollama_status(url: str = "http://localhost:11434/api/tags", timeout: float = 0.8) -> Tuple[bool, List[str]]:
+    """
+    Pings the local Ollama daemon tags endpoint (0.8s timeout) to check if it is active
+    and returns (is_online, detected_model_names).
+    """
+    clean_url = (url or "http://localhost:11434").strip()
+    if not clean_url.endswith("/api/tags"):
+        clean_url = clean_url.rstrip("/") + "/api/tags"
+    try:
+        req = urllib.request.Request(clean_url, headers={"User-Agent": "TestForge/2.0"}, method="GET")
+        resp = urllib.request.urlopen(req, timeout=timeout)
+        status_code = getattr(resp, "status", None) or getattr(resp, "code", None) or 200
+        if status_code == 200:
+            raw_body = resp.read()
+            if hasattr(raw_body, "decode"):
+                raw_body = raw_body.decode("utf-8")
+            data = json.loads(raw_body) if isinstance(raw_body, str) else raw_body
+            models = [m.get("name", "") for m in data.get("models", []) if m.get("name")]
+            return True, models
+    except Exception:
+        pass
+    return False, []
+
+
+def is_ollama_running(url: str = "http://localhost:11434/api/tags", timeout: float = 0.8) -> bool:
     """
     Pings the local Ollama daemon tags endpoint to check if it is active.
     """
-    try:
-        req = urllib.request.Request(url, method="GET")
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            return resp.status == 200
-    except Exception:
-        return False
+    online, _ = probe_ollama_status(url=url, timeout=timeout)
+    return online
 
 
 def call_openrouter_api(
@@ -117,9 +137,32 @@ class HybridLLMClient:
     ):
         self.cloud_model = "gemini-3.6-flash" if "2.5" in cloud_model or "1.5" in cloud_model else cloud_model
         self.openrouter_model = openrouter_model
-        self.local_model = local_model
-        self.local_url = local_url
-        self.engine_mode = engine_mode.lower()  # "auto", "cloud", "openrouter", "local"
+
+        # Provider routing mode resolution (TESTFORGE_PROVIDER_MODE environment support)
+        # Modes: "auto" | "ollama_only" | "cloud_only" (aliases: "local", "cloud")
+        provider_mode_env = os.environ.get("TESTFORGE_PROVIDER_MODE", "").strip().lower()
+        effective_mode = engine_mode.lower()
+        if effective_mode == "auto" and provider_mode_env:
+            effective_mode = provider_mode_env
+        if effective_mode in ("ollama", "ollama_only", "local_only", "local"):
+            effective_mode = "ollama_only"
+        elif effective_mode in ("cloud", "cloud_only"):
+            effective_mode = "cloud"
+
+        self.engine_mode = effective_mode
+
+        # Model & Base URL resolution for Local Ollama
+        env_ollama_model = os.environ.get("OLLAMA_MODEL", "").strip()
+        if env_ollama_model and local_model == "qwen2.5-coder:7b":
+            self.local_model = env_ollama_model
+        else:
+            self.local_model = local_model or env_ollama_model or "qwen2.5-coder:7b"
+
+        env_ollama_base = os.environ.get("OLLAMA_BASE_URL", "").strip().rstrip("/")
+        if env_ollama_base and local_url == "http://localhost:11434/api/generate":
+            self.local_url = f"{env_ollama_base}/api/generate"
+        else:
+            self.local_url = local_url
         self.api_key = (
             api_key
             or os.environ.get("GEMINI_API_KEY", "").strip()
@@ -141,6 +184,17 @@ class HybridLLMClient:
         self.gemini_quota_exhausted: bool = False
         self.openrouter_quota_exhausted: bool = False
 
+        # Single unified GenAI client instance
+        self.genai_client = None
+        if self.api_key and self.engine_mode in ("auto", "cloud"):
+            try:
+                from google import genai
+                self.genai_client = genai.Client(api_key=self.api_key)
+            except Exception as exc:
+                if self.logger:
+                    self.logger.log_event("LLM_INIT_ERROR", {"error": str(exc)})
+                self.genai_client = None
+
     def _emit_alert(self, alert_data: Dict[str, Any]) -> None:
         """Emits structured real-time alert event to WebSocket hub, logger, and callback."""
         self.latest_alert = alert_data
@@ -159,17 +213,6 @@ class HybridLLMClient:
                 self.logger.log_event(alert_data.get("event_type", "API_ERROR_ALERT"), alert_data)
             except Exception:
                 pass
-
-        # Single unified GenAI client instance
-        self.genai_client = None
-        if self.api_key and self.engine_mode in ("auto", "cloud"):
-            try:
-                from google import genai
-                self.genai_client = genai.Client(api_key=self.api_key)
-            except Exception as exc:
-                if self.logger:
-                    self.logger.log_event("LLM_INIT_ERROR", {"error": str(exc)})
-                self.genai_client = None
 
     def generate(
         self,
@@ -493,7 +536,7 @@ class HybridLLMClient:
         # ======================================================================
         # TIER 3: LOCAL OLLAMA INFERENCE (Offline Mode on Apple Silicon / Local)
         # ======================================================================
-        should_try_local = self.engine_mode in ("auto", "local")
+        should_try_local = self.engine_mode in ("auto", "local", "ollama_only")
         if should_try_local:
             tags_url = self.local_url.replace("/api/generate", "/api/tags") if "/api/generate" in self.local_url else "http://localhost:11434/api/tags"
             ollama_reachable = False

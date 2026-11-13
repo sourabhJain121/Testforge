@@ -49,7 +49,8 @@ class CrewCodeIntelligenceCriticCrew:
         self,
         api_key: Optional[str] = None,
         model_name: str = "gemini/gemini-2.5-flash",
-        verbose: bool = False
+        verbose: bool = False,
+        llm_client: Optional[Any] = None,
     ):
         self.api_key = (
             api_key
@@ -61,6 +62,7 @@ class CrewCodeIntelligenceCriticCrew:
         self.model_name = model_name
         self.verbose = verbose
         self.has_crewai = HAS_CREWAI
+        self.llm_client = llm_client
 
     # --------------------------------------------------------------------------
     # 1. Code Intelligence & Risk Analysis (CrewAI)
@@ -179,6 +181,37 @@ class CrewCodeIntelligenceCriticCrew:
             f"Target {len(surv_recs)} surviving mutant(s) with boundary and counterexample assertions:\n"
             + "\n".join(directives)
         )
+
+        # Dynamic LLM critique when local Ollama or live LLM mode is active
+        provider_mode = os.environ.get("TESTFORGE_PROVIDER_MODE", "").strip().lower()
+        use_live = os.environ.get("TESTFORGE_LIVE_LLM", "0").lower() in ("1", "true", "yes")
+        is_ollama_mode = provider_mode in ("ollama_only", "local_only", "local")
+
+        if is_ollama_mode or (use_live and (self.api_key or self.llm_client)):
+            try:
+                from testforge.llm_client import HybridLLMClient
+                local_model = os.environ.get("OLLAMA_MODEL", "qwen2.5-coder:7b").strip() or "qwen2.5-coder:7b"
+                engine_mode = "ollama_only" if is_ollama_mode else "auto"
+                client = self.llm_client or HybridLLMClient(
+                    local_model=local_model,
+                    api_key=self.api_key,
+                    engine_mode=engine_mode,
+                )
+                prompt_critic = (
+                    f"You are the CrewAI MutantRootCauseCriticAgent. Analyze {len(surv_recs)} surviving mutant(s):\n"
+                    f"{chr(10).join(directives)}\n"
+                    "Formulate concise, targeted semantic repair guidance to kill these mutants."
+                )
+                raw_advice = client.generate(
+                    prompt=prompt_critic,
+                    system_instruction="You are CrewAI MutantRootCauseCriticAgent. Provide focused mutant repair directives.",
+                    agent_name="MutantRootCauseCriticAgent",
+                    iteration=iteration,
+                )
+                if raw_advice and len(raw_advice.strip()) > 10:
+                    final_directive = f"{final_directive}\n\n[CrewAI Neural Critic Advice]:\n{raw_advice.strip()}"
+            except Exception as exc:
+                logger.debug(f"CrewAI critic live LLM call skipped/failed: {exc}")
 
         duration_ms = round((time.perf_counter() - t0) * 1000, 2)
 

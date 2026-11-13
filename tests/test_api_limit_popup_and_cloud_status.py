@@ -96,6 +96,7 @@ def test_gemini_429_rotation_and_exhaustion_alerts(monkeypatch):
         captured_alerts.append(alert)
 
     # Configure primary + backup Gemini keys
+    monkeypatch.setenv("TESTFORGE_PROVIDER_MODE", "auto")
     monkeypatch.setenv("GEMINI_API_KEY", "primary-gem-key")
     monkeypatch.setenv("GEMINI_API_KEY_2", "backup-gem-key")
     monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)

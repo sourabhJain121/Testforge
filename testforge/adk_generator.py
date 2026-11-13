@@ -184,16 +184,22 @@ class ADKModelBridge(BaseLlm):
                             prompt_parts.append(p.text)
         prompt_text = "\n\n".join(prompt_parts)
 
-        # 3. Live LLM execution if enabled and configured
+        # 3. Live LLM execution if enabled and configured (or local Ollama mode)
         use_live = getattr(self, "_use_live_llm", False)
         api_key = getattr(self, "_api_key", "")
         llm_client = getattr(self, "_llm_client", None)
+        provider_mode = os.environ.get("TESTFORGE_PROVIDER_MODE", "").strip().lower()
+        is_ollama_mode = provider_mode in ("ollama_only", "local_only", "local")
 
-        if use_live and (api_key or llm_client):
+        if (use_live and (api_key or llm_client or is_ollama_mode)) or is_ollama_mode:
             try:
+                engine_mode = "ollama_only" if is_ollama_mode else "auto"
+                local_model = os.environ.get("OLLAMA_MODEL", "qwen2.5-coder:7b").strip() or "qwen2.5-coder:7b"
                 client = llm_client or HybridLLMClient(
                     cloud_model="gemini-3.6-flash",
+                    local_model=local_model,
                     api_key=api_key,
+                    engine_mode=engine_mode,
                 )
                 system_instruction = get_defensive_system_instruction(
                     "You are the TestForge Autonomous Test Generator Agent powered by Google ADK. "
@@ -219,8 +225,19 @@ class ADKModelBridge(BaseLlm):
                 elif "```" in cleaned:
                     cleaned = cleaned.split("```")[1].split("```")[0].strip()
 
-                parsed = json.loads(cleaned)
-                output_text = json.dumps(parsed)
+                try:
+                    parsed = json.loads(cleaned)
+                    output_text = json.dumps(parsed)
+                except Exception:
+                    output_text = json.dumps({
+                        "test_code": raw_text,
+                        "target_function": "target_function",
+                        "covered_mutants": [],
+                        "test_rationale": "Generated via Local Ollama engine.",
+                        "assumptions": ["Inputs conform to target parameters."],
+                        "warnings": [],
+                        "generation_metadata": {"generator": "ADKOllama", "mode": "local_ollama"}
+                    })
                 content = types.Content(
                     role="model",
                     parts=[types.Part(text=output_text)],

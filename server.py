@@ -24,6 +24,12 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional
 
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 from fastapi import (
     BackgroundTasks,
     FastAPI,
@@ -57,7 +63,7 @@ from testforge.blast_analyzer import BlastRadiusAnalyzer
 from testforge.git_diff import GitDiffInspector
 from testforge.github_service import GitHubRepoService, parse_github_repo_url
 from testforge.ingestion import TargetManagerAgent, parse_and_normalize_github_url
-from testforge.llm_client import is_ollama_running
+from testforge.llm_client import is_ollama_running, probe_ollama_status
 from testforge.logger import TraceLogger, determine_scope_execution_engine, resolve_dynamic_execution_engine
 from testforge.orchestrator import TestForgeOrchestrator
 from testforge.persistence import (
@@ -257,6 +263,13 @@ class KeyConfigPayload(BaseModel):
     openrouter_api_key: Optional[str] = None
     key: Optional[str] = None
     provider: Optional[str] = None
+    engine_mode: Optional[str] = None
+    provider_mode: Optional[str] = None
+    model_name: Optional[str] = None
+    ollama_model: Optional[str] = None
+    ollama_base_url: Optional[str] = None
+    max_iterations: Optional[int] = None
+    target_mutation_score: Optional[float] = None
 
 class SampleIngestPayload(BaseModel):
     filename: str
@@ -835,13 +848,16 @@ async def api_health():
         or os.environ.get("K_SERVICE")
         or os.environ.get("CLOUD_RUN_SERVICE")
     )
-    has_gemini = bool(os.environ.get("GEMINI_API_KEY", "").strip() or os.environ.get("GEMINI_API_KEY_2", "").strip() or os.environ.get("GEMINI_FALLBACK_API_KEY", "").strip() or os.environ.get("GOOGLE_API_KEY", "").strip())
+    provider_mode = os.environ.get("TESTFORGE_PROVIDER_MODE", "auto").strip().lower()
+    configured_ollama_model = os.environ.get("OLLAMA_MODEL", "qwen2.5-coder:7b").strip() or "qwen2.5-coder:7b"
     ollama_url = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434").rstrip("/") + "/api/tags"
-    if is_cloud_env or (has_gemini and not os.environ.get("OLLAMA_BASE_URL")):
+
+    if is_cloud_env:
         ollama_mode = "cloud_disabled"
         ollama_online = False
+        detected_models: List[str] = []
     else:
-        ollama_online = is_ollama_running(ollama_url)
+        ollama_online, detected_models = probe_ollama_status(ollama_url, timeout=0.8)
         ollama_mode = "online" if ollama_online else "offline"
 
     return {
@@ -851,6 +867,9 @@ async def api_health():
         "cloud_mode": is_cloud_env,
         "ollama_mode": ollama_mode,
         "ollama_online": ollama_online,
+        "ollama_model": configured_ollama_model,
+        "detected_ollama_models": detected_models,
+        "provider_mode": provider_mode,
         "frameworks": ["google-adk", "crewai"],
         "mcp": "fastmcp-stdio",
         "timestamp": time.time(),
@@ -867,16 +886,19 @@ async def get_system_status():
         or os.environ.get("K_SERVICE")
         or os.environ.get("CLOUD_RUN_SERVICE")
     )
+    provider_mode = os.environ.get("TESTFORGE_PROVIDER_MODE", "auto").strip().lower()
+    configured_ollama_model = os.environ.get("OLLAMA_MODEL", "qwen2.5-coder:7b").strip() or "qwen2.5-coder:7b"
     has_gemini = bool(os.environ.get("GEMINI_API_KEY", "").strip() or os.environ.get("GEMINI_API_KEY_2", "").strip() or os.environ.get("GEMINI_FALLBACK_API_KEY", "").strip() or os.environ.get("GOOGLE_API_KEY", "").strip())
     has_gemini_fallback = bool(os.environ.get("GEMINI_API_KEY_2", "").strip() or os.environ.get("GEMINI_FALLBACK_API_KEY", "").strip())
     has_openrouter = bool(os.environ.get("OPENROUTER_API_KEY", "").strip())
 
     ollama_url = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434").rstrip("/") + "/api/tags"
-    if is_cloud_env or (has_gemini and not os.environ.get("OLLAMA_BASE_URL")):
+    if is_cloud_env:
         ollama_mode = "cloud_disabled"
         ollama_online = False
+        detected_models: List[str] = []
     else:
-        ollama_online = is_ollama_running(ollama_url)
+        ollama_online, detected_models = probe_ollama_status(ollama_url, timeout=0.8)
         ollama_mode = "online" if ollama_online else "offline"
 
     return {
@@ -890,6 +912,9 @@ async def get_system_status():
         "providers": {
             "ollama_online": ollama_online,
             "ollama_mode": ollama_mode,
+            "ollama_model": configured_ollama_model,
+            "detected_ollama_models": detected_models,
+            "provider_mode": provider_mode,
             "cloud_mode": is_cloud_env,
             "has_gemini": has_gemini,
             "has_gemini_fallback": has_gemini_fallback,
@@ -904,19 +929,41 @@ async def get_system_status():
     }
 
 
+@app.post("/api/config")
 @app.post("/api/keys")
 @app.post("/api/config/keys")
 async def update_api_keys(payload: KeyConfigPayload):
     """
-    Dynamically binds or updates Gemini / OpenRouter API keys in the environment.
+    Dynamically binds or updates Gemini / OpenRouter API keys, provider mode,
+    and local Ollama configuration in the runtime environment.
     Supports both named keys and hot-swap provider modal payloads.
     """
+    if payload.provider_mode:
+        os.environ["TESTFORGE_PROVIDER_MODE"] = payload.provider_mode.strip()
+    elif payload.engine_mode:
+        os.environ["TESTFORGE_PROVIDER_MODE"] = payload.engine_mode.strip()
+
+    if payload.ollama_model:
+        os.environ["OLLAMA_MODEL"] = payload.ollama_model.strip()
+    elif payload.model_name and (
+        "qwen" in payload.model_name.lower()
+        or "llama" in payload.model_name.lower()
+        or "ollama" in payload.model_name.lower()
+        or (payload.engine_mode or "").lower() in ("ollama_only", "local", "local_only")
+    ):
+        os.environ["OLLAMA_MODEL"] = payload.model_name.strip()
+
+    if payload.ollama_base_url:
+        os.environ["OLLAMA_BASE_URL"] = payload.ollama_base_url.strip()
+
     if payload.key:
         prov = (payload.provider or "gemini").lower()
         if "gemini_2" in prov or "backup" in prov or "secondary" in prov:
             os.environ["GEMINI_API_KEY_2"] = payload.key.strip()
         elif "openrouter" in prov:
             os.environ["OPENROUTER_API_KEY"] = payload.key.strip()
+        elif "ollama" in prov:
+            os.environ["OLLAMA_MODEL"] = payload.key.strip()
         else:
             os.environ["GEMINI_API_KEY"] = payload.key.strip()
 
@@ -933,7 +980,9 @@ async def update_api_keys(payload: KeyConfigPayload):
         "has_gemini": has_gem,
         "has_gemini_fallback": bool(os.environ.get("GEMINI_API_KEY_2") or os.environ.get("GEMINI_FALLBACK_API_KEY")),
         "has_openrouter": bool(os.environ.get("OPENROUTER_API_KEY")),
-        "message": "API keys successfully updated and activated for live test generation."
+        "provider_mode": os.environ.get("TESTFORGE_PROVIDER_MODE", "auto"),
+        "ollama_model": os.environ.get("OLLAMA_MODEL", "qwen2.5-coder:7b"),
+        "message": "Configuration successfully updated and activated for test generation."
     }
 
 

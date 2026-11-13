@@ -565,11 +565,18 @@ class CrewAILLMBridge(BaseLLM):
         api_key = getattr(self, "_api_key", "")
         llm_client = getattr(self, "_llm_client", None)
         use_live = getattr(self, "_use_live_llm", False)
-        if use_live and (api_key or llm_client):
+        provider_mode = os.environ.get("TESTFORGE_PROVIDER_MODE", "").strip().lower()
+        is_ollama_mode = provider_mode in ("ollama_only", "local_only", "local")
+
+        if (use_live and (api_key or llm_client or is_ollama_mode)) or is_ollama_mode:
             try:
+                engine_mode = "ollama_only" if is_ollama_mode else "auto"
+                local_model = os.environ.get("OLLAMA_MODEL", "qwen2.5-coder:7b").strip() or "qwen2.5-coder:7b"
                 client = llm_client or HybridLLMClient(
                     cloud_model="gemini-3.6-flash",
+                    local_model=local_model,
                     api_key=api_key,
+                    engine_mode=engine_mode,
                 )
                 system_inst = get_defensive_system_instruction(
                     "You are a Senior Adversarial Mutation Testing Critic. "

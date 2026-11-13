@@ -271,8 +271,14 @@ class TestForgeOrchestrator:
             companion_files=self.companion_files,
         )
         self.latest_alert: Optional[Dict[str, Any]] = None
+        provider_mode_env = os.environ.get("TESTFORGE_PROVIDER_MODE", "").strip().lower()
+        if provider_mode_env in ("ollama_only", "local_only", "local") and engine_mode == "auto":
+            engine_mode = "ollama_only"
+
+        local_model = os.environ.get("OLLAMA_MODEL", "qwen2.5-coder:7b").strip() or "qwen2.5-coder:7b"
         self.llm_client = HybridLLMClient(
             cloud_model=model_name,
+            local_model=local_model,
             api_key=api_key,
             openrouter_api_key=openrouter_api_key,
             logger=self.logger,
@@ -293,10 +299,10 @@ class TestForgeOrchestrator:
         )
         # Agentic Frameworks Integration: Google ADK and CrewAI via A2A Broker
         self.broker = broker or A2ABroker(blackboard=self.blackboard, callback_registry=self.callbacks)
-        self.adk_generator = GoogleADKTestGenerator(api_key=api_key)
-        self.crew_critic = MutationQualityCriticAgent(api_key=api_key, verbose=False)
+        self.adk_generator = GoogleADKTestGenerator(api_key=api_key, llm_client=self.llm_client)
+        self.crew_critic = MutationQualityCriticAgent(api_key=api_key, verbose=False, llm_client=self.llm_client)
         from testforge.crewai_agents import CrewCodeIntelligenceCriticCrew
-        self.crewai_crew = CrewCodeIntelligenceCriticCrew(api_key=api_key)
+        self.crewai_crew = CrewCodeIntelligenceCriticCrew(api_key=api_key, llm_client=self.llm_client)
         self.agent_latencies_ms: Dict[str, float] = {
             "SecurityGuardrailAgent": 0.0,
             "CrewCodeIntelligenceAgent": 0.0,
@@ -384,6 +390,7 @@ class TestForgeOrchestrator:
         from testforge.reflection_agent import ReflectionRepairAgent
         self.reflection_agent = ReflectionRepairAgent(
             api_key=api_key,
+            llm_client=self.llm_client,
             blackboard=self.blackboard,
             callbacks=self.callbacks,
             logger_instance=self.logger,
