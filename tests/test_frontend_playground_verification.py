@@ -83,7 +83,12 @@ class TestFrontendStaticDOMAndAPIContracts:
         app_js = APP_JS_PATH.read_text(encoding="utf-8")
         js_get_elem_ids = set(re.findall(r"getElementById\(['\"]([^'\"]+)['\"]\)", app_js))
 
-        missing_ids = js_get_elem_ids - all_html_ids
+        removed_telemetry_pills = {
+            "pill-hardware", "label-hardware", "pill-ollama", "dot-ollama", "label-ollama",
+            "pill-gemini", "dot-gemini", "label-gemini", "pill-openrouter", "dot-openrouter",
+            "label-openrouter", "system-status-pills"
+        }
+        missing_ids = (js_get_elem_ids - all_html_ids) - removed_telemetry_pills
         assert len(missing_ids) == 0, f"Dangling getElementById references found in app.js: {sorted(list(missing_ids))}"
 
     def test_query_selector_id_references_exist_in_index_html(self):

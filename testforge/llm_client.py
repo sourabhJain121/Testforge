@@ -195,6 +195,30 @@ class HybridLLMClient:
                     self.logger.log_event("LLM_INIT_ERROR", {"error": str(exc)})
                 self.genai_client = None
 
+    def reload_keys(self) -> None:
+        """Dynamically reloads API keys from environment variables and reinitializes client."""
+        self.api_key = (
+            os.environ.get("GEMINI_API_KEY", "").strip()
+            or os.environ.get("GOOGLE_API_KEY", "").strip()
+        )
+        self.api_key_2 = (
+            os.environ.get("GEMINI_API_KEY_2", "").strip()
+            or os.environ.get("GEMINI_FALLBACK_API_KEY", "").strip()
+        )
+        if not self.api_key and self.api_key_2:
+            self.api_key = self.api_key_2
+            self.api_key_2 = ""
+        self.gemini_key_index = 1
+        self.openrouter_api_key = os.environ.get("OPENROUTER_API_KEY", "").strip()
+        self.gemini_quota_exhausted = False
+        self.openrouter_quota_exhausted = False
+        if self.api_key and self.engine_mode in ("auto", "cloud"):
+            try:
+                from google import genai
+                self.genai_client = genai.Client(api_key=self.api_key)
+            except Exception:
+                self.genai_client = None
+
     def _emit_alert(self, alert_data: Dict[str, Any]) -> None:
         """Emits structured real-time alert event to WebSocket hub, logger, and callback."""
         self.latest_alert = alert_data

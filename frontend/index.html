@@ -46,50 +46,28 @@
       </div>
     </div>
 
-    <!-- Center / Right Utility Cluster -->
-    <div class="nav-right-cluster" style="display: flex; align-items: center; flex-wrap: wrap; justify-content: flex-end; gap: 6px; margin-left: auto;">
-      <!-- Live Status Bar -->
-      <div class="nav-center status-pills" id="system-status-pills" style="display: flex; align-items: center; flex-wrap: wrap; gap: 5px; flex-shrink: 0;">
-        <div class="pill" id="pill-hardware" title="Hardware Profile" style="white-space: nowrap; padding: 4px 8px; font-size: 11px; line-height: 1.2;">
-          <span class="indicator-dot green"></span>
-          <span id="label-hardware">Apple Silicon (arm64)</span>
-        </div>
-        <div class="pill" id="pill-ollama" title="Local Model Engine" style="white-space: nowrap; padding: 4px 8px; font-size: 11px; line-height: 1.2;">
-          <span class="indicator-dot" id="dot-ollama"></span>
-          <span id="label-ollama">Local Ollama</span>
-        </div>
-        <div class="pill" id="pill-gemini" title="Google Gemini Cloud" style="white-space: nowrap; padding: 4px 8px; font-size: 11px; line-height: 1.2;">
-          <span class="indicator-dot" id="dot-gemini"></span>
-          <span id="label-gemini">Gemini Live</span>
-        </div>
-        <div class="pill" id="pill-openrouter" title="OpenRouter Cloud Fallback" style="white-space: nowrap; padding: 4px 8px; font-size: 11px; line-height: 1.2;">
-          <span class="indicator-dot" id="dot-openrouter"></span>
-          <span id="label-openrouter">OpenRouter</span>
-        </div>
-      </div>
-
-      <div class="nav-right cockpit-header-actions" style="display: flex; align-items: center; flex-wrap: wrap; justify-content: flex-end; gap: 5px; flex-shrink: 0;">
-        <button type="button" class="btn btn-outline btn-icon" id="btn-toggle-privacy" title="Zero-Egress Privacy Mode Toggle" style="padding: 4px 8px; font-size: 11px; white-space: nowrap;">
-          <span class="icon" id="icon-privacy">🔓</span> <span id="label-privacy">Privacy Mode: OFF</span>
-        </button>
-        <button type="button" class="btn btn-outline btn-icon" id="btn-a2a-card" title="A2A AgentCard Discovery" style="padding: 4px 8px; font-size: 11px; white-space: nowrap;">
-          <span class="icon">🤖</span> A2A Card
-        </button>
-        <button type="button" class="btn btn-secondary" id="btn-mcp-status" title="Model Context Protocol (FastMCP) Tools Status" style="padding: 4px 8px; font-size: 11px; white-space: nowrap;"><span class="btn-icon">📦</span> MCP Tools (<span id="mcp-tool-count">4</span>)</button>
-        <button id="btn-open-mcp-studio" class="btn btn-secondary" title="Open Interactive FastMCP Protocol Studio" style="padding: 4px 8px; font-size: 11px; white-space: nowrap;">🛠️ MCP Studio</button>
-        <button class="btn btn-secondary btn-icon" id="btn-toggle-settings" title="System Settings" style="padding: 4px 8px; font-size: 11px; white-space: nowrap;">
-          <span class="icon">⚙️</span> Settings
-        </button>
-        <a href="https://github.com/sourabhJain121/Testforge" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-icon" id="btn-github-repo" style="padding: 4px 8px; font-size: 11px; white-space: nowrap;">
-          <span class="icon">🐙</span> Repo
-        </a>
-        <button id="btn-theme-toggle" class="theme-toggle-btn" title="Toggle Light/Dark Theme" style="padding: 4px 8px; font-size: 11px; white-space: nowrap;">
-          <span id="theme-toggle-icon">☀️</span> <span id="theme-toggle-label" class="theme-label">Dark</span>
-        </button>
-        <button type="button" class="btn btn-primary btn-icon" id="btn-global-run-hardening" data-action="start-hardening" data-alias="btn-run-hardening" title="Quick-Trigger TestForge Hardening" style="padding: 4px 8px; font-size: 11px; font-weight: 600; white-space: nowrap;">
-          <span id="btn-run-hardening"><span class="icon">⚡</span> Run</span>
-        </button>
-      </div>
+    <!-- Right Action Toolbar -->
+    <div class="nav-right cockpit-header-actions" style="display: flex; align-items: center; flex-wrap: wrap; justify-content: flex-end; gap: 6px; margin-left: auto;">
+      <button type="button" class="btn btn-outline btn-icon" id="btn-toggle-privacy" title="Zero-Egress Privacy Mode Toggle" style="padding: 4px 8px; font-size: 11px; white-space: nowrap;">
+        <span class="icon" id="icon-privacy">🔓</span> <span id="label-privacy">Privacy Mode: OFF</span>
+      </button>
+      <button type="button" class="btn btn-outline btn-icon" id="btn-a2a-card" title="A2A AgentCard Discovery" style="padding: 4px 8px; font-size: 11px; white-space: nowrap;">
+        <span class="icon">🤖</span> A2A Card
+      </button>
+      <button type="button" class="btn btn-secondary" id="btn-mcp-status" title="Model Context Protocol (FastMCP) Tools Status" style="padding: 4px 8px; font-size: 11px; white-space: nowrap;"><span class="btn-icon">📦</span> MCP Tools (<span id="mcp-tool-count">4</span>)</button>
+      <button id="btn-open-mcp-studio" class="btn btn-secondary" title="Open Interactive FastMCP Protocol Studio" style="padding: 4px 8px; font-size: 11px; white-space: nowrap;">🛠️ MCP Studio</button>
+      <button class="btn btn-secondary btn-icon" id="btn-toggle-settings" title="System Settings" style="padding: 4px 8px; font-size: 11px; white-space: nowrap;">
+        <span class="icon">⚙️</span> Settings
+      </button>
+      <a href="https://github.com/sourabhJain121/Testforge" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-icon" id="btn-github-repo" style="padding: 4px 8px; font-size: 11px; white-space: nowrap;">
+        <span class="icon">🐙</span> Repo
+      </a>
+      <button id="btn-theme-toggle" class="theme-toggle-btn" title="Toggle Light/Dark Theme" style="padding: 4px 8px; font-size: 11px; white-space: nowrap;">
+        <span id="theme-toggle-icon">☀️</span> <span id="theme-toggle-label" class="theme-label">Dark</span>
+      </button>
+      <button type="button" class="btn btn-primary btn-icon" id="btn-global-run-hardening" data-action="start-hardening" data-alias="btn-run-hardening" title="Quick-Trigger TestForge Hardening" style="padding: 4px 8px; font-size: 11px; font-weight: 600; white-space: nowrap;">
+        <span id="btn-run-hardening"><span class="icon">⚡</span> Run</span>
+      </button>
     </div>
   </header>
 
@@ -154,15 +132,38 @@
           </div>
         </div>
 
-        <div class="form-group">
-          <label for="input-gemini-key">Gemini API Key</label>
-          <input type="password" id="input-gemini-key" class="form-control" placeholder="AIzaSy...">
-          <p class="form-hint">Stored securely in runtime environment. Never exposed to browser or disk.</p>
-        </div>
+        <div class="card" style="background: rgba(15, 23, 42, 0.45); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 14px; margin-top: 1rem;">
+          <h4 style="margin: 0 0 10px 0; font-size: 0.85rem; color: #38bdf8; display: flex; align-items: center; justify-content: space-between;">
+            <span>🔑 Cloud LLM Provider Keys</span>
+            <span id="keys-configured-badge" class="badge" style="font-size: 0.7rem; font-weight: 500; background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 2px 6px; border-radius: 4px;">Runtime Active</span>
+          </h4>
+          
+          <div class="form-group" style="margin-bottom: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <label for="input-gemini-key" style="margin: 0; font-size: 0.8rem; font-weight: 600;">Primary Gemini API Key (GEMINI_API_KEY)</label>
+              <span id="badge-gemini-key" style="font-size: 0.7rem; padding: 1px 6px; border-radius: 4px;">Not Configured</span>
+            </div>
+            <input type="password" id="input-gemini-key" class="form-control" placeholder="AIzaSy... (leave blank to preserve active key)" autocomplete="off">
+            <p class="form-hint" style="margin: 2px 0 0 0; font-size: 0.72rem;">Tier 1 cloud test synthesis & reflection engine.</p>
+          </div>
 
-        <div class="form-group">
-          <label for="input-openrouter-key">OpenRouter API Key (Optional)</label>
-          <input type="password" id="input-openrouter-key" class="form-control" placeholder="sk-or-v1-...">
+          <div class="form-group" style="margin-bottom: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <label for="input-gemini-key-2" style="margin: 0; font-size: 0.8rem; font-weight: 600;">Secondary Gemini API Key (GEMINI_API_KEY_2)</label>
+              <span id="badge-gemini-key-2" style="font-size: 0.7rem; padding: 1px 6px; border-radius: 4px;">Not Configured</span>
+            </div>
+            <input type="password" id="input-gemini-key-2" class="form-control" placeholder="AIzaSy... (backup failover key)" autocomplete="off">
+            <p class="form-hint" style="margin: 2px 0 0 0; font-size: 0.72rem;">Automatic hot failover on HTTP 429 quota exhaustion.</p>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 4px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <label for="input-openrouter-key" style="margin: 0; font-size: 0.8rem; font-weight: 600;">OpenRouter Cloud API Key (OPENROUTER_API_KEY)</label>
+              <span id="badge-openrouter-key" style="font-size: 0.7rem; padding: 1px 6px; border-radius: 4px;">Not Configured</span>
+            </div>
+            <input type="password" id="input-openrouter-key" class="form-control" placeholder="sk-or-v1-... (optional cloud fallback)" autocomplete="off">
+            <p class="form-hint" style="margin: 2px 0 0 0; font-size: 0.72rem;">Tier 2 fallback across 300+ models & $0 free coding tiers.</p>
+          </div>
         </div>
       </div>
       <div class="modal-footer">

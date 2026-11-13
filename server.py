@@ -876,6 +876,15 @@ async def api_health():
     }
 
 
+def _mask_api_key(k: Optional[str]) -> str:
+    if not k or not k.strip():
+        return ""
+    s = k.strip()
+    if len(s) <= 8:
+        return f"{s[:2]}...{s[-2:]}"
+    return f"{s[:6]}...{s[-4:]}"
+
+
 @app.get("/api/status")
 async def get_system_status():
     """
@@ -888,7 +897,7 @@ async def get_system_status():
     )
     provider_mode = os.environ.get("TESTFORGE_PROVIDER_MODE", "auto").strip().lower()
     configured_ollama_model = os.environ.get("OLLAMA_MODEL", "qwen2.5-coder:7b").strip() or "qwen2.5-coder:7b"
-    has_gemini = bool(os.environ.get("GEMINI_API_KEY", "").strip() or os.environ.get("GEMINI_API_KEY_2", "").strip() or os.environ.get("GEMINI_FALLBACK_API_KEY", "").strip() or os.environ.get("GOOGLE_API_KEY", "").strip())
+    has_gemini = bool(os.environ.get("GEMINI_API_KEY", "").strip() or os.environ.get("GOOGLE_API_KEY", "").strip())
     has_gemini_fallback = bool(os.environ.get("GEMINI_API_KEY_2", "").strip() or os.environ.get("GEMINI_FALLBACK_API_KEY", "").strip())
     has_openrouter = bool(os.environ.get("OPENROUTER_API_KEY", "").strip())
 
@@ -900,6 +909,10 @@ async def get_system_status():
     else:
         ollama_online, detected_models = probe_ollama_status(ollama_url, timeout=0.8)
         ollama_mode = "online" if ollama_online else "offline"
+
+    gem_raw = os.environ.get("GEMINI_API_KEY", "") or os.environ.get("GOOGLE_API_KEY", "")
+    gem2_raw = os.environ.get("GEMINI_API_KEY_2", "") or os.environ.get("GEMINI_FALLBACK_API_KEY", "")
+    or_raw = os.environ.get("OPENROUTER_API_KEY", "")
 
     return {
         "hardware": {
@@ -919,6 +932,9 @@ async def get_system_status():
             "has_gemini": has_gemini,
             "has_gemini_fallback": has_gemini_fallback,
             "has_openrouter": has_openrouter,
+            "gemini_key_masked": _mask_api_key(gem_raw),
+            "gemini_key_2_masked": _mask_api_key(gem2_raw),
+            "openrouter_key_masked": _mask_api_key(or_raw),
         },
         "supported_models": [
             "gemini-3.6-flash",
@@ -937,13 +953,14 @@ async def update_api_keys(payload: KeyConfigPayload):
     Dynamically binds or updates Gemini / OpenRouter API keys, provider mode,
     and local Ollama configuration in the runtime environment.
     Supports both named keys and hot-swap provider modal payloads.
+    Empty fields preserve previously configured server keys.
     """
-    if payload.provider_mode:
+    if payload.provider_mode and payload.provider_mode.strip():
         os.environ["TESTFORGE_PROVIDER_MODE"] = payload.provider_mode.strip()
-    elif payload.engine_mode:
+    elif payload.engine_mode and payload.engine_mode.strip():
         os.environ["TESTFORGE_PROVIDER_MODE"] = payload.engine_mode.strip()
 
-    if payload.ollama_model:
+    if payload.ollama_model and payload.ollama_model.strip():
         os.environ["OLLAMA_MODEL"] = payload.ollama_model.strip()
     elif payload.model_name and (
         "qwen" in payload.model_name.lower()
@@ -953,36 +970,50 @@ async def update_api_keys(payload: KeyConfigPayload):
     ):
         os.environ["OLLAMA_MODEL"] = payload.model_name.strip()
 
-    if payload.ollama_base_url:
+    if payload.ollama_base_url and payload.ollama_base_url.strip():
         os.environ["OLLAMA_BASE_URL"] = payload.ollama_base_url.strip()
 
-    if payload.key:
+    if payload.key and payload.key.strip():
+        k_val = payload.key.strip()
         prov = (payload.provider or "gemini").lower()
         if "gemini_2" in prov or "backup" in prov or "secondary" in prov:
-            os.environ["GEMINI_API_KEY_2"] = payload.key.strip()
+            os.environ["GEMINI_API_KEY_2"] = k_val
+            os.environ["GEMINI_FALLBACK_API_KEY"] = k_val
         elif "openrouter" in prov:
-            os.environ["OPENROUTER_API_KEY"] = payload.key.strip()
+            os.environ["OPENROUTER_API_KEY"] = k_val
         elif "ollama" in prov:
-            os.environ["OLLAMA_MODEL"] = payload.key.strip()
+            os.environ["OLLAMA_MODEL"] = k_val
         else:
-            os.environ["GEMINI_API_KEY"] = payload.key.strip()
+            os.environ["GEMINI_API_KEY"] = k_val
 
-    if payload.gemini_api_key is not None:
+    # Blank fields preserve existing keys without overwriting them
+    if payload.gemini_api_key is not None and payload.gemini_api_key.strip():
         os.environ["GEMINI_API_KEY"] = payload.gemini_api_key.strip()
-    if payload.gemini_api_key_2 is not None:
+    if payload.gemini_api_key_2 is not None and payload.gemini_api_key_2.strip():
         os.environ["GEMINI_API_KEY_2"] = payload.gemini_api_key_2.strip()
-    if payload.openrouter_api_key is not None:
+        os.environ["GEMINI_FALLBACK_API_KEY"] = payload.gemini_api_key_2.strip()
+    if payload.openrouter_api_key is not None and payload.openrouter_api_key.strip():
         os.environ["OPENROUTER_API_KEY"] = payload.openrouter_api_key.strip()
 
-    has_gem = bool(os.environ.get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY_2") or os.environ.get("GOOGLE_API_KEY"))
+    gem_raw = os.environ.get("GEMINI_API_KEY", "") or os.environ.get("GOOGLE_API_KEY", "")
+    gem2_raw = os.environ.get("GEMINI_API_KEY_2", "") or os.environ.get("GEMINI_FALLBACK_API_KEY", "")
+    or_raw = os.environ.get("OPENROUTER_API_KEY", "")
+
+    has_gem = bool(gem_raw.strip())
+    has_gem2 = bool(gem2_raw.strip())
+    has_or = bool(or_raw.strip())
+
     return {
         "status": "success",
         "has_gemini": has_gem,
-        "has_gemini_fallback": bool(os.environ.get("GEMINI_API_KEY_2") or os.environ.get("GEMINI_FALLBACK_API_KEY")),
-        "has_openrouter": bool(os.environ.get("OPENROUTER_API_KEY")),
+        "has_gemini_fallback": has_gem2,
+        "has_openrouter": has_or,
+        "gemini_key_masked": _mask_api_key(gem_raw),
+        "gemini_key_2_masked": _mask_api_key(gem2_raw),
+        "openrouter_key_masked": _mask_api_key(or_raw),
         "provider_mode": os.environ.get("TESTFORGE_PROVIDER_MODE", "auto"),
         "ollama_model": os.environ.get("OLLAMA_MODEL", "qwen2.5-coder:7b"),
-        "message": "Configuration successfully updated and activated for test generation."
+        "message": "API keys successfully updated and activated for live test generation."
     }
 
 

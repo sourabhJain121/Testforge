@@ -195,7 +195,12 @@ document.addEventListener('DOMContentLoaded', () => {
     sliderMutationScore: document.getElementById('target-score-input'),
     valMutationScore: document.getElementById('val-mutation-score'),
     inputGeminiKey: document.getElementById('input-gemini-key'),
+    inputGeminiKey2: document.getElementById('input-gemini-key-2'),
     inputOpenrouterKey: document.getElementById('input-openrouter-key'),
+    badgeGeminiKey: document.getElementById('badge-gemini-key'),
+    badgeGeminiKey2: document.getElementById('badge-gemini-key-2'),
+    badgeOpenrouterKey: document.getElementById('badge-openrouter-key'),
+    keysConfiguredBadge: document.getElementById('keys-configured-badge'),
     inputOllamaModel: document.getElementById('ollama-model-input'),
     datalistOllamaModels: document.getElementById('ollama-detected-models-datalist'),
 
@@ -1701,6 +1706,72 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.valMutationScore.textContent = `${e.target.value}%`;
   });
 
+  function updateSettingsKeyBadges(prov) {
+    if (!prov) return;
+    const { has_gemini, has_gemini_fallback, has_openrouter, gemini_key_masked, gemini_key_2_masked, openrouter_key_masked } = prov;
+
+    if (dom.badgeGeminiKey) {
+      if (has_gemini) {
+        dom.badgeGeminiKey.textContent = gemini_key_masked ? `Active (${gemini_key_masked})` : 'Active';
+        dom.badgeGeminiKey.style.background = 'rgba(16, 185, 129, 0.2)';
+        dom.badgeGeminiKey.style.color = '#34d399';
+        if (dom.inputGeminiKey && !dom.inputGeminiKey.matches(':focus')) {
+          dom.inputGeminiKey.placeholder = gemini_key_masked ? `${gemini_key_masked} (Configured — leave blank to keep)` : 'Configured (leave blank to keep)';
+        }
+      } else {
+        dom.badgeGeminiKey.textContent = 'Not Configured';
+        dom.badgeGeminiKey.style.background = 'rgba(239, 68, 68, 0.2)';
+        dom.badgeGeminiKey.style.color = '#f87171';
+        if (dom.inputGeminiKey && !dom.inputGeminiKey.matches(':focus')) {
+          dom.inputGeminiKey.placeholder = 'AIzaSy... (enter key to activate)';
+        }
+      }
+    }
+
+    if (dom.badgeGeminiKey2) {
+      if (has_gemini_fallback) {
+        dom.badgeGeminiKey2.textContent = gemini_key_2_masked ? `Backup Active (${gemini_key_2_masked})` : 'Backup Active';
+        dom.badgeGeminiKey2.style.background = 'rgba(16, 185, 129, 0.2)';
+        dom.badgeGeminiKey2.style.color = '#34d399';
+        if (dom.inputGeminiKey2 && !dom.inputGeminiKey2.matches(':focus')) {
+          dom.inputGeminiKey2.placeholder = gemini_key_2_masked ? `${gemini_key_2_masked} (Configured — leave blank to keep)` : 'Configured (leave blank to keep)';
+        }
+      } else {
+        dom.badgeGeminiKey2.textContent = 'Not Configured';
+        dom.badgeGeminiKey2.style.background = 'rgba(148, 163, 184, 0.15)';
+        dom.badgeGeminiKey2.style.color = '#94a3b8';
+        if (dom.inputGeminiKey2 && !dom.inputGeminiKey2.matches(':focus')) {
+          dom.inputGeminiKey2.placeholder = 'AIzaSy... (optional 429 auto-failover key)';
+        }
+      }
+    }
+
+    if (dom.badgeOpenrouterKey) {
+      if (has_openrouter) {
+        dom.badgeOpenrouterKey.textContent = openrouter_key_masked ? `Active (${openrouter_key_masked})` : 'Active';
+        dom.badgeOpenrouterKey.style.background = 'rgba(16, 185, 129, 0.2)';
+        dom.badgeOpenrouterKey.style.color = '#34d399';
+        if (dom.inputOpenrouterKey && !dom.inputOpenrouterKey.matches(':focus')) {
+          dom.inputOpenrouterKey.placeholder = openrouter_key_masked ? `${openrouter_key_masked} (Configured — leave blank to keep)` : 'Configured (leave blank to keep)';
+        }
+      } else {
+        dom.badgeOpenrouterKey.textContent = 'Not Configured';
+        dom.badgeOpenrouterKey.style.background = 'rgba(148, 163, 184, 0.15)';
+        dom.badgeOpenrouterKey.style.color = '#94a3b8';
+        if (dom.inputOpenrouterKey && !dom.inputOpenrouterKey.matches(':focus')) {
+          dom.inputOpenrouterKey.placeholder = 'sk-or-v1-... (optional Tier 2 fallback)';
+        }
+      }
+    }
+
+    if (dom.keysConfiguredBadge) {
+      const anyActive = has_gemini || has_gemini_fallback || has_openrouter;
+      dom.keysConfiguredBadge.textContent = anyActive ? 'Runtime Active' : 'Offline / AST Mode';
+      dom.keysConfiguredBadge.style.color = anyActive ? '#38bdf8' : '#94a3b8';
+      dom.keysConfiguredBadge.style.background = anyActive ? 'rgba(56, 189, 248, 0.15)' : 'rgba(148, 163, 184, 0.1)';
+    }
+  }
+
   dom.btnSaveSettings.addEventListener('click', async () => {
     state.settings.engineMode = dom.selectEngineMode.value;
     state.settings.modelName = dom.selectModelName.value;
@@ -1712,12 +1783,33 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.hardenIterLbl.textContent = state.settings.maxIterations;
     dom.hardenScoreLbl.textContent = `${state.settings.targetMutationScore}%`;
 
-    const gKey = dom.inputGeminiKey.value.trim();
-    const orKey = dom.inputOpenrouterKey.value.trim();
+    const gKey = dom.inputGeminiKey ? dom.inputGeminiKey.value.trim() : '';
+    const gKey2 = dom.inputGeminiKey2 ? dom.inputGeminiKey2.value.trim() : '';
+    const orKey = dom.inputOpenrouterKey ? dom.inputOpenrouterKey.value.trim() : '';
     const ollamaModel = dom.inputOllamaModel ? dom.inputOllamaModel.value.trim() : null;
 
     try {
-      const res = await fetch('/api/config', {
+      // 1. If any non-empty key was entered, dispatch to POST /api/keys
+      if (gKey || gKey2 || orKey) {
+        const keyPayload = {};
+        if (gKey) keyPayload.gemini_api_key = gKey;
+        if (gKey2) keyPayload.gemini_api_key_2 = gKey2;
+        if (orKey) keyPayload.openrouter_api_key = orKey;
+
+        const keyRes = await fetch('/api/keys', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(keyPayload),
+        });
+        const keyData = await keyRes.json();
+        updateSettingsKeyBadges(keyData);
+        if (dom.inputGeminiKey && gKey) dom.inputGeminiKey.value = '';
+        if (dom.inputGeminiKey2 && gKey2) dom.inputGeminiKey2.value = '';
+        if (dom.inputOpenrouterKey && orKey) dom.inputOpenrouterKey.value = '';
+      }
+
+      // 2. Save runtime settings via POST /api/config
+      const configRes = await fetch('/api/config', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1727,12 +1819,10 @@ document.addEventListener('DOMContentLoaded', () => {
           ollama_model: ollamaModel || null,
           max_iterations: state.settings.maxIterations,
           target_mutation_score: state.settings.targetMutationScore,
-          gemini_api_key: gKey || null,
-          openrouter_api_key: orKey || null,
         }),
       });
-      const data = await res.json();
-      showToast('System configuration saved successfully!', 'success');
+      await configRes.json();
+      showToast('✅ API Keys & Configuration updated for active pipeline', 'success');
     } catch (err) {
       showToast(`Configuration update failed: ${err.message}`, 'error');
     }
@@ -1751,7 +1841,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await res.json();
 
       // Hardware
-      if (data.hardware) {
+      if (data.hardware && dom.labelHardware) {
         const { machine, os_system, cpu_count, total_memory_gb } = data.hardware;
         dom.labelHardware.textContent = `${os_system} ${machine} (${cpu_count} cores, ${total_memory_gb}GB)`;
       }
@@ -1762,13 +1852,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Ollama
         if (ollama_mode === 'cloud_disabled') {
-          dom.dotOllama.className = 'indicator-dot blue';
-          dom.labelOllama.textContent = '☁️ Cloud Mode (Ollama Bypassed)';
+          if (dom.dotOllama) dom.dotOllama.className = 'indicator-dot blue';
+          if (dom.labelOllama) dom.labelOllama.textContent = '☁️ Cloud Mode (Ollama Bypassed)';
           if (dom.pillOllama) dom.pillOllama.title = 'Production Cloud Deployment: Local Ollama bypassed in favor of Cloud GenAI / OpenRouter / Deterministic AST Synthesizer';
         } else {
-          dom.dotOllama.className = `indicator-dot ${ollama_online ? 'green' : 'red'}`;
+          if (dom.dotOllama) dom.dotOllama.className = `indicator-dot ${ollama_online ? 'green' : 'red'}`;
           const currentOllamaModel = ollama_model || 'qwen2.5-coder:7b';
-          dom.labelOllama.textContent = ollama_online ? `🟢 Ollama (${currentOllamaModel})` : 'Ollama (Offline)';
+          if (dom.labelOllama) dom.labelOllama.textContent = ollama_online ? `🟢 Ollama (${currentOllamaModel})` : 'Ollama (Offline)';
           if (dom.pillOllama) {
             dom.pillOllama.title = ollama_online
               ? `Local Apple Silicon Engine Active: model ${currentOllamaModel} ready`
@@ -1787,20 +1877,29 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Gemini
-        if (has_gemini && has_gemini_fallback) {
-          dom.dotGemini.className = 'indicator-dot green';
-          dom.labelGemini.textContent = 'Gemini (Dual Key Active)';
-        } else if (has_gemini) {
-          dom.dotGemini.className = 'indicator-dot green';
-          dom.labelGemini.textContent = 'Gemini (Active)';
-        } else {
-          dom.dotGemini.className = 'indicator-dot amber';
-          dom.labelGemini.textContent = 'Gemini (No Key)';
+        if (dom.dotGemini && dom.labelGemini) {
+          if (has_gemini && has_gemini_fallback) {
+            dom.dotGemini.className = 'indicator-dot green';
+            dom.labelGemini.textContent = 'Gemini (Dual Key Active)';
+          } else if (has_gemini) {
+            dom.dotGemini.className = 'indicator-dot green';
+            dom.labelGemini.textContent = 'Gemini (Active)';
+          } else {
+            dom.dotGemini.className = 'indicator-dot amber';
+            dom.labelGemini.textContent = 'Gemini (No Key)';
+          }
         }
 
         // OpenRouter
-        dom.dotOpenrouter.className = `indicator-dot ${has_openrouter ? 'green' : 'gray'}`;
-        dom.labelOpenrouter.textContent = has_openrouter ? 'OpenRouter (Active)' : 'OpenRouter (Idle)';
+        if (dom.dotOpenrouter) {
+          dom.dotOpenrouter.className = `indicator-dot ${has_openrouter ? 'green' : 'gray'}`;
+        }
+        if (dom.labelOpenrouter) {
+          dom.labelOpenrouter.textContent = has_openrouter ? 'OpenRouter (Active)' : 'OpenRouter (Idle)';
+        }
+
+        // Settings Key Badges & Placeholders Sync
+        updateSettingsKeyBadges(data.providers);
       }
 
       // Dynamic Cloud Footer Label
