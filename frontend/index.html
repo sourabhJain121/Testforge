@@ -35,58 +35,61 @@
   </div>
 
   <!-- Header Section -->
-  <header class="navbar" id="main-header" style="padding: 0.5rem 1.25rem; gap: 0.75rem; flex-wrap: wrap;">
-    <div class="nav-left">
-      <div class="brand">
-        <span class="brand-icon">⚡</span>
+  <header class="navbar" id="main-header" style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: nowrap; padding: 10px 20px; overflow-x: auto; min-height: 52px; box-sizing: border-box;">
+    <div class="nav-left" style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
+      <div class="brand" style="display: flex; align-items: center; gap: 8px;">
+        <span class="brand-icon" style="font-size: 1.4rem;">⚡</span>
         <div class="brand-text">
-          <h1 class="brand-title" style="color: #f8fafc; -webkit-text-fill-color: #f8fafc; font-weight: 800; text-shadow: 0 1px 3px rgba(0,0,0,0.5);">TestForge</h1>
-          <span class="brand-subtitle">Autonomous Agentic Test Hardening</span>
+          <h1 class="brand-title" style="margin: 0; font-size: 1.25rem; color: #f8fafc; -webkit-text-fill-color: #f8fafc; font-weight: 800; text-shadow: 0 1px 3px rgba(0,0,0,0.5); line-height: 1.1;">TestForge</h1>
+          <span class="brand-subtitle" style="font-size: 0.65rem; font-weight: 600; color: var(--cyan-light, #38bdf8); letter-spacing: 0.6px; text-transform: uppercase;">Autonomous Agentic Test Hardening</span>
         </div>
       </div>
     </div>
 
-    <!-- Live Status Bar -->
-    <div class="nav-center status-pills" id="system-status-pills" style="display: grid; grid-template-columns: repeat(2, max-content); gap: 4px 8px; align-items: center;">
-      <div class="pill" id="pill-hardware" title="Hardware Profile" style="white-space: nowrap; padding: 2px 8px; font-size: 0.72rem;">
-        <span class="indicator-dot green"></span>
-        <span id="label-hardware">Apple Silicon (arm64)</span>
+    <!-- Center / Right Utility Cluster -->
+    <div class="nav-right-cluster" style="display: flex; align-items: center; gap: 8px; flex-shrink: 0; margin-left: auto;">
+      <!-- Live Status Bar -->
+      <div class="nav-center status-pills" id="system-status-pills" style="display: flex; align-items: center; gap: 5px; flex-shrink: 0;">
+        <div class="pill" id="pill-hardware" title="Hardware Profile" style="white-space: nowrap; padding: 2px 7px; font-size: 0.72rem;">
+          <span class="indicator-dot green"></span>
+          <span id="label-hardware">Apple Silicon (arm64)</span>
+        </div>
+        <div class="pill" id="pill-ollama" title="Local Model Engine" style="white-space: nowrap; padding: 2px 7px; font-size: 0.72rem;">
+          <span class="indicator-dot" id="dot-ollama"></span>
+          <span id="label-ollama">Local Ollama</span>
+        </div>
+        <div class="pill" id="pill-gemini" title="Google Gemini Cloud" style="white-space: nowrap; padding: 2px 7px; font-size: 0.72rem;">
+          <span class="indicator-dot" id="dot-gemini"></span>
+          <span id="label-gemini">Gemini Live</span>
+        </div>
+        <div class="pill" id="pill-openrouter" title="OpenRouter Cloud Fallback" style="white-space: nowrap; padding: 2px 7px; font-size: 0.72rem;">
+          <span class="indicator-dot" id="dot-openrouter"></span>
+          <span id="label-openrouter">OpenRouter</span>
+        </div>
       </div>
-      <div class="pill" id="pill-ollama" title="Local Model Engine" style="white-space: nowrap; padding: 2px 8px; font-size: 0.72rem;">
-        <span class="indicator-dot" id="dot-ollama"></span>
-        <span id="label-ollama">Local Ollama</span>
-      </div>
-      <div class="pill" id="pill-gemini" title="Google Gemini Cloud" style="white-space: nowrap; padding: 2px 8px; font-size: 0.72rem;">
-        <span class="indicator-dot" id="dot-gemini"></span>
-        <span id="label-gemini">Gemini Live</span>
-      </div>
-      <div class="pill" id="pill-openrouter" title="OpenRouter Cloud Fallback" style="white-space: nowrap; padding: 2px 8px; font-size: 0.72rem;">
-        <span class="indicator-dot" id="dot-openrouter"></span>
-        <span id="label-openrouter">OpenRouter</span>
-      </div>
-    </div>
 
-    <div class="nav-right cockpit-header-actions" style="display: flex; align-items: center; gap: 0.35rem; flex-shrink: 0;">
-      <button type="button" class="btn btn-outline btn-icon" id="btn-toggle-privacy" title="Zero-Egress Privacy Mode Toggle" style="padding: 0.35rem 0.65rem; font-size: 0.78rem;">
-        <span class="icon" id="icon-privacy">🔓</span> <span id="label-privacy">Privacy Mode: OFF</span>
-      </button>
-      <button type="button" class="btn btn-outline btn-icon" id="btn-a2a-card" title="A2A AgentCard Discovery" style="padding: 0.35rem 0.65rem; font-size: 0.78rem;">
-        <span class="icon">🤖</span> A2A Card
-      </button>
-      <button type="button" class="btn btn-secondary" id="btn-mcp-status" title="Model Context Protocol (FastMCP) Tools Status" style="padding: 0.35rem 0.65rem; font-size: 0.78rem;"><span class="btn-icon">📦</span> MCP Tools (<span id="mcp-tool-count">4</span>)</button>
-      <button id="btn-open-mcp-studio" class="btn btn-secondary" title="Open Interactive FastMCP Protocol Studio" style="padding: 0.35rem 0.65rem; font-size: 0.78rem;">🛠️ MCP Studio</button>
-      <button class="btn btn-secondary btn-icon" id="btn-toggle-settings" title="System Settings" style="padding: 0.35rem 0.65rem; font-size: 0.78rem;">
-        <span class="icon">⚙️</span> Settings
-      </button>
-      <a href="https://github.com/sourabhJain121/Testforge" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-icon" id="btn-github-repo" style="padding: 0.35rem 0.65rem; font-size: 0.78rem;">
-        <span class="icon">🐙</span> Repo
-      </a>
-      <button id="btn-theme-toggle" class="theme-toggle-btn" title="Toggle Light/Dark Theme" style="padding: 0.35rem 0.65rem; font-size: 0.78rem;">
-        <span id="theme-toggle-icon">☀️</span> <span id="theme-toggle-label" class="theme-label">Dark</span>
-      </button>
-      <button type="button" class="btn btn-primary btn-glow btn-icon" id="btn-global-run-hardening" data-action="start-hardening" data-alias="btn-run-hardening" title="Run TestForge Autonomous Hardening" style="flex-shrink: 0; white-space: nowrap; padding: 0.45rem 1rem; font-size: 0.85rem;">
-        <span id="btn-run-hardening"><span class="icon">⚡</span> Run Hardening</span>
-      </button>
+      <div class="nav-right cockpit-header-actions" style="display: flex; align-items: center; gap: 5px; flex-shrink: 0;">
+        <button type="button" class="btn btn-outline btn-icon" id="btn-toggle-privacy" title="Zero-Egress Privacy Mode Toggle" style="padding: 3px 8px; font-size: 0.75rem;">
+          <span class="icon" id="icon-privacy">🔓</span> <span id="label-privacy">Privacy Mode: OFF</span>
+        </button>
+        <button type="button" class="btn btn-outline btn-icon" id="btn-a2a-card" title="A2A AgentCard Discovery" style="padding: 3px 8px; font-size: 0.75rem;">
+          <span class="icon">🤖</span> A2A Card
+        </button>
+        <button type="button" class="btn btn-secondary" id="btn-mcp-status" title="Model Context Protocol (FastMCP) Tools Status" style="padding: 3px 8px; font-size: 0.75rem;"><span class="btn-icon">📦</span> MCP Tools (<span id="mcp-tool-count">4</span>)</button>
+        <button id="btn-open-mcp-studio" class="btn btn-secondary" title="Open Interactive FastMCP Protocol Studio" style="padding: 3px 8px; font-size: 0.75rem;">🛠️ MCP Studio</button>
+        <button class="btn btn-secondary btn-icon" id="btn-toggle-settings" title="System Settings" style="padding: 3px 8px; font-size: 0.75rem;">
+          <span class="icon">⚙️</span> Settings
+        </button>
+        <a href="https://github.com/sourabhJain121/Testforge" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-icon" id="btn-github-repo" style="padding: 3px 8px; font-size: 0.75rem;">
+          <span class="icon">🐙</span> Repo
+        </a>
+        <button id="btn-theme-toggle" class="theme-toggle-btn" title="Toggle Light/Dark Theme" style="padding: 3px 8px; font-size: 0.75rem;">
+          <span id="theme-toggle-icon">☀️</span> <span id="theme-toggle-label" class="theme-label">Dark</span>
+        </button>
+        <button type="button" class="btn btn-primary btn-icon" id="btn-global-run-hardening" data-action="start-hardening" data-alias="btn-run-hardening" title="Quick-Trigger TestForge Hardening" style="padding: 3px 8px; font-size: 0.75rem; font-weight: 600; white-space: nowrap;">
+          <span id="btn-run-hardening"><span class="icon">⚡</span> Run</span>
+        </button>
+      </div>
     </div>
   </header>
 
@@ -477,24 +480,20 @@
   </div>
 
   <!-- Main Container -->
-  <main class="main-layout">
-    <!-- Active Target Hero Card -->
-    <section class="active-target-banner glass-card" id="active-target-card">
-      <div class="banner-content">
-        <div class="banner-badge" id="target-mode-badge">Active Target: Mode A</div>
-        <div class="banner-details">
-          <h2 class="target-title" id="target-module-title">samples.discount</h2>
-          <div class="target-tags">
-            <span class="tag" id="tag-file-path">📁 samples/discount.py</span>
-            <span class="tag" id="tag-sha">🔑 SHA: calculating...</span>
-            <span class="tag" id="tag-funcs">⚡ 1 Function</span>
-            <span class="tag" id="tag-classes">🏛️ 0 Classes</span>
-            <span class="tag" id="tag-lines">📄 24 Lines</span>
-            <span class="tag badge-purple" id="tag-dual-framework" style="background: rgba(168, 85, 247, 0.2); border: 1px solid rgba(168, 85, 247, 0.4); color: #c084fc; font-weight: 600;">⚡ Google ADK + CrewAI Hybrid MAS</span>
-          </div>
-        </div>
+  <main class="main-layout" style="padding-top: 12px;">
+    <!-- Active Target Hero Card (Compact Single-Row Horizontal Status Bar) -->
+    <section class="active-target-banner glass-card" id="active-target-card" style="display: flex; justify-content: space-between; align-items: center; padding: 8px 18px; margin: 8px auto 14px auto; min-height: 42px; gap: 12px; flex-wrap: wrap; box-sizing: border-box;">
+      <div class="banner-left" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+        <span class="banner-badge" id="target-mode-badge" style="margin: 0; padding: 2px 9px; font-size: 0.72rem;">Active Target: Mode A</span>
+        <h2 class="target-title" id="target-module-title" style="margin: 0; font-size: 1.05rem; font-weight: 700; color: #fff; line-height: 1.2;">samples.discount</h2>
+        <span class="tag" id="tag-file-path" style="padding: 2px 7px; font-size: 0.75rem;">📁 samples/discount.py</span>
       </div>
-      <div class="banner-actions">
+      <div class="banner-right target-tags" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 0;">
+        <span class="tag" id="tag-sha" style="padding: 2px 7px; font-size: 0.75rem;">🔑 SHA: calculating...</span>
+        <span class="tag" id="tag-funcs" style="padding: 2px 7px; font-size: 0.75rem;">⚡ 1 Function</span>
+        <span class="tag" id="tag-classes" style="padding: 2px 7px; font-size: 0.75rem;">🏛️ 0 Classes</span>
+        <span class="tag" id="tag-lines" style="padding: 2px 7px; font-size: 0.75rem;">📄 24 Lines</span>
+        <span class="tag badge-purple" id="tag-dual-framework" style="background: rgba(168, 85, 247, 0.2); border: 1px solid rgba(168, 85, 247, 0.4); color: #c084fc; font-weight: 600; padding: 2px 7px; font-size: 0.75rem;">⚡ Google ADK + CrewAI Hybrid MAS</span>
       </div>
     </section>
 

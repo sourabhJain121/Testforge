@@ -508,7 +508,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // =========================================================================
   // Toast Notification System
   // =========================================================================
-  function showToast(message, type = 'info', duration = 3500) {
+  function showToast(message, type = 'info', duration = 3000) {
     if (!dom.toastContainer) return;
 
     // Dismiss conflicting success toasts when an error or warning arrives (TF-DEF-003 fix)
