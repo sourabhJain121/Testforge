@@ -1620,15 +1620,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Providers
       if (data.providers) {
-        const { ollama_online, has_gemini, has_openrouter } = data.providers;
+        const { ollama_online, ollama_mode, has_gemini, has_gemini_fallback, has_openrouter } = data.providers;
 
         // Ollama
-        dom.dotOllama.className = `indicator-dot ${ollama_online ? 'green' : 'red'}`;
-        dom.labelOllama.textContent = ollama_online ? 'Ollama (Online)' : 'Ollama (Offline)';
+        if (ollama_mode === 'cloud_disabled') {
+          dom.dotOllama.className = 'indicator-dot blue';
+          dom.labelOllama.textContent = '☁️ Cloud Mode (Ollama Bypassed)';
+          if (dom.pillOllama) dom.pillOllama.title = 'Production Cloud Deployment: Local Ollama bypassed in favor of Cloud GenAI / OpenRouter / Deterministic AST Synthesizer';
+        } else {
+          dom.dotOllama.className = `indicator-dot ${ollama_online ? 'green' : 'red'}`;
+          dom.labelOllama.textContent = ollama_online ? 'Ollama (Online)' : 'Ollama (Offline)';
+        }
 
         // Gemini
-        dom.dotGemini.className = `indicator-dot ${has_gemini ? 'green' : 'amber'}`;
-        dom.labelGemini.textContent = has_gemini ? 'Gemini (Active)' : 'Gemini (No Key)';
+        if (has_gemini && has_gemini_fallback) {
+          dom.dotGemini.className = 'indicator-dot green';
+          dom.labelGemini.textContent = 'Gemini (Dual Key Active)';
+        } else if (has_gemini) {
+          dom.dotGemini.className = 'indicator-dot green';
+          dom.labelGemini.textContent = 'Gemini (Active)';
+        } else {
+          dom.dotGemini.className = 'indicator-dot amber';
+          dom.labelGemini.textContent = 'Gemini (No Key)';
+        }
 
         // OpenRouter
         dom.dotOpenrouter.className = `indicator-dot ${has_openrouter ? 'green' : 'gray'}`;
@@ -3527,6 +3541,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
           // Update live Blackboard partition strip (Improvement B)
           updateBlackboardStrip(job, lState);
+
+          // Real-time provider alert checking
+          if (job.latest_alert) {
+            showApiAlertModal(job.latest_alert);
+          }
         } else if (job.status === 'CANCELLING') {
           state.hardening.status = 'CANCELLING';
           if (dom.btnCancelHardening) {
@@ -5335,6 +5354,11 @@ document.addEventListener('DOMContentLoaded', () => {
           incrementBlackboardRevisionCounter(ev.revision || ev.blackboard_revision);
           appendLiveWiretapEvent(ev);
 
+          // Real-time API Rate Limit & Provider Alert Handling
+          if (ev.event_type === 'API_RATE_LIMIT_ROTATED' || ev.event_type === 'API_LIMIT_EXHAUSTED' || ev.event_type === 'API_ERROR_ALERT') {
+            showApiAlertModal(ev);
+          }
+
           // Real-time Granular Hardening Pipeline Telemetry
           if (ev.detail || ev.stage || ev.event_type === 'PIPELINE_TELEMETRY') {
             const statusEl = document.getElementById('hardening-progress-status-text') || dom.hardeningStatusText;
@@ -5451,6 +5475,129 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     state.ws.isConnected = false;
     handleWebSocketDisconnect();
+  }
+
+  // =========================================================================
+  // Real-Time API Rate-Limit & Provider Alert Modal & Live Banner
+  // =========================================================================
+  let lastHandledAlertTimestamp = 0;
+
+  function initApiAlertModal() {
+    const backdrop = document.getElementById('api-alert-modal-backdrop');
+    const btnClose = document.getElementById('btn-close-api-alert-modal');
+    const btnCloseFooter = document.getElementById('btn-close-api-alert-footer');
+    const banner = document.getElementById('api-limit-live-banner');
+    const btnDismissBanner = document.getElementById('btn-dismiss-api-banner');
+    const btnOpenHotSwap = document.getElementById('btn-open-hot-swap-modal');
+    const btnSaveHotSwap = document.getElementById('btn-hot-swap-save');
+
+    if (btnClose && backdrop) {
+      btnClose.addEventListener('click', () => backdrop.classList.add('hidden'));
+    }
+    if (btnCloseFooter && backdrop) {
+      btnCloseFooter.addEventListener('click', () => backdrop.classList.add('hidden'));
+    }
+    if (btnDismissBanner && banner) {
+      btnDismissBanner.addEventListener('click', () => banner.classList.add('hidden'));
+    }
+    if (btnOpenHotSwap && backdrop) {
+      btnOpenHotSwap.addEventListener('click', () => backdrop.classList.remove('hidden'));
+    }
+
+    if (btnSaveHotSwap) {
+      btnSaveHotSwap.addEventListener('click', async () => {
+        const provSelect = document.getElementById('hot-swap-provider-select');
+        const keyInput = document.getElementById('hot-swap-key-input');
+        const statusEl = document.getElementById('hot-swap-status');
+        if (!keyInput || !keyInput.value.trim()) {
+          if (statusEl) {
+            statusEl.textContent = 'Please enter an API key.';
+            statusEl.style.color = '#ef4444';
+            statusEl.style.display = 'block';
+          }
+          return;
+        }
+
+        const provider = provSelect ? provSelect.value : 'gemini';
+        const keyVal = keyInput.value.trim();
+
+        btnSaveHotSwap.disabled = true;
+        btnSaveHotSwap.textContent = 'Saving...';
+        try {
+          const res = await fetch('/api/keys', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key: keyVal, provider: provider })
+          });
+          const respData = await res.json();
+          if (statusEl) {
+            statusEl.textContent = '✔ Key hot-swapped successfully! Live container updated.';
+            statusEl.style.color = '#10b981';
+            statusEl.style.display = 'block';
+          }
+          showToast('API Key hot-swapped successfully! Live container updated.', 'success');
+          // Refresh system status pills
+          fetchSystemStatus();
+          setTimeout(() => {
+            if (backdrop) backdrop.classList.add('hidden');
+            if (banner) banner.classList.add('hidden');
+            keyInput.value = '';
+            btnSaveHotSwap.disabled = false;
+            btnSaveHotSwap.textContent = 'Save & Retry';
+            if (statusEl) statusEl.style.display = 'none';
+          }, 1400);
+        } catch (e) {
+          if (statusEl) {
+            statusEl.textContent = `Save failed: ${e.message}`;
+            statusEl.style.color = '#ef4444';
+            statusEl.style.display = 'block';
+          }
+          btnSaveHotSwap.disabled = false;
+          btnSaveHotSwap.textContent = 'Save & Retry';
+        }
+      });
+    }
+  }
+
+  function showApiAlertModal(alertData) {
+    if (!alertData) return;
+    const ts = alertData.timestamp || Date.now();
+    if (ts <= lastHandledAlertTimestamp && (Date.now() - lastHandledAlertTimestamp < 2000)) return;
+    lastHandledAlertTimestamp = ts;
+
+    const backdrop = document.getElementById('api-alert-modal-backdrop');
+    const headingEl = document.getElementById('api-alert-heading');
+    const msgEl = document.getElementById('api-alert-message');
+    const statusBadge = document.getElementById('api-alert-status-badge');
+    const provBadge = document.getElementById('api-alert-provider-badge');
+    const tierBadge = document.getElementById('api-alert-tier-badge');
+    const timeEl = document.getElementById('api-alert-timestamp');
+    const banner = document.getElementById('api-limit-live-banner');
+    const bannerText = document.getElementById('api-banner-text');
+
+    const title = alertData.title || (alertData.event_type === 'API_RATE_LIMIT_ROTATED' ? '🔄 API Rate Limit — Rotated to Backup Key' : '⚠️ Cloud API Rate Limit Exceeded');
+    const detail = alertData.detail || alertData.error || 'An upstream provider rate limit was encountered.';
+    const provider = alertData.provider || 'Cloud LLM';
+    const tier = alertData.fallback_tier || 'Fallback Active';
+
+    if (headingEl) headingEl.textContent = title;
+    if (msgEl) msgEl.textContent = detail;
+    if (statusBadge) {
+      statusBadge.textContent = alertData.event_type === 'API_RATE_LIMIT_ROTATED' ? 'RATE LIMIT ROTATED (429)' : 'QUOTA EXHAUSTED (429/402)';
+      statusBadge.className = alertData.event_type === 'API_RATE_LIMIT_ROTATED' ? 'badge badge-amber' : 'badge badge-danger';
+    }
+    if (provBadge) provBadge.textContent = `Provider: ${provider}`;
+    if (tierBadge) tierBadge.textContent = `Active: ${tier}`;
+    if (timeEl) timeEl.textContent = new Date(ts * (ts < 1e12 ? 1000 : 1)).toLocaleTimeString();
+
+    if (banner && bannerText) {
+      bannerText.textContent = `${title}: ${detail}`;
+      banner.classList.remove('hidden');
+    }
+
+    if (backdrop) {
+      backdrop.classList.remove('hidden');
+    }
   }
 
   function buildWiretapCardElement(ev) {
@@ -7851,6 +7998,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Initial Bootstrapping
   // =========================================================================
   async function init() {
+    // 0. Initialize Real-Time API Alert Modal & Hot-Swap Key Listener
+    initApiAlertModal();
+
     // 1. Fetch system status
     await fetchSystemStatus();
 
@@ -7887,6 +8037,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 11. Expose test helpers for QA automation
     window.__testforge = {
+      showApiAlertModal,
       showToast,
       switchTab,
       switchIngestionSubmode,

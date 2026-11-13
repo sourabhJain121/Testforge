@@ -270,12 +270,14 @@ class TestForgeOrchestrator:
             target_file_path=self.target_file_path,
             companion_files=self.companion_files,
         )
+        self.latest_alert: Optional[Dict[str, Any]] = None
         self.llm_client = HybridLLMClient(
             cloud_model=model_name,
             api_key=api_key,
             openrouter_api_key=openrouter_api_key,
             logger=self.logger,
-            engine_mode=engine_mode
+            engine_mode=engine_mode,
+            alert_callback=self._handle_llm_alert,
         )
         self.generator = TestGeneratorAgent(
             model_name=model_name,
@@ -478,6 +480,14 @@ class TestForgeOrchestrator:
             global_websocket_hub.broadcast_event(ev)
         except Exception as e:
             logger.debug(f"Failed to broadcast websocket event {event_type}: {e}")
+
+    def _handle_llm_alert(self, alert_ev: Dict[str, Any]) -> None:
+        """Captures real-time LLM failover and rate limit alerts on state."""
+        self.latest_alert = alert_ev
+        if hasattr(self, "state") and self.state:
+            if not hasattr(self.state, "metadata") or self.state.metadata is None:
+                self.state.metadata = {}
+            self.state.metadata["latest_alert"] = alert_ev
 
     def _sync_lifecycle(
         self,

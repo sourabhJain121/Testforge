@@ -254,6 +254,8 @@ class KeyConfigPayload(BaseModel):
     gemini_api_key: Optional[str] = None
     gemini_api_key_2: Optional[str] = None
     openrouter_api_key: Optional[str] = None
+    key: Optional[str] = None
+    provider: Optional[str] = None
 
 class SampleIngestPayload(BaseModel):
     filename: str
@@ -803,12 +805,60 @@ async def get_websocket_hub_status():
     }
 
 
+@app.get("/api/health")
+async def api_health():
+    """
+    Consolidated health and cloud status endpoint for dashboard and container probes.
+    """
+    is_cloud_env = bool(
+        os.environ.get("RENDER")
+        or os.environ.get("K_SERVICE")
+        or os.environ.get("CLOUD_RUN_SERVICE")
+    )
+    has_gemini = bool(os.environ.get("GEMINI_API_KEY", "").strip() or os.environ.get("GEMINI_API_KEY_2", "").strip() or os.environ.get("GEMINI_FALLBACK_API_KEY", "").strip() or os.environ.get("GOOGLE_API_KEY", "").strip())
+    ollama_url = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434").rstrip("/") + "/api/tags"
+    if is_cloud_env or (has_gemini and not os.environ.get("OLLAMA_BASE_URL")):
+        ollama_mode = "cloud_disabled"
+        ollama_online = False
+    else:
+        ollama_online = is_ollama_running(ollama_url)
+        ollama_mode = "online" if ollama_online else "offline"
+
+    return {
+        "status": "ok",
+        "service": "testforge-backend",
+        "version": "2.0.0",
+        "cloud_mode": is_cloud_env,
+        "ollama_mode": ollama_mode,
+        "ollama_online": ollama_online,
+        "frameworks": ["google-adk", "crewai"],
+        "mcp": "fastmcp-stdio",
+        "timestamp": time.time(),
+    }
+
+
 @app.get("/api/status")
 async def get_system_status():
     """
     Returns hardware topology, accelerator status, and provider connectivity.
     """
-    ollama_online = is_ollama_running("http://localhost:11434/api/tags")
+    is_cloud_env = bool(
+        os.environ.get("RENDER")
+        or os.environ.get("K_SERVICE")
+        or os.environ.get("CLOUD_RUN_SERVICE")
+    )
+    has_gemini = bool(os.environ.get("GEMINI_API_KEY", "").strip() or os.environ.get("GEMINI_API_KEY_2", "").strip() or os.environ.get("GEMINI_FALLBACK_API_KEY", "").strip() or os.environ.get("GOOGLE_API_KEY", "").strip())
+    has_gemini_fallback = bool(os.environ.get("GEMINI_API_KEY_2", "").strip() or os.environ.get("GEMINI_FALLBACK_API_KEY", "").strip())
+    has_openrouter = bool(os.environ.get("OPENROUTER_API_KEY", "").strip())
+
+    ollama_url = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434").rstrip("/") + "/api/tags"
+    if is_cloud_env or (has_gemini and not os.environ.get("OLLAMA_BASE_URL")):
+        ollama_mode = "cloud_disabled"
+        ollama_online = False
+    else:
+        ollama_online = is_ollama_running(ollama_url)
+        ollama_mode = "online" if ollama_online else "offline"
+
     return {
         "hardware": {
             "machine": hw_profile.machine,
@@ -819,9 +869,11 @@ async def get_system_status():
         },
         "providers": {
             "ollama_online": ollama_online,
-            "has_gemini": bool(os.environ.get("GEMINI_API_KEY", "").strip() or os.environ.get("GEMINI_API_KEY_2", "").strip() or os.environ.get("GEMINI_FALLBACK_API_KEY", "").strip() or os.environ.get("GOOGLE_API_KEY", "").strip()),
-            "has_gemini_fallback": bool(os.environ.get("GEMINI_API_KEY_2", "").strip() or os.environ.get("GEMINI_FALLBACK_API_KEY", "").strip()),
-            "has_openrouter": bool(os.environ.get("OPENROUTER_API_KEY", "").strip()),
+            "ollama_mode": ollama_mode,
+            "cloud_mode": is_cloud_env,
+            "has_gemini": has_gemini,
+            "has_gemini_fallback": has_gemini_fallback,
+            "has_openrouter": has_openrouter,
         },
         "supported_models": [
             "gemini-3.6-flash",
@@ -832,11 +884,22 @@ async def get_system_status():
     }
 
 
+@app.post("/api/keys")
 @app.post("/api/config/keys")
 async def update_api_keys(payload: KeyConfigPayload):
     """
     Dynamically binds or updates Gemini / OpenRouter API keys in the environment.
+    Supports both named keys and hot-swap provider modal payloads.
     """
+    if payload.key:
+        prov = (payload.provider or "gemini").lower()
+        if "gemini_2" in prov or "backup" in prov or "secondary" in prov:
+            os.environ["GEMINI_API_KEY_2"] = payload.key.strip()
+        elif "openrouter" in prov:
+            os.environ["OPENROUTER_API_KEY"] = payload.key.strip()
+        else:
+            os.environ["GEMINI_API_KEY"] = payload.key.strip()
+
     if payload.gemini_api_key is not None:
         os.environ["GEMINI_API_KEY"] = payload.gemini_api_key.strip()
     if payload.gemini_api_key_2 is not None:
@@ -850,6 +913,7 @@ async def update_api_keys(payload: KeyConfigPayload):
         "has_gemini": has_gem,
         "has_gemini_fallback": bool(os.environ.get("GEMINI_API_KEY_2") or os.environ.get("GEMINI_FALLBACK_API_KEY")),
         "has_openrouter": bool(os.environ.get("OPENROUTER_API_KEY")),
+        "message": "API keys successfully updated and activated for live test generation."
     }
 
 
@@ -1638,6 +1702,8 @@ async def get_hardening_job_status(job_id: str):
                         for m in orch.state.mutants
                     ]
                 job["agent_latencies_ms"] = getattr(orch.state, "agent_latencies_ms", {}) or (getattr(orch.blackboard.metrics, "agent_latencies_ms", {}) if hasattr(orch, "blackboard") and orch.blackboard else {})
+            if hasattr(orch, "latest_alert") and orch.latest_alert:
+                job["latest_alert"] = orch.latest_alert
             if hasattr(orch, "blackboard") and orch.blackboard:
                 bb = orch.blackboard
                 with bb._lock:

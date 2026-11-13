@@ -112,7 +112,8 @@ class HybridLLMClient:
         engine_mode: str = "auto",
         api_key: Optional[str] = None,
         openrouter_api_key: Optional[str] = None,
-        logger: Optional[TraceLogger] = None
+        logger: Optional[TraceLogger] = None,
+        alert_callback: Optional[Any] = None,
     ):
         self.cloud_model = "gemini-3.6-flash" if "2.5" in cloud_model or "1.5" in cloud_model else cloud_model
         self.openrouter_model = openrouter_model
@@ -134,9 +135,30 @@ class HybridLLMClient:
         self.gemini_key_index = 1
         self.openrouter_api_key = openrouter_api_key or os.environ.get("OPENROUTER_API_KEY", "").strip()
         self.logger = logger
+        self.alert_callback = alert_callback
+        self.latest_alert: Optional[Dict[str, Any]] = None
         self.active_provider: str = "None"
         self.gemini_quota_exhausted: bool = False
         self.openrouter_quota_exhausted: bool = False
+
+    def _emit_alert(self, alert_data: Dict[str, Any]) -> None:
+        """Emits structured real-time alert event to WebSocket hub, logger, and callback."""
+        self.latest_alert = alert_data
+        if hasattr(self, "alert_callback") and callable(self.alert_callback):
+            try:
+                self.alert_callback(alert_data)
+            except Exception:
+                pass
+        try:
+            from testforge.websocket_hub import global_websocket_hub
+            global_websocket_hub.broadcast_event(alert_data)
+        except Exception:
+            pass
+        if self.logger:
+            try:
+                self.logger.log_event(alert_data.get("event_type", "API_ERROR_ALERT"), alert_data)
+            except Exception:
+                pass
 
         # Single unified GenAI client instance
         self.genai_client = None
@@ -251,16 +273,16 @@ class HybridLLMClient:
                                         "reason": "429 RESOURCE_EXHAUSTED",
                                         "switched_to": "GEMINI_API_KEY_2"
                                     })
-                                try:
-                                    from testforge.websocket_hub import global_websocket_hub
-                                    global_websocket_hub.broadcast_event({
-                                        "event_type": "PIPELINE_TELEMETRY",
-                                        "phase": "EXECUTING",
-                                        "stage": "KEY_ROTATED",
-                                        "detail": "Gemini 429 quota reached -> Switched to secondary GEMINI_API_KEY_2..."
-                                    })
-                                except Exception:
-                                    pass
+                                self._emit_alert({
+                                    "event_type": "API_RATE_LIMIT_ROTATED",
+                                    "title": "🔄 Primary Gemini Quota Reached — Rotated to Backup Key",
+                                    "provider": "Cloud Gemini (Backup Key)",
+                                    "status": "warning",
+                                    "detail": "Primary GEMINI_API_KEY hit 429 quota limit. Automatically rotated to GEMINI_API_KEY_2.",
+                                    "fallback_tier": "Gemini Backup Key",
+                                    "error": err_msg,
+                                    "timestamp": time.time(),
+                                })
                                 # Retry immediately with secondary key
                                 continue
                             except Exception as rot_exc:
@@ -273,21 +295,33 @@ class HybridLLMClient:
                         self.gemini_quota_exhausted = True
                         failover_msg = "[!] Gemini quota exhausted. Switching to secondary provider..."
                         print(f"\n{failover_msg}")
-                        try:
-                            from testforge.websocket_hub import global_websocket_hub
-                            global_websocket_hub.broadcast_event({
-                                "event_type": "PIPELINE_TELEMETRY",
-                                "phase": "EXECUTING",
-                                "stage": "FALLBACK_TRIGGERED",
-                                "detail": "Gemini 429 quota reached -> Routing to local Qwen / AST engine..."
+                        if self.openrouter_api_key:
+                            self._emit_alert({
+                                "event_type": "API_RATE_LIMIT_ROTATED",
+                                "title": "🔄 Gemini Quota Exhausted — Rotated to OpenRouter Cloud",
+                                "provider": "OpenRouter Cloud",
+                                "status": "warning",
+                                "detail": "All configured Gemini keys hit 429 quota limits. Automatically rotated to OpenRouter Cloud.",
+                                "fallback_tier": "OpenRouter Cloud",
+                                "error": err_msg,
+                                "timestamp": time.time(),
                             })
-                        except Exception:
-                            pass
+                        else:
+                            self._emit_alert({
+                                "event_type": "API_LIMIT_EXHAUSTED",
+                                "title": "⚠️ Gemini Quota Exhausted (429)",
+                                "provider": "Deterministic AST Synthesizer",
+                                "status": "error",
+                                "detail": "All configured Gemini keys hit 429 rate limits or quota bounds. Engaged deterministic Neuro-Symbolic AST synthesis.",
+                                "fallback_tier": "Neuro-Symbolic AST Synthesizer (Local)",
+                                "error": err_msg,
+                                "timestamp": time.time(),
+                            })
                         if self.logger:
                             self.logger.log_event("PROVIDER_FAILOVER", {
                                 "message": failover_msg,
                                 "from_provider": "Cloud Gemini",
-                                "to_provider": "Local Apple Silicon Engine (Ollama)",
+                                "to_provider": "OpenRouter Cloud" if self.openrouter_api_key else "Local Apple Silicon Engine (Ollama)",
                                 "reason": "429 RESOURCE_EXHAUSTED",
                                 "error": err_msg
                             })
@@ -299,6 +333,15 @@ class HybridLLMClient:
                         continue
                     else:
                         print(f"[!] Cloud Gemini failed ({exc}). Proceeding to next tier...")
+                        self._emit_alert({
+                            "event_type": "API_ERROR_ALERT",
+                            "title": "⚠️ Gemini Cloud Provider Error",
+                            "provider": "Cloud Gemini",
+                            "status": "error",
+                            "detail": f"Gemini API request failed: {err_msg}",
+                            "error": err_msg,
+                            "timestamp": time.time(),
+                        })
                         break
 
         # If Cloud was already marked exhausted in a previous iteration:
@@ -329,8 +372,14 @@ class HybridLLMClient:
         )
 
         if should_try_openrouter:
+            free_tier_models = [
+                "qwen/qwen-2.5-coder-32b-instruct:free",
+                "meta-llama/llama-3.3-70b-instruct:free",
+                "google/gemini-2.0-flash-exp:free",
+                "openrouter/free",
+            ]
             candidate_openrouter_models: List[str] = []
-            for m in [self.openrouter_model, "meta-llama/llama-3.3-70b-instruct", "qwen/qwen-2.5-coder-32b-instruct", "openrouter/free"]:
+            for m in [self.openrouter_model, "meta-llama/llama-3.3-70b-instruct", "qwen/qwen-2.5-coder-32b-instruct"] + free_tier_models:
                 if m and m not in candidate_openrouter_models:
                     candidate_openrouter_models.append(m)
 
@@ -369,22 +418,70 @@ class HybridLLMClient:
 
                 except urllib.error.HTTPError as http_err:
                     err_msg = str(http_err)
-                    is_quota = http_err.code in (402, 429)
-                    if is_quota:
-                        self.openrouter_quota_exhausted = True
-                        failover_msg = f"[!] OpenRouter quota/rate limit reached (HTTP {http_err.code}). Failing over..."
-                        print(f"\n{failover_msg}")
-                        if self.logger:
-                            self.logger.log_event("PROVIDER_FAILOVER", {
-                                "message": failover_msg,
-                                "from_provider": f"OpenRouter ({model_cand})",
-                                "to_provider": "Local Apple Silicon Engine (Ollama)",
-                                "reason": f"HTTP {http_err.code}",
-                                "error": err_msg
+                    is_402 = http_err.code == 402
+                    is_429 = http_err.code == 429
+                    if is_402:
+                        curr_idx = candidate_openrouter_models.index(model_cand) if model_cand in candidate_openrouter_models else -1
+                        free_models_left = [
+                            m for m in candidate_openrouter_models[curr_idx + 1:]
+                            if (":free" in m or m == "openrouter/free")
+                        ]
+                        if free_models_left:
+                            next_free = free_models_left[0]
+                            print(f"[!] OpenRouter 402 (insufficient credits) on {model_cand}. Auto-falling over to $0 free coding models: {next_free}...")
+                            self._emit_alert({
+                                "event_type": "API_RATE_LIMIT_ROTATED",
+                                "title": "🔄 OpenRouter Paid Credits Exhausted (402) — Switched to $0 Free Model",
+                                "provider": "OpenRouter Free Tier",
+                                "status": "warning",
+                                "detail": f"Paid model {model_cand} returned 402 Payment Required. Seamlessly rotated to free tier: {next_free}.",
+                                "fallback_tier": f"OpenRouter Free ({next_free})",
+                                "error": err_msg,
+                                "timestamp": time.time(),
                             })
+                            continue
+                        else:
+                            self.openrouter_quota_exhausted = True
+                            failover_msg = f"[!] OpenRouter quota/credits exhausted across all paid and free models (HTTP 402). Failing over..."
+                            print(f"\n{failover_msg}")
+                            self._emit_alert({
+                                "event_type": "API_LIMIT_EXHAUSTED",
+                                "title": "⚠️ OpenRouter Credits Exhausted (402)",
+                                "provider": "OpenRouter Cloud",
+                                "status": "error",
+                                "detail": "All configured OpenRouter models (including $0 free tiers) returned 402 / insufficient credits.",
+                                "fallback_tier": "Neuro-Symbolic AST Synthesizer (Local)",
+                                "error": err_msg,
+                                "timestamp": time.time(),
+                            })
+                            break
+                    elif is_429:
+                        self.openrouter_quota_exhausted = True
+                        failover_msg = f"[!] OpenRouter rate limit reached on {model_cand} (HTTP 429). Failing over..."
+                        print(f"\n{failover_msg}")
+                        self._emit_alert({
+                            "event_type": "API_LIMIT_EXHAUSTED",
+                            "title": "⚠️ OpenRouter Rate Limit Reached (429)",
+                            "provider": "OpenRouter Cloud",
+                            "status": "error",
+                            "detail": f"OpenRouter rate limit reached on {model_cand} (HTTP 429).",
+                            "fallback_tier": "Neuro-Symbolic AST Synthesizer (Local)",
+                            "error": err_msg,
+                            "timestamp": time.time(),
+                        })
                         break
                     else:
                         print(f"[!] OpenRouter model {model_cand} error (HTTP {http_err.code}). Trying next candidate...")
+                        self._emit_alert({
+                            "event_type": "API_ERROR_ALERT",
+                            "title": f"⚠️ OpenRouter Error ({model_cand})",
+                            "provider": "OpenRouter Cloud",
+                            "status": "warning",
+                            "detail": f"Model {model_cand} returned HTTP {http_err.code}: {err_msg}",
+                            "error": err_msg,
+                            "timestamp": time.time(),
+                        })
+                        continue
                         continue
                 except Exception as or_exc:
                     print(f"[!] OpenRouter request failed for {model_cand}: {or_exc}. Trying next candidate...")
@@ -520,6 +617,16 @@ class HybridLLMClient:
         """
         from testforge.intelligent_generator import DeterministicBaselineGenerator
         self.active_provider = "AST Deterministic Synthesizer"
+        if self.gemini_quota_exhausted or self.openrouter_quota_exhausted:
+            self._emit_alert({
+                "event_type": "API_LIMIT_EXHAUSTED",
+                "title": "⚠️ Cloud API Limit Exhausted — Fallback Active",
+                "provider": "Neuro-Symbolic AST Synthesizer",
+                "status": "error",
+                "detail": "Cloud LLM quotas exhausted. Seamlessly engaged zero-egress Neuro-Symbolic AST synthesis (DEF-022 guaranteed).",
+                "fallback_tier": "Neuro-Symbolic AST Synthesizer (Local)",
+                "timestamp": time.time(),
+            })
         synthesizer = DeterministicBaselineGenerator()
 
         # Extract target Python source code from prompt
