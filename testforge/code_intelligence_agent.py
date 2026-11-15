@@ -261,6 +261,147 @@ def infer_parameter_types_from_ast(func_node: Union[ast.FunctionDef, ast.AsyncFu
     return classifications
 
 
+def extract_stateful_classes_from_ast(tree_or_code: Union[str, ast.AST]) -> List[Dict[str, Any]]:
+    """
+    Extracts structured stateful classes metadata from Python AST:
+    - Identifies classes setting self.* attributes in __init__ or methods
+    - Extracts constructor parameters, capacity/boundary thresholds
+    - Distinguishes state-mutating methods vs state-reading accessor methods
+    """
+    if isinstance(tree_or_code, str):
+        try:
+            tree = ast.parse(tree_or_code)
+        except Exception:
+            return []
+    else:
+        tree = tree_or_code
+
+    stateful_classes: List[Dict[str, Any]] = []
+
+    for node in tree.body:
+        if not isinstance(node, ast.ClassDef):
+            continue
+
+        class_name = node.name
+        init_node: Optional[Union[ast.FunctionDef, ast.AsyncFunctionDef]] = None
+        methods: List[Union[ast.FunctionDef, ast.AsyncFunctionDef]] = []
+
+        for item in node.body:
+            if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                if item.name == "__init__":
+                    init_node = item
+                else:
+                    methods.append(item)
+
+        state_attributes: Set[str] = set()
+        constructor_params: List[Dict[str, Any]] = []
+        has_capacity_limit = False
+        capacity_param = None
+
+        if init_node:
+            args = init_node.args
+            defaults = args.defaults
+            num_args = len(args.args)
+            num_defaults = len(defaults)
+            first_default_idx = num_args - num_defaults
+
+            for idx, arg in enumerate(args.args):
+                if arg.arg in ("self", "cls"):
+                    continue
+                ann_str = ""
+                if arg.annotation:
+                    try:
+                        ann_str = ast.unparse(arg.annotation)
+                    except Exception:
+                        ann_str = ""
+                default_val = None
+                if idx >= first_default_idx:
+                    try:
+                        default_val = ast.unparse(defaults[idx - first_default_idx])
+                    except Exception:
+                        default_val = None
+
+                constructor_params.append({
+                    "name": arg.arg,
+                    "annotation": ann_str or "Any",
+                    "default": default_val,
+                })
+
+                if any(term in arg.arg.lower() for term in ("capacity", "max_size", "size_limit", "limit", "bound")):
+                    has_capacity_limit = True
+                    capacity_param = arg.arg
+
+            for child in ast.walk(init_node):
+                if isinstance(child, ast.Assign):
+                    for target in child.targets:
+                        if isinstance(target, ast.Attribute) and isinstance(target.value, ast.Name) and target.value.id == "self":
+                            state_attributes.add(target.attr)
+                elif isinstance(child, ast.AnnAssign):
+                    if isinstance(child.target, ast.Attribute) and isinstance(child.target.value, ast.Name) and child.target.value.id == "self":
+                        state_attributes.add(child.target.attr)
+
+        mutator_names = {
+            "put", "push", "enqueue", "insert", "add", "set", "remove",
+            "delete", "pop", "clear", "write", "update", "evict", "discard",
+            "_remove", "_add_to_front"
+        }
+        accessor_names = {
+            "get", "peek", "top", "front", "read", "size", "is_empty",
+            "find", "contains", "get_hit_ratio", "count", "values", "keys", "items"
+        }
+
+        mutator_methods: List[str] = []
+        accessor_methods: List[str] = []
+
+        for m in methods:
+            m_name = m.name
+            m_name_lower = m_name.lower()
+            modifies_self = False
+
+            for child in ast.walk(m):
+                if isinstance(child, (ast.Assign, ast.AugAssign, ast.AnnAssign)):
+                    targets = child.targets if hasattr(child, "targets") else [getattr(child, "target", None)]
+                    for t in targets:
+                        if isinstance(t, ast.Attribute) and isinstance(t.value, ast.Name) and t.value.id == "self":
+                            modifies_self = True
+                            state_attributes.add(t.attr)
+                elif isinstance(child, ast.Delete):
+                    for t in child.targets:
+                        if isinstance(t, ast.Subscript) and isinstance(t.value, ast.Attribute):
+                            if isinstance(t.value.value, ast.Name) and t.value.value.id == "self":
+                                modifies_self = True
+                elif isinstance(child, ast.Call):
+                    if isinstance(child.func, ast.Attribute):
+                        if isinstance(child.func.value, ast.Name) and child.func.value.id == "self":
+                            if child.func.attr in mutator_names:
+                                modifies_self = True
+                        elif isinstance(child.func.value, ast.Attribute):
+                            if isinstance(child.func.value.value, ast.Name) and child.func.value.value.id == "self":
+                                if child.func.attr in ("clear", "pop", "append", "extend", "remove", "update"):
+                                    modifies_self = True
+
+            if m_name_lower in mutator_names or modifies_self:
+                mutator_methods.append(m_name)
+            if m_name_lower in accessor_names or (not modifies_self and not m_name.startswith("_")):
+                accessor_methods.append(m_name)
+
+        if (state_attributes or constructor_params) and (mutator_methods or accessor_methods):
+            stateful_classes.append({
+                "class_name": class_name,
+                "name": class_name,
+                "constructor_params": constructor_params,
+                "state_attributes": sorted(list(state_attributes)),
+                "mutator_methods": sorted(list(set(mutator_methods))),
+                "accessor_methods": sorted(list(set(accessor_methods))),
+                "has_capacity_limit": has_capacity_limit,
+                "capacity_param": capacity_param,
+                "methods": [m.name for m in methods],
+                "lineno": getattr(node, "lineno", 1),
+            })
+
+    return stateful_classes
+
+
 def _compute_cyclomatic_complexity(node: Union[ast.FunctionDef, ast.AsyncFunctionDef]) -> int:
     """Computes standard McCabe cyclomatic complexity for an AST function node."""
     complexity = 1
@@ -630,7 +771,7 @@ class CodeIntelligenceAgent:
                 "inferred_parameter_types": inferred,
             })
 
-        # 4. Extract Classes
+        # 4. Extract Classes & Stateful Mutation Graph
         classes: List[Dict[str, Any]] = []
         for node in tree.body:
             if isinstance(node, ast.ClassDef):
@@ -648,6 +789,7 @@ class CodeIntelligenceAgent:
                     "bases": bases,
                     "docstring": ast.get_docstring(node) or "",
                 })
+        stateful_classes = extract_stateful_classes_from_ast(tree)
 
         # 5. Extract Dependencies (Imports)
         dependencies: Set[str] = set()
@@ -710,6 +852,7 @@ class CodeIntelligenceAgent:
             "source_lines": len(source_code.splitlines()),
             "total_functions": len(functions),
             "total_classes": len(classes),
+            "total_stateful_classes": len(stateful_classes),
             "total_branches": len(branches),
             "total_exception_paths": len(exception_paths),
             "ast_nodes_count": len(list(ast.walk(tree))),
@@ -723,6 +866,7 @@ class CodeIntelligenceAgent:
             source_sha=source_sha,
             functions=functions,
             classes=classes,
+            stateful_classes=stateful_classes,
             branches=branches,
             exception_paths=exception_paths,
             dependencies=sorted_dependencies,
@@ -759,6 +903,7 @@ class CodeIntelligenceAgent:
             function_count=len(func_names),
             functions_count=len(func_names),
             classes=class_names,
+            stateful_classes=payload.stateful_classes,
             dependencies=payload.dependencies,
             blast_risk=blast_risk,
             source_sha=payload.source_sha,

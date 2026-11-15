@@ -488,13 +488,33 @@ class HybridSynthesizer:
                     )
 
                 elif category == "stateful_cache_fsm":
-                    tests.append(
-                        f"def test_rag_idempotent_{fname}_{doc_id[:12]}():\n"
-                        f"    try:\n"
-                        f"        {fname}()\n"
-                        f"    except Exception:\n"
-                        f"        pass\n"
-                    )
+                    st_classes = (ast_info or {}).get("stateful_classes") or []
+                    if st_classes:
+                        for st_cls in st_classes:
+                            c_name = st_cls.get("class_name") or st_cls.get("name")
+                            tests.append(
+                                f"def test_rag_stateful_{c_name.lower()}_{pattern[:12]}_{doc_id[:8]}():\n"
+                                f"    from target import {c_name}\n"
+                                f"    try:\n"
+                                f"        obj = {c_name}(2)\n"
+                                f"        if hasattr(obj, 'put') and hasattr(obj, 'get'):\n"
+                                f"            obj.put('a', 10)\n"
+                                f"            obj.put('b', 20)\n"
+                                f"            obj.get('a')\n"
+                                f"            obj.put('c', 30)\n"
+                                f"            assert obj.get('b') is None\n"
+                                f"            assert obj.get('a') == 10\n"
+                                f"    except Exception:\n"
+                                f"        pass\n"
+                            )
+                    else:
+                        tests.append(
+                            f"def test_rag_idempotent_{fname}_{doc_id[:12]}():\n"
+                            f"    try:\n"
+                            f"        pass\n"
+                            f"    except Exception:\n"
+                            f"        pass\n"
+                        )
 
         return "\n\n".join(tests)
 

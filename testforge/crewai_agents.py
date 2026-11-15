@@ -176,6 +176,41 @@ class CrewCodeIntelligenceCriticCrew:
                     f"- Mutant [{m_id}] on line {line} ({m_type}): probe edge-case and boundary inputs for this block."
                 )
 
+        # Stateful Class Guidance: When pointer-relinking or boundary mutants survive in stateful classes
+        is_stateful = any(
+            term in source_code.lower() for term in ("cache", "lru", "node", "queue", "stack", "linked", "fsm")
+        )
+        stateful_directives: List[str] = []
+        has_pointer_or_boundary_mutant = False
+
+        for s in surv_recs:
+            combo = (s.get("original_expr", "") + " " + s.get("mutated_expr", "")).lower()
+            if any(term in combo for term in ("prev", "next", "head", "tail", "sentinel")):
+                has_pointer_or_boundary_mutant = True
+                stateful_directives.append(
+                    "- Stateful Transition Directive: Verify doubly-linked head/tail consistency "
+                    "after updating an existing key at full capacity. Assert pointer relinking: "
+                    "node.prev.next == node, node.next.prev == node, head.next is most recently used, "
+                    "and tail.prev is least recently used."
+                )
+                break
+            elif any(term in combo for term in ("capacity", "len(self", "<=", ">=", "evict", "lookup")):
+                has_pointer_or_boundary_mutant = True
+                stateful_directives.append(
+                    "- Stateful Boundary Directive: Verify capacity boundary enforcement and eviction order. "
+                    "Instantiate at small capacity (e.g. cap=1 and cap=2), execute multi-step insertions and promotions, "
+                    "and assert correct eviction of stale entries and preservation of promoted entries."
+                )
+                break
+
+        if is_stateful and not has_pointer_or_boundary_mutant and surv_recs:
+            stateful_directives.append(
+                "- Stateful Transition Directive: Verify doubly-linked head/tail consistency after updating an existing key at full capacity."
+            )
+
+        if stateful_directives:
+            directives.extend(stateful_directives)
+
         final_directive = (
             f"CrewAI Critic Directive (Cycle {iteration}):\n"
             f"Target {len(surv_recs)} surviving mutant(s) with boundary and counterexample assertions:\n"

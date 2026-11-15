@@ -58,7 +58,7 @@ from testforge.a2a import (
 )
 from testforge.blackboard import Blackboard
 from testforge.callbacks import CallbackRegistry, EventType, LifecycleEvent
-from testforge.code_intelligence_agent import infer_parameter_types_from_ast
+from testforge.code_intelligence_agent import infer_parameter_types_from_ast, extract_stateful_classes_from_ast
 from testforge.llm_client import HybridLLMClient
 from testforge.logger import TraceLogger
 from testforge.prompt_guard import get_defensive_system_instruction
@@ -327,13 +327,186 @@ class TestPlanningAgent:
             and dep.split(".")[0].lower() not in {"sys", "os", "math", "json", "time"}
         ]
 
-        # 3. Formulate Scenarios (Nominal, Boundary, Negative, Exception)
+        # 3. Formulate Scenarios (Stateful Call-Chains, Nominal, Boundary, Negative, Exception)
         scenarios: List[Dict[str, Any]] = []
         seen_fingerprints: Set[str] = set()
         boundary_targets: List[str] = []
         negative_cases: List[str] = []
 
         scenario_counter = 1
+
+        # A0. Stateful Call-Chain Planning for Stateful Classes
+        stateful_classes: List[Dict[str, Any]] = intel_dict.get("stateful_classes") or []
+        if not stateful_classes and self.blackboard and hasattr(self.blackboard, "target_space"):
+            stateful_classes = getattr(self.blackboard.target_space, "stateful_classes", [])
+        if not stateful_classes and intel_dict.get("target_source_code"):
+            stateful_classes = extract_stateful_classes_from_ast(intel_dict["target_source_code"])
+
+        stateful_call_chains: List[Dict[str, Any]] = []
+        if stateful_classes:
+            for sc in stateful_classes:
+                cname = sc.get("class_name") or sc.get("name", "StatefulClass")
+                cap_param = sc.get("capacity_param") or "capacity"
+
+                scen_1 = {
+                    "scenario_id": f"scen_{scenario_counter:03d}",
+                    "scenario_name": f"{cname} Multi-Step Eviction & Recency Transition Chain",
+                    "target_function": cname,
+                    "target_class": cname,
+                    "category": "stateful_call_chain",
+                    "priority": 1,
+                    "priority_level": "CRITICAL",
+                    "title": f"{cname} Eviction and Recency Sequence",
+                    "description": (
+                        f"Instantiate {cname}({cap_param}=2). Insert items A ('k1', 10) and B ('k2', 20). "
+                        f"Access item A to update recency promotion. Insert item C ('k3', 30) triggering boundary eviction. "
+                        f"Assert item B is evicted and item A is preserved with item C."
+                    ),
+                    "steps": [
+                        f"1. Instantiate cache = {cname}({cap_param}=2)",
+                        "2. Mutate state: cache.put('k1', 10) -> returns None, size=1",
+                        "3. Mutate state: cache.put('k2', 20) -> returns None, size=2",
+                        "4. Access state: cache.get('k1') -> returns 10, marks 'k1' as most recently used",
+                        "5. Mutate state: cache.put('k3', 30) -> triggers eviction of LRU item 'k2'",
+                        "6. Assert post-condition: cache.get('k2') is None",
+                        "7. Assert post-condition: cache.get('k1') == 10",
+                        "8. Assert post-condition: cache.get('k3') == 30",
+                    ],
+                    "input_conditions": f"{cname}({cap_param}=2), call-chain: put(A)->put(B)->get(A)->put(C)",
+                    "expected_outcome": "Eviction policy strictly preserves promoted item A and evicts stale item B",
+                    "related_branches": [],
+                    "mock_requirements": [],
+                }
+                scenarios.append(scen_1)
+                stateful_call_chains.append(scen_1)
+                scenario_counter += 1
+
+                scen_2 = {
+                    "scenario_id": f"scen_{scenario_counter:03d}",
+                    "scenario_name": f"{cname} Key-Update Recency Promotion & Invariance",
+                    "target_function": cname,
+                    "target_class": cname,
+                    "category": "stateful_call_chain",
+                    "priority": 1,
+                    "priority_level": "HIGH",
+                    "title": f"{cname} Key Update Sequence",
+                    "description": (
+                        f"Instantiate {cname}({cap_param}=2). Insert items A and B. "
+                        f"Update existing key A with new value without changing size. Insert item C. "
+                        f"Assert key update promoted A, causing B to be evicted instead of A."
+                    ),
+                    "steps": [
+                        f"1. Instantiate cache = {cname}({cap_param}=2)",
+                        "2. Insert ('k1', 10) and ('k2', 20) via cache.put",
+                        "3. Update existing key cache.put('k1', 99) -> size remains 2",
+                        "4. Insert cache.put('k3', 30) -> triggers eviction",
+                        "5. Assert ('k2') was evicted (cache.get('k2') is None)",
+                        "6. Assert ('k1') retains updated value 99 (cache.get('k1') == 99)",
+                    ],
+                    "input_conditions": f"{cname}({cap_param}=2), duplicate key update",
+                    "expected_outcome": "Updated key receives recency promotion and new value; size remains <= capacity",
+                    "related_branches": [],
+                    "mock_requirements": [],
+                }
+                scenarios.append(scen_2)
+                stateful_call_chains.append(scen_2)
+                scenario_counter += 1
+
+                scen_3 = {
+                    "scenario_id": f"scen_{scenario_counter:03d}",
+                    "scenario_name": f"{cname} Capacity Boundary & Exception Guard",
+                    "target_function": cname,
+                    "target_class": cname,
+                    "category": "stateful_call_chain",
+                    "priority": 1,
+                    "priority_level": "HIGH",
+                    "title": f"{cname} Capacity Boundary Guard",
+                    "description": f"Verify {cname} rejects invalid capacity <= 0 with ValueError, and capacity=1 handles immediate eviction.",
+                    "steps": [
+                        f"1. Assert {cname}(0) raises ValueError with positive integer message",
+                        f"2. Assert {cname}(-1) raises ValueError with positive integer message",
+                        f"3. Instantiate {cname}(1), insert A, insert B -> assert immediate eviction of A",
+                    ],
+                    "input_conditions": f"{cap_param}=0, {cap_param}=-1, {cap_param}=1",
+                    "expected_outcome": "Raises ValueError on non-positive capacity; capacity=1 evicts immediately",
+                    "related_branches": [],
+                    "mock_requirements": [],
+                }
+                scenarios.append(scen_3)
+                stateful_call_chains.append(scen_3)
+                scenario_counter += 1
+
+                scen_4 = {
+                    "scenario_id": f"scen_{scenario_counter:03d}",
+                    "scenario_name": f"{cname} Sentinel Invariants & Cache Reset",
+                    "target_function": cname,
+                    "target_class": cname,
+                    "category": "stateful_call_chain",
+                    "priority": 2,
+                    "priority_level": "MEDIUM",
+                    "title": f"{cname} Sentinels and Reset Sequence",
+                    "description": f"Assert doubly-linked sentinel nodes and hit/miss counters reset cleanly upon clear().",
+                    "steps": [
+                        f"1. Check initial {cname}(2) sentinels: head.next == tail and tail.prev == head",
+                        "2. Trigger cache miss and verify misses counter increment and hit ratio calculation",
+                        "3. Trigger cache hit and verify hits counter increment",
+                        "4. Call clear() and verify size==0, hits==0, misses==0, sentinels restored",
+                    ],
+                    "input_conditions": "Initial empty state -> miss -> hit -> clear()",
+                    "expected_outcome": "Pointers and metric counters consistently track state and reset cleanly",
+                    "related_branches": [],
+                    "mock_requirements": [],
+                }
+                scenarios.append(scen_4)
+                stateful_call_chains.append(scen_4)
+                scenario_counter += 1
+
+            # Broadcast STATEFUL_SEQUENCE_PLAN_GENERATED telemetry
+            self.trace_logger.log_event(
+                event_type="STATEFUL_SEQUENCE_PLAN_GENERATED",
+                data={
+                    "stateful_classes": [sc.get("class_name") or sc.get("name") for sc in stateful_classes],
+                    "total_chains": len(stateful_call_chains),
+                    "chains": stateful_call_chains,
+                },
+                metadata={"agent_id": self.agent_id},
+                workflow_id=correlation_id,
+                correlation_id=correlation_id,
+            )
+            try:
+                from testforge.observability import trace_event
+                trace_event("STATEFUL_SEQUENCE_PLAN_GENERATED", {
+                    "stateful_classes": [sc.get("class_name") or sc.get("name") for sc in stateful_classes],
+                    "chains_count": len(stateful_call_chains),
+                })
+            except Exception:
+                pass
+            if self.callbacks:
+                self.callbacks.dispatch(LifecycleEvent(
+                    event_type=EventType.A2A_MESSAGE,
+                    emitter="TestPlanningAgent",
+                    workflow_id=correlation_id,
+                    correlation_id=correlation_id,
+                    payload={
+                        "event": "STATEFUL_SEQUENCE_PLAN_GENERATED",
+                        "stateful_classes": stateful_classes,
+                        "chains": stateful_call_chains,
+                    }
+                ))
+            try:
+                from testforge.websocket_hub import global_websocket_hub
+                global_websocket_hub.broadcast_event({
+                    "event_type": "STATEFUL_SEQUENCE_PLAN_GENERATED",
+                    "phase": "TEST_PLANNING",
+                    "stage": "STATEFUL_CALL_CHAIN_PLAN",
+                    "workflow_id": correlation_id,
+                    "data": {
+                        "stateful_classes": [sc.get("class_name") or sc.get("name") for sc in stateful_classes],
+                        "chains_count": len(stateful_call_chains),
+                    }
+                })
+            except Exception:
+                pass
 
         # A. Nominal Scenarios for each callable function
         for func in functions:
@@ -453,7 +626,10 @@ class TestPlanningAgent:
         # 4. Scenario Prioritization & Budget Allocation
         sorted_scenarios = sorted(
             scenarios,
-            key=lambda s: (s.get("priority", 3), s["category"] != "boundary")
+            key=lambda s: (
+                0 if s.get("category") == "stateful_call_chain" else s.get("priority", 3),
+                s["category"] != "boundary"
+            )
         )
 
         allocated_budget = max(1, allocated_test_budget)
@@ -464,6 +640,7 @@ class TestPlanningAgent:
         boundary_count = sum(1 for s in selected_scenarios if s["category"] == "boundary")
         negative_count = sum(1 for s in selected_scenarios if s["category"] == "negative")
         exception_count = sum(1 for s in selected_scenarios if s["category"] == "exception")
+        stateful_count = sum(1 for s in selected_scenarios if s["category"] == "stateful_call_chain")
 
         cot_reasoning_trace = self.derive_cot_boundary_reasoning(
             functions=functions,
@@ -478,9 +655,9 @@ class TestPlanningAgent:
         )
 
         rationale = (
-            f"Prioritized {len(selected_scenarios)} test scenarios ({nominal_count} nominal, "
+            f"Prioritized {len(selected_scenarios)} test scenarios ({stateful_count} stateful call-chains, {nominal_count} nominal, "
             f"{boundary_count} boundary, {negative_count} negative, {exception_count} exception) "
-            f"targeting {len(functions)} discovered functions and {len(branches)} branch conditions. "
+            f"targeting {len(functions)} discovered functions, {len(stateful_classes)} stateful classes, and {len(branches)} branch conditions. "
             f"Allocated test budget: {allocated_budget}. Risk category: {complexity_risk.get('risk_category', 'LOW')}. "
             f"Derived {len(cot_reasoning_trace)} Chain-of-Thought (CoT) boundary reasoning steps. "
             f"Retrieved {len(rag_heuristics)} RAG testing heuristics from local knowledge base."
@@ -503,6 +680,7 @@ class TestPlanningAgent:
             planner_agent=self.agent_id,
             cot_reasoning_trace=cot_reasoning_trace,
             rag_heuristics=rag_heuristics,
+            stateful_call_chains=stateful_call_chains,
         )
 
         # 6. Publish to Blackboard PlanSpace
@@ -528,6 +706,7 @@ class TestPlanningAgent:
             source_sha=payload.source_sha,
             target_file_path=payload.target_file_path,
             scenarios=payload.scenarios,
+            stateful_call_chains=payload.stateful_call_chains,
             boundary_conditions=payload.boundary_targets,
             negative_cases=payload.negative_cases,
             mock_dependencies=payload.mock_dependencies,

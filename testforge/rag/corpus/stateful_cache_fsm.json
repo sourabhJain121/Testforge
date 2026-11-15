@@ -10,6 +10,56 @@
     }
   },
   {
+    "doc_id": "rule_lru_recency_promotion",
+    "text": "# Stateful / Cache / FSM: LRU Recency Promotion on Access\n# Accessing an existing item promotes it to MRU, so subsequent insertions evict older unaccessed items\ndef test_lru_recency_promotion():\n    cache = LRUCache(2)\n    cache.put('k1', 10)\n    cache.put('k2', 20)\n    assert cache.get('k1') == 10  # Promotes k1 to most recently used\n    evicted = cache.put('k3', 30)  # Evicts k2 (least recently used)\n    assert evicted == 'k2'\n    assert cache.get('k2') is None\n    assert cache.get('k1') == 10\n    assert cache.get('k3') == 30\n",
+    "metadata": {
+      "category": "stateful_cache_fsm",
+      "pattern_name": "recency_promotion",
+      "operator_type": "RECENCY_PROMOTION",
+      "ast_node_types": ["ClassDef", "FunctionDef", "Call", "Attribute"]
+    }
+  },
+  {
+    "doc_id": "rule_lru_key_update_recency",
+    "text": "# Stateful / Cache / FSM: Key-Update Recency Promotion and Invariance\n# Re-inserting an existing key updates value, promotes to MRU, and preserves size <= capacity\ndef test_lru_key_update_recency():\n    cache = LRUCache(2)\n    cache.put('a', 1)\n    cache.put('b', 2)\n    assert cache.put('a', 99) is None  # Update existing key without eviction\n    assert cache.size() == 2\n    assert cache.get('a') == 99\n    evicted = cache.put('c', 3)  # b was LRU, should be evicted\n    assert evicted == 'b'\n    assert cache.get('b') is None\n    assert cache.get('a') == 99\n",
+    "metadata": {
+      "category": "stateful_cache_fsm",
+      "pattern_name": "key_update_recency",
+      "operator_type": "KEY_UPDATE_RECENCY",
+      "ast_node_types": ["ClassDef", "FunctionDef", "Assign", "Subscript"]
+    }
+  },
+  {
+    "doc_id": "rule_doubly_linked_sentinel_invariants",
+    "text": "# Stateful / Cache / FSM: Doubly-Linked Sentinel Node Invariants\n# Verifies sentinel head and tail links and pointer cross-consistency (prev.next == next.prev == node)\ndef test_doubly_linked_sentinel_invariants():\n    cache = LRUCache(2)\n    assert cache.head.key == '__HEAD__'\n    assert cache.tail.key == '__TAIL__'\n    assert cache.head.next == cache.tail\n    assert cache.tail.prev == cache.head\n    cache.put('k1', 10)\n    assert cache.head.next.key == 'k1'\n    assert cache.tail.prev.key == 'k1'\n    assert cache.head.next.prev == cache.head\n    assert cache.tail.prev.next == cache.tail\n",
+    "metadata": {
+      "category": "stateful_cache_fsm",
+      "pattern_name": "doubly_linked_sentinels",
+      "operator_type": "POINTER_INVARIANT",
+      "ast_node_types": ["ClassDef", "Attribute", "Compare"]
+    }
+  },
+  {
+    "doc_id": "rule_cache_capacity_boundary_validation",
+    "text": "# Stateful / Cache / FSM: Capacity Boundary Validation and Edge Cases\n# Non-positive capacity raises ValueError; single-capacity (cap=1) evicts immediately on next put\ndef test_cache_capacity_boundaries():\n    import pytest\n    with pytest.raises(ValueError, match='positive integer'):\n        LRUCache(0)\n    with pytest.raises(ValueError, match='positive integer'):\n        LRUCache(-1)\n    c1 = LRUCache(1)\n    assert c1.capacity == 1\n    assert c1.put('x', 1) is None\n    assert c1.put('y', 2) == 'x'\n    assert c1.get('x') is None\n    assert c1.get('y') == 2\n",
+    "metadata": {
+      "category": "stateful_cache_fsm",
+      "pattern_name": "capacity_boundary_validation",
+      "operator_type": "CAPACITY_BOUNDARY",
+      "ast_node_types": ["ClassDef", "Raise", "Compare"]
+    }
+  },
+  {
+    "doc_id": "rule_cache_hit_ratio_and_reset",
+    "text": "# Stateful / Cache / FSM: Hit/Miss Ratio and Reset\n# Verifies accurate hit/miss counters, rounded hit ratio computation, and complete state clear\ndef test_cache_hit_ratio_and_reset():\n    cache = LRUCache(2)\n    assert cache.get_hit_ratio() == 0.0\n    assert cache.get('miss1') is None\n    assert cache.misses == 1 and cache.hits == 0\n    cache.put('hit1', 10)\n    assert cache.get('hit1') == 10\n    assert cache.hits == 1 and cache.misses == 1\n    assert cache.get_hit_ratio() == 0.5\n    cache.clear()\n    assert cache.size() == 0\n    assert cache.hits == 0 and cache.misses == 0\n    assert cache.get_hit_ratio() == 0.0\n    assert cache.head.next == cache.tail\n    assert cache.tail.prev == cache.head\n",
+    "metadata": {
+      "category": "stateful_cache_fsm",
+      "pattern_name": "hit_ratio_and_reset",
+      "operator_type": "METRIC_AND_RESET",
+      "ast_node_types": ["ClassDef", "FunctionDef", "AugAssign"]
+    }
+  },
+  {
     "doc_id": "rule_fsm_transition_idempotency",
     "text": "# Stateful / Cache / FSM: Transition Idempotency\n# Verifies that transitioning from State S to State S is a valid idempotent no-op\ndef test_transition_idempotency():\n    fsm = StateMachine()\n    fsm.start()\n    assert fsm.is_active is True\n    fsm.start()\n    assert fsm.is_active is True\n",
     "metadata": {
@@ -30,4 +80,3 @@
     }
   }
 ]
-

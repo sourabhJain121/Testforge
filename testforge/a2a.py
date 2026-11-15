@@ -232,6 +232,10 @@ class CodeIntelligencePayload(BaseModel):
     source_sha: str = Field(default="", description="Cryptographic SHA-256 hash of the target source code")
     functions: List[Dict[str, Any]] = Field(default_factory=list, description="Discovered functions and signatures")
     classes: List[Dict[str, Any]] = Field(default_factory=list, description="Discovered classes and methods")
+    stateful_classes: List[Dict[str, Any]] = Field(
+        default_factory=list,
+        description="Discovered stateful classes with mutation/accessor method graphs and capacity boundaries"
+    )
     branches: List[Dict[str, Any]] = Field(default_factory=list, description="Discovered branch points and conditional predicates")
     exception_paths: List[Dict[str, Any]] = Field(default_factory=list, description="Explicit exception raising/handling paths")
     dependencies: List[str] = Field(default_factory=list, description="External module and package imports")
@@ -289,6 +293,10 @@ class TestPlanPayload(BaseModel):
     planner_agent: str = Field(default="agent:google-adk:test-planner", description="Identifier of the planner agent")
     cot_reasoning_trace: List[Dict[str, Any]] = Field(default_factory=list, description="Step-by-step chain-of-thought boundary derivation trace")
     rag_heuristics: List[Dict[str, Any]] = Field(default_factory=list, description="Retrieved RAG testing heuristics and recipes")
+    stateful_call_chains: List[Dict[str, Any]] = Field(
+        default_factory=list,
+        description="Ordered multi-step state mutation and call-chain transition scenarios"
+    )
 
     @model_validator(mode="after")
     def validate_plan_invariants(self) -> "TestPlanPayload":

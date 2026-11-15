@@ -57,6 +57,7 @@ class TargetSpace(BaseModel):
     function_count: int = 0
     functions_count: int = 0
     classes: List[str] = Field(default_factory=list)
+    stateful_classes: List[Dict[str, Any]] = Field(default_factory=list)
     blast_risk: str = "LOW"
     source_sha: str = ""
     line_count: int = 0
@@ -227,6 +228,7 @@ class PlanSpace(BaseModel):
     strategy_notes: str = ""
     cot_reasoning_trace: List[Dict[str, Any]] = Field(default_factory=list, description="Step-by-step chain-of-thought boundary derivation trace")
     rag_heuristics: List[Dict[str, Any]] = Field(default_factory=list, description="Retrieved RAG testing heuristics and recipes")
+    stateful_call_chains: List[Dict[str, Any]] = Field(default_factory=list, description="Ordered multi-step state mutation and call-chain transition scenarios")
 
 
 class ExecutionSpace(BaseModel):

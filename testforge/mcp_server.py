@@ -380,12 +380,19 @@ def mcp_ast_symbol_analyzer(source_code: str) -> Dict[str, Any]:
 
     loc = len([l for l in source_code.splitlines() if l.strip() and not l.strip().startswith("#")])
 
+    try:
+        from testforge.code_intelligence_agent import extract_stateful_classes_from_ast
+        stateful_classes = extract_stateful_classes_from_ast(tree)
+    except Exception:
+        stateful_classes = []
+
     return {
         "status": "SUCCESS",
         "symbols": symbols,
         "cyclomatic_complexity": total_complexity,
         "functions": functions,
         "classes": classes,
+        "stateful_classes": stateful_classes,
         "branch_boundaries": branch_boundaries,
         "loc": loc,
     }
