@@ -2233,6 +2233,8 @@ body {
 #restore-modal {
   width: 100%;
   max-width: 560px;
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
   background: rgba(15, 22, 38, 0.95);
   border: 1px solid var(--border-medium);
   border-radius: var(--radius-xl);

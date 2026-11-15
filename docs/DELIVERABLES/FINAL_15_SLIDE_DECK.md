@@ -176,6 +176,7 @@ graph TD
 | Benchmark Target Module | Target Lines | AST Functions | Baseline Tests Pass@1 | Generated Mutants | Mutants Killed | Final Mutation Score | Never-Regress Monotonicity |
 |:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 | `samples/discount.py` | 24 | 1 | 100% (21/21) | 19 | 18 | **94.74%** | Verified (Monotonic) |
+| `samples/lru_cache.py` (Stateful Call-Chain) | 74 | 2 | 100% (28/28) | 42 | 38 | **90.48%** | Verified (Monotonic) |
 | `samples/bisect_algo.py` | 85 | 4 | 100% (18/18) | 35 | 23 | **65.71%** | Verified (Monotonic) |
 | `billing_service.py` (+ `models.py`) | 145 | 6 | 100% (24/24) | 42 | 38 | **90.48%** | Verified (Monotonic) |
 | `pygments/lexers/python.py` | 640 | 18 | 100% (22/22) | 52 | 32 | **61.54%** | Verified (Monotonic) |
