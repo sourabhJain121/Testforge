@@ -1,6 +1,5 @@
 <div style="text-align: center; margin-bottom: 20px;"><img src="/Users/sourabh/TestForge/docs/screenshots/report_assets/bml_logo.png" width="140" style="display: inline-block;"></div>
 
-
 # Project Report
 
 ## Course: Agentic AI (CSE3101)
@@ -8,7 +7,6 @@
 # TestForge: Autonomous Multi-Agent System for Mutation-Guided Unit Test Hardening
 
 ### By:
-
 - **Sourabh Jain** — `230584`
 - **Shreshth Mittal** — `230577`
 
@@ -27,10 +25,8 @@ We hereby declare that the project entitled "TestForge: Autonomous Multi-Agent S
 
 </div>
 
-
 | Candidate Name | Enrollment Number | Signature Block |
 | :--- | :---: | :---: |
-
 | **Sourabh Jain** | `230584` | *Signed* |
 | **Shreshth Mittal** | `230577` | *Signed* |
 
@@ -43,7 +39,6 @@ We hereby declare that the project entitled "TestForge: Autonomous Multi-Agent S
 
 | Section | Page Number |
 | :--- | :---: |
-
 | 1. Introduction | 1 |
 | 2. Problem Statement | 2-3 |
 | 3. Literature Review | 4-6 |
@@ -125,9 +120,7 @@ To establish the competitive landscape and identify explicit scientific gaps, we
 ### Table 3.1: Systematic Comparison of Automated Testing and Mutation Systems
 
 | System | Underlying Paradigm | Target Language | Automated Test Gen | Mutation Guidance | Multi-Agent MAS | Stateful Planning | Suite Minimization |
-
 | :--- | :--- | :--- | :---: | :---: | :---: | :---: | :---: |
-
 | **MutPy** | Static AST Mutation Framework | Python 3.x | No (Evaluation Only) | Yes (Generates Mutants) | No (Monolithic CLI) | No | No |
 | **Cosmic Ray** | Distributed Mutation Framework | Python 3.x | No (Evaluation Only) | Yes (Operators on AST) | No (Worker Queue) | No | No |
 | **Meta Sapienz** | Search-Based Multi-Objective Testing | Android / Java / C++ | Yes (Crash-Oriented Sequences) | Partial (Crash Heuristics) | No (Genetic Algorithm) | Partial (UI Sequences) | Yes (Pareto Slicing) |
@@ -174,9 +167,7 @@ Every agent in the TestForge architecture exists to directly solve an empirical 
 ### Table 4.1: Traceability Matrix Mapping Requirements to Agents
 
 | Requirement ID | Functional Capability & Technical Constraint | Mapped Problem / Literature Gap | Assigned Agent Role |
-
 | :---: | :--- | :--- | :--- |
-
 | **REQ-01** | Extract structural AST topology, cyclomatic complexity, and call graph blast radius from source code. | Problem Statement (Coverage-Kill Gap) & Gap 1 | **Code Intelligence Agent** |
 | **REQ-02** | Construct multi-step method call sequences and state-mutation paths for stateful Python classes. | Gap 3 (Stateful Assertion Bottleneck) | **Stateful Sequence Planner** |
 | **REQ-03** | Synthesize verified AST mutants (operator replacement, boundary shifts) and classify semantic equivalents. | Problem Statement & Gap 1 | **Mutation Testing Agent** |
@@ -185,7 +176,6 @@ Every agent in the TestForge architecture exists to directly solve an empirical 
 | **REQ-06** | Execute candidate test suites in isolated subprocesses with CPU/memory limits, socket blocks, and DEF-022 clean preflight. | Gap 2 (Hallucination-Flakiness Hazard) | **Sandboxed Test Runner Agent** |
 | **REQ-07** | Minimize test suite size using greedy set-cover optimization while guaranteeing 100% mutant kill retention. | Gap 4 (Test Suite Bloat) | **Test Suite Minimizer Agent** |
 | **REQ-08** | Coordinate stage transitions, enforce revision-controlled state, and enable transactional rollback across runs. | Architecture Reliability & Traceability | **Hierarchical Supervisor Agent & SQLite WAL Blackboard** |
-
 
 ## 5. Methodology
 
@@ -205,6 +195,10 @@ TestForge orchestrates its agents through a deterministic 6-Stage Finite State M
 
 </div>
 
+![Figure 5.0: TestForge Step-by-Step Multi-Agent Pipeline & Convergence Stop-Rules](/Users/sourabh/TestForge/docs/screenshots/report_assets/pipeline_flow_diagram.png)
+
+*Figure 5.0: TestForge Step-by-Step Multi-Agent Pipeline & Convergence Stop-Rules (Modeled on OptiFlow-X Section 5.3.1).*
+
 ### 5.3 Architecture Evaluation
 
 <div style="text-align: justify;">
@@ -216,9 +210,7 @@ Before settling on the Hierarchical Blackboard topology, we rigorously evaluated
 ### Table 5.1: Comparative Evaluation of Multi-Agent Coordination Topologies
 
 | Evaluation Dimension | Sequential Pipeline | Peer-to-Peer (P2P) Swarm | Hierarchical Blackboard (TestForge) |
-
 | :--- | :--- | :--- | :--- |
-
 | **Coordination Topology** | Linear Pipeline (A -> B -> C) | Decentralized Swarm (All-to-All) | **Hierarchical Supervisor + Central Blackboard (TestForge)** |
 | **Coordination Overhead** | Low (O(N) message passes) | Prohibitive (O(N^2) pairwise exchanges) | **Optimal (O(N) centralized state sync)** |
 | **Token Consumption** | Moderate (State forwarded along chain) | Extremely High (Redundant prompt chatter) | **Minimal (Selective state extraction from Blackboard)** |
@@ -227,11 +219,9 @@ Before settling on the Hierarchical Blackboard topology, we rigorously evaluated
 | **Deadlock Risk** | Zero (Acyclic directed graph) | High (Circular message dependency risk) | **Zero (Supervisor-gated monotonic FSM stages)** |
 | **Mean Hardening Latency** | 2.840s (No parallelization) | 6.120s (Consensus overhead) | **2.410s (Optimal caching and selective tool calls)** |
 
-
 ![Figure 5.1: TestForge Hierarchical Blackboard Architecture](/Users/sourabh/TestForge/docs/screenshots/report_assets/architecture_diagram.png)
 
 *Figure 5.1: TestForge Multi-Agent Hierarchical Blackboard Architecture combining Google ADK and CrewAI.*
-
 
 ### 5.4 Agent-Tool Communication & FastMCP JSON-RPC Protocol
 
@@ -244,19 +234,15 @@ TestForge strictly separates high-level agent reasoning from deterministic low-l
 ### Table 5.2: FastMCP 4-Tool Specification
 
 | Tool Name | Typed Input Signature | Typed Output Signature | Architectural Purpose |
-
 | :--- | :--- | :--- | :--- |
-
 | `mcp_ast_symbol_analyzer` | `source_code: str` | `symbols: List, complexity: int, branches: List, stateful_classes: List` | Parses Python AST to extract functions, cyclomatic complexity, boundary expressions, and stateful class methods. |
 | `mcp_mutant_generator` | `source_code: str, max_mutants: int = 30` | `mutants: List[Dict] (id, operator, line_no, diff, mutated_source)` | Generates verified AST mutants (operator swap, boundary shifts, constant offsets) while filtering syntax errors. |
 | `mcp_sandbox_runner` | `test_suite_code: str, target_source: str, timeout_seconds: float = 3.0` | `passed: bool, exit_code: int, stdout: str, stderr: str, clean_integrity: bool` | Executes candidate test suites in isolated subprocess with RLIMIT CPU/memory bounds and zero-egress socket monkeypatch. |
 | `mcp_equivalence_classifier` | `original_source: str, mutant_source: str` | `is_equivalent: bool, confidence: float, invariant_check: str` | Checks structural AST invariants to classify and prune semantic equivalent mutants before test generation. |
 
-
 ![Figure 5.2: FastMCP Agent-Tool Architecture](/Users/sourabh/TestForge/docs/screenshots/report_assets/fastmcp_agent_tool_diagram.png)
 
 *Figure 5.2: FastMCP stdio JSON-RPC tool dispatch architecture.*
-
 
 ### 5.5 Messaging Patterns & A2A Communication Protocol
 
@@ -277,7 +263,6 @@ To prevent arbitrary code execution, denial of service, and environment contamin
 ![Figure 5.3: 3-Tier Security Architecture](/Users/sourabh/TestForge/docs/screenshots/report_assets/security_3tier_diagram.png)
 
 *Figure 5.3: TestForge 3-Tier Multi-Agent Security & Sandboxing Framework.*
-
 
 ### 5.7 Stateful Call-Chain Planning & Sequence Synthesis
 
@@ -314,9 +299,7 @@ TestForge was constructed using an enterprise-grade, dual-framework Python techn
 ### Table 6.1: TestForge Comprehensive Technology Stack
 
 | Architectural Tier | Technology & Version | Architectural Role & Justification |
-
 | :--- | :--- | :--- |
-
 | **Multi-Agent Frameworks** | Google Agent Development Kit (ADK) & CrewAI (v0.102+) | Hierarchical Supervisor and Unit Test Generator (Google ADK); Adversarial Critic and Code Intelligence (CrewAI). Pure dual-framework architecture. |
 | **Backend Core & Protocol** | Python 3.13, FastAPI, FastMCP (Model Context Protocol), Uvicorn (ASGI) | High-throughput asynchronous REST API, WebSocket event streams, and standardized stdio JSON-RPC tool dispatch. |
 | **Shared State & Persistence** | SQLite 3 (PRAGMA journal_mode=WAL, PRAGMA synchronous=NORMAL), Pydantic v2 | Thread-safe, revision-controlled Blackboard state with typed schemas (schema_version: 1.0.0) and deep-copy isolation. |
@@ -324,7 +307,6 @@ TestForge was constructed using an enterprise-grade, dual-framework Python techn
 | **Testing & Sandboxing** | Pytest 9.x, MutPy AST Engine, resource.setrlimit (POSIX RLIMIT), socket monkeypatching | Static mutant generation, isolated test suite execution (CPU 3.0s, 256MB RAM), and zero-egress network containment. |
 | **Frontend Cockpit** | Vanilla HTML5, CSS3 Custom Properties (Dark/Light), Modern ES6+ JavaScript | Zero-build, lightweight responsive single-page cockpit with real-time SSE telemetry, wiretap viewer, and AST mutant diff inspector. |
 | **Verification & Automation** | Playwright Chromium (Retina 2x), Hypothesis, Pytest-cov | Automated end-to-end regression testing, property-based schema fuzzing, and pixel-perfect visual verification. |
-
 
 ## 7. Experimental Results
 
@@ -339,15 +321,12 @@ We evaluated TestForge across four canonical Python benchmark targets representi
 ### Table 7.1: TestForge Benchmark Performance Across 4 Canonical Targets
 
 | Target Module | Domain & Behavioral Complexity | Developer Baseline MS | TestForge Raw MS | Adjusted MS | Mutants Killed | Pass@1 Rate | Final Test Count |
-
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-
 | `samples/discount.py` | E-Commerce volume/membership tiered pricing engine | 0.00% | **94.74%** | **94.74%** | 18 / 19 | 100.0% | 5 (minimized from 23) |
 | `samples/order_fsm.py` | Order lifecycle state transition machine with guards | 14.15% | **97.17%** | **97.17%** | 103 / 106 | 100.0% | 16 (minimized from 48) |
 | `samples/lru_cache.py` | Least Recently Used cache with doubly-linked pointer list | 0.00% | **90.48%** | **90.48%** | 38 / 42 | 100.0% | 12 (minimized from 34) |
 | `samples/stats_calculator.py` | Statistical aggregator (mean, variance, mode, percentiles) | 11.76% | **45.21%** | **57.89%** | 33 / 73 | 100.0% | 14 (minimized from 38) |
 | `Macro Average / Total` | Aggregate cross-domain benchmark suite evaluation | 6.46% | **77.42%** | **80.37%** | 192 / 240 | 100.0% | 47 (minimized from 143) |
-
 
 ### 7.2 Stateful Call-Chain Planning Impact on Pointer Graphs
 
@@ -360,13 +339,10 @@ Table 7.2 presents the ablation results on samples/lru_cache.py, illustrating th
 ### Table 7.2: Ablation Analysis of Stateful Sequence Planning on samples/lru_cache.py
 
 | Hardening Phase | Synthesis Methodology | Mutants Killed | Mutation Score | Primary Failure Mode Observed |
-
 | :--- | :--- | :---: | :---: | :--- |
-
 | **Phase 1: Developer Baseline** | Manual happy-path developer unit tests | 0 / 42 | **0.00%** | Zero assertions on boundary or internal doubly-linked node pointers. |
 | **Phase 2: Unguided LLM Generation** | Single-method prompt assertion synthesis (Zero-Shot) | 13 / 42 | **30.95%** | Fails to trigger node eviction; cannot kill capacity and node pointer mutants. |
 | **Phase 3: Stateful Call-Chain Planning (Ours)** | Class state mutation graph extraction + multi-step call sequences | 38 / 42 | **90.48%** | Only 4 subtle memory-order invariants survived; 100% Pass@1 on base code. |
-
 
 ### 7.3 Test Suite Compression & Kill Retention
 
@@ -379,15 +355,12 @@ Table 7.3 summarizes the performance of the Test Suite Minimizer Agent across th
 ### Table 7.3: Greedy Set Cover Minimization Metrics
 
 | Target Module | Raw Synthesized Tests | Minimized Tests | Test Reduction | Initial MS | Minimized MS | Kill Retention |
-
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-
 | `samples/discount.py` | 23 | **5** | **78.3%** | 94.74% | 94.74% | **100.0%** |
 | `samples/order_fsm.py` | 48 | **16** | **66.7%** | 97.17% | 97.17% | **100.0%** |
 | `samples/lru_cache.py` | 34 | **12** | **64.7%** | 90.48% | 90.48% | **100.0%** |
 | `samples/stats_calculator.py` | 38 | **14** | **63.2%** | 45.21% | 45.21% | **100.0%** |
 | `Aggregate Total` | 143 | **47** | **67.1%** | 77.42% | 77.42% | **100.0%** |
-
 
 ### 7.4 Multi-Agent Runtime Latency Breakdown
 
@@ -400,16 +373,13 @@ We profiled subsystem latencies across 60 complete hardening cycles on an Apple 
 ### Table 7.4: Multi-Agent Subsystem Latency Profile
 
 | Subsystem / Pipeline Component | Mean Latency (Seconds) | Percentage of Total Cycle | Functional Description |
-
 | :--- | :---: | :---: | :--- |
-
 | **Subprocess Sandboxed Test Runner (mcp_sandbox_runner)** | 1.482s | 61.5% | Spawns ephemeral Python subprocesses, executes pytest with RLIMIT bounds, collects exit code. |
 | **Unit Test Generator Agent (Google ADK LLM Synthesis)** | 0.448s | 18.6% | Multi-turn assertion synthesis targeting surviving mutant diffs and sequence plans. |
 | **AST Mutant Generation Engine (mcp_mutant_generator)** | 0.354s | 14.7% | AST node parsing, operator mutation generation, and syntax verification filtering. |
 | **Adversarial Critic Agent (CrewAI Reflection)** | 0.106s | 4.4% | Semantic diff analysis and formulation of targeted boundary directives. |
 | **AST Analysis, Sequence Planning & Blackboard Sync** | 0.020s | 0.8% | In-memory AST symbol inspection, call-chain planning, and SQLite WAL transactions. |
 | **Total End-to-End Cycle Latency** | 2.410s | 100.0% | Measured across 60 experimental runs on macOS Apple M2 Pro / Python 3.13. |
-
 
 ### 7.5 Factorial Persona Evaluation & Prompt Ablations
 
@@ -422,14 +392,11 @@ Table 7.5 displays the 60-run factorial experiment results. Across all developer
 ### Table 7.5: 60-Run Factorial Prompt & Persona Performance Matrix
 
 | Developer Persona | Zero-Shot MS | Few-Shot CoT MS | Adversarial Critic-Guided MS | Base Code Pass@1 Rate |
-
 | :--- | :---: | :---: | :---: | :---: |
-
 | **Junior Developer (Permissive)** | 31.25% | 44.12% | **74.19%** | **100.0%** |
 | **Skeptical QA Architect (Boundary-Focused)** | 35.48% | 52.94% | **88.71%** | **100.0%** |
 | **Senior Principal Architect (Invariants)** | 38.71% | 58.82% | **93.55%** | **100.0%** |
 | **Adversarial Fuzz Tester (Stress Paths)** | 29.03% | 47.06% | **82.26%** | **100.0%** |
-
 
 ### 7.6 Empirical Defect Analysis: DEF-022 Clean Preflight Guard
 
@@ -451,51 +418,41 @@ Figures 7.1 through 7.10 illustrate the running TestForge cockpit captured live 
 
 *Figure 7.1: Target Ingestion & AST Symbol Inspector — The TestForge single-page cockpit displaying repository branch ingestion, active target inspection (samples/discount.py), extracted AST function signatures, cyclomatic complexity, and the unified action toolbar.*
 
-
 ![Figure 7.2: Git Diff & AST Blast Radius Telemetry](/Users/sourabh/TestForge/docs/screenshots/report_assets/02_blast_radius.png)
 
 *Figure 7.2: Git Diff & AST Blast Radius Telemetry — Visualizing git working-tree diffs, affected line spans, and downstream caller/callee blast radius graphs to focus agent test generation on modified code regions.*
-
 
 ![Figure 7.3: Automated Hardening Lab & Mutant Kill Telemetry](/Users/sourabh/TestForge/docs/screenshots/report_assets/03_hardening_lab_results.png)
 
 *Figure 7.3: Automated Hardening Lab & Mutant Kill Telemetry — The core Hardening Lab in state FINALIZED on samples/discount.py, displaying 94.74% Mutation Score (18/19 killed), 100% Pass@1 clean preflight verification, and the interactive AST Mutant Diff Inspector.*
 
-
 ![Figure 7.4: Live Multi-Agent Wiretap & Message Exchange](/Users/sourabh/TestForge/docs/screenshots/report_assets/04_multi_agent_wiretap.png)
 
 *Figure 7.4: Live Multi-Agent Wiretap & Message Exchange — Real-time Multi-Agent Wiretap streaming timestamped A2A message events between the Google ADK Supervisor, CrewAI Adversarial Critic, and FastMCP tool execution events.*
-
 
 ![Figure 7.5: Distributed Observability & OpenTelemetry Traces](/Users/sourabh/TestForge/docs/screenshots/report_assets/05_observability_traces.png)
 
 *Figure 7.5: Distributed Observability & OpenTelemetry Traces — OpenTelemetry W3C distributed tracing table capturing per-agent execution spans, parent-child trace correlations, and subsystem latencies (2.410s mean cycle).*
 
-
 ![Figure 7.6: Multi-Target Benchmark Suite & Ablation Telemetry](/Users/sourabh/TestForge/docs/screenshots/report_assets/06_benchmarks_ablation.png)
 
 *Figure 7.6: Multi-Target Benchmark Suite & Ablation Telemetry — Comprehensive benchmark dashboard comparing Developer Baseline, Unguided LLM, and TestForge across the four canonical targets, showing the 12.0x aggregate improvement.*
-
 
 ![Figure 7.7: SQLite WAL Checkpoints & Deterministic Diff Inspector](/Users/sourabh/TestForge/docs/screenshots/report_assets/07_checkpoints_diff.png)
 
 *Figure 7.7: SQLite WAL Checkpoints & Deterministic Diff Inspector — Transactional checkpoint history tree showing revision-controlled snapshots, rollback capabilities, and visual diff inspection across hardening iterations.*
 
-
 ![Figure 7.8: System Settings & Multi-Provider Hot-Swap Modal](/Users/sourabh/TestForge/docs/screenshots/report_assets/08_settings_modal.png)
 
 *Figure 7.8: System Settings & Multi-Provider Hot-Swap Modal — Multi-provider configuration modal enabling real-time hot-swapping between Local Ollama (qwen2.5-coder:7b), Gemini Dual-Key fallback, and OpenRouter cloud APIs.*
-
 
 ![Figure 7.9: A2A Protocol Agent Card Discovery Modal](/Users/sourabh/TestForge/docs/screenshots/report_assets/09_a2a_agent_card.png)
 
 *Figure 7.9: A2A Protocol Agent Card Discovery Modal — Modal rendering the dynamic /.well-known/agent-card.json specification (A2A Protocol v0.3.0), registering skills, JSON-RPC transport, and service metadata.*
 
-
 ![Figure 7.10: FastMCP Tool Catalog & Interactive Protocol Studio](/Users/sourabh/TestForge/docs/screenshots/report_assets/10_fastmcp_studio.png)
 
 *Figure 7.10: FastMCP Tool Catalog & Interactive Protocol Studio — Interactive FastMCP Studio displaying the 4 registered stdio tools with input/output Pydantic schemas and live in-browser execution capabilities.*
-
 
 ## 8. Team Responsibility / Self-Contribution Matrix
 
@@ -508,9 +465,7 @@ Table 8.1 establishes the individual project contributions of each group member 
 ### Table 8.1: Complete Team Responsibility & Contribution Matrix
 
 | Development Activity | Sourabh Jain (230584) | Shreshth Mittal (230577) |
-
 | :--- | :--- | :--- |
-
 | **Agent Design / Multi-Agent Architecture** | Led architecture formulation; designed hierarchical Google ADK Supervisor and Centralized Blackboard. | Designed CrewAI Adversarial Critic personas and role boundaries; established FIPA-ACL performatives. |
 | **Agent Orchestration** | Engineered the 6-stage finite state machine (INGEST to FINALIZE) and stage gating in Google ADK. | Configured CrewAI task delegation, execution flow, and inter-agent critique handoffs. |
 | **State Management** | Architected testforge/blackboard.py with SQLite WAL, revision numbering, and deep-copy isolation. | Designed typed Pydantic v2 schemas (schema_version: 1.0.0) and state migration validation. |
@@ -529,9 +484,7 @@ Table 8.1 establishes the individual project contributions of each group member 
 
 **Sourabh Jain (230584):** Sourabh Jain led the core architectural formulation of the TestForge system, conceptualizing the Hierarchical Blackboard orchestration topology and engineering the central SQLite WAL state manager. He designed and built the FastMCP JSON-RPC stdio protocol server (testforge/mcp_server.py), the dynamic A2A discovery endpoint (/.well-known/agent-card.json), the Tier-2 subprocess sandboxing engine with resource limits and zero-egress socket containment, and the complete Vanilla ES6 frontend cockpit. Furthermore, Sourabh mathematically formulated and implemented the submodular Greedy Set Cover test suite minimizer, reducing test suites by 78.3% while retaining 100% mutation kills, and established the automated Playwright visual verification harness.
 
-
 **Shreshth Mittal (230577):** Shreshth Mittal directed the multi-agent behavioral modeling and adversarial verification engineering within TestForge. He architected the CrewAI Adversarial Critic agent, authoring specialized role-playing personas and qualitative reflection directives that drive the hardening feedback loop. Shreshth engineered the AST mutation engine, the Tier-1 static AST NodeVisitor guardrails, and the A2A typed message broker with FIPA-ACL performatives. He conducted the rigorous DEF-022 empirical root-cause audit, authored the 60-run factorial persona experiment, and developed the Phase-3 Stateful Sequence Planner that enabled the 90.48% mutation score breakthrough on pointer-based data structures.
-
 
 ## 9. Conclusions & Future Work
 
@@ -551,33 +504,23 @@ Practical Limitations: Despite these achievements, TestForge faces two primary t
 
 1. Y. Jia and M. Harman, 'An analysis and survey of the development of mutation testing,' IEEE Transactions on Software Engineering, vol. 37, no. 5, pp. 649–678, 2011.
 
-
 2. R. Just, D. Jalali, L. Inozemtseva, M. D. Ernst, R. Holmes, and G. Fraser, 'Are mutants a valid substitute for real faults in software testing?' in Proceedings of the 22nd ACM SIGSOFT International Symposium on Foundations of Software Engineering (FSE), 2014, pp. 654–665.
-
 
 3. G. Fraser and A. Arcuri, 'EvoSuite: Automatic test suite generation for object-oriented software,' in Proceedings of the 19th ACM SIGSOFT Symposium on the Foundations of Software Engineering (FSE), 2011, pp. 416–419.
 
-
 4. N. Alshahwan and M. Harman, 'Automated mobile app testing at scale: What have we learned from Sapienz at Facebook?' in Proceedings of the 40th International Conference on Software Engineering: Software Engineering in Practice (ICSE-SEIP), 2018, pp. 2–3.
-
 
 5. H. G. Rice, 'Classes of recursively enumerable sets and their decision problems,' Transactions of the American Mathematical Society, vol. 74, no. 2, pp. 358–366, 1953.
 
-
 6. Google Cloud, 'Agent Development Kit (ADK) Documentation and Architecture Guide,' Google LLC, Mountain View, CA, 2025. [Online]. Available: https://cloud.google.com/vertex-ai/docs/agent-development-kit
-
 
 7. J. Moura, 'CrewAI: Framework for Orchestrating Role-Playing Autonomous AI Agents,' CrewAI Inc., 2024. [Online]. Available: https://github.com/crewAIInc/crewAI
 
-
 8. Anthropic PBC, 'Model Context Protocol (MCP) Specification,' 2024. [Online]. Available: https://modelcontextprotocol.io/introduction
-
 
 9. Python Software Foundation, 'ast — Abstract Syntax Trees,' Python 3.13 Standard Library Documentation, 2026. [Online]. Available: https://docs.python.org/3/library/ast.html
 
-
 10. OpenTelemetry Authors, 'OpenTelemetry Python API and SDK Documentation,' Cloud Native Computing Foundation, 2025. [Online]. Available: https://opentelemetry.io/docs/languages/python/
-
 
 ## Appendix
 
@@ -665,7 +608,6 @@ Schema:
 }
 ```
 
-
 ### Appendix B: A2A Agent Card Discovery Payload
 
 ```json
@@ -731,7 +673,6 @@ Content-Type: application/json
   "version": "1.0.0"
 }
 ```
-
 
 ### Appendix C: Verified Pytest Test Suites
 
@@ -802,4 +743,3 @@ def test_lru_cache_value_update_in_place():
     assert cache.get("key") == 200
     assert len(cache.cache) == 1
 ```
-

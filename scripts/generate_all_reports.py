@@ -7,6 +7,7 @@ from docx.enum.table import WD_TABLE_ALIGNMENT, WD_ALIGN_VERTICAL
 from docx.oxml import parse_xml, OxmlElement
 from docx.oxml.ns import nsdecls, qn
 from playwright.sync_api import sync_playwright
+from markdown_it import MarkdownIt
 
 import report_data as rd
 
@@ -18,274 +19,6 @@ OUT_PDF = os.path.join(OUT_DIR, "TestForge_CSE3101_Final_Report.pdf")
 OUT_HTML = "/tmp/testforge_report_render.html"
 
 os.makedirs(OUT_DIR, exist_ok=True)
-
-# ==========================================
-# 1. BUILD CLEAN MARKDOWN REPORT
-# ==========================================
-def build_markdown():
-    print("[1/3] Generating Markdown report:", OUT_MD)
-    md = []
-    
-    # Title Page
-    md.append(f"<div style=\"text-align: center; margin-bottom: 20px;\"><img src=\"{ASSETS_DIR}/bml_logo.png\" width=\"140\" style=\"display: inline-block;\"></div>\n\n")
-    md.append("# Project Report\n")
-    md.append("## Course: Agentic AI (CSE3101)\n")
-    md.append(f"# {rd.TITLE}\n")
-    md.append("### By:\n")
-    for s in rd.STUDENTS:
-        md.append(f"- **{s['name']}** — `{s['roll']}`")
-    md.append(f"\n**{rd.DEPARTMENT}**  \n**{rd.SCHOOL}**  \n**{rd.UNIVERSITY}**  \n**{rd.DATE_STR}**\n")
-    md.append("<div style=\"page-break-after: always;\"></div>\n")
-    
-    # Declaration
-    md.append("## Declaration by the Candidates\n")
-    md.append(f"<div style=\"text-align: justify;\">\n\n{rd.DECLARATION_TEXT}\n\n</div>\n")
-    md.append("\n| Candidate Name | Enrollment Number | Signature Block |\n| :--- | :---: | :---: |\n")
-    for s in rd.STUDENTS:
-        md.append(f"| **{s['name']}** | `{s['roll']}` | *Signed* |")
-    md.append(f"\n**Place:** {rd.UNIVERSITY}  \n**Date:** {rd.DATE_STR}\n")
-    md.append("<div style=\"page-break-after: always;\"></div>\n")
-    
-    # Table of Contents
-    md.append("## Table of Contents\n\n| Section | Page Number |\n| :--- | :---: |\n")
-    for title, pg in rd.TOC_ITEMS:
-        clean_title = title.replace('    ', '&nbsp;&nbsp;&nbsp;&nbsp;')
-        md.append(f"| {clean_title} | {pg} |")
-    md.append("\n<div style=\"page-break-after: always;\"></div>\n")
-    
-    # Section 1: Introduction
-    md.append("## 1. Introduction\n")
-    for p in rd.INTRO_PARAS:
-        md.append(f"<div style=\"text-align: justify;\">\n\n{p}\n\n</div>\n")
-        
-    # Section 2: Problem Statement
-    md.append("## 2. Problem Statement\n")
-    for p in rd.PROBLEM_PARAS:
-        md.append(f"<div style=\"text-align: justify;\">\n\n{p}\n\n</div>\n")
-        
-    # Section 3: Literature Review
-    md.append("## 3. Literature Review\n")
-    md.append("<div style=\"text-align: justify;\">\n\n"
-              "To establish the competitive landscape and identify explicit scientific gaps, "
-              "we conducted an exhaustive comparative review of seven representative academic and industrial testing systems. "
-              "Table 3.1 synthesizes the core technical attributes of these tools alongside TestForge.\n\n</div>\n")
-    md.append("### Table 3.1: Systematic Comparison of Automated Testing and Mutation Systems\n")
-    md.append("| System | Underlying Paradigm | Target Language | Automated Test Gen | Mutation Guidance | Multi-Agent MAS | Stateful Planning | Suite Minimization |\n")
-    md.append("| :--- | :--- | :--- | :---: | :---: | :---: | :---: | :---: |\n")
-    for row in rd.LIT_REVIEW_TABLE:
-        md.append(f"| **{row['tool']}** | {row['paradigm']} | {row['language']} | {row['test_gen']} | {row['mutation_guided']} | {row['agentic']} | {row['stateful_plan']} | {row['minimization']} |")
-    md.append("\n### Explicit Research Gaps Identified in Literature\n")
-    for g in rd.LIT_GAPS:
-        md.append(f"<div style=\"text-align: justify;\">\n\n{g}\n\n</div>\n")
-        
-    # Section 4: Requirements for MAS
-    md.append("## 4. Requirements for Multi-Agent System (MAS)\n")
-    md.append("<div style=\"text-align: justify;\">\n\n"
-              "Every agent in the TestForge architecture exists to directly solve an empirical requirement mapped "
-              "from our problem statement and the literature gaps identified in Section 3. "
-              "Table 4.1 establishes full end-to-end traceability across our eight specialized agents.\n\n</div>\n")
-    md.append("### Table 4.1: Traceability Matrix Mapping Requirements to Agents\n")
-    md.append("| Requirement ID | Functional Capability & Technical Constraint | Mapped Problem / Literature Gap | Assigned Agent Role |\n")
-    md.append("| :---: | :--- | :--- | :--- |\n")
-    for r in rd.MAS_REQ_TABLE:
-        md.append(f"| **{r['req_id']}** | {r['description']} | {r['mapped_gap']} | **{r['agent']}** |")
-    md.append("\n")
-    
-    # Section 5: Methodology
-    md.append("## 5. Methodology\n")
-    md.append("### 5.1 Agent Identification and Role Decomposition\n")
-    for p in rd.METHODOLOGY_PARAS_51:
-        md.append(f"<div style=\"text-align: justify;\">\n\n{p}\n\n</div>\n")
-        
-    md.append("### 5.2 Orchestration & Execution Strategy (6-Stage FSM)\n")
-    for p in rd.METHODOLOGY_PARAS_52:
-        md.append(f"<div style=\"text-align: justify;\">\n\n{p}\n\n</div>\n")
-        
-    md.append("### 5.3 Architecture Evaluation\n")
-    md.append("<div style=\"text-align: justify;\">\n\n"
-              "Before settling on the Hierarchical Blackboard topology, we rigorously evaluated three candidate multi-agent coordination architectures: "
-              "(1) a Sequential Pipeline, (2) a Peer-to-Peer (P2P) Swarm, and (3) our Hierarchical Supervisor with Centralized Blackboard. "
-              "Table 5.1 details the empirical and heuristic trade-offs across these designs.\n\n</div>\n")
-    md.append("### Table 5.1: Comparative Evaluation of Multi-Agent Coordination Topologies\n")
-    md.append("| Evaluation Dimension | Sequential Pipeline | Peer-to-Peer (P2P) Swarm | Hierarchical Blackboard (TestForge) |\n")
-    md.append("| :--- | :--- | :--- | :--- |\n")
-    for row in rd.ARCH_EVAL_TABLE:
-        md.append(f"| **{row['criterion']}** | {row['sequential']} | {row['p2p']} | **{row['hierarchical']}** |")
-    md.append("\n")
-    md.append(f"![Figure 5.1: TestForge Hierarchical Blackboard Architecture]({ASSETS_DIR}/architecture_diagram.png)\n")
-    md.append("*Figure 5.1: TestForge Multi-Agent Hierarchical Blackboard Architecture combining Google ADK and CrewAI.*\n\n")
-
-    md.append("### 5.4 Agent-Tool Communication & FastMCP JSON-RPC Protocol\n")
-    md.append("<div style=\"text-align: justify;\">\n\n"
-              "TestForge strictly separates high-level agent reasoning from deterministic low-level execution using the Model Context Protocol (MCP). "
-              "We implemented testforge/mcp_server.py as a standardized FastMCP stdio server exposing four specialized tools. "
-              "Communication occurs over standard input/output streams via JSON-RPC 2.0 messages, ensuring zero open network ports and complete operating system isolation.\n\n</div>\n")
-    md.append("### Table 5.2: FastMCP 4-Tool Specification\n")
-    md.append("| Tool Name | Typed Input Signature | Typed Output Signature | Architectural Purpose |\n")
-    md.append("| :--- | :--- | :--- | :--- |\n")
-    for t in rd.FASTMCP_TOOLS_TABLE:
-        md.append(f"| `{t['name']}` | `{t['inputs']}` | `{t['outputs']}` | {t['purpose']} |")
-    md.append("\n")
-    md.append(f"![Figure 5.2: FastMCP Agent-Tool Architecture]({ASSETS_DIR}/fastmcp_agent_tool_diagram.png)\n")
-    md.append("*Figure 5.2: FastMCP stdio JSON-RPC tool dispatch architecture.*\n\n")
-
-    md.append("### 5.5 Messaging Patterns & A2A Communication Protocol\n")
-    md.append("<div style=\"text-align: justify;\">\n\n"
-              "Agent-to-Agent (A2A) communication follows formal communicative acts inspired by FIPA-ACL (REQUEST, INFORM, AGREE, REFUSE, FAILURE). "
-              "All messages are encapsulated in strongly-typed Pydantic envelopes (A2AMessage in testforge/a2a.py) carrying immutable correlation IDs, "
-              "sender/recipient identities, and W3C trace contexts. External agents discover TestForge capabilities via the dynamic GET /.well-known/agent-card.json "
-              "endpoint conforming to A2A specification v0.3.0.\n\n</div>\n")
-
-    md.append("### 5.6 3-Tier MAS Security Architecture\n")
-    for p in rd.SECURITY_3TIER_PARAS:
-        md.append(f"<div style=\"text-align: justify;\">\n\n{p}\n\n</div>\n")
-    md.append(f"![Figure 5.3: 3-Tier Security Architecture]({ASSETS_DIR}/security_3tier_diagram.png)\n")
-    md.append("*Figure 5.3: TestForge 3-Tier Multi-Agent Security & Sandboxing Framework.*\n\n")
-
-    md.append("### 5.7 Stateful Call-Chain Planning & Sequence Synthesis\n")
-    for p in rd.STATEFUL_PLANNING_PARAS:
-        md.append(f"<div style=\"text-align: justify;\">\n\n{p}\n\n</div>\n")
-
-    md.append("### 5.8 Test Suite Minimization via Submodular Greedy Set Cover\n")
-    for p in rd.MINIMIZATION_PARAS:
-        md.append(f"<div style=\"text-align: justify;\">\n\n{p}\n\n</div>\n")
-
-    md.append("### 5.9 Validation Strategy & 60-Run Factorial Matrix\n")
-    md.append("<div style=\"text-align: justify;\">\n\n"
-              "To rigorously validate agent decision-making, we designed a full factorial experimental matrix across three prompt architectures "
-              "(Zero-Shot Baseline, Few-Shot Chain-of-Thought, and Adversarial Critic-guided) and four distinct developer personas "
-              "(Junior Developer, Skeptical QA Architect, Senior Principal Architect, and Adversarial Fuzz Tester). Each combination was executed "
-              "across 5 independent trials (60 total experimental runs) on macOS Apple M2 Pro / Python 3.13, evaluating Pass@1 rate, mutation score, "
-              "and the correlation between the CrewAI Critic LLM-as-judge scores and ground-truth subprocess execution results.\n\n</div>\n")
-
-    # Section 6: Technology Stack
-    md.append("## 6. Technology Stack\n")
-    md.append("<div style=\"text-align: justify;\">\n\n"
-              "TestForge was constructed using an enterprise-grade, dual-framework Python technology stack. "
-              "Table 6.1 enumerates each layer of the architecture, the specific technologies employed, and their exact functional roles.\n\n</div>\n")
-    md.append("### Table 6.1: TestForge Comprehensive Technology Stack\n")
-    md.append("| Architectural Tier | Technology & Version | Architectural Role & Justification |\n")
-    md.append("| :--- | :--- | :--- |\n")
-    for t in rd.TECH_STACK_TABLE:
-        md.append(f"| **{t['category']}** | {t['technologies']} | {t['role']} |")
-    md.append("\n")
-
-    # Section 7: Experimental Results
-    md.append("## 7. Experimental Results\n")
-    md.append("### 7.1 Canonical Target Benchmark Suite\n")
-    md.append("<div style=\"text-align: justify;\">\n\n"
-              "We evaluated TestForge across four canonical Python benchmark targets representing distinct software engineering paradigms: "
-              "(1) samples/discount.py (relational boundary & pricing rules), (2) samples/order_fsm.py (finite state machine transition logic), "
-              "(3) samples/lru_cache.py (pointer graph & stateful cache eviction), and (4) samples/stats_calculator.py (floating-point statistics). "
-              "Table 7.1 reports the verified empirical performance.\n\n</div>\n")
-    md.append("### Table 7.1: TestForge Benchmark Performance Across 4 Canonical Targets\n")
-    md.append("| Target Module | Domain & Behavioral Complexity | Developer Baseline MS | TestForge Raw MS | Adjusted MS | Mutants Killed | Pass@1 Rate | Final Test Count |\n")
-    md.append("| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |\n")
-    for b in rd.BENCHMARK_TABLE:
-        md.append(f"| `{b['target']}` | {b['description']} | {b['baseline_ms']} | **{b['testforge_raw_ms']}** | **{b['testforge_adj_ms']}** | {b['mutants_killed']} | {b['pass_rate']} | {b['generated_tests']} |")
-    md.append("\n")
-
-    md.append("### 7.2 Stateful Call-Chain Planning Impact on Pointer Graphs\n")
-    md.append("<div style=\"text-align: justify;\">\n\n"
-              "Table 7.2 presents the ablation results on samples/lru_cache.py, illustrating the necessity of Phase-3 Stateful Call-Chain Planning. "
-              "Unguided generation stalled at 30.95% MS because it could not trigger capacity evictions; introducing stateful invocation sequences "
-              "boosted kill efficiency to 90.48% (38 of 42 mutants killed).\n\n</div>\n")
-    md.append("### Table 7.2: Ablation Analysis of Stateful Sequence Planning on samples/lru_cache.py\n")
-    md.append("| Hardening Phase | Synthesis Methodology | Mutants Killed | Mutation Score | Primary Failure Mode Observed |\n")
-    md.append("| :--- | :--- | :---: | :---: | :--- |\n")
-    for l in rd.LRU_ABLATION_TABLE:
-        md.append(f"| **{l['phase']}** | {l['methodology']} | {l['mutants_killed']} | **{l['mutation_score']}** | {l['failure_mode']} |")
-    md.append("\n")
-
-    md.append("### 7.3 Test Suite Compression & Kill Retention\n")
-    md.append("<div style=\"text-align: justify;\">\n\n"
-              "Table 7.3 summarizes the performance of the Test Suite Minimizer Agent across the benchmark suite. "
-              "Across all targets, greedy set cover reduced aggregate test method count from 143 to 47 tests (67.1% compression) "
-              "with zero regression in mutation score (100.0% kill retention).\n\n</div>\n")
-    md.append("### Table 7.3: Greedy Set Cover Minimization Metrics\n")
-    md.append("| Target Module | Raw Synthesized Tests | Minimized Tests | Test Reduction | Initial MS | Minimized MS | Kill Retention |\n")
-    md.append("| :--- | :---: | :---: | :---: | :---: | :---: | :---: |\n")
-    for m in rd.MINIMIZER_TABLE:
-        md.append(f"| `{m['target']}` | {m['raw_tests']} | **{m['minimized_tests']}** | **{m['compression']}** | {m['initial_ms']} | {m['minimized_ms']} | **{m['retention']}** |")
-    md.append("\n")
-
-    md.append("### 7.4 Multi-Agent Runtime Latency Breakdown\n")
-    md.append("<div style=\"text-align: justify;\">\n\n"
-              "We profiled subsystem latencies across 60 complete hardening cycles on an Apple M2 Pro processor (Table 7.4). "
-              "Mean end-to-end cycle latency was 2.410 seconds. The sandboxed test runner accounted for 61.5% of total runtime due to subprocess "
-              "spawning and POSIX RLIMIT enforcement, while AST analysis and Blackboard transactions required under 20 milliseconds (0.8%).\n\n</div>\n")
-    md.append("### Table 7.4: Multi-Agent Subsystem Latency Profile\n")
-    md.append("| Subsystem / Pipeline Component | Mean Latency (Seconds) | Percentage of Total Cycle | Functional Description |\n")
-    md.append("| :--- | :---: | :---: | :--- |\n")
-    for row in rd.LATENCY_BREAKDOWN_TABLE:
-        md.append(f"| **{row['subsystem']}** | {row['mean_latency']} | {row['percentage']} | {row['notes']} |")
-    md.append("\n")
-
-    md.append("### 7.5 Factorial Persona Evaluation & Prompt Ablations\n")
-    md.append("<div style=\"text-align: justify;\">\n\n"
-              "Table 7.5 displays the 60-run factorial experiment results. Across all developer personas, the Adversarial Critic-guided prompt "
-              "substantially outperformed Zero-Shot and Chain-of-Thought prompts, achieving up to 93.55% mutation score under the Senior Principal Architect persona. "
-              "Furthermore, all 60 runs achieved 100% Pass@1 on unmutated base code.\n\n</div>\n")
-    md.append("### Table 7.5: 60-Run Factorial Prompt & Persona Performance Matrix\n")
-    md.append("| Developer Persona | Zero-Shot MS | Few-Shot CoT MS | Adversarial Critic-Guided MS | Base Code Pass@1 Rate |\n")
-    md.append("| :--- | :---: | :---: | :---: | :---: |\n")
-    for f in rd.FACTORIAL_RESULTS_TABLE:
-        md.append(f"| **{f['persona']}** | {f['zero_shot_ms']} | {f['cot_ms']} | **{f['critic_guided_ms']}** | **{f['pass_at_1']}** |")
-    md.append("\n")
-
-    md.append("### 7.6 Empirical Defect Analysis: DEF-022 Clean Preflight Guard\n")
-    md.append("<div style=\"text-align: justify;\">\n\n"
-              "During Phase-2 development auditing, we discovered Defect DEF-022: synthesized test suites containing assertion syntax errors "
-              "or incorrect parameter counts were being erroneously credited with mutant kills because pytest exited with code 1. "
-              "In software testing theory, a mutant is only validly killed if the test suite passes on the original program and fails exclusively "
-              "on the mutated program. To permanently rectify this defect, we implemented a mandatory clean preflight execution guard in "
-              "mcp_sandbox_runner. If a candidate suite fails on unmutated code, it is immediately rejected with exit code 127 and clean_integrity: false, "
-              "triggering a Blackboard rollback. Following this fix, TestForge achieved 100% verified Pass@1 integrity across all benchmark evaluations.\n\n</div>\n")
-
-    md.append("### 7.7 System Telemetry and Running UI Verification\n")
-    md.append("<div style=\"text-align: justify;\">\n\n"
-              "Figures 7.1 through 7.10 illustrate the running TestForge cockpit captured live during automated Playwright verification on localhost:8000.\n\n</div>\n")
-    for fig in rd.SCREENSHOT_FIGURES:
-        md.append(f"![{fig['id']}: {fig['title']}]({ASSETS_DIR}/{fig['file']})\n")
-        md.append(f"*{fig['id']}: {fig['title']} — {fig['description']}*\n\n")
-
-    # Section 8: Team Responsibility Matrix
-    md.append("## 8. Team Responsibility / Self-Contribution Matrix\n")
-    md.append("<div style=\"text-align: justify;\">\n\n"
-              "Table 8.1 establishes the individual project contributions of each group member across all thirteen core development and research activities.\n\n</div>\n")
-    md.append("### Table 8.1: Complete Team Responsibility & Contribution Matrix\n")
-    md.append("| Development Activity | Sourabh Jain (230584) | Shreshth Mittal (230577) |\n")
-    md.append("| :--- | :--- | :--- |\n")
-    for m in rd.TEAM_MATRIX:
-        md.append(f"| **{m['activity']}** | {m['sourabh']} | {m['shreshth']} |")
-    md.append("\n### Individual Contribution Summaries\n")
-    md.append(f"**Sourabh Jain (230584):** {rd.TEAM_CONTRIBUTIONS['sourabh']}\n\n")
-    md.append(f"**Shreshth Mittal (230577):** {rd.TEAM_CONTRIBUTIONS['shreshth']}\n\n")
-
-    # Section 9: Conclusions
-    md.append("## 9. Conclusions & Future Work\n")
-    for p in rd.CONCLUSIONS_PARAS:
-        md.append(f"<div style=\"text-align: justify;\">\n\n{p}\n\n</div>\n")
-
-    # References
-    md.append("## References\n")
-    for r in rd.REFERENCES:
-        md.append(f"{r}\n\n")
-
-    # Appendix
-    md.append("## Appendix\n")
-    md.append("### Appendix A: FastMCP 4-Tool Registration & Schemas\n")
-    md.append(f"```json\n{rd.APPENDIX_A_TOOLS.strip()}\n```\n\n")
-    md.append("### Appendix B: A2A Agent Card Discovery Payload\n")
-    md.append(f"```json\n{rd.APPENDIX_B_AGENT_CARD.strip()}\n```\n\n")
-    md.append("### Appendix C: Verified Pytest Test Suites\n")
-    md.append(f"```python\n{rd.APPENDIX_C_TEST_SUITES.strip()}\n```\n\n")
-
-    content = "\n".join(md)
-    with open(OUT_MD, "w", encoding="utf-8") as f:
-        f.write(content)
-    print(" -> Markdown generated successfully:", len(content), "bytes")
-    return content
 
 # XML helpers for python-docx styling
 def set_cell_background(cell, fill_hex):
@@ -312,9 +45,6 @@ def set_table_borders(table, color="D3D3D3", sz="4", val="single"):
     )
     tblPr.append(borders)
 
-# ==========================================
-# 2. BUILD PROFESSIONAL WORD (.DOCX) REPORT
-# ==========================================
 def style_table(table, header_bg="1E3A8A", alt_bg="F8FAFC"):
     table.alignment = WD_TABLE_ALIGNMENT.CENTER
     set_table_borders(table, color="D1D5DB", sz="4", val="single")
@@ -338,19 +68,323 @@ def style_table(table, header_bg="1E3A8A", alt_bg="F8FAFC"):
                         r.font.size = Pt(9)
                         r.font.color.rgb = RGBColor(30, 41, 59)
 
+# ==========================================
+# 1. BUILD CLEAN MARKDOWN REPORT
+# ==========================================
+def build_markdown():
+    print("[1/3] Generating Markdown report:", OUT_MD)
+    md = []
+    
+    # Title Page
+    md.append(f"<div style=\"text-align: center; margin-bottom: 20px;\"><img src=\"{ASSETS_DIR}/bml_logo.png\" width=\"140\" style=\"display: inline-block;\"></div>")
+    md.append("# Project Report")
+    md.append("## Course: Agentic AI (CSE3101)")
+    md.append(f"# {rd.TITLE}")
+    md.append("### By:\n" + "\n".join([f"- **{s['name']}** — `{s['roll']}`" for s in rd.STUDENTS]))
+    md.append(f"**{rd.DEPARTMENT}**  \n**{rd.SCHOOL}**  \n**{rd.UNIVERSITY}**  \n**{rd.DATE_STR}**")
+    md.append("<div style=\"page-break-after: always;\"></div>")
+    
+    # Declaration
+    md.append("## Declaration by the Candidates")
+    md.append(f"<div style=\"text-align: justify;\">\n\n{rd.DECLARATION_TEXT}\n\n</div>")
+    decl_tbl = [
+        "| Candidate Name | Enrollment Number | Signature Block |",
+        "| :--- | :---: | :---: |"
+    ]
+    for s in rd.STUDENTS:
+        decl_tbl.append(f"| **{s['name']}** | `{s['roll']}` | *Signed* |")
+    md.append("\n".join(decl_tbl))
+    md.append(f"**Place:** {rd.UNIVERSITY}  \n**Date:** {rd.DATE_STR}")
+    md.append("<div style=\"page-break-after: always;\"></div>")
+    
+    # Table of Contents
+    md.append("## Table of Contents")
+    toc_tbl = [
+        "| Section | Page Number |",
+        "| :--- | :---: |"
+    ]
+    for title, pg in rd.TOC_ITEMS:
+        clean_title = title.replace('    ', '&nbsp;&nbsp;&nbsp;&nbsp;')
+        toc_tbl.append(f"| {clean_title} | {pg} |")
+    md.append("\n".join(toc_tbl))
+    md.append("<div style=\"page-break-after: always;\"></div>")
+    
+    # Section 1: Introduction
+    md.append("## 1. Introduction")
+    for p in rd.INTRO_PARAS:
+        md.append(f"<div style=\"text-align: justify;\">\n\n{p}\n\n</div>")
+        
+    # Section 2: Problem Statement
+    md.append("## 2. Problem Statement")
+    for p in rd.PROBLEM_PARAS:
+        md.append(f"<div style=\"text-align: justify;\">\n\n{p}\n\n</div>")
+        
+    # Section 3: Literature Review
+    md.append("## 3. Literature Review")
+    md.append("<div style=\"text-align: justify;\">\n\n"
+              "To establish the competitive landscape and identify explicit scientific gaps, "
+              "we conducted an exhaustive comparative review of seven representative academic and industrial testing systems. "
+              "Table 3.1 synthesizes the core technical attributes of these tools alongside TestForge.\n\n</div>")
+    md.append("### Table 3.1: Systematic Comparison of Automated Testing and Mutation Systems")
+    lit_tbl = [
+        "| System | Underlying Paradigm | Target Language | Automated Test Gen | Mutation Guidance | Multi-Agent MAS | Stateful Planning | Suite Minimization |",
+        "| :--- | :--- | :--- | :---: | :---: | :---: | :---: | :---: |"
+    ]
+    for row in rd.LIT_REVIEW_TABLE:
+        lit_tbl.append(f"| **{row['tool']}** | {row['paradigm']} | {row['language']} | {row['test_gen']} | {row['mutation_guided']} | {row['agentic']} | {row['stateful_plan']} | {row['minimization']} |")
+    md.append("\n".join(lit_tbl))
+    
+    md.append("### Explicit Research Gaps Identified in Literature")
+    for g in rd.LIT_GAPS:
+        md.append(f"<div style=\"text-align: justify;\">\n\n{g}\n\n</div>")
+        
+    # Section 4: Requirements for MAS
+    md.append("## 4. Requirements for Multi-Agent System (MAS)")
+    md.append("<div style=\"text-align: justify;\">\n\n"
+              "Every agent in the TestForge architecture exists to directly solve an empirical requirement mapped "
+              "from our problem statement and the literature gaps identified in Section 3. "
+              "Table 4.1 establishes full end-to-end traceability across our eight specialized agents.\n\n</div>")
+    md.append("### Table 4.1: Traceability Matrix Mapping Requirements to Agents")
+    req_tbl = [
+        "| Requirement ID | Functional Capability & Technical Constraint | Mapped Problem / Literature Gap | Assigned Agent Role |",
+        "| :---: | :--- | :--- | :--- |"
+    ]
+    for r in rd.MAS_REQ_TABLE:
+        req_tbl.append(f"| **{r['req_id']}** | {r['description']} | {r['mapped_gap']} | **{r['agent']}** |")
+    md.append("\n".join(req_tbl))
+    
+    # Section 5: Methodology
+    md.append("## 5. Methodology")
+    md.append("### 5.1 Agent Identification and Role Decomposition")
+    for p in rd.METHODOLOGY_PARAS_51:
+        md.append(f"<div style=\"text-align: justify;\">\n\n{p}\n\n</div>")
+        
+    md.append("### 5.2 Orchestration & Execution Strategy (6-Stage FSM)")
+    for p in rd.METHODOLOGY_PARAS_52:
+        md.append(f"<div style=\"text-align: justify;\">\n\n{p}\n\n</div>")
+    md.append(f"![Figure 5.0: TestForge Step-by-Step Multi-Agent Pipeline & Convergence Stop-Rules]({ASSETS_DIR}/pipeline_flow_diagram.png)")
+    md.append("*Figure 5.0: TestForge Step-by-Step Multi-Agent Pipeline & Convergence Stop-Rules (Modeled on OptiFlow-X Section 5.3.1).*")
+
+    md.append("### 5.3 Architecture Evaluation")
+    md.append("<div style=\"text-align: justify;\">\n\n"
+              "Before settling on the Hierarchical Blackboard topology, we rigorously evaluated three candidate multi-agent coordination architectures: "
+              "(1) a Sequential Pipeline, (2) a Peer-to-Peer (P2P) Swarm, and (3) our Hierarchical Supervisor with Centralized Blackboard. "
+              "Table 5.1 details the empirical and heuristic trade-offs across these designs.\n\n</div>")
+    md.append("### Table 5.1: Comparative Evaluation of Multi-Agent Coordination Topologies")
+    arch_tbl = [
+        "| Evaluation Dimension | Sequential Pipeline | Peer-to-Peer (P2P) Swarm | Hierarchical Blackboard (TestForge) |",
+        "| :--- | :--- | :--- | :--- |"
+    ]
+    for row in rd.ARCH_EVAL_TABLE:
+        arch_tbl.append(f"| **{row['criterion']}** | {row['sequential']} | {row['p2p']} | **{row['hierarchical']}** |")
+    md.append("\n".join(arch_tbl))
+    md.append(f"![Figure 5.1: TestForge Hierarchical Blackboard Architecture]({ASSETS_DIR}/architecture_diagram.png)")
+    md.append("*Figure 5.1: TestForge Multi-Agent Hierarchical Blackboard Architecture combining Google ADK and CrewAI.*")
+
+    md.append("### 5.4 Agent-Tool Communication & FastMCP JSON-RPC Protocol")
+    md.append("<div style=\"text-align: justify;\">\n\n"
+              "TestForge strictly separates high-level agent reasoning from deterministic low-level execution using the Model Context Protocol (MCP). "
+              "We implemented testforge/mcp_server.py as a standardized FastMCP stdio server exposing four specialized tools. "
+              "Communication occurs over standard input/output streams via JSON-RPC 2.0 messages, ensuring zero open network ports and complete operating system isolation.\n\n</div>")
+    md.append("### Table 5.2: FastMCP 4-Tool Specification")
+    mcp_tbl = [
+        "| Tool Name | Typed Input Signature | Typed Output Signature | Architectural Purpose |",
+        "| :--- | :--- | :--- | :--- |"
+    ]
+    for t in rd.FASTMCP_TOOLS_TABLE:
+        mcp_tbl.append(f"| `{t['name']}` | `{t['inputs']}` | `{t['outputs']}` | {t['purpose']} |")
+    md.append("\n".join(mcp_tbl))
+    md.append(f"![Figure 5.2: FastMCP Agent-Tool Architecture]({ASSETS_DIR}/fastmcp_agent_tool_diagram.png)")
+    md.append("*Figure 5.2: FastMCP stdio JSON-RPC tool dispatch architecture.*")
+
+    md.append("### 5.5 Messaging Patterns & A2A Communication Protocol")
+    md.append("<div style=\"text-align: justify;\">\n\n"
+              "Agent-to-Agent (A2A) communication follows formal communicative acts inspired by FIPA-ACL (REQUEST, INFORM, AGREE, REFUSE, FAILURE). "
+              "All messages are encapsulated in strongly-typed Pydantic envelopes (A2AMessage in testforge/a2a.py) carrying immutable correlation IDs, "
+              "sender/recipient identities, and W3C trace contexts. External agents discover TestForge capabilities via the dynamic GET /.well-known/agent-card.json "
+              "endpoint conforming to A2A specification v0.3.0.\n\n</div>")
+
+    md.append("### 5.6 3-Tier MAS Security Architecture")
+    for p in rd.SECURITY_3TIER_PARAS:
+        md.append(f"<div style=\"text-align: justify;\">\n\n{p}\n\n</div>")
+    md.append(f"![Figure 5.3: 3-Tier Security Architecture]({ASSETS_DIR}/security_3tier_diagram.png)")
+    md.append("*Figure 5.3: TestForge 3-Tier Multi-Agent Security & Sandboxing Framework.*")
+
+    md.append("### 5.7 Stateful Call-Chain Planning & Sequence Synthesis")
+    for p in rd.STATEFUL_PLANNING_PARAS:
+        md.append(f"<div style=\"text-align: justify;\">\n\n{p}\n\n</div>")
+
+    md.append("### 5.8 Test Suite Minimization via Submodular Greedy Set Cover")
+    for p in rd.MINIMIZATION_PARAS:
+        md.append(f"<div style=\"text-align: justify;\">\n\n{p}\n\n</div>")
+
+    md.append("### 5.9 Validation Strategy & 60-Run Factorial Matrix")
+    md.append("<div style=\"text-align: justify;\">\n\n"
+              "To rigorously validate agent decision-making, we designed a full factorial experimental matrix across three prompt architectures "
+              "(Zero-Shot Baseline, Few-Shot Chain-of-Thought, and Adversarial Critic-guided) and four distinct developer personas "
+              "(Junior Developer, Skeptical QA Architect, Senior Principal Architect, and Adversarial Fuzz Tester). Each combination was executed "
+              "across 5 independent trials (60 total experimental runs) on macOS Apple M2 Pro / Python 3.13, evaluating Pass@1 rate, mutation score, "
+              "and the correlation between the CrewAI Critic LLM-as-judge scores and ground-truth subprocess execution results.\n\n</div>")
+
+    # Section 6: Technology Stack
+    md.append("## 6. Technology Stack")
+    md.append("<div style=\"text-align: justify;\">\n\n"
+              "TestForge was constructed using an enterprise-grade, dual-framework Python technology stack. "
+              "Table 6.1 enumerates each layer of the architecture, the specific technologies employed, and their exact functional roles.\n\n</div>")
+    md.append("### Table 6.1: TestForge Comprehensive Technology Stack")
+    tech_tbl = [
+        "| Architectural Tier | Technology & Version | Architectural Role & Justification |",
+        "| :--- | :--- | :--- |"
+    ]
+    for t in rd.TECH_STACK_TABLE:
+        tech_tbl.append(f"| **{t['category']}** | {t['technologies']} | {t['role']} |")
+    md.append("\n".join(tech_tbl))
+
+    # Section 7: Experimental Results
+    md.append("## 7. Experimental Results")
+    md.append("### 7.1 Canonical Target Benchmark Suite")
+    md.append("<div style=\"text-align: justify;\">\n\n"
+              "We evaluated TestForge across four canonical Python benchmark targets representing distinct software engineering paradigms: "
+              "(1) samples/discount.py (relational boundary & pricing rules), (2) samples/order_fsm.py (finite state machine transition logic), "
+              "(3) samples/lru_cache.py (pointer graph & stateful cache eviction), and (4) samples/stats_calculator.py (floating-point statistics). "
+              "Table 7.1 reports the verified empirical performance.\n\n</div>")
+    md.append("### Table 7.1: TestForge Benchmark Performance Across 4 Canonical Targets")
+    bench_tbl = [
+        "| Target Module | Domain & Behavioral Complexity | Developer Baseline MS | TestForge Raw MS | Adjusted MS | Mutants Killed | Pass@1 Rate | Final Test Count |",
+        "| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |"
+    ]
+    for b in rd.BENCHMARK_TABLE:
+        bench_tbl.append(f"| `{b['target']}` | {b['description']} | {b['baseline_ms']} | **{b['testforge_raw_ms']}** | **{b['testforge_adj_ms']}** | {b['mutants_killed']} | {b['pass_rate']} | {b['generated_tests']} |")
+    md.append("\n".join(bench_tbl))
+
+    md.append("### 7.2 Stateful Call-Chain Planning Impact on Pointer Graphs")
+    md.append("<div style=\"text-align: justify;\">\n\n"
+              "Table 7.2 presents the ablation results on samples/lru_cache.py, illustrating the necessity of Phase-3 Stateful Call-Chain Planning. "
+              "Unguided generation stalled at 30.95% MS because it could not trigger capacity evictions; introducing stateful invocation sequences "
+              "boosted kill efficiency to 90.48% (38 of 42 mutants killed).\n\n</div>")
+    md.append("### Table 7.2: Ablation Analysis of Stateful Sequence Planning on samples/lru_cache.py")
+    lru_tbl = [
+        "| Hardening Phase | Synthesis Methodology | Mutants Killed | Mutation Score | Primary Failure Mode Observed |",
+        "| :--- | :--- | :---: | :---: | :--- |"
+    ]
+    for l in rd.LRU_ABLATION_TABLE:
+        lru_tbl.append(f"| **{l['phase']}** | {l['methodology']} | {l['mutants_killed']} | **{l['mutation_score']}** | {l['failure_mode']} |")
+    md.append("\n".join(lru_tbl))
+
+    md.append("### 7.3 Test Suite Compression & Kill Retention")
+    md.append("<div style=\"text-align: justify;\">\n\n"
+              "Table 7.3 summarizes the performance of the Test Suite Minimizer Agent across the benchmark suite. "
+              "Across all targets, greedy set cover reduced aggregate test method count from 143 to 47 tests (67.1% compression) "
+              "with zero regression in mutation score (100.0% kill retention).\n\n</div>")
+    md.append("### Table 7.3: Greedy Set Cover Minimization Metrics")
+    min_tbl = [
+        "| Target Module | Raw Synthesized Tests | Minimized Tests | Test Reduction | Initial MS | Minimized MS | Kill Retention |",
+        "| :--- | :---: | :---: | :---: | :---: | :---: | :---: |"
+    ]
+    for m in rd.MINIMIZER_TABLE:
+        min_tbl.append(f"| `{m['target']}` | {m['raw_tests']} | **{m['minimized_tests']}** | **{m['compression']}** | {m['initial_ms']} | {m['minimized_ms']} | **{m['retention']}** |")
+    md.append("\n".join(min_tbl))
+
+    md.append("### 7.4 Multi-Agent Runtime Latency Breakdown")
+    md.append("<div style=\"text-align: justify;\">\n\n"
+              "We profiled subsystem latencies across 60 complete hardening cycles on an Apple M2 Pro processor (Table 7.4). "
+              "Mean end-to-end cycle latency was 2.410 seconds. The sandboxed test runner accounted for 61.5% of total runtime due to subprocess "
+              "spawning and POSIX RLIMIT enforcement, while AST analysis and Blackboard transactions required under 20 milliseconds (0.8%).\n\n</div>")
+    md.append("### Table 7.4: Multi-Agent Subsystem Latency Profile")
+    lat_tbl = [
+        "| Subsystem / Pipeline Component | Mean Latency (Seconds) | Percentage of Total Cycle | Functional Description |",
+        "| :--- | :---: | :---: | :--- |"
+    ]
+    for row in rd.LATENCY_BREAKDOWN_TABLE:
+        lat_tbl.append(f"| **{row['subsystem']}** | {row['mean_latency']} | {row['percentage']} | {row['notes']} |")
+    md.append("\n".join(lat_tbl))
+
+    md.append("### 7.5 Factorial Persona Evaluation & Prompt Ablations")
+    md.append("<div style=\"text-align: justify;\">\n\n"
+              "Table 7.5 displays the 60-run factorial experiment results. Across all developer personas, the Adversarial Critic-guided prompt "
+              "substantially outperformed Zero-Shot and Chain-of-Thought prompts, achieving up to 93.55% mutation score under the Senior Principal Architect persona. "
+              "Furthermore, all 60 runs achieved 100% Pass@1 on unmutated base code.\n\n</div>")
+    md.append("### Table 7.5: 60-Run Factorial Prompt & Persona Performance Matrix")
+    fac_tbl = [
+        "| Developer Persona | Zero-Shot MS | Few-Shot CoT MS | Adversarial Critic-Guided MS | Base Code Pass@1 Rate |",
+        "| :--- | :---: | :---: | :---: | :---: |"
+    ]
+    for f in rd.FACTORIAL_RESULTS_TABLE:
+        fac_tbl.append(f"| **{f['persona']}** | {f['zero_shot_ms']} | {f['cot_ms']} | **{f['critic_guided_ms']}** | **{f['pass_at_1']}** |")
+    md.append("\n".join(fac_tbl))
+
+    md.append("### 7.6 Empirical Defect Analysis: DEF-022 Clean Preflight Guard")
+    md.append("<div style=\"text-align: justify;\">\n\n"
+              "During Phase-2 development auditing, we discovered Defect DEF-022: synthesized test suites containing assertion syntax errors "
+              "or incorrect parameter counts were being erroneously credited with mutant kills because pytest exited with code 1. "
+              "In software testing theory, a mutant is only validly killed if the test suite passes on the original program and fails exclusively "
+              "on the mutated program. To permanently rectify this defect, we implemented a mandatory clean preflight execution guard in "
+              "mcp_sandbox_runner. If a candidate suite fails on unmutated code, it is immediately rejected with exit code 127 and clean_integrity: false, "
+              "triggering a Blackboard rollback. Following this fix, TestForge achieved 100% verified Pass@1 integrity across all benchmark evaluations.\n\n</div>")
+
+    md.append("### 7.7 System Telemetry and Running UI Verification")
+    md.append("<div style=\"text-align: justify;\">\n\n"
+              "Figures 7.1 through 7.10 illustrate the running TestForge cockpit captured live during automated Playwright verification on localhost:8000.\n\n</div>")
+    for fig in rd.SCREENSHOT_FIGURES:
+        md.append(f"![{fig['id']}: {fig['title']}]({ASSETS_DIR}/{fig['file']})")
+        md.append(f"*{fig['id']}: {fig['title']} — {fig['description']}*")
+
+    # Section 8: Team Responsibility Matrix
+    md.append("## 8. Team Responsibility / Self-Contribution Matrix")
+    md.append("<div style=\"text-align: justify;\">\n\n"
+              "Table 8.1 establishes the individual project contributions of each group member across all thirteen core development and research activities.\n\n</div>")
+    md.append("### Table 8.1: Complete Team Responsibility & Contribution Matrix")
+    team_tbl = [
+        "| Development Activity | Sourabh Jain (230584) | Shreshth Mittal (230577) |",
+        "| :--- | :--- | :--- |"
+    ]
+    for m in rd.TEAM_MATRIX:
+        team_tbl.append(f"| **{m['activity']}** | {m['sourabh']} | {m['shreshth']} |")
+    md.append("\n".join(team_tbl))
+    
+    md.append("### Individual Contribution Summaries")
+    md.append(f"**Sourabh Jain (230584):** {rd.TEAM_CONTRIBUTIONS['sourabh']}")
+    md.append(f"**Shreshth Mittal (230577):** {rd.TEAM_CONTRIBUTIONS['shreshth']}")
+
+    # Section 9: Conclusions
+    md.append("## 9. Conclusions & Future Work")
+    for p in rd.CONCLUSIONS_PARAS:
+        md.append(f"<div style=\"text-align: justify;\">\n\n{p}\n\n</div>")
+
+    # References
+    md.append("## References")
+    for r in rd.REFERENCES:
+        md.append(r)
+
+    # Appendix
+    md.append("## Appendix")
+    md.append("### Appendix A: FastMCP 4-Tool Registration & Schemas")
+    md.append(f"```json\n{rd.APPENDIX_A_TOOLS.strip()}\n```")
+    md.append("### Appendix B: A2A Agent Card Discovery Payload")
+    md.append(f"```json\n{rd.APPENDIX_B_AGENT_CARD.strip()}\n```")
+    md.append("### Appendix C: Verified Pytest Test Suites")
+    md.append(f"```python\n{rd.APPENDIX_C_TEST_SUITES.strip()}\n```")
+
+    content = "\n\n".join(md) + "\n"
+    with open(OUT_MD, "w", encoding="utf-8") as f:
+        f.write(content)
+    print(" -> Markdown generated successfully:", len(content), "bytes")
+    return content
+
+# ==========================================
+# 2. BUILD PROFESSIONAL WORD (.DOCX) REPORT
+# ==========================================
 def build_docx():
     print("[2/3] Generating Word report (.docx):", OUT_DOCX)
     doc = docx.Document()
     
     # 1-inch margins
-    sections = doc.sections
-    for section in sections:
+    for section in doc.sections:
         section.top_margin = Inches(1.0)
         section.bottom_margin = Inches(1.0)
         section.left_margin = Inches(1.0)
         section.right_margin = Inches(1.0)
         
-    # Set default font
     doc.styles['Normal'].font.name = 'Calibri'
     doc.styles['Normal'].font.size = Pt(11)
     doc.styles['Normal'].font.color.rgb = RGBColor(30, 41, 59)
@@ -375,7 +409,7 @@ def build_docx():
         r = p.add_run(text)
         r.font.bold = True
         r.font.size = Pt(16)
-        r.font.color.rgb = RGBColor(30, 58, 138) # Primary Blue
+        r.font.color.rgb = RGBColor(30, 58, 138)
         return p
 
     def add_h2(text):
@@ -415,9 +449,7 @@ def build_docx():
             r.font.size = Pt(9.5)
             r.font.color.rgb = RGBColor(100, 116, 139)
 
-    # ---------------------------------------------
     # PAGE 1: TITLE PAGE
-    # ---------------------------------------------
     logo_path = os.path.join(ASSETS_DIR, "bml_logo.png")
     if os.path.exists(logo_path):
         p_logo = doc.add_paragraph()
@@ -477,9 +509,7 @@ def build_docx():
     
     doc.add_page_break()
     
-    # ---------------------------------------------
     # PAGE 2: DECLARATION
-    # ---------------------------------------------
     add_h1("Declaration by the Candidates")
     add_para(rd.DECLARATION_TEXT, space_after=18)
     
@@ -502,9 +532,7 @@ def build_docx():
     
     doc.add_page_break()
     
-    # ---------------------------------------------
     # PAGE 3: TABLE OF CONTENTS
-    # ---------------------------------------------
     add_h1("Contents")
     table_toc = doc.add_table(rows=len(rd.TOC_ITEMS) + 1, cols=2)
     table_toc.rows[0].cells[0].paragraphs[0].text = "Section Title"
@@ -516,23 +544,17 @@ def build_docx():
     
     doc.add_page_break()
     
-    # ---------------------------------------------
-    # SECTION 1: INTRODUCTION
-    # ---------------------------------------------
+    # SECTION 1
     add_h1("1. Introduction")
     for p in rd.INTRO_PARAS:
         add_para(p)
         
-    # ---------------------------------------------
-    # SECTION 2: PROBLEM STATEMENT
-    # ---------------------------------------------
+    # SECTION 2
     add_h1("2. Problem Statement")
     for p in rd.PROBLEM_PARAS:
         add_para(p)
         
-    # ---------------------------------------------
-    # SECTION 3: LITERATURE REVIEW
-    # ---------------------------------------------
+    # SECTION 3
     add_h1("3. Literature Review")
     add_para("To establish the competitive landscape and identify explicit scientific gaps, "
              "we conducted an exhaustive comparative review of seven representative academic and industrial testing systems. "
@@ -558,9 +580,7 @@ def build_docx():
     for g in rd.LIT_GAPS:
         add_para(g)
         
-    # ---------------------------------------------
-    # SECTION 4: REQUIREMENTS FOR MAS
-    # ---------------------------------------------
+    # SECTION 4
     add_h1("4. Requirements for Multi-Agent System (MAS)")
     add_para("Every agent in the TestForge architecture exists to directly solve an empirical requirement mapped "
              "from our problem statement and the literature gaps identified in Section 3. "
@@ -578,9 +598,7 @@ def build_docx():
         table_req.rows[i+1].cells[3].paragraphs[0].text = r["agent"]
     style_table(table_req)
     
-    # ---------------------------------------------
-    # SECTION 5: METHODOLOGY
-    # ---------------------------------------------
+    # SECTION 5
     add_h1("5. Methodology")
     add_h2("5.1 Agent Identification and Role Decomposition")
     for p in rd.METHODOLOGY_PARAS_51:
@@ -589,6 +607,7 @@ def build_docx():
     add_h2("5.2 Orchestration & Execution Strategy (6-Stage FSM)")
     for p in rd.METHODOLOGY_PARAS_52:
         add_para(p)
+    add_image_box("pipeline_flow_diagram.png", "Figure 5.0: TestForge Step-by-Step Multi-Agent Pipeline & Convergence Stop-Rules (Modeled on OptiFlow-X Section 5.3.1).")
         
     add_h2("5.3 Architecture Evaluation")
     add_para("Before settling on the Hierarchical Blackboard topology, we rigorously evaluated three candidate multi-agent coordination architectures: "
@@ -654,9 +673,7 @@ def build_docx():
              "across 5 independent trials (60 total experimental runs) on macOS Apple M2 Pro / Python 3.13, evaluating Pass@1 rate, mutation score, "
              "and the correlation between the CrewAI Critic LLM-as-judge scores and ground-truth subprocess execution results.")
     
-    # ---------------------------------------------
-    # SECTION 6: TECHNOLOGY STACK
-    # ---------------------------------------------
+    # SECTION 6
     add_h1("6. Technology Stack")
     add_para("TestForge was constructed using an enterprise-grade, dual-framework Python technology stack. "
              "Table 6.1 enumerates each layer of the architecture, the specific technologies employed, and their exact functional roles.")
@@ -672,9 +689,7 @@ def build_docx():
         table_tech.rows[i+1].cells[2].paragraphs[0].text = t["role"]
     style_table(table_tech)
     
-    # ---------------------------------------------
-    # SECTION 7: EXPERIMENTAL RESULTS
-    # ---------------------------------------------
+    # SECTION 7
     add_h1("7. Experimental Results")
     add_h2("7.1 Canonical Target Benchmark Suite")
     add_para("We evaluated TestForge across four canonical Python benchmark targets representing distinct software engineering paradigms: "
@@ -784,9 +799,7 @@ def build_docx():
     for fig in rd.SCREENSHOT_FIGURES:
         add_image_box(fig["file"], f"{fig['id']}: {fig['title']} — {fig['description']}")
         
-    # ---------------------------------------------
-    # SECTION 8: TEAM RESPONSIBILITY MATRIX
-    # ---------------------------------------------
+    # SECTION 8
     add_h1("8. Team Responsibility / Self-Contribution Matrix")
     add_para("Table 8.1 establishes the individual project contributions of each group member across all thirteen core development and research activities.")
     
@@ -805,16 +818,12 @@ def build_docx():
     add_para(rd.TEAM_CONTRIBUTIONS["sourabh"], bold_prefix="Sourabh Jain (230584): ")
     add_para(rd.TEAM_CONTRIBUTIONS["shreshth"], bold_prefix="Shreshth Mittal (230577): ")
     
-    # ---------------------------------------------
-    # SECTION 9: CONCLUSIONS
-    # ---------------------------------------------
+    # SECTION 9
     add_h1("9. Conclusions & Future Work")
     for p in rd.CONCLUSIONS_PARAS:
         add_para(p)
         
-    # ---------------------------------------------
     # REFERENCES
-    # ---------------------------------------------
     add_h1("References")
     for r in rd.REFERENCES:
         p_ref = doc.add_paragraph()
@@ -823,9 +832,7 @@ def build_docx():
         r_run = p_ref.add_run(r)
         r_run.font.size = Pt(9.5)
         
-    # ---------------------------------------------
     # APPENDIX
-    # ---------------------------------------------
     add_h1("Appendix")
     add_h2("Appendix A: FastMCP 4-Tool Registration & Schemas")
     p_app_a = doc.add_paragraph()
@@ -857,11 +864,9 @@ def build_docx():
 def build_pdf():
     print("[3/3] Generating PDF report via Playwright Chromium:", OUT_PDF)
     
-    # Read Markdown and convert to HTML template
     with open(OUT_MD, "r", encoding="utf-8") as f:
         md_text = f.read()
         
-    from markdown_it import MarkdownIt
     parser = MarkdownIt('gfm-like')
     html_body = parser.render(md_text)
     
@@ -874,42 +879,36 @@ def build_pdf():
   @page {{
     size: A4;
     margin: 20mm 15mm 20mm 15mm;
-    @bottom-right {{
-      content: counter(page);
-      font-size: 9pt;
-      font-family: sans-serif;
-      color: #64748b;
-    }}
   }}
   body {{
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    font-size: 10.5pt;
-    line-height: 1.5;
+    font-size: 10pt;
+    line-height: 1.45;
     color: #1e293b;
     margin: 0;
     padding: 0;
   }}
   h1 {{
     color: #1e3a8a;
-    font-size: 18pt;
+    font-size: 17pt;
     font-weight: 700;
-    margin-top: 24pt;
+    margin-top: 22pt;
     margin-bottom: 8pt;
     page-break-after: avoid;
   }}
   h2 {{
     color: #1e3a8a;
-    font-size: 14pt;
+    font-size: 13.5pt;
     font-weight: 700;
-    margin-top: 18pt;
+    margin-top: 16pt;
     margin-bottom: 6pt;
     page-break-after: avoid;
   }}
   h3 {{
     color: #374151;
-    font-size: 11.5pt;
+    font-size: 11pt;
     font-weight: 600;
-    margin-top: 14pt;
+    margin-top: 12pt;
     margin-bottom: 4pt;
     page-break-after: avoid;
   }}
@@ -926,15 +925,16 @@ def build_pdf():
   table {{
     width: 100%;
     border-collapse: collapse;
-    margin-top: 10pt;
-    margin-bottom: 14pt;
-    font-size: 8.8pt;
+    margin-top: 8pt;
+    margin-bottom: 12pt;
+    font-size: 8.5pt;
     page-break-inside: avoid;
   }}
   th, td {{
     border: 1px solid #cbd5e1;
-    padding: 6pt 8pt;
+    padding: 5.5pt 7pt;
     text-align: left;
+    vertical-align: middle;
   }}
   th {{
     background-color: #1e3a8a;
@@ -949,7 +949,7 @@ def build_pdf():
     max-width: 95%;
     height: auto;
     display: block;
-    margin: 12pt auto 4pt auto;
+    margin: 10pt auto 4pt auto;
     border-radius: 4px;
     border: 1px solid #e2e8f0;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
@@ -957,13 +957,13 @@ def build_pdf():
   em {{
     display: block;
     text-align: center;
-    font-size: 8.8pt;
+    font-size: 8.5pt;
     color: #64748b;
     margin-bottom: 12pt;
   }}
   pre, code {{
     font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
-    font-size: 8pt;
+    font-size: 7.8pt;
     background-color: #f1f5f9;
   }}
   pre {{
@@ -974,9 +974,6 @@ def build_pdf():
     white-space: pre-wrap;
     word-break: break-all;
     margin-bottom: 12pt;
-  }}
-  .page-break {{
-    page-break-after: always;
   }}
 </style>
 </head>
@@ -998,8 +995,8 @@ def build_pdf():
             print_background=True,
             margin={"top": "20mm", "bottom": "20mm", "left": "15mm", "right": "15mm"},
             display_header_footer=True,
-            header_template='<div style="font-size: 8pt; font-family: sans-serif; color: #94a3b8; width: 100%; text-align: right; padding-right: 15mm;">BML Munjal University — CSE3101 Agentic AI Final Report</div>',
-            footer_template='<div style="font-size: 8.5pt; font-family: sans-serif; color: #64748b; width: 100%; text-align: right; padding-right: 15mm;">Page <span class="pageNumber"></span> of <span class="totalPages"></span></div>'
+            header_template='<div style="font-size: 8pt; font-family: -apple-system, BlinkMacSystemFont, sans-serif; color: #94a3b8; width: 100%; text-align: right; padding-right: 15mm; letter-spacing: 0.05em;">BML MUNJAL UNIVERSITY — CSE3101 AGENTIC AI FINAL REPORT</div>',
+            footer_template='<div style="font-size: 8pt; font-family: -apple-system, BlinkMacSystemFont, sans-serif; color: #64748b; width: 100%; text-align: right; padding-right: 15mm;">Page <span class="pageNumber"></span> of <span class="totalPages"></span></div>'
         )
         browser.close()
     print(" -> PDF generated successfully:", OUT_PDF)
@@ -1008,4 +1005,4 @@ if __name__ == "__main__":
     build_markdown()
     build_docx()
     build_pdf()
-    print("ALL DELIVERABLES SUCCESSFULLY PRODUCED!")
+    print("ALL DELIVERABLES SUCCESSFULLY REBUILT!")
