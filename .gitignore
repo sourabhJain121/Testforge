@@ -33,6 +33,7 @@ mutants/
 # Backup documents and temporary docx
 docs/WIP_REPORT/*_backup.*
 *.docx
+!docs/DELIVERABLES/*.docx
 
 # Huge historical experiment logs (>5MB raw JSON dumps)
 qa_artifacts/phase3_independent_validation_20261031_142800/reproduction_logistics.json
