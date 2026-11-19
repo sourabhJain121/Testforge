@@ -83,21 +83,24 @@ def create_deck():
         s0.shapes.add_picture(logo_path, Inches(0.8), Inches(0.8), width=Inches(1.6))
 
     # Title box
-    tb_main = s0.shapes.add_textbox(Inches(0.8), Inches(2.2), Inches(11.7), Inches(2.2))
+    tb_main = s0.shapes.add_textbox(Inches(0.8), Inches(2.0), Inches(11.7), Inches(2.4))
     tf_main = tb_main.text_frame
     tf_main.word_wrap = True
     p1 = tf_main.paragraphs[0]
-    p1.text = "TESTFORGE: AUTONOMOUS MULTI-AGENT SYSTEM FOR MUTATION-GUIDED UNIT TEST HARDENING"
+    p1.text = "TESTFORGE:\nAUTONOMOUS MULTI-AGENT SYSTEM FOR MUTATION-GUIDED UNIT TEST HARDENING"
     p1.font.name = "Calibri"
-    p1.font.size = Pt(26)
+    p1.font.size = Pt(25)
     p1.font.bold = True
     p1.font.color.rgb = TEXT_WHITE
+    p1.line_spacing = 1.2
 
     p2 = tf_main.add_paragraph()
     p2.text = "Solving the Coverage-Kill Gap via Dual-Framework Multi-Agent Synthesis, Stateful Sequence Planning & Submodular Minimization"
     p2.font.name = "Calibri"
-    p2.font.size = Pt(14)
+    p2.font.size = Pt(13.5)
     p2.font.color.rgb = ACCENT_BLUE
+    p2.space_before = Pt(12)
+    p2.line_spacing = 1.2
     p2.space_before = Pt(10)
 
     # Metadata cards container

@@ -87,17 +87,17 @@ def create_pipeline_diagram():
     ax.text(64, 52, "Adversarial Feedback\n(If Score < 85% & Iter < 3)", fontsize=7.5, fontweight="bold", color="#B91C1C", ha="center")
 
     # Bottom Banner: Stop Rules & Convergence Criteria
-    stop_box = patches.FancyBboxPatch((4, 3), 92, 13, boxstyle="round,pad=1", 
+    stop_box = patches.FancyBboxPatch((4, 2), 92, 14.5, boxstyle="round,pad=1", 
                                       facecolor="#F8FAFC", edgecolor="#0284C7", linewidth=1.5)
     ax.add_patch(stop_box)
-    ax.text(6, 12.5, "CORE CONVERGENCE STOP-RULES (testforge/supervisor.py & core/budget):", 
-            fontsize=8.5, fontweight="bold", color="#0369A1")
-    ax.text(6, 8, 
+    ax.text(6, 15.0, "CORE CONVERGENCE STOP-RULES (testforge/supervisor.py & core/budget.py):", 
+            fontsize=8.5, fontweight="bold", color="#0369A1", va="top")
+    ax.text(6, 12.8, 
             "• Stop Rule 1 (Target Score Reached): Mutation Score >= 85.0% across verified mutants -> Terminate loop & transition to FINALIZE.\n"
             "• Stop Rule 2 (Budget Exhaustion): Maximum iteration count reached (iter == 3) -> Save best candidate suite and prevent runaway token spend.\n"
             "• Stop Rule 3 (Never-Regress Guard): If candidate suite k has fewer kills than suite k-1 -> Trigger transactional Git & SQLite rollback.\n"
             "• Preflight Gate (DEF-022): Candidate suite must achieve 100% Pass@1 on unmutated source; syntax/runtime errors abort with exit code 127.",
-            fontsize=7.2, color="#334155", linespacing=1.35)
+            fontsize=7.2, color="#334155", linespacing=1.45, va="top")
 
     plt.tight_layout()
     plt.savefig(OUT_PATH, dpi=300, bbox_inches="tight")
