@@ -197,12 +197,6 @@ document.addEventListener('DOMContentLoaded', () => {
     inputTokenHarborKey: document.getElementById('input-tokenharbor-key'),
     badgeTokenHarborKey: document.getElementById('badge-tokenharbor-key'),
     inputTokenHarborBaseUrl: document.getElementById('input-tokenharbor-base-url'),
-    inputGeminiKey: document.getElementById('input-gemini-key'),
-    inputGeminiKey2: document.getElementById('input-gemini-key-2'),
-    inputOpenrouterKey: document.getElementById('input-openrouter-key'),
-    badgeGeminiKey: document.getElementById('badge-gemini-key'),
-    badgeGeminiKey2: document.getElementById('badge-gemini-key-2'),
-    badgeOpenrouterKey: document.getElementById('badge-openrouter-key'),
     keysConfiguredBadge: document.getElementById('keys-configured-badge'),
     inputOllamaModel: document.getElementById('ollama-model-input'),
     datalistOllamaModels: document.getElementById('ollama-detected-models-datalist'),
@@ -620,6 +614,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function rehydrateHardeningState() {
+    if (state.hardening.isRunning) return;
     let savedJobId = state.hardening.jobId || state.hardening.currentJobId;
     if (!savedJobId) {
       try {
@@ -3334,6 +3329,8 @@ document.addEventListener('DOMContentLoaded', () => {
       targetPath = 'samples/discount.py';
     }
 
+    state.hardening.isCancelled = false;
+
     if (!state.activeTarget || typeof state.activeTarget !== 'object') {
       state.activeTarget = { filePath: targetPath, sourceCode: '' };
     } else if (!state.activeTarget.filePath) {
@@ -3349,7 +3346,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // 3. Auto-navigate to Hardening Lab tab if initiated from another tab or header
+    // 3. Mark running and auto-navigate to Hardening Lab tab if initiated from another tab or header
+    state.hardening.isRunning = true;
+    state.hardening.status = 'INITIALIZING';
+    state.hardening.isCancelled = false;
     if (state.currentTab !== 'tab-hardening' && state.currentTab !== 'tab-lab') {
       switchTab('tab-hardening');
     }
@@ -3376,7 +3376,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     setHardeningButtonsState(true);
 
-    // 6. Reveal Cancel button
+    // 6. Reveal Cancel button & Set Immediate Running State
+    const statusBadgeEarly = document.getElementById('hardening-status-badge');
+    if (statusBadgeEarly) {
+      statusBadgeEarly.textContent = 'RUNNING';
+      statusBadgeEarly.className = 'badge badge-amber';
+    }
     const btnCancel = document.getElementById('btn-cancel-job') || dom.btnCancelHardening;
     if (btnCancel) {
       btnCancel.style.display = 'inline-flex';
@@ -3415,30 +3420,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const executeHardeningWorkflow = triggerHardeningPipeline;
 
-  // Wire Event Listeners across all start-hardening buttons
-  const allRunButtons = document.querySelectorAll('[data-action="start-hardening"]');
-  allRunButtons.forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      triggerHardeningPipeline(btn);
-    });
-  });
-
-  const allDirectButtons = [
+  // Wire Event Listeners across all start-hardening buttons (deduplicated)
+  const uniqueRunButtons = new Set([
+    ...document.querySelectorAll('[data-action="start-hardening"]'),
     document.getElementById('btn-global-run-hardening'),
     document.getElementById('btn-lab-run-hardening'),
     document.getElementById('btn-run-hardening'),
     document.getElementById('btn-start-hardening'),
     dom.btnRunHardening,
     dom.btnStartHardening
-  ];
-  allDirectButtons.forEach(btn => {
-    if (btn) {
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        triggerHardeningPipeline(btn);
-      });
-    }
+  ].filter(Boolean));
+
+  uniqueRunButtons.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      triggerHardeningPipeline(btn);
+    });
   });
 
   if (dom.btnCancelHardening) {
@@ -3829,7 +3826,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   Job [<strong>${escapeHtml(jobId)}</strong>] was interrupted during execution. SQLite checkpoint preserves transaction state.
                 </p>
               </div>
-              <button class="btn btn-primary" id="btn-resume-interrupted-job" style="box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35); background: #ea580c; border: 1px solid #f97316;">
+              <button class="btn btn-primary" id="btn-resume-interrupted-job" style="box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35); background: #c2410c; border: 1px solid #ea580c;">
                 ▶ Resume Job Execution
               </button>
             </div>
@@ -3882,6 +3879,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const finalState = job.final_state || {};
     state.hardening.finalState = finalState;
     state.hardening.testHardenedCode = job.test_hardened_code || '';
+    if (dom.hardeningPercentText) {
+      dom.hardeningPercentText.textContent = statusOverride || 'FINALIZED';
+    }
 
     // Immediately hydrate Wiretap and Telemetry traces (TF-DEF-002 fix)
     fetchWiretap();
@@ -5703,9 +5703,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 renderHistoryTable(state.hardening.iterations);
               }
             }
+            const activeJobId = ev.job_id || state.hardening.jobId || state.hardening.currentJobId;
+            const currentActiveId = state.hardening.jobId || state.hardening.currentJobId;
+            if (ev.job_id && currentActiveId && ev.job_id !== currentActiveId) {
+              // Ignore stale WebSocket event from previous or cancelled job
+              return;
+            }
             if (ev.stage === 'FINALIZED' || ev.phase === 'COMPLETED') {
               if (state.hardening.isCancelled) return;
-              const activeJobId = ev.job_id || state.hardening.jobId || state.hardening.currentJobId;
               if (activeJobId && activeJobId !== 'current') {
                 fetch(`/api/harden/status/${activeJobId}`)
                   .then(r => r.ok ? r.json() : null)
@@ -5717,7 +5722,6 @@ document.addEventListener('DOMContentLoaded', () => {
                   .catch(() => {});
               }
             } else if (ev.stage === 'TIMED_OUT' || ev.phase === 'TIMED_OUT' || ev.status === 'TIMED_OUT') {
-              const activeJobId = ev.job_id || state.hardening.jobId || state.hardening.currentJobId;
               if (activeJobId && activeJobId !== 'current') {
                 fetch(`/api/harden/status/${activeJobId}`)
                   .then(r => r.ok ? r.json() : null)
@@ -5731,7 +5735,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 finalizeHardeningRun({ status: 'TIMED_OUT', detail: ev.detail });
               }
             } else if (ev.stage === 'ABORTED' || ev.phase === 'CANCELLED') {
-              finalizeHardeningRun({ status: 'CANCELLED', detail: ev.detail });
+              if (ev.job_id && currentActiveId && ev.job_id !== currentActiveId) return;
+              finalizeHardeningRun({ status: 'CANCELLED', detail: ev.detail, job_id: ev.job_id });
             }
           }
         } catch (parseErr) {

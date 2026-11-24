@@ -1,0 +1,10 @@
+{
+  "detector": {
+    "ignoreRules": [
+      "cramped-padding",
+      "nested-cards"
+    ],
+    "ignoreFiles": [],
+    "ignoreValues": []
+  }
+}

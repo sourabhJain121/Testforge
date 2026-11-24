@@ -4,12 +4,17 @@
    ========================================================================== */
 
 :root, html[data-theme="dark"] {
-  --bg-app: #080c14;
-  --bg-card: #101726;
-  --bg-card-subtle: #141c2e;
-  --bg-card-hover: #192338;
+  --bg-app: #090d16;
+  --bg-base: #090d16;
+  --bg-surface: #0e1526;
+  --bg-card: #111827;
+  --bg-card-subtle: #161f33;
+  --bg-card-hover: #1b263e;
+  --bg-card-active: #202d4a;
   --border-color: #1e293b;
   --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-medium: rgba(255, 255, 255, 0.16);
+  --border-bright: rgba(255, 255, 255, 0.25);
   --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;
   --text-muted: #94a3b8;
@@ -17,13 +22,8 @@
   --accent-glow: rgba(37, 99, 235, 0.15);
   --code-bg: #030712;
 
-  /* Core Dark Theme Canvas */
-  --bg-base: #080c14;
-  --bg-surface: #0e1422;
-  --bg-card: #101726;
-  --bg-card-hover: #141c2e;
-  --bg-card-active: #192338;
-  --bg-glass: rgba(16, 23, 38, 0.9);
+  /* Glass & Subtle Surfaces */
+  --bg-glass: rgba(17, 24, 39, 0.88);
   --bg-subtle: rgba(255, 255, 255, 0.03);
 
   /* Border Tokens */
@@ -98,6 +98,56 @@ h1, h2, h3, h4 {
 
 p, .panel-desc {
   text-wrap: pretty;
+}
+
+/* Tabular Numerals across telemetry, metrics, tables, and scores */
+.tabular-nums,
+.kpi-val,
+.mini-val,
+.stat-val,
+.metric-number,
+.badge-count,
+.val-badge,
+.telemetry-table td,
+.data-table td,
+.diff-line-num,
+.timing-val {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* Browser Surfaces Theming */
+::selection {
+  background: rgba(37, 99, 235, 0.35);
+  color: #ffffff;
+}
+
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.16) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 html[data-theme="light"] {
@@ -1486,7 +1536,7 @@ body {
   font-family: var(--font-mono);
   font-size: 0.95rem;
   font-weight: 700;
-  color: var(--primary);
+  color: var(--primary-light);
 }
 
 .progress-track {
@@ -2100,7 +2150,7 @@ body {
   background: rgba(30, 42, 68, 0.9);
   border-color: var(--cyan);
   transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(6, 182, 212, 0.25);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
 }
 
 .graph-node.is-target {

@@ -41,6 +41,22 @@
       </div>
     </div>
 
+    <!-- Live Status Bar -->
+    <div class="nav-center status-pills" id="system-status-pills" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+      <div class="pill" id="pill-hardware" title="Hardware Profile" style="display: inline-flex; align-items: center; gap: 5px; padding: 4px 9px; font-size: 11.5px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 9999px;">
+        <span class="indicator-dot green" style="width: 7px; height: 7px;"></span>
+        <span id="label-hardware" style="color: #cbd5e1; font-weight: 500;">Apple Silicon</span>
+      </div>
+      <div class="pill" id="pill-gemini" title="Active Cloud Provider" style="display: inline-flex; align-items: center; gap: 5px; padding: 4px 9px; font-size: 11.5px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 9999px;">
+        <span class="indicator-dot green" id="dot-gemini" style="width: 7px; height: 7px;"></span>
+        <span id="label-gemini" style="color: #cbd5e1; font-weight: 500;">TokenHarbor (DeepSeek)</span>
+      </div>
+      <div class="pill" id="pill-ollama" title="Local Model Engine" style="display: inline-flex; align-items: center; gap: 5px; padding: 4px 9px; font-size: 11.5px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 9999px;">
+        <span class="indicator-dot green" id="dot-ollama" style="width: 7px; height: 7px;"></span>
+        <span id="label-ollama" style="color: #cbd5e1; font-weight: 500;">Ollama (codellama:7b)</span>
+      </div>
+    </div>
+
     <!-- Right Action Toolbar -->
     <div class="nav-right cockpit-header-actions" style="display: flex; align-items: center; flex-wrap: wrap; justify-content: flex-end; gap: 6px; margin-left: auto;">
       <button type="button" class="btn btn-outline btn-icon" id="btn-toggle-privacy" title="Zero-Egress Privacy Mode Toggle" style="padding: 5px 10px; font-size: 12px; white-space: nowrap;">
@@ -137,7 +153,7 @@
               <span id="badge-tokenharbor-key" style="font-size: 0.7rem; padding: 1px 6px; border-radius: 4px;">Not Configured</span>
             </div>
             <input type="password" id="input-tokenharbor-key" class="form-control" placeholder="thk_live_... (leave blank to preserve active key)" autocomplete="off">
-            <p class="form-hint" style="margin: 2px 0 0 0; font-size: 0.72rem;">Primary Cloud Provider: TokenHarbor DeepSeek Free (deepseek-v4.1-flash:free).</p>
+            <p class="form-hint" style="margin: 2px 0 0 0; font-size: 0.75rem;">Primary Cloud Provider: TokenHarbor DeepSeek Free (deepseek-v4.1-flash:free).</p>
           </div>
 
           <div class="form-group" style="margin-bottom: 4px;">
@@ -145,7 +161,7 @@
               <label for="input-tokenharbor-base-url" style="margin: 0; font-size: 0.8rem; font-weight: 600;">TokenHarbor Base URL</label>
             </div>
             <input type="text" id="input-tokenharbor-base-url" class="form-control" placeholder="https://tokenharbor.ai/v1" value="https://tokenharbor.ai/v1" autocomplete="off">
-            <p class="form-hint" style="margin: 2px 0 0 0; font-size: 0.72rem;">OpenAI-compatible REST endpoint (https://tokenharbor.ai/v1).</p>
+            <p class="form-hint" style="margin: 2px 0 0 0; font-size: 0.75rem;">OpenAI-compatible REST endpoint (https://tokenharbor.ai/v1).</p>
           </div>
         </div>
       </div>
@@ -433,7 +449,7 @@
 
   <!-- API Rate Limit & Provider Alert Modal -->
   <div class="modal-backdrop hidden" id="api-alert-modal-backdrop">
-    <div class="modal glass-panel" id="api-alert-modal" role="dialog" aria-labelledby="api-alert-modal-title" style="max-width: 620px; border-color: rgba(245, 158, 11, 0.5); box-shadow: 0 10px 40px rgba(245, 158, 11, 0.2);">
+    <div class="modal glass-panel" id="api-alert-modal" role="dialog" aria-labelledby="api-alert-modal-title" style="max-width: 620px; border-color: rgba(245, 158, 11, 0.5); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);">
       <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.75rem;">
         <h2 id="api-alert-modal-title" style="margin: 0; font-size: 1.15rem; color: #f59e0b; display: flex; align-items: center; gap: 0.5rem;">
           <span id="api-alert-icon">⚠️</span> <span id="api-alert-heading">TokenHarbor API Rate Limit Reached (429)</span>
@@ -1052,7 +1068,7 @@
 
           <!-- Hardening Verdict Banner -->
           <div class="verdict-banner hidden" id="hardening-verdict-banner">
-            <button class="btn btn-primary hidden" id="btn-resume-interrupted-job" style="box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35); background: #ea580c; border: 1px solid #f97316;">
+            <button class="btn btn-primary hidden" id="btn-resume-interrupted-job" style="box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35); background: #c2410c; border: 1px solid #ea580c;">
               ▶ Resume Job Execution
             </button>
           </div>
@@ -1415,7 +1431,7 @@
             <div><span style="color: var(--text-muted, #94a3b8);">Configured Model:</span> <code id="telem-configured-model" style="color: #38bdf8;">gemini-3.6-flash</code></div>
             <div><span style="color: var(--text-muted, #94a3b8);">Active Provider:</span> <span id="telem-active-provider" class="badge badge-green" data-alias="obsActiveProvider"><span id="obsActiveProvider">Deterministic AST Synthesizer (Zero-Egress Local)</span></span></div>
             <div><span style="color: var(--text-muted, #94a3b8);">Last Execution Model:</span> <span id="telem-last-model" class="badge badge-blue">-</span></div>
-            <div style="margin-left: auto; color: var(--text-muted, #94a3b8); font-size: 0.72rem;" title="The Execution Engine KPI strictly represents actual recorded execution telemetry, not configured availability.">KPI: Actual Execution Telemetry</div>
+            <div style="margin-left: auto; color: var(--text-muted, #94a3b8); font-size: 0.75rem;" title="The Execution Engine KPI strictly represents actual recorded execution telemetry, not configured availability.">KPI: Actual Execution Telemetry</div>
           </div>
 
           <div class="stats-row">
@@ -1426,17 +1442,17 @@
             <div class="stat-card">
               <span class="stat-num text-cyan" id="telem-kpi-actual-tokens">0</span>
               <span class="stat-lbl">Actual LLM Tokens</span>
-              <span style="font-size: 0.72rem; color: var(--text-muted, #94a3b8); margin-top: 2px;">Provider-Reported Usage</span>
+              <span style="font-size: 0.75rem; color: var(--text-muted, #94a3b8); margin-top: 2px;">Provider-Reported Usage</span>
             </div>
             <div class="stat-card">
               <span class="stat-num text-amber" id="telem-kpi-est-tokens">0</span>
               <span class="stat-lbl">Estimated Tokens</span>
-              <span style="font-size: 0.72rem; color: var(--text-muted, #94a3b8); margin-top: 2px;">Offline Heuristic Calculation</span>
+              <span style="font-size: 0.75rem; color: var(--text-muted, #94a3b8); margin-top: 2px;">Offline Heuristic Calculation</span>
             </div>
             <div class="stat-card" id="card-telem-kpi-engine" title="Represents actual recorded execution telemetry for the selected scope, not merely configured provider availability.">
               <span class="stat-num text-green" id="telem-kpi-engine">Deterministic Synthesizer</span>
               <span class="stat-lbl">Execution Engine</span>
-              <span style="font-size: 0.72rem; color: var(--text-muted, #94a3b8); margin-top: 2px;" id="telem-kpi-engine-sub">Recorded Telemetry</span>
+              <span style="font-size: 0.75rem; color: var(--text-muted, #94a3b8); margin-top: 2px;" id="telem-kpi-engine-sub">Recorded Telemetry</span>
             </div>
           </div>
 
@@ -1701,7 +1717,7 @@
                   <button type="button" class="btn btn-xs active" id="btn-bench-md-rendered" style="padding: 4px 10px; font-size: 0.78rem; border-radius: 4px;">📑 Formatted</button>
                   <button type="button" class="btn btn-xs btn-outline" id="btn-bench-md-raw" style="padding: 4px 10px; font-size: 0.78rem; border-radius: 4px;">💻 Raw Markdown</button>
                 </div>
-                <a href="/api/benchmark/markdown" target="_blank" class="btn btn-sm btn-ghost" style="padding: 3px 10px; font-size: 0.72rem; border-radius: 4px; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">🔗 Open Raw Endpoint</a>
+                <a href="/api/benchmark/markdown" target="_blank" class="btn btn-sm btn-ghost" style="padding: 3px 10px; font-size: 0.75rem; border-radius: 4px; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">🔗 Open Raw Endpoint</a>
               </div>
             </div>
             <div id="bench-rendered-markdown-view" class="markdown-preview-pane" style="padding: 1rem; max-height: 280px; overflow-y: auto;">

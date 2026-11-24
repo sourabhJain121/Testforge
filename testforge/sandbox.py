@@ -667,6 +667,11 @@ def _evaluate_single_mutant_in_memory(
                 raise TimeoutError("Execution step limit exceeded (Safety Guardrail: Infinite loop caught)")
             return _step_trace
 
+        try:
+            from _pytest.outcomes import OutcomeException
+        except Exception:
+            OutcomeException = ()
+
         orig_trace = sys.gettrace()
         sys.settrace(_step_trace)
         try:
@@ -684,10 +689,10 @@ def _evaluate_single_mutant_in_memory(
                     t_func()
                     tests_passed += 1
                     status_lines.append(f"{test_id} PASSED")
-                except AssertionError as ae:
+                except (AssertionError, OutcomeException) as ae:
                     tests_failed += 1
                     failure_type = "ASSERTION_FAIL"
-                    err_msg = f"AssertionError in {t_name}: {ae}"
+                    err_msg = f"{type(ae).__name__} in {t_name}: {ae}"
                     status_lines.append(f"{test_id} FAILED")
                     break
                 except TimeoutError as te:

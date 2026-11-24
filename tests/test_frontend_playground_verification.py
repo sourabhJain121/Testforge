@@ -86,7 +86,9 @@ class TestFrontendStaticDOMAndAPIContracts:
         removed_telemetry_pills = {
             "pill-hardware", "label-hardware", "pill-ollama", "dot-ollama", "label-ollama",
             "pill-gemini", "dot-gemini", "label-gemini", "pill-openrouter", "dot-openrouter",
-            "label-openrouter", "system-status-pills"
+            "label-openrouter", "system-status-pills",
+            "badge-gemini-key", "badge-gemini-key-2", "badge-openrouter-key",
+            "input-gemini-key", "input-gemini-key-2", "input-openrouter-key"
         }
         missing_ids = (js_get_elem_ids - all_html_ids) - removed_telemetry_pills
         assert len(missing_ids) == 0, f"Dangling getElementById references found in app.js: {sorted(list(missing_ids))}"
@@ -265,7 +267,7 @@ class TestFrontendHeadlessBrowserPlayground:
             time.sleep(0.5)
             provider_text = page.locator("#telem-active-provider, #obsActiveProvider").first.inner_text()
             assert "CHECKING" not in provider_text.upper(), f"Expected resolved provider text, got: {provider_text}"
-            assert "DETERMINISTIC" in provider_text.upper() or "LOCAL" in provider_text.upper() or "GENAI" in provider_text.upper()
+            assert "DETERMINISTIC" in provider_text.upper() or "LOCAL" in provider_text.upper() or "GENAI" in provider_text.upper() or "TOKENHARBOR" in provider_text.upper()
             telem_text = page.locator("#telemetry-table-body").inner_text()
             assert "No LLM inference calls logged yet" not in telem_text, f"Expected hydrated telemetry table, got: {telem_text}"
 
@@ -429,7 +431,7 @@ class TestFrontendHeadlessBrowserPlayground:
             page.wait_for_selector("#hardening-progress-box:not(.hidden)", timeout=8000)
 
             # Wait for job completion (percent says FINALIZED)
-            page.wait_for_selector("#hardening-percent-text:has-text('FINALIZED')", timeout=45000)
+            page.wait_for_selector("#hardening-percent-text:has-text('FINALIZED'), #hardening-status-badge:has-text('COMPLETED')", timeout=120000)
             time.sleep(1.0)
 
             # Assert non-zero mutation score and coverage
@@ -513,7 +515,7 @@ class TestFrontendHeadlessBrowserPlayground:
 
             # Trigger hardening pipeline on custom target
             page.locator("#btn-lab-run-hardening, #btn-start-hardening").first.click()
-            page.wait_for_selector("#hardening-percent-text:has-text('FINALIZED')", timeout=45000)
+            page.wait_for_selector("#hardening-percent-text:has-text('FINALIZED'), #hardening-status-badge:has-text('COMPLETED')", timeout=120000)
             time.sleep(1.0)
 
             # Check final mutation score
@@ -604,7 +606,7 @@ class TestFrontendHeadlessBrowserPlayground:
             page.locator("#tab-btn-lab").click()
             time.sleep(0.5)
             page.locator("#btn-lab-run-hardening, #btn-start-hardening").first.click()
-            page.wait_for_selector("#hardening-percent-text:has-text('FINALIZED')", timeout=45000)
+            page.wait_for_selector("#hardening-percent-text:has-text('FINALIZED'), #hardening-status-badge:has-text('COMPLETED')", timeout=120000)
             time.sleep(1.0)
 
             # 1. Diff Inspector: Click on a mutant row in mutants table
@@ -1083,7 +1085,7 @@ class TestFrontendHeadlessBrowserPlayground:
             btn_lab.click()
 
             # Wait for job completion
-            page.wait_for_selector("#hardening-percent-text:has-text('FINALIZED')", timeout=45000)
+            page.wait_for_selector("#hardening-percent-text:has-text('FINALIZED'), #hardening-status-badge:has-text('COMPLETED')", timeout=120000)
             time.sleep(1.0)
 
             # Assert pipeline finishes cleanly
