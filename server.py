@@ -258,6 +258,9 @@ app.mount("/qa_artifacts", StaticFiles(directory=str(BASE_DIR / "qa_artifacts"))
 # --------------------------------------------------------------------------
 
 class KeyConfigPayload(BaseModel):
+    token_harbor_api_key: Optional[str] = None
+    token_harbor_base_url: Optional[str] = None
+    token_harbor_model: Optional[str] = None
     gemini_api_key: Optional[str] = None
     gemini_api_key_2: Optional[str] = None
     openrouter_api_key: Optional[str] = None
@@ -276,7 +279,7 @@ class SampleIngestPayload(BaseModel):
 
 class SynthesisPayload(BaseModel):
     prompt: str
-    model_name: str = "gemini-3.6-flash"
+    model_name: str = "deepseek-v4.1-flash:free"
 
 class GithubIngestPayload(BaseModel):
     url: str
@@ -312,9 +315,10 @@ class HardeningRunPayload(BaseModel):
     target_source_code: Optional[str] = None
     max_iterations: int = 3
     target_mutation_score: float = 85.0
-    model_name: str = "gemini-3.6-flash"
+    model_name: str = "deepseek-v4.1-flash:free"
     engine_mode: str = "auto"
     target_lines: Optional[List[int]] = None
+    token_harbor_api_key: Optional[str] = None
     gemini_api_key: Optional[str] = None
     gemini_api_key_2: Optional[str] = None
     openrouter_api_key: Optional[str] = None
@@ -919,13 +923,21 @@ async def get_system_status():
         or os.environ.get("K_SERVICE")
         or os.environ.get("CLOUD_RUN_SERVICE")
     )
-    provider_mode = os.environ.get("TESTFORGE_PROVIDER_MODE", "auto").strip().lower()
-    configured_ollama_model = os.environ.get("OLLAMA_MODEL", "qwen2.5-coder:7b").strip() or "qwen2.5-coder:7b"
-    has_gemini = bool(os.environ.get("GEMINI_API_KEY", "").strip() or os.environ.get("GOOGLE_API_KEY", "").strip())
-    has_gemini_fallback = bool(os.environ.get("GEMINI_API_KEY_2", "").strip() or os.environ.get("GEMINI_FALLBACK_API_KEY", "").strip())
-    has_openrouter = bool(os.environ.get("OPENROUTER_API_KEY", "").strip())
+    has_tokenharbor = bool(os.environ.get("TOKEN_HARBOR_API_KEY", "").strip())
+    th_raw = os.environ.get("TOKEN_HARBOR_API_KEY", "").strip()
+    th_model = os.environ.get("TOKEN_HARBOR_MODEL", "deepseek-v4.1-flash:free").strip() or "deepseek-v4.1-flash:free"
+    th_base = os.environ.get("TOKEN_HARBOR_BASE_URL", "https://tokenharbor.ai/v1").strip() or "https://tokenharbor.ai/v1"
+    configured_ollama_model = os.environ.get("OLLAMA_MODEL", "codellama:7b").strip() or "codellama:7b"
 
-    ollama_url = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434").rstrip("/") + "/api/tags"
+    provider_mode = os.environ.get("TESTFORGE_PROVIDER_MODE", "").strip().lower()
+    if not provider_mode or provider_mode == "auto":
+        effective_provider_mode = "tokenharbor" if has_tokenharbor else "ollama_only"
+    elif provider_mode in ("ollama", "ollama_only", "local", "local_only"):
+        effective_provider_mode = "ollama_only"
+    else:
+        effective_provider_mode = "tokenharbor"
+
+    ollama_url = os.environ.get("OLLAMA_BASE_URL", "http://127.0.0.1:11434").rstrip("/") + "/api/tags"
     if is_cloud_env:
         ollama_mode = "cloud_disabled"
         ollama_online = False
@@ -933,10 +945,6 @@ async def get_system_status():
     else:
         ollama_online, detected_models = probe_ollama_status(ollama_url, timeout=0.8)
         ollama_mode = "online" if ollama_online else "offline"
-
-    gem_raw = os.environ.get("GEMINI_API_KEY", "") or os.environ.get("GOOGLE_API_KEY", "")
-    gem2_raw = os.environ.get("GEMINI_API_KEY_2", "") or os.environ.get("GEMINI_FALLBACK_API_KEY", "")
-    or_raw = os.environ.get("OPENROUTER_API_KEY", "")
 
     return {
         "hardware": {
@@ -951,19 +959,23 @@ async def get_system_status():
             "ollama_mode": ollama_mode,
             "ollama_model": configured_ollama_model,
             "detected_ollama_models": detected_models,
-            "provider_mode": provider_mode,
+            "provider_mode": effective_provider_mode,
             "cloud_mode": is_cloud_env,
-            "has_gemini": has_gemini,
-            "has_gemini_fallback": has_gemini_fallback,
-            "has_openrouter": has_openrouter,
-            "gemini_key_masked": _mask_api_key(gem_raw),
-            "gemini_key_2_masked": _mask_api_key(gem2_raw),
-            "openrouter_key_masked": _mask_api_key(or_raw),
+            "has_tokenharbor": has_tokenharbor,
+            "tokenharbor_key_masked": _mask_api_key(th_raw),
+            "tokenharbor_model": th_model,
+            "tokenharbor_base_url": th_base,
+            "has_gemini": False,
+            "has_gemini_fallback": False,
+            "has_openrouter": False,
+            "gemini_key_masked": "",
+            "gemini_key_2_masked": "",
+            "openrouter_key_masked": "",
         },
         "supported_models": [
-            "gemini-3.6-flash",
-            "gemini-3.1-pro-preview",
-            "qwen2.5-coder:7b"
+            "deepseek-v4.1-flash:free",
+            "deepseek/deepseek-flash",
+            "codellama:7b"
         ],
         "default_engine_mode": "auto"
     }
@@ -975,7 +987,7 @@ async def get_system_status():
 @app.post("/api/config/keys")
 async def update_api_keys(payload: KeyConfigPayload):
     """
-    Dynamically binds or updates Gemini / OpenRouter API keys, provider mode,
+    Dynamically binds or updates TokenHarbor API keys, provider mode,
     and local Ollama configuration in the runtime environment.
     Supports both named keys and hot-swap provider modal payloads.
     Empty fields preserve previously configured server keys.
@@ -988,9 +1000,9 @@ async def update_api_keys(payload: KeyConfigPayload):
     if payload.ollama_model and payload.ollama_model.strip():
         os.environ["OLLAMA_MODEL"] = payload.ollama_model.strip()
     elif payload.model_name and (
-        "qwen" in payload.model_name.lower()
+        "codellama" in payload.model_name.lower()
+        or "qwen" in payload.model_name.lower()
         or "llama" in payload.model_name.lower()
-        or "ollama" in payload.model_name.lower()
         or (payload.engine_mode or "").lower() in ("ollama_only", "local", "local_only")
     ):
         os.environ["OLLAMA_MODEL"] = payload.model_name.strip()
@@ -998,49 +1010,55 @@ async def update_api_keys(payload: KeyConfigPayload):
     if payload.ollama_base_url and payload.ollama_base_url.strip():
         os.environ["OLLAMA_BASE_URL"] = payload.ollama_base_url.strip()
 
+    if payload.token_harbor_base_url and payload.token_harbor_base_url.strip():
+        os.environ["TOKEN_HARBOR_BASE_URL"] = payload.token_harbor_base_url.strip()
+
+    if payload.token_harbor_model and payload.token_harbor_model.strip():
+        os.environ["TOKEN_HARBOR_MODEL"] = payload.token_harbor_model.strip()
+
+    if payload.token_harbor_api_key is not None and payload.token_harbor_api_key.strip():
+        os.environ["TOKEN_HARBOR_API_KEY"] = payload.token_harbor_api_key.strip()
+
     if payload.key and payload.key.strip():
         k_val = payload.key.strip()
-        prov = (payload.provider or "gemini").lower()
-        if "gemini_2" in prov or "backup" in prov or "secondary" in prov:
-            os.environ["GEMINI_API_KEY_2"] = k_val
-            os.environ["GEMINI_FALLBACK_API_KEY"] = k_val
-        elif "openrouter" in prov:
-            os.environ["OPENROUTER_API_KEY"] = k_val
-        elif "ollama" in prov:
+        prov = (payload.provider or "tokenharbor").lower()
+        if "ollama" in prov:
             os.environ["OLLAMA_MODEL"] = k_val
         else:
-            os.environ["GEMINI_API_KEY"] = k_val
+            os.environ["TOKEN_HARBOR_API_KEY"] = k_val
 
     # Blank fields preserve existing keys without overwriting them
-    if payload.gemini_api_key is not None and payload.gemini_api_key.strip():
-        os.environ["GEMINI_API_KEY"] = payload.gemini_api_key.strip()
-    if payload.gemini_api_key_2 is not None and payload.gemini_api_key_2.strip():
-        os.environ["GEMINI_API_KEY_2"] = payload.gemini_api_key_2.strip()
-        os.environ["GEMINI_FALLBACK_API_KEY"] = payload.gemini_api_key_2.strip()
-    if payload.openrouter_api_key is not None and payload.openrouter_api_key.strip():
-        os.environ["OPENROUTER_API_KEY"] = payload.openrouter_api_key.strip()
+    th_raw = os.environ.get("TOKEN_HARBOR_API_KEY", "").strip()
+    has_th = bool(th_raw)
+    th_model = os.environ.get("TOKEN_HARBOR_MODEL", "deepseek-v4.1-flash:free").strip() or "deepseek-v4.1-flash:free"
+    th_base = os.environ.get("TOKEN_HARBOR_BASE_URL", "https://tokenharbor.ai/v1").strip() or "https://tokenharbor.ai/v1"
 
-    gem_raw = os.environ.get("GEMINI_API_KEY", "") or os.environ.get("GOOGLE_API_KEY", "")
-    gem2_raw = os.environ.get("GEMINI_API_KEY_2", "") or os.environ.get("GEMINI_FALLBACK_API_KEY", "")
-    or_raw = os.environ.get("OPENROUTER_API_KEY", "")
-
-    has_gem = bool(gem_raw.strip())
-    has_gem2 = bool(gem2_raw.strip())
-    has_or = bool(or_raw.strip())
+    provider_mode = os.environ.get("TESTFORGE_PROVIDER_MODE", "auto").strip().lower()
+    if not provider_mode or provider_mode == "auto":
+        effective_mode = "tokenharbor" if has_th else "ollama_only"
+    elif provider_mode in ("ollama", "ollama_only", "local", "local_only"):
+        effective_mode = "ollama_only"
+    else:
+        effective_mode = "tokenharbor"
 
     return {
         "status": "success",
-        "has_gemini": has_gem,
-        "has_gemini_fallback": has_gem2,
-        "dual_keys_active": has_gem and has_gem2,
-        "key_selection_strategy": "randomized" if (has_gem and has_gem2) else "single",
-        "has_openrouter": has_or,
-        "gemini_key_masked": _mask_api_key(gem_raw),
-        "gemini_key_2_masked": _mask_api_key(gem2_raw),
-        "openrouter_key_masked": _mask_api_key(or_raw),
-        "provider_mode": os.environ.get("TESTFORGE_PROVIDER_MODE", "auto"),
-        "ollama_model": os.environ.get("OLLAMA_MODEL", "qwen2.5-coder:7b"),
-        "message": "API keys successfully updated and activated for live test generation."
+        "has_tokenharbor": has_th,
+        "tokenharbor_key_masked": _mask_api_key(th_raw),
+        "tokenharbor_model": th_model,
+        "tokenharbor_base_url": th_base,
+        "provider_mode": effective_mode,
+        "ollama_model": os.environ.get("OLLAMA_MODEL", "codellama:7b"),
+        # Backwards compatible alias fields:
+        "has_gemini": has_th,
+        "has_gemini_fallback": False,
+        "dual_keys_active": False,
+        "key_selection_strategy": "single",
+        "has_openrouter": False,
+        "gemini_key_masked": _mask_api_key(th_raw),
+        "gemini_key_2_masked": "",
+        "openrouter_key_masked": "",
+        "message": "TokenHarbor DeepSeek API settings successfully updated and activated for live test generation."
     }
 
 
@@ -1592,16 +1610,10 @@ def _run_orchestration_job(job_id: str, payload: HardeningRunPayload):
             trace_log_path=trace_log,
             target_file_path=payload.target_file_path or "",
             api_key=(
-                payload.gemini_api_key
-                or os.environ.get("GEMINI_API_KEY")
-                or os.environ.get("GOOGLE_API_KEY")
+                payload.token_harbor_api_key
+                or payload.gemini_api_key
+                or os.environ.get("TOKEN_HARBOR_API_KEY")
             ),
-            api_key_2=(
-                payload.gemini_api_key_2
-                or os.environ.get("GEMINI_API_KEY_2")
-                or os.environ.get("GEMINI_FALLBACK_API_KEY")
-            ),
-            openrouter_api_key=payload.openrouter_api_key or os.environ.get("OPENROUTER_API_KEY"),
             engine_mode=payload.engine_mode,
             target_lines=payload.target_lines,
             cancel_event=cancel_event,
@@ -2971,19 +2983,13 @@ def get_telemetry_trace(
     summary = logger_instance.get_token_summary(traces=filtered_traces)
     llm_events = [t for t in filtered_traces if t.get("event_type") == "LLM_INFERENCE_TELEMETRY"]
 
-    # 4-concept model & provider resolution
-    configured_model = os.environ.get("TESTFORGE_MODEL", "gemini-3.6-flash")
-    if (
-        os.environ.get("GEMINI_API_KEY", "").strip()
-        or os.environ.get("GEMINI_API_KEY_2", "").strip()
-        or os.environ.get("GOOGLE_API_KEY", "").strip()
-        or os.environ.get("GEMINI_FALLBACK_API_KEY", "").strip()
-    ):
-        active_provider = "Google GenAI (Gemini)"
-    elif os.environ.get("OPENROUTER_API_KEY"):
-        active_provider = "OpenRouter Cloud"
+    # Active model & provider resolution
+    configured_model = os.environ.get("TOKEN_HARBOR_MODEL", "deepseek-v4.1-flash:free").strip() or "deepseek-v4.1-flash:free"
+    configured_ollama_model = os.environ.get("OLLAMA_MODEL", "codellama:7b").strip() or "codellama:7b"
+    if os.environ.get("TOKEN_HARBOR_API_KEY", "").strip():
+        active_provider = "TOKENHARBOR (DEEPSEEK-V4.1-FLASH:FREE)"
     elif is_ollama_running():
-        active_provider = "Local Ollama"
+        active_provider = f"Local Ollama ({configured_ollama_model})"
     else:
         active_provider = "Deterministic AST Synthesizer (Zero-Egress Local)"
 

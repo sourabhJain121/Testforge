@@ -132,18 +132,13 @@ ENV_VARS_ARGS=(
   "PORT=8080"
   "TESTFORGE_SANDBOX=subprocess"
   "TESTFORGE_PRIVACY_MODE=false"
+  "TOKEN_HARBOR_BASE_URL=${TOKEN_HARBOR_BASE_URL:-https://tokenharbor.ai/v1}"
+  "TOKEN_HARBOR_MODEL=${TOKEN_HARBOR_MODEL:-deepseek-v4.1-flash:free}"
+  "OLLAMA_MODEL=${OLLAMA_MODEL:-codellama:7b}"
 )
 
-if [ -n "${GEMINI_API_KEY:-}" ]; then
-  ENV_VARS_ARGS+=("GEMINI_API_KEY=${GEMINI_API_KEY}")
-fi
-
-if [ -n "${GEMINI_API_KEY_2:-}" ]; then
-  ENV_VARS_ARGS+=("GEMINI_API_KEY_2=${GEMINI_API_KEY_2}")
-fi
-
-if [ -n "${OPENROUTER_API_KEY:-}" ]; then
-  ENV_VARS_ARGS+=("OPENROUTER_API_KEY=${OPENROUTER_API_KEY}")
+if [ -n "${TOKEN_HARBOR_API_KEY:-}" ]; then
+  ENV_VARS_ARGS+=("TOKEN_HARBOR_API_KEY=${TOKEN_HARBOR_API_KEY}")
 fi
 
 # 6. Deploy or update Container App

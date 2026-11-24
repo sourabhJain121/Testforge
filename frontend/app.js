@@ -194,6 +194,9 @@ document.addEventListener('DOMContentLoaded', () => {
     valIterations: document.getElementById('val-iterations'),
     sliderMutationScore: document.getElementById('target-score-input'),
     valMutationScore: document.getElementById('val-mutation-score'),
+    inputTokenHarborKey: document.getElementById('input-tokenharbor-key'),
+    badgeTokenHarborKey: document.getElementById('badge-tokenharbor-key'),
+    inputTokenHarborBaseUrl: document.getElementById('input-tokenharbor-base-url'),
     inputGeminiKey: document.getElementById('input-gemini-key'),
     inputGeminiKey2: document.getElementById('input-gemini-key-2'),
     inputOpenrouterKey: document.getElementById('input-openrouter-key'),
@@ -1708,67 +1711,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function updateSettingsKeyBadges(prov) {
     if (!prov) return;
-    const { has_gemini, has_gemini_fallback, has_openrouter, gemini_key_masked, gemini_key_2_masked, openrouter_key_masked } = prov;
+    const { has_tokenharbor, tokenharbor_key_masked, tokenharbor_base_url, tokenharbor_model } = prov;
 
-    if (dom.badgeGeminiKey) {
-      if (has_gemini) {
-        dom.badgeGeminiKey.textContent = gemini_key_masked ? `Active (${gemini_key_masked})` : 'Active';
-        dom.badgeGeminiKey.style.background = 'rgba(16, 185, 129, 0.2)';
-        dom.badgeGeminiKey.style.color = '#34d399';
-        if (dom.inputGeminiKey && !dom.inputGeminiKey.matches(':focus')) {
-          dom.inputGeminiKey.placeholder = gemini_key_masked ? `${gemini_key_masked} (Configured — leave blank to keep)` : 'Configured (leave blank to keep)';
+    if (dom.badgeTokenHarborKey) {
+      if (has_tokenharbor) {
+        dom.badgeTokenHarborKey.textContent = tokenharbor_key_masked ? `Active (${tokenharbor_key_masked})` : 'Active';
+        dom.badgeTokenHarborKey.style.background = 'rgba(16, 185, 129, 0.2)';
+        dom.badgeTokenHarborKey.style.color = '#34d399';
+        if (dom.inputTokenHarborKey && !dom.inputTokenHarborKey.matches(':focus')) {
+          dom.inputTokenHarborKey.placeholder = tokenharbor_key_masked ? `${tokenharbor_key_masked} (Configured — leave blank to keep)` : 'Configured (leave blank to keep)';
         }
       } else {
-        dom.badgeGeminiKey.textContent = 'Not Configured';
-        dom.badgeGeminiKey.style.background = 'rgba(239, 68, 68, 0.2)';
-        dom.badgeGeminiKey.style.color = '#f87171';
-        if (dom.inputGeminiKey && !dom.inputGeminiKey.matches(':focus')) {
-          dom.inputGeminiKey.placeholder = 'AIzaSy... (enter key to activate)';
+        dom.badgeTokenHarborKey.textContent = 'Not Configured';
+        dom.badgeTokenHarborKey.style.background = 'rgba(239, 68, 68, 0.2)';
+        dom.badgeTokenHarborKey.style.color = '#f87171';
+        if (dom.inputTokenHarborKey && !dom.inputTokenHarborKey.matches(':focus')) {
+          dom.inputTokenHarborKey.placeholder = 'thk_live_... (enter key to activate)';
         }
       }
     }
 
-    if (dom.badgeGeminiKey2) {
-      if (has_gemini_fallback) {
-        dom.badgeGeminiKey2.textContent = gemini_key_2_masked ? `Backup Active (${gemini_key_2_masked})` : 'Backup Active';
-        dom.badgeGeminiKey2.style.background = 'rgba(16, 185, 129, 0.2)';
-        dom.badgeGeminiKey2.style.color = '#34d399';
-        if (dom.inputGeminiKey2 && !dom.inputGeminiKey2.matches(':focus')) {
-          dom.inputGeminiKey2.placeholder = gemini_key_2_masked ? `${gemini_key_2_masked} (Configured — leave blank to keep)` : 'Configured (leave blank to keep)';
-        }
-      } else {
-        dom.badgeGeminiKey2.textContent = 'Not Configured';
-        dom.badgeGeminiKey2.style.background = 'rgba(148, 163, 184, 0.15)';
-        dom.badgeGeminiKey2.style.color = '#94a3b8';
-        if (dom.inputGeminiKey2 && !dom.inputGeminiKey2.matches(':focus')) {
-          dom.inputGeminiKey2.placeholder = 'AIzaSy... (optional 429 auto-failover key)';
-        }
-      }
-    }
-
-    if (dom.badgeOpenrouterKey) {
-      if (has_openrouter) {
-        dom.badgeOpenrouterKey.textContent = openrouter_key_masked ? `Active (${openrouter_key_masked})` : 'Active';
-        dom.badgeOpenrouterKey.style.background = 'rgba(16, 185, 129, 0.2)';
-        dom.badgeOpenrouterKey.style.color = '#34d399';
-        if (dom.inputOpenrouterKey && !dom.inputOpenrouterKey.matches(':focus')) {
-          dom.inputOpenrouterKey.placeholder = openrouter_key_masked ? `${openrouter_key_masked} (Configured — leave blank to keep)` : 'Configured (leave blank to keep)';
-        }
-      } else {
-        dom.badgeOpenrouterKey.textContent = 'Not Configured';
-        dom.badgeOpenrouterKey.style.background = 'rgba(148, 163, 184, 0.15)';
-        dom.badgeOpenrouterKey.style.color = '#94a3b8';
-        if (dom.inputOpenrouterKey && !dom.inputOpenrouterKey.matches(':focus')) {
-          dom.inputOpenrouterKey.placeholder = 'sk-or-v1-... (optional Tier 2 fallback)';
-        }
-      }
+    if (dom.inputTokenHarborBaseUrl && tokenharbor_base_url && !dom.inputTokenHarborBaseUrl.matches(':focus')) {
+      dom.inputTokenHarborBaseUrl.value = tokenharbor_base_url;
     }
 
     if (dom.keysConfiguredBadge) {
-      const anyActive = has_gemini || has_gemini_fallback || has_openrouter;
-      dom.keysConfiguredBadge.textContent = anyActive ? 'Runtime Active' : 'Offline / AST Mode';
-      dom.keysConfiguredBadge.style.color = anyActive ? '#38bdf8' : '#94a3b8';
-      dom.keysConfiguredBadge.style.background = anyActive ? 'rgba(56, 189, 248, 0.15)' : 'rgba(148, 163, 184, 0.1)';
+      dom.keysConfiguredBadge.textContent = has_tokenharbor ? 'TokenHarbor Active' : 'Local Ollama ($0)';
+      dom.keysConfiguredBadge.style.color = has_tokenharbor ? '#38bdf8' : '#34d399';
+      dom.keysConfiguredBadge.style.background = has_tokenharbor ? 'rgba(56, 189, 248, 0.15)' : 'rgba(16, 185, 129, 0.15)';
     }
   }
 
@@ -1783,18 +1753,17 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.hardenIterLbl.textContent = state.settings.maxIterations;
     dom.hardenScoreLbl.textContent = `${state.settings.targetMutationScore}%`;
 
-    const gKey = dom.inputGeminiKey ? dom.inputGeminiKey.value.trim() : '';
-    const gKey2 = dom.inputGeminiKey2 ? dom.inputGeminiKey2.value.trim() : '';
-    const orKey = dom.inputOpenrouterKey ? dom.inputOpenrouterKey.value.trim() : '';
+    const thKey = dom.inputTokenHarborKey ? dom.inputTokenHarborKey.value.trim() : '';
+    const thBase = dom.inputTokenHarborBaseUrl ? dom.inputTokenHarborBaseUrl.value.trim() : '';
     const ollamaModel = dom.inputOllamaModel ? dom.inputOllamaModel.value.trim() : null;
 
     try {
-      // 1. If any non-empty key was entered, dispatch to POST /api/keys
-      if (gKey || gKey2 || orKey) {
+      // 1. If TokenHarbor key or base URL entered, dispatch to POST /api/keys
+      if (thKey || thBase) {
         const keyPayload = {};
-        if (gKey) keyPayload.gemini_api_key = gKey;
-        if (gKey2) keyPayload.gemini_api_key_2 = gKey2;
-        if (orKey) keyPayload.openrouter_api_key = orKey;
+        if (thKey) keyPayload.token_harbor_api_key = thKey;
+        if (thBase) keyPayload.token_harbor_base_url = thBase;
+        if (state.settings.modelName) keyPayload.token_harbor_model = state.settings.modelName;
 
         const keyRes = await fetch('/api/keys', {
           method: 'POST',
@@ -1803,9 +1772,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         const keyData = await keyRes.json();
         updateSettingsKeyBadges(keyData);
-        if (dom.inputGeminiKey && gKey) dom.inputGeminiKey.value = '';
-        if (dom.inputGeminiKey2 && gKey2) dom.inputGeminiKey2.value = '';
-        if (dom.inputOpenrouterKey && orKey) dom.inputOpenrouterKey.value = '';
+        if (dom.inputTokenHarborKey && thKey) dom.inputTokenHarborKey.value = '';
       }
 
       // 2. Save runtime settings via POST /api/config
@@ -1813,6 +1780,25 @@ document.addEventListener('DOMContentLoaded', () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          provider_mode: state.settings.engineMode,
+          engine_mode: state.settings.engineMode,
+          model_name: state.settings.modelName,
+          token_harbor_model: state.settings.modelName,
+          ollama_model: ollamaModel,
+          max_iterations: state.settings.maxIterations,
+          target_mutation_score: state.settings.targetMutationScore
+        })
+      });
+      const configData = await configRes.json();
+      updateSettingsKeyBadges(configData);
+
+      closeModal(dom.settingsBackdrop);
+      showToast('Settings successfully updated and active.', 'success');
+      fetchSettings();
+    } catch (err) {
+      showToast(`Failed to save settings: ${err.message}`, 'error');
+    }
+  });
           engine_mode: state.settings.engineMode,
           provider_mode: state.settings.engineMode,
           model_name: state.settings.modelName,
@@ -1848,16 +1834,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Providers
       if (data.providers) {
-        const { ollama_online, ollama_mode, ollama_model, detected_ollama_models, has_gemini, has_gemini_fallback, has_openrouter } = data.providers;
+        const { ollama_online, ollama_mode, ollama_model, detected_ollama_models, has_tokenharbor, tokenharbor_model } = data.providers;
 
         // Ollama
         if (ollama_mode === 'cloud_disabled') {
           if (dom.dotOllama) dom.dotOllama.className = 'indicator-dot blue';
-          if (dom.labelOllama) dom.labelOllama.textContent = '☁️ Cloud Mode (Ollama Bypassed)';
-          if (dom.pillOllama) dom.pillOllama.title = 'Production Cloud Deployment: Local Ollama bypassed in favor of Cloud GenAI / OpenRouter / Deterministic AST Synthesizer';
+          if (dom.labelOllama) dom.labelOllama.textContent = '☁️ Cloud Mode (TokenHarbor API)';
+          if (dom.pillOllama) dom.pillOllama.title = 'Production Cloud Deployment: TokenHarbor DeepSeek Cloud / Local AST Synthesizer';
         } else {
           if (dom.dotOllama) dom.dotOllama.className = `indicator-dot ${ollama_online ? 'green' : 'red'}`;
-          const currentOllamaModel = ollama_model || 'qwen2.5-coder:7b';
+          const currentOllamaModel = ollama_model || 'codellama:7b';
           if (dom.labelOllama) dom.labelOllama.textContent = ollama_online ? `🟢 Ollama (${currentOllamaModel})` : 'Ollama (Offline)';
           if (dom.pillOllama) {
             dom.pillOllama.title = ollama_online
@@ -1876,26 +1862,20 @@ document.addEventListener('DOMContentLoaded', () => {
           dom.inputOllamaModel.value = ollama_model;
         }
 
-        // Gemini
+        // TokenHarbor Cloud Status
         if (dom.dotGemini && dom.labelGemini) {
-          if (has_gemini && has_gemini_fallback) {
+          if (has_tokenharbor) {
             dom.dotGemini.className = 'indicator-dot green';
-            dom.labelGemini.textContent = 'Gemini (Dual Key Active)';
-          } else if (has_gemini) {
-            dom.dotGemini.className = 'indicator-dot green';
-            dom.labelGemini.textContent = 'Gemini (Active)';
+            dom.labelGemini.textContent = `TokenHarbor (${tokenharbor_model || 'DeepSeek'})`;
           } else {
             dom.dotGemini.className = 'indicator-dot amber';
-            dom.labelGemini.textContent = 'Gemini (No Key)';
+            dom.labelGemini.textContent = 'TokenHarbor (Unset - Localhost $0)';
           }
         }
 
-        // OpenRouter
-        if (dom.dotOpenrouter) {
-          dom.dotOpenrouter.className = `indicator-dot ${has_openrouter ? 'green' : 'gray'}`;
-        }
-        if (dom.labelOpenrouter) {
-          dom.labelOpenrouter.textContent = has_openrouter ? 'OpenRouter (Active)' : 'OpenRouter (Idle)';
+        if (dom.dotOpenrouter && dom.labelOpenrouter) {
+          dom.dotOpenrouter.className = has_tokenharbor ? 'indicator-dot green' : 'indicator-dot gray';
+          dom.labelOpenrouter.textContent = has_tokenharbor ? 'Cloud API (Active)' : 'Cloud API (Idle)';
         }
 
         // Settings Key Badges & Placeholders Sync
@@ -6352,8 +6332,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const isAstValid = d.ast_valid !== false;
       const latencyStr = d.latency_seconds ? `${d.latency_seconds.toFixed(2)}s` : (d.latency_ms ? `${d.latency_ms}ms` : (d.latency ? `${(d.latency * 1000).toFixed(0)}ms` : '-'));
-      const providerStr = d.provider || (d.is_actual_llm ? 'Google GenAI (Gemini)' : 'Local AST Synthesizer');
-      const engineStr = d.execution_engine || (d.is_actual_llm ? 'Gemini 3.6 Flash' : 'AST Invariant Mutator');
+      const providerStr = d.provider || (d.is_actual_llm ? 'TokenHarbor Cloud' : 'Local AST Synthesizer');
+      const engineStr = d.execution_engine || (d.is_actual_llm ? 'DeepSeek Free (deepseek-v4.1-flash:free)' : 'AST Invariant Mutator');
       const actualTokens = d.actual_total_tokens != null ? d.actual_total_tokens : (d.is_actual_llm ? (d.total_tokens || 0) : '0 (Zero Egress)');
       const estTokens = d.estimated_total_tokens != null ? d.estimated_total_tokens : (d.is_actual_llm ? 0 : (d.total_tokens || 0));
 

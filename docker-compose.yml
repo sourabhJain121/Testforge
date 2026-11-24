@@ -12,9 +12,11 @@ services:
         required: false
     environment:
       - PYTHONUNBUFFERED=1
-      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
-      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - TOKEN_HARBOR_API_KEY=${TOKEN_HARBOR_API_KEY:-}
+      - TOKEN_HARBOR_BASE_URL=${TOKEN_HARBOR_BASE_URL:-https://tokenharbor.ai/v1}
+      - TOKEN_HARBOR_MODEL=${TOKEN_HARBOR_MODEL:-deepseek-v4.1-flash:free}
       - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://ollama:11434}
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-codellama:7b}
       - GITHUB_TOKEN=${GITHUB_TOKEN:-}
     volumes:
       - ./qa_artifacts:/app/qa_artifacts
@@ -56,8 +58,10 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - TESTFORGE_API_URL=http://backend:8000
-      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
-      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - TOKEN_HARBOR_API_KEY=${TOKEN_HARBOR_API_KEY:-}
+      - TOKEN_HARBOR_BASE_URL=${TOKEN_HARBOR_BASE_URL:-https://tokenharbor.ai/v1}
+      - TOKEN_HARBOR_MODEL=${TOKEN_HARBOR_MODEL:-deepseek-v4.1-flash:free}
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-codellama:7b}
     networks:
       - testforge-net
 

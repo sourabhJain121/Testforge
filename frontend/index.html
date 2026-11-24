@@ -26,7 +26,7 @@
   <div id="api-limit-live-banner" class="hidden" style="background: linear-gradient(90deg, rgba(245, 158, 11, 0.95), rgba(217, 119, 6, 0.95)); color: #ffffff; padding: 8px 16px; font-size: 0.82rem; font-weight: 500; display: flex; justify-content: space-between; align-items: center; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,255,255,0.2);">
     <div style="display: flex; align-items: center; gap: 8px;">
       <span id="api-banner-icon" style="font-size: 1rem;">⚠️</span>
-      <span id="api-banner-text">Primary Gemini Quota Reached — Rotated to Backup Provider</span>
+      <span id="api-banner-text">TokenHarbor Rate Limit Reached — Rotated to Local Ollama Provider</span>
     </div>
     <div style="display: flex; gap: 8px; align-items: center;">
       <button type="button" class="btn btn-sm" id="btn-open-hot-swap-modal" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.4); color: #fff; padding: 3px 10px; font-size: 0.75rem; border-radius: 4px; cursor: pointer; font-weight: 600;">🔑 Hot-Swap Key</button>
@@ -92,22 +92,20 @@
         <div class="form-group">
           <label for="engine-mode-select">Execution Provider Mode</label>
           <select id="engine-mode-select" class="form-control">
-            <option value="auto" selected>Auto (Gemini -> OpenRouter -> Local Ollama Fallback)</option>
-            <option value="ollama_only">Local Ollama Only (M2 Pro Offline Dev)</option>
-            <option value="cloud">Force Cloud (Google Gemini)</option>
-            <option value="openrouter">OpenRouter Cloud API</option>
-            <option value="local">Force Local Engine (Ollama - Offline Mode)</option>
+            <option value="auto" selected>Auto (TokenHarbor -> Local Ollama Fallback)</option>
+            <option value="tokenharbor">TokenHarbor Cloud (DeepSeek Free)</option>
+            <option value="ollama_only">Local Ollama Only (codellama:7b $0 Cost)</option>
           </select>
           <p class="form-hint">Controls the fallback cascade tier when synthesizing assertions and diagnosing mutants.</p>
         </div>
 
         <div class="form-group" id="group-ollama-model">
           <label for="ollama-model-input">Local Ollama Model</label>
-          <input type="text" id="ollama-model-input" class="form-control" placeholder="qwen2.5-coder:7b" value="qwen2.5-coder:7b" list="ollama-detected-models-datalist">
+          <input type="text" id="ollama-model-input" class="form-control" placeholder="codellama:7b" value="codellama:7b" list="ollama-detected-models-datalist">
           <datalist id="ollama-detected-models-datalist">
+            <option value="codellama:7b"></option>
             <option value="qwen2.5-coder:7b"></option>
             <option value="llama3.1:8b"></option>
-            <option value="codellama:7b"></option>
           </datalist>
           <p class="form-hint">Model executed locally on Apple Silicon Unified Memory without external cloud dependencies.</p>
         </div>
@@ -115,9 +113,9 @@
         <div class="form-group">
           <label for="model-name-select">Foundation Model</label>
           <select id="model-name-select" class="form-control">
-            <option value="gemini-3.6-flash" selected>gemini-3.6-flash (Primary Cloud)</option>
-            <option value="gemini-3.1-pro-preview">gemini-3.1-pro-preview (Secondary Fallback)</option>
-            <option value="qwen2.5-coder:7b">qwen2.5-coder:7b (Local Ollama Engine)</option>
+            <option value="deepseek-v4.1-flash:free" selected>deepseek-v4.1-flash:free (TokenHarbor Free Tier)</option>
+            <option value="deepseek/deepseek-flash">deepseek/deepseek-flash (TokenHarbor Alternative)</option>
+            <option value="codellama:7b">codellama:7b (Local Ollama Engine)</option>
           </select>
         </div>
 
@@ -134,35 +132,25 @@
 
         <div class="card" style="background: rgba(15, 23, 42, 0.45); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 14px; margin-top: 1rem;">
           <h4 style="margin: 0 0 10px 0; font-size: 0.85rem; color: #38bdf8; display: flex; align-items: center; justify-content: space-between;">
-            <span>🔑 Cloud LLM Provider Keys</span>
+            <span>🔑 TokenHarbor Provider Key</span>
             <span id="keys-configured-badge" class="badge" style="font-size: 0.7rem; font-weight: 500; background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 2px 6px; border-radius: 4px;">Runtime Active</span>
           </h4>
           
           <div class="form-group" style="margin-bottom: 10px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-              <label for="input-gemini-key" style="margin: 0; font-size: 0.8rem; font-weight: 600;">Primary Gemini API Key (GEMINI_API_KEY)</label>
-              <span id="badge-gemini-key" style="font-size: 0.7rem; padding: 1px 6px; border-radius: 4px;">Not Configured</span>
+              <label for="input-tokenharbor-key" style="margin: 0; font-size: 0.8rem; font-weight: 600;">TokenHarbor API Key (TOKEN_HARBOR_API_KEY)</label>
+              <span id="badge-tokenharbor-key" style="font-size: 0.7rem; padding: 1px 6px; border-radius: 4px;">Not Configured</span>
             </div>
-            <input type="password" id="input-gemini-key" class="form-control" placeholder="AIzaSy... (leave blank to preserve active key)" autocomplete="off">
-            <p class="form-hint" style="margin: 2px 0 0 0; font-size: 0.72rem;">Tier 1 cloud test synthesis & reflection engine.</p>
-          </div>
-
-          <div class="form-group" style="margin-bottom: 10px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-              <label for="input-gemini-key-2" style="margin: 0; font-size: 0.8rem; font-weight: 600;">Secondary Gemini API Key (GEMINI_API_KEY_2)</label>
-              <span id="badge-gemini-key-2" style="font-size: 0.7rem; padding: 1px 6px; border-radius: 4px;">Not Configured</span>
-            </div>
-            <input type="password" id="input-gemini-key-2" class="form-control" placeholder="AIzaSy... (backup failover key)" autocomplete="off">
-            <p class="form-hint" style="margin: 2px 0 0 0; font-size: 0.72rem;">Automatic hot failover on HTTP 429 quota exhaustion.</p>
+            <input type="password" id="input-tokenharbor-key" class="form-control" placeholder="thk_live_... (leave blank to preserve active key)" autocomplete="off">
+            <p class="form-hint" style="margin: 2px 0 0 0; font-size: 0.72rem;">Primary Cloud Provider: TokenHarbor DeepSeek Free (deepseek-v4.1-flash:free).</p>
           </div>
 
           <div class="form-group" style="margin-bottom: 4px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-              <label for="input-openrouter-key" style="margin: 0; font-size: 0.8rem; font-weight: 600;">OpenRouter Cloud API Key (OPENROUTER_API_KEY)</label>
-              <span id="badge-openrouter-key" style="font-size: 0.7rem; padding: 1px 6px; border-radius: 4px;">Not Configured</span>
+              <label for="input-tokenharbor-base-url" style="margin: 0; font-size: 0.8rem; font-weight: 600;">TokenHarbor Base URL</label>
             </div>
-            <input type="password" id="input-openrouter-key" class="form-control" placeholder="sk-or-v1-... (optional cloud fallback)" autocomplete="off">
-            <p class="form-hint" style="margin: 2px 0 0 0; font-size: 0.72rem;">Tier 2 fallback across 300+ models & $0 free coding tiers.</p>
+            <input type="text" id="input-tokenharbor-base-url" class="form-control" placeholder="https://tokenharbor.ai/v1" value="https://tokenharbor.ai/v1" autocomplete="off">
+            <p class="form-hint" style="margin: 2px 0 0 0; font-size: 0.72rem;">OpenAI-compatible REST endpoint (https://tokenharbor.ai/v1).</p>
           </div>
         </div>
       </div>
@@ -453,33 +441,32 @@
     <div class="modal glass-panel" id="api-alert-modal" role="dialog" aria-labelledby="api-alert-modal-title" style="max-width: 620px; border-color: rgba(245, 158, 11, 0.5); box-shadow: 0 10px 40px rgba(245, 158, 11, 0.2);">
       <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.75rem;">
         <h2 id="api-alert-modal-title" style="margin: 0; font-size: 1.15rem; color: #f59e0b; display: flex; align-items: center; gap: 0.5rem;">
-          <span id="api-alert-icon">⚠️</span> <span id="api-alert-heading">Gemini API Rate Limit Reached (429)</span>
+          <span id="api-alert-icon">⚠️</span> <span id="api-alert-heading">TokenHarbor API Rate Limit Reached (429)</span>
         </h2>
         <button type="button" class="close-btn" id="btn-close-api-alert-modal" aria-label="Close Alert">&times;</button>
       </div>
       <div class="modal-body" id="api-alert-modal-body" style="padding-top: 1rem;">
         <div id="api-alert-badge-row" style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap;">
           <span class="badge badge-amber" id="api-alert-status-badge">RATE LIMIT (429)</span>
-          <span class="badge badge-blue" id="api-alert-provider-badge">Provider: Cloud Gemini</span>
-          <span class="badge badge-purple" id="api-alert-tier-badge">Active Tier: Backup Key</span>
+          <span class="badge badge-blue" id="api-alert-provider-badge">Provider: TokenHarbor Cloud</span>
+          <span class="badge badge-purple" id="api-alert-tier-badge">Active Tier: Local Ollama Fallback</span>
         </div>
         <p id="api-alert-message" style="font-size: 0.88rem; line-height: 1.5; color: var(--text-color, #e2e8f0); margin-bottom: 1rem; background: rgba(15, 23, 42, 0.6); padding: 0.75rem 1rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.08);">
-          Primary GEMINI_API_KEY reached rate limit or quota bounds. The system has automatically engaged fallback routing.
+          TOKEN_HARBOR_API_KEY reached rate limit or quota bounds. The system has automatically engaged fallback routing.
         </p>
 
         <!-- Hot-Swap Live API Key Box -->
         <div class="form-group" style="background: rgba(168, 85, 247, 0.08); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 8px; padding: 14px; margin-bottom: 1rem;">
           <label style="font-weight: 600; font-size: 0.85rem; color: #c084fc; display: flex; align-items: center; gap: 0.4rem; margin-bottom: 4px;">
-            <span>🔑 Paste Backup API Key & Retry (No Redeploy Required)</span>
+            <span>🔑 Paste TokenHarbor API Key & Retry (No Redeploy Required)</span>
           </label>
-          <p style="font-size: 0.75rem; color: #94a3b8; margin: 0 0 10px 0;">Paste a fresh Gemini or OpenRouter key to instantly update the running cloud container and resume synthesis.</p>
+          <p style="font-size: 0.75rem; color: #94a3b8; margin: 0 0 10px 0;">Paste a fresh TokenHarbor key to instantly update the running cloud container and resume synthesis.</p>
           <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
             <select id="hot-swap-provider-select" class="form-control" style="width: 140px; font-size: 0.8rem; padding: 0.4rem 0.6rem;">
-              <option value="gemini">Gemini Key</option>
-              <option value="gemini_2">Gemini Key 2</option>
-              <option value="openrouter">OpenRouter</option>
+              <option value="tokenharbor">TokenHarbor</option>
+              <option value="ollama">Ollama Model</option>
             </select>
-            <input type="password" id="hot-swap-key-input" class="form-control" placeholder="Paste API key here (AIza... / sk-or-...)" style="flex: 1; min-width: 200px; font-size: 0.8rem; padding: 0.4rem 0.6rem;">
+            <input type="password" id="hot-swap-key-input" class="form-control" placeholder="Paste TokenHarbor API key (thk_live_...)" style="flex: 1; min-width: 200px; font-size: 0.8rem; padding: 0.4rem 0.6rem;">
             <button type="button" class="btn btn-primary btn-sm" id="btn-hot-swap-save" style="padding: 0.45rem 1rem;">Save & Retry</button>
           </div>
           <div id="hot-swap-status" style="font-size: 0.75rem; margin-top: 6px; color: #10b981; display: none;"></div>

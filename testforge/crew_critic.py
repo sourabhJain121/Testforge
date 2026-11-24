@@ -530,7 +530,7 @@ class CrewAILLMBridge(BaseLLM):
         # Store internal operational parameters outside Pydantic validation
         env_live = os.environ.get("TESTFORGE_LIVE_LLM", "0").lower() in ("1", "true", "yes")
         live_flag = use_live_llm if use_live_llm is not None else env_live
-        object.__setattr__(self, "_api_key", api_key or os.environ.get("GEMINI_API_KEY", "").strip())
+        object.__setattr__(self, "_api_key", (api_key or os.environ.get("TOKEN_HARBOR_API_KEY", "")).strip())
         object.__setattr__(self, "_llm_client", llm_client)
         object.__setattr__(self, "_use_live_llm", live_flag)
         object.__setattr__(self, "_mock_response", mock_response)
@@ -571,11 +571,12 @@ class CrewAILLMBridge(BaseLLM):
         if (use_live and (api_key or llm_client or is_ollama_mode)) or is_ollama_mode:
             try:
                 engine_mode = "ollama_only" if is_ollama_mode else "auto"
-                local_model = os.environ.get("OLLAMA_MODEL", "qwen2.5-coder:7b").strip() or "qwen2.5-coder:7b"
+                local_model = os.environ.get("OLLAMA_MODEL", "codellama:7b").strip() or "codellama:7b"
+                cloud_model = os.environ.get("TOKEN_HARBOR_MODEL", "deepseek-v4.1-flash:free").strip() or "deepseek-v4.1-flash:free"
                 client = llm_client or HybridLLMClient(
-                    cloud_model="gemini-3.6-flash",
+                    tokenharbor_model=cloud_model,
                     local_model=local_model,
-                    api_key=api_key,
+                    tokenharbor_api_key=api_key,
                     engine_mode=engine_mode,
                 )
                 system_inst = get_defensive_system_instruction(

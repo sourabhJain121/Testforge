@@ -276,21 +276,21 @@ class TestForgeOrchestrator:
         if provider_mode_env in ("ollama_only", "local_only", "local") and engine_mode == "auto":
             engine_mode = "ollama_only"
 
-        local_model = os.environ.get("OLLAMA_MODEL", "qwen2.5-coder:7b").strip() or "qwen2.5-coder:7b"
+        local_model = os.environ.get("OLLAMA_MODEL", "codellama:7b").strip() or "codellama:7b"
+        th_model = os.environ.get("TOKEN_HARBOR_MODEL", "deepseek-v4.1-flash:free").strip() or "deepseek-v4.1-flash:free"
+        th_key = (api_key or os.environ.get("TOKEN_HARBOR_API_KEY", "")).strip()
         self.llm_client = HybridLLMClient(
-            cloud_model=model_name,
+            tokenharbor_model=th_model,
+            tokenharbor_api_key=th_key,
             local_model=local_model,
-            api_key=api_key,
-            api_key_2=api_key_2,
-            openrouter_api_key=openrouter_api_key,
             logger=self.logger,
             engine_mode=engine_mode,
             alert_callback=self._handle_llm_alert,
         )
         self.generator = TestGeneratorAgent(
-            model_name=model_name,
+            model_name=th_model,
             logger=self.logger,
-            api_key=api_key,
+            api_key=th_key,
             llm_client=self.llm_client
         )
         self.critic = AdversarialCriticAgent(

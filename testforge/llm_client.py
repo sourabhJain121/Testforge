@@ -1,20 +1,22 @@
 """
-llm_client.py - Hybrid LLM Client (Cloud API + Local Model) with Strict Fallback Chain.
+llm_client.py - Hybrid LLM Client (TokenHarbor Cloud API + Local Ollama Model) with Strict Fallback Chain.
 
 Author: Sourabh (Module 1 & 3)
 System: Autonomous Multi-Agent Hardening Engine
 
-Architecture (4-Tier Failover Cascade):
-  - Tier 1: Google GenAI (gemini-3.6-flash) via official google-genai SDK (GEMINI_API_KEY)
-  - Tier 2: OpenRouter Cloud API (https://openrouter.ai/api/v1/chat/completions) via OPENROUTER_API_KEY
-  - Tier 3: Local Ollama (http://localhost:11434/api/generate) with model qwen2.5-coder:7b
-  - Tier 4: AST-guided deterministic rule synthesizer (guarantees zero unhandled crashes)
+Architecture:
+  - Tier 1: TokenHarbor Cloud API (https://tokenharbor.ai/v1/chat/completions)
+            Powered by DeepSeek free tier (deepseek-v4.1-flash:free) via OpenAI-compatible REST API
+            (Requires TOKEN_HARBOR_API_KEY)
+  - Tier 2: Local Ollama (http://127.0.0.1:11434/api/generate) with model codellama:7b ($0 API cost localhost)
+  - Tier 3: AST-guided deterministic rule synthesizer (guarantees zero unhandled crashes)
 
-Engine Modes:
-  - "auto": Gemini -> OpenRouter -> Local Ollama -> AST Rule Synthesizer
-  - "cloud": Force Cloud (Gemini) -> AST Rule Synthesizer
-  - "openrouter": Force OpenRouter Cloud -> AST Rule Synthesizer
-  - "local": Force Local (Ollama - Offline Mode) -> AST Rule Synthesizer
+Hybrid Engine Routing:
+  - "tokenharbor" / "cloud": Uses TokenHarbor DeepSeek Cloud API -> AST Rule Synthesizer
+  - "ollama_only" / "local": Forces Local Ollama (codellama:7b, $0 cost) -> AST Rule Synthesizer
+  - "auto":
+      * If TOKEN_HARBOR_API_KEY is present -> TokenHarbor (deepseek-v4.1-flash:free)
+      * If TOKEN_HARBOR_API_KEY is unset/empty -> Local Ollama (codellama:7b)
 """
 
 from __future__ import annotations
@@ -25,71 +27,19 @@ import random
 import time
 import urllib.error
 import urllib.request
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import requests
 
 from testforge.logger import TraceLogger
 
 
-def get_dual_gemini_keys() -> Tuple[str, str]:
-    """Returns the two configured Gemini API keys (key1, key2) from environment."""
-    k1 = os.environ.get("GEMINI_API_KEY", "").strip() or os.environ.get("GOOGLE_API_KEY", "").strip()
-    k2 = os.environ.get("GEMINI_API_KEY_2", "").strip() or os.environ.get("GEMINI_FALLBACK_API_KEY", "").strip()
-    return k1, k2
-
-
-def select_random_gemini_key(api_key: Optional[str] = None, api_key_2: Optional[str] = None) -> str:
-    """
-    Selects between configured Gemini keys randomly when both are present,
-    or returns the single active key.
-    """
-    k1 = (api_key or "").strip() or os.environ.get("GEMINI_API_KEY", "").strip() or os.environ.get("GOOGLE_API_KEY", "").strip()
-    k2 = (api_key_2 or "").strip() or os.environ.get("GEMINI_API_KEY_2", "").strip() or os.environ.get("GEMINI_FALLBACK_API_KEY", "").strip()
-    keys = list(dict.fromkeys([k for k in (k1, k2) if k]))
-    if len(keys) >= 2:
-        return random.choice(keys)
-    elif len(keys) == 1:
-        return keys[0]
-    return ""
-
-
-def resolve_cloud_model_candidates(model_name: str) -> List[str]:
-    """
-    Resolves cloud model candidates to try against Google GenAI API.
-    Provides automatic fallback across valid Gemini models (e.g. gemini-2.5-flash, gemini-2.0-flash, gemini-1.5-flash).
-    """
-    raw = (model_name or "").strip()
-    candidates: List[str] = []
-    if "3.6" in raw or "3.8" in raw:
-        # Fictitious or unreleased version requested: try official models first, then raw
-        candidates = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", raw]
-    elif "2.5" in raw:
-        candidates = [raw, "gemini-2.0-flash", "gemini-1.5-flash"]
-    elif "2.0" in raw:
-        candidates = [raw, "gemini-2.5-flash", "gemini-1.5-flash"]
-    elif "1.5" in raw:
-        candidates = [raw, "gemini-2.5-flash", "gemini-2.0-flash"]
-    elif raw:
-        candidates = [raw, "gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
-    else:
-        candidates = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
-
-    ordered: List[str] = []
-    seen = set()
-    for m in candidates:
-        if m and m not in seen:
-            seen.add(m)
-            ordered.append(m)
-    return ordered
-
-
-def probe_ollama_status(url: str = "http://localhost:11434/api/tags", timeout: float = 0.8) -> Tuple[bool, List[str]]:
+def probe_ollama_status(url: str = "http://127.0.0.1:11434/api/tags", timeout: float = 0.8) -> Tuple[bool, List[str]]:
     """
     Pings the local Ollama daemon tags endpoint (0.8s timeout) to check if it is active
     and returns (is_online, detected_model_names).
     """
-    clean_url = (url or "http://localhost:11434").strip()
+    clean_url = (url or "http://127.0.0.1:11434").strip()
     if not clean_url.endswith("/api/tags"):
         clean_url = clean_url.rstrip("/") + "/api/tags"
     try:
@@ -108,7 +58,7 @@ def probe_ollama_status(url: str = "http://localhost:11434/api/tags", timeout: f
     return False, []
 
 
-def is_ollama_running(url: str = "http://localhost:11434/api/tags", timeout: float = 0.8) -> bool:
+def is_ollama_running(url: str = "http://127.0.0.1:11434/api/tags", timeout: float = 0.8) -> bool:
     """
     Pings the local Ollama daemon tags endpoint to check if it is active.
     """
@@ -116,27 +66,43 @@ def is_ollama_running(url: str = "http://localhost:11434/api/tags", timeout: flo
     return online
 
 
-def call_openrouter_api(
+def select_random_gemini_key(api_key: Optional[str] = None, api_key_2: Optional[str] = None) -> str:
+    """Legacy compatibility shim returning active cloud key if present."""
+    return (api_key or os.environ.get("TOKEN_HARBOR_API_KEY", "")).strip()
+
+
+def call_tokenharbor_api(
     prompt: str,
     system_instruction: str = "",
     api_key: str = "",
-    model: str = "meta-llama/llama-3.3-70b-instruct",
+    model: str = "deepseek-v4.1-flash:free",
+    base_url: str = "https://tokenharbor.ai/v1",
     temperature: float = 0.2,
-    timeout: float = 30.0
+    timeout: float = 45.0
 ) -> Tuple[str, Dict[str, int], float]:
     """
-    Executes a completion request against OpenRouter's OpenAI-compatible endpoint.
+    Executes a completion request against TokenHarbor's OpenAI-compatible endpoint.
+    Handles DeepSeek reasoning responses cleanly by extracting content from choice.message.content
+    and omitting reasoning_content from any multi-turn history.
     """
-    url = "https://openrouter.ai/api/v1/chat/completions"
-    resolved_key = (api_key or os.environ.get("OPENROUTER_API_KEY", "")).strip()
+    clean_base = (base_url or os.environ.get("TOKEN_HARBOR_BASE_URL", "https://tokenharbor.ai/v1")).rstrip("/")
+    if not clean_base.endswith("/chat/completions"):
+        url = f"{clean_base}/chat/completions"
+    else:
+        url = clean_base
+
+    resolved_key = (api_key or os.environ.get("TOKEN_HARBOR_API_KEY", "")).strip()
     if not resolved_key:
-        raise ValueError("OPENROUTER_API_KEY is not set.")
+        raise ValueError("TOKEN_HARBOR_API_KEY is not set.")
+
     headers = {
         "Authorization": f"Bearer {resolved_key}",
         "Content-Type": "application/json",
+        "User-Agent": "TestForge/2.0",
         "HTTP-Referer": "https://github.com/sourabhJain121/Testforge",
         "X-Title": "TestForge Autonomous Test Hardener"
     }
+
     messages: List[Dict[str, str]] = []
     if system_instruction:
         messages.append({"role": "system", "content": system_instruction})
@@ -147,6 +113,7 @@ def call_openrouter_api(
         "messages": messages,
         "temperature": temperature
     }
+
     req = urllib.request.Request(
         url,
         data=json.dumps(payload).encode("utf-8"),
@@ -154,171 +121,155 @@ def call_openrouter_api(
     )
     start_time = time.perf_counter()
     with urllib.request.urlopen(req, timeout=timeout) as resp:
-        data = json.loads(resp.read().decode("utf-8"))
+        raw_body = resp.read()
+        if hasattr(raw_body, "decode"):
+            raw_body = raw_body.decode("utf-8")
+        if isinstance(raw_body, (str, bytes, bytearray)):
+            data = json.loads(raw_body)
+        elif isinstance(raw_body, dict):
+            data = raw_body
+        else:
+            data = {}
     latency = time.perf_counter() - start_time
 
     choices = data.get("choices", [])
     if not choices:
-        raise RuntimeError("OpenRouter returned no choices in response.")
+        raise RuntimeError("TokenHarbor returned no choices in response.")
 
-    raw_text = choices[0].get("message", {}).get("content", "") or ""
+    message_obj = choices[0].get("message", {})
+    # Extract clean content from choice message, deliberately ignoring reasoning_content
+    raw_text = message_obj.get("content", "") or ""
+
     usage = data.get("usage", {})
     tokens = {
         "prompt_tokens": usage.get("prompt_tokens", 0),
         "completion_tokens": usage.get("completion_tokens", 0),
         "total_tokens": usage.get("total_tokens", 0)
     }
+    if tokens["total_tokens"] == 0:
+        tokens["prompt_tokens"] = max(1, len(prompt) // 4)
+        tokens["completion_tokens"] = max(1, len(raw_text) // 4)
+        tokens["total_tokens"] = tokens["prompt_tokens"] + tokens["completion_tokens"]
+
     return raw_text, tokens, latency
+
+
+def call_openrouter_api(
+    prompt: str,
+    system_instruction: str = "",
+    api_key: str = "",
+    model: str = "deepseek-v4.1-flash:free",
+    temperature: float = 0.2,
+    timeout: float = 45.0
+) -> Tuple[str, Dict[str, int], float]:
+    """Compatibility wrapper delegating to TokenHarbor DeepSeek API."""
+    resolved_key = (
+        api_key
+        or os.environ.get("TOKEN_HARBOR_API_KEY", "")
+        or os.environ.get("OPENROUTER_API_KEY", "")
+    ).strip()
+    return call_tokenharbor_api(
+        prompt=prompt,
+        system_instruction=system_instruction,
+        api_key=resolved_key,
+        model="deepseek-v4.1-flash:free",
+        temperature=temperature,
+        timeout=timeout
+    )
 
 
 class HybridLLMClient:
     """
-    Unified Hybrid LLM client managing Cloud API (Gemini & OpenRouter) and Local Engine (Ollama).
-    Implements a strict 4-tier fallback chain with persistent telemetry.
+    Unified Hybrid LLM client managing TokenHarbor Cloud API (DeepSeek Free)
+    and Local Engine (Ollama codellama:7b).
+    Implements strict hybrid isolation with automatic failover and persistent telemetry.
     """
     def __init__(
         self,
-        cloud_model: str = "gemini-3.6-flash",
-        openrouter_model: str = "meta-llama/llama-3.3-70b-instruct",
-        local_model: str = "qwen2.5-coder:7b",
-        local_url: str = "http://localhost:11434/api/generate",
+        tokenharbor_model: str = "deepseek-v4.1-flash:free",
+        tokenharbor_api_key: Optional[str] = None,
+        tokenharbor_base_url: str = "https://tokenharbor.ai/v1",
+        local_model: str = "codellama:7b",
+        local_url: str = "http://127.0.0.1:11434/api/generate",
         engine_mode: str = "auto",
+        logger: Optional[TraceLogger] = None,
+        alert_callback: Optional[Any] = None,
+        # Backward-compatible parameters:
+        cloud_model: Optional[str] = None,
+        openrouter_model: Optional[str] = None,
         api_key: Optional[str] = None,
         api_key_2: Optional[str] = None,
         openrouter_api_key: Optional[str] = None,
-        logger: Optional[TraceLogger] = None,
-        alert_callback: Optional[Any] = None,
     ):
-        self.cloud_model = cloud_model
-        self.openrouter_model = openrouter_model
+        # Resolve TokenHarbor Cloud configurations
+        self.tokenharbor_api_key = (
+            tokenharbor_api_key
+            or api_key
+            or os.environ.get("TOKEN_HARBOR_API_KEY", "")
+        ).strip()
+        self.tokenharbor_base_url = (
+            tokenharbor_base_url
+            or os.environ.get("TOKEN_HARBOR_BASE_URL", "https://tokenharbor.ai/v1")
+        ).strip()
+        self.tokenharbor_model = (
+            tokenharbor_model
+            or cloud_model
+            or os.environ.get("TOKEN_HARBOR_MODEL", "deepseek-v4.1-flash:free")
+        ).strip() or "deepseek-v4.1-flash:free"
 
-        # Provider routing mode resolution (TESTFORGE_PROVIDER_MODE environment support)
-        # Modes: "auto" | "ollama_only" | "cloud_only" (aliases: "local", "cloud")
+        # Resolve Local Ollama configurations
+        env_ollama_model = os.environ.get("OLLAMA_MODEL", "").strip()
+        self.local_model = env_ollama_model or local_model or "codellama:7b"
+
+        env_ollama_base = os.environ.get("OLLAMA_BASE_URL", "").strip().rstrip("/")
+        if env_ollama_base:
+            self.local_url = f"{env_ollama_base}/api/generate"
+        else:
+            self.local_url = local_url
+
+        # Provider routing mode resolution
         provider_mode_env = os.environ.get("TESTFORGE_PROVIDER_MODE", "").strip().lower()
         effective_mode = engine_mode.lower()
         if effective_mode == "auto" and provider_mode_env:
             effective_mode = provider_mode_env
+
         if effective_mode in ("ollama", "ollama_only", "local_only", "local"):
             effective_mode = "ollama_only"
-        elif effective_mode in ("cloud", "cloud_only"):
-            effective_mode = "cloud"
+        elif effective_mode in ("tokenharbor", "cloud", "cloud_only"):
+            effective_mode = "tokenharbor"
+        elif effective_mode == "auto":
+            # Hybrid resolution: If TOKEN_HARBOR_API_KEY present -> tokenharbor; else -> ollama_only
+            if self.tokenharbor_api_key:
+                effective_mode = "tokenharbor"
+            else:
+                effective_mode = "ollama_only"
 
         self.engine_mode = effective_mode
-
-        # Model & Base URL resolution for Local Ollama
-        env_ollama_model = os.environ.get("OLLAMA_MODEL", "").strip()
-        if env_ollama_model and local_model == "qwen2.5-coder:7b":
-            self.local_model = env_ollama_model
-        else:
-            self.local_model = local_model or env_ollama_model or "qwen2.5-coder:7b"
-
-        env_ollama_base = os.environ.get("OLLAMA_BASE_URL", "").strip().rstrip("/")
-        if env_ollama_base and local_url == "http://localhost:11434/api/generate":
-            self.local_url = f"{env_ollama_base}/api/generate"
-        else:
-            self.local_url = local_url
-        self.api_key = (
-            api_key
-            or os.environ.get("GEMINI_API_KEY", "").strip()
-            or os.environ.get("GOOGLE_API_KEY", "").strip()
-        )
-        self.api_key_2 = (
-            api_key_2
-            or os.environ.get("GEMINI_API_KEY_2", "").strip()
-            or os.environ.get("GEMINI_FALLBACK_API_KEY", "").strip()
-        )
-        if not self.api_key and self.api_key_2:
-            self.api_key = self.api_key_2
-            self.api_key_2 = ""
-        self.gemini_key_index = 1
-        self.openrouter_api_key = openrouter_api_key or os.environ.get("OPENROUTER_API_KEY", "").strip()
         self.logger = logger
         self.alert_callback = alert_callback
         self.latest_alert: Optional[Dict[str, Any]] = None
-        self.active_provider: str = "None"
-        self.gemini_quota_exhausted: bool = False
-        self.openrouter_quota_exhausted: bool = False
-
-        # Dual-client cache supporting randomized key distribution and 429 failover
-        self._genai_clients: Dict[str, Any] = {}
-        self.genai_client = None
-        self._init_genai_client()
-
-    def get_configured_gemini_keys(self) -> List[str]:
-        """Returns non-empty unique configured Gemini keys from instance or environment."""
-        k1 = (
-            self.api_key
-            or os.environ.get("GEMINI_API_KEY", "").strip()
-            or os.environ.get("GOOGLE_API_KEY", "").strip()
+        self.active_provider: str = (
+            f"TokenHarbor Cloud ({self.tokenharbor_model})"
+            if (self.engine_mode == "tokenharbor" and self.tokenharbor_api_key)
+            else f"Local Ollama ({self.local_model})"
         )
-        k2 = (
-            self.api_key_2
-            or os.environ.get("GEMINI_API_KEY_2", "").strip()
-            or os.environ.get("GEMINI_FALLBACK_API_KEY", "").strip()
-        )
-        keys: List[str] = []
-        if k1:
-            keys.append(k1)
-        if k2 and k2 not in keys:
-            keys.append(k2)
-        return keys
-
-    def get_random_key_pair(self) -> Tuple[Optional[str], Optional[str]]:
-        """
-        When both GEMINI_API_KEY and GEMINI_API_KEY_2 are configured,
-        selects randomly between them for the active request/cycle,
-        returning (selected_primary_key, alternate_key).
-        """
-        keys = self.get_configured_gemini_keys()
-        if len(keys) >= 2:
-            primary = random.choice(keys)
-            secondary = keys[1] if primary == keys[0] else keys[0]
-            return primary, secondary
-        elif len(keys) == 1:
-            return keys[0], None
-        return None, None
-
-    def _get_genai_client(self, key: Optional[str]) -> Optional[Any]:
-        if not key:
-            return None
-        if key not in self._genai_clients:
-            try:
-                from google import genai
-                self._genai_clients[key] = genai.Client(api_key=key)
-            except Exception as exc:
-                if self.logger:
-                    self.logger.log_event("LLM_INIT_ERROR", {"error": str(exc)})
-                return None
-        return self._genai_clients[key]
-
-    def _init_genai_client(self) -> None:
-        """Initializes or resets the active GenAI client."""
-        keys = self.get_configured_gemini_keys()
-        if keys and self.engine_mode in ("auto", "cloud"):
-            chosen = random.choice(keys) if len(keys) >= 2 else keys[0]
-            self.genai_client = self._get_genai_client(chosen)
-        else:
-            self.genai_client = None
+        self.tokenharbor_quota_exhausted: bool = False
 
     def reload_keys(self) -> None:
-        """Dynamically reloads API keys from environment variables and reinitializes client."""
-        self.api_key = (
-            os.environ.get("GEMINI_API_KEY", "").strip()
-            or os.environ.get("GOOGLE_API_KEY", "").strip()
-        )
-        self.api_key_2 = (
-            os.environ.get("GEMINI_API_KEY_2", "").strip()
-            or os.environ.get("GEMINI_FALLBACK_API_KEY", "").strip()
-        )
-        if not self.api_key and self.api_key_2:
-            self.api_key = self.api_key_2
-            self.api_key_2 = ""
-        self.gemini_key_index = 1
-        self.openrouter_api_key = os.environ.get("OPENROUTER_API_KEY", "").strip()
-        self.gemini_quota_exhausted = False
-        self.openrouter_quota_exhausted = False
-        self._genai_clients.clear()
-        self._init_genai_client()
+        """Dynamically reloads API keys and settings from environment variables."""
+        self.tokenharbor_api_key = os.environ.get("TOKEN_HARBOR_API_KEY", "").strip()
+        self.tokenharbor_base_url = os.environ.get("TOKEN_HARBOR_BASE_URL", "https://tokenharbor.ai/v1").strip()
+        self.tokenharbor_model = os.environ.get("TOKEN_HARBOR_MODEL", "deepseek-v4.1-flash:free").strip()
+        self.local_model = os.environ.get("OLLAMA_MODEL", "codellama:7b").strip()
+        self.tokenharbor_quota_exhausted = False
+
+        provider_mode_env = os.environ.get("TESTFORGE_PROVIDER_MODE", "").strip().lower()
+        if provider_mode_env in ("ollama", "ollama_only", "local_only", "local"):
+            self.engine_mode = "ollama_only"
+        elif provider_mode_env in ("tokenharbor", "cloud", "cloud_only"):
+            self.engine_mode = "tokenharbor"
+        else:
+            self.engine_mode = "tokenharbor" if self.tokenharbor_api_key else "ollama_only"
 
     def _emit_alert(self, alert_data: Dict[str, Any]) -> None:
         """Emits structured real-time alert event to WebSocket hub, logger, and callback."""
@@ -348,11 +299,10 @@ class HybridLLMClient:
         iteration: int = 1
     ) -> str:
         """
-        Executes generation through the strict 4-tier fallback hierarchy:
-          Tier 1: Google GenAI (gemini-3.6-flash) via GEMINI_API_KEY
-          Tier 2: OpenRouter Cloud API (https://openrouter.ai/api/v1/chat/completions) via OPENROUTER_API_KEY
-          Tier 3: Local Ollama (qwen2.5-coder:7b) via http://localhost:11434
-          Tier 4: AST-guided deterministic rule synthesizer (guarantees zero unhandled crashes)
+        Executes generation through the strict hybrid fallback hierarchy:
+          Tier 1: TokenHarbor Cloud API (deepseek-v4.1-flash:free) via TOKEN_HARBOR_API_KEY
+          Tier 2: Local Ollama (codellama:7b) via http://127.0.0.1:11434 (offline $0 cost mode)
+          Tier 3: AST-guided deterministic rule synthesizer (guarantees zero unhandled crashes)
         """
         # Privacy Mode Enforcement (Zero-Egress & PII Scrubbing)
         from testforge.privacy_mode import PrivacyModeManager
@@ -362,248 +312,42 @@ class HybridLLMClient:
             prompt, _ = privacy_mgr.scrub_prompt(prompt)
 
         # ======================================================================
-        # TIER 1: CLOUD API (Google GenAI - gemini-3.6-flash)
+        # TIER 1: TOKENHARBOR CLOUD API (deepseek-v4.1-flash:free)
         # ======================================================================
-        # Randomized dual-key selection on each request/cycle when both keys exist
-        primary_key, backup_key = self.get_random_key_pair()
-        active_client = self._get_genai_client(primary_key) if primary_key else None
-        if active_client:
-            self.genai_client = active_client
-
-        should_try_cloud = (
+        should_try_tokenharbor = (
             not is_privacy
-            and self.engine_mode in ("auto", "cloud")
-            and self.genai_client is not None
-            and not self.gemini_quota_exhausted
+            and self.engine_mode in ("auto", "tokenharbor", "cloud")
+            and bool(self.tokenharbor_api_key)
+            and not self.tokenharbor_quota_exhausted
         )
 
-        if should_try_cloud:
-            from google.genai import errors, types
+        if should_try_tokenharbor:
+            candidate_models = [self.tokenharbor_model]
+            for extra in ["deepseek-v4.1-flash:free", "deepseek/deepseek-flash"]:
+                if extra not in candidate_models:
+                    candidate_models.append(extra)
 
-            retry_delays = [2.0, 4.0]
-            model_candidates = resolve_cloud_model_candidates(self.cloud_model)
-
-            for attempt in range(1, 3):
-                config = types.GenerateContentConfig(
-                    system_instruction=system_instruction,
-                    temperature=temperature,
-                    automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True)
-                )
-
-                candidate_success = False
-                last_candidate_exc = None
-
-                for candidate_model in model_candidates:
-                    try:
-                        start_t = time.perf_counter()
-                        response = self.genai_client.models.generate_content(
-                            model=candidate_model,
-                            contents=prompt,
-                            config=config
-                        )
-                        latency = time.perf_counter() - start_t
-                        raw_text = response.text or ""
-
-                        tokens = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
-                        if hasattr(response, "usage_metadata") and response.usage_metadata:
-                            meta = response.usage_metadata
-                            tokens["prompt_tokens"] = getattr(meta, "prompt_token_count", 0) or 0
-                            tokens["completion_tokens"] = getattr(meta, "candidates_token_count", 0) or 0
-                            tokens["total_tokens"] = getattr(meta, "total_token_count", 0) or 0
-
-                        # Ensure telemetry token counts are non-zero when live LLM is invoked
-                        if tokens["total_tokens"] == 0:
-                            tokens["prompt_tokens"] = max(1, len(prompt) // 4)
-                            tokens["completion_tokens"] = max(1, len(raw_text) // 4)
-                            tokens["total_tokens"] = tokens["prompt_tokens"] + tokens["completion_tokens"]
-
-                        self.active_provider = f"Cloud Gemini ({candidate_model})"
-
-                        # Log telemetry to testforge_trace.jsonl
-                        if self.logger:
-                            self.logger.log_llm_event(
-                                agent_name=agent_name,
-                                model_name=f"Cloud Gemini:{candidate_model}",
-                                prompt=prompt,
-                                response_text=raw_text,
-                                prompt_tokens=tokens["prompt_tokens"],
-                                completion_tokens=tokens["completion_tokens"],
-                                total_tokens=tokens["total_tokens"],
-                                latency_sec=latency,
-                                iteration=iteration,
-                                provider_type="Cloud Gemini",
-                                is_actual_llm=True,
-                                token_accounting_source="provider_reported" if (hasattr(response, "usage_metadata") and response.usage_metadata and getattr(response.usage_metadata, "total_token_count", 0)) else "estimated_real_call"
-                            )
-
-                        return raw_text
-
-                    except Exception as exc:
-                        last_candidate_exc = exc
-                        err_msg = str(exc)
-                        is_429 = (
-                            any(token in err_msg for token in ("429", "RESOURCE_EXHAUSTED", "quota")) or
-                            getattr(exc, "code", None) == 429 or
-                            getattr(exc, "status_code", None) == 429
-                        )
-                        if is_429:
-                            break
-                        if any(token in err_msg.lower() for token in ("not found", "404", "does not exist", "unsupported")):
-                            continue
-                        continue
-
-                exc = last_candidate_exc or RuntimeError("All Gemini model candidates failed.")
-                err_msg = str(exc)
-                is_429 = (
-                    any(token in err_msg for token in ("429", "RESOURCE_EXHAUSTED", "quota")) or
-                    getattr(exc, "code", None) == 429 or
-                    getattr(exc, "status_code", None) == 429
-                )
-                is_503 = any(token in err_msg for token in ("503", "UNAVAILABLE", "overloaded"))
-
-                if is_429:
-                    if backup_key:
-                        print(f"\n[!] Active Gemini key 429 quota reached. Rotating to alternate configured key...")
-                        try:
-                            alt_client = self._get_genai_client(backup_key)
-                            if alt_client:
-                                self.genai_client = alt_client
-                                backup_key = None  # Consume alternate key to prevent loops
-                                if self.logger:
-                                    self.logger.log_event("GEMINI_KEY_ROTATED", {
-                                        "reason": "429 RESOURCE_EXHAUSTED",
-                                        "switched_to": "ALTERNATE_GEMINI_KEY"
-                                    })
-                                self._emit_alert({
-                                    "event_type": "API_RATE_LIMIT_ROTATED",
-                                    "title": "🔄 Gemini Quota Reached — Rotated to Backup Key",
-                                    "provider": "Cloud Gemini (Backup Key)",
-                                    "status": "warning",
-                                    "detail": "Active GEMINI_API_KEY hit 429 quota limit. Automatically rotated to alternate configured key.",
-                                    "fallback_tier": "Gemini Backup Key",
-                                    "error": err_msg,
-                                    "timestamp": time.time(),
-                                })
-                                # Retry immediately with backup key
-                                continue
-                        except Exception as rot_exc:
-                            print(f"[!] Alternate Gemini key rotation failed: {rot_exc}")
-                    if attempt < 2:
-                        delay = 6.0
-                        print(f"[*] Transient GenAI 429 quota/rate limit (attempt {attempt}/2). Retrying in {delay:.1f}s...")
-                        time.sleep(delay)
-                        continue
-                    self.gemini_quota_exhausted = True
-                    failover_msg = "[!] Gemini quota exhausted across all configured keys. Switching to secondary provider..."
-                    print(f"\n{failover_msg}")
-                    if self.openrouter_api_key:
-                        self._emit_alert({
-                            "event_type": "API_RATE_LIMIT_ROTATED",
-                            "title": "🔄 Gemini Quota Exhausted — Rotated to OpenRouter Cloud",
-                            "provider": "OpenRouter Cloud",
-                            "status": "warning",
-                            "detail": "All configured Gemini keys hit 429 quota limits. Automatically rotated to OpenRouter Cloud.",
-                            "fallback_tier": "OpenRouter Cloud",
-                            "error": err_msg,
-                            "timestamp": time.time(),
-                        })
-                    else:
-                        self._emit_alert({
-                            "event_type": "API_LIMIT_EXHAUSTED",
-                            "title": "⚠️ Gemini Quota Exhausted (429)",
-                            "provider": "Deterministic AST Synthesizer",
-                            "status": "error",
-                            "detail": "All configured Gemini keys hit 429 rate limits or quota bounds. Engaged deterministic Neuro-Symbolic AST synthesis.",
-                            "fallback_tier": "Neuro-Symbolic AST Synthesizer (Local)",
-                            "error": err_msg,
-                            "timestamp": time.time(),
-                        })
-                    if self.logger:
-                        self.logger.log_event("PROVIDER_FAILOVER", {
-                            "message": failover_msg,
-                            "from_provider": "Cloud Gemini",
-                            "to_provider": "OpenRouter Cloud" if self.openrouter_api_key else "Local Apple Silicon Engine (Ollama)",
-                            "reason": "429 RESOURCE_EXHAUSTED",
-                            "error": err_msg
-                        })
-                    break  # Fallthrough to Tier 2 immediately
-                elif is_503 and attempt < 2:
-                    delay = retry_delays[attempt - 1]
-                    print(f"[*] Transient GenAI 503 error (attempt {attempt}/2). Retrying in {delay:.1f}s...")
-                    time.sleep(delay)
-                    continue
-                else:
-                    print(f"[!] Cloud Gemini failed ({exc}). Proceeding to next tier...")
-                    self._emit_alert({
-                        "event_type": "API_ERROR_ALERT",
-                        "title": "⚠️ Gemini Cloud Provider Error",
-                        "provider": "Cloud Gemini",
-                        "status": "error",
-                        "detail": f"Gemini API request failed: {err_msg}",
-                        "error": err_msg,
-                        "timestamp": time.time(),
-                    })
-                    break
-
-        # If Cloud was already marked exhausted in a previous iteration:
-        elif self.engine_mode == "auto" and self.gemini_quota_exhausted and self.genai_client:
-            failover_msg = "[!] Gemini quota exhausted. Switching to secondary provider..."
-            print(f"\n{failover_msg}")
-            next_provider = "OpenRouter Cloud" if self.openrouter_api_key else "Local Apple Silicon Engine (Ollama)"
-            if self.logger:
-                self.logger.log_event("PROVIDER_FAILOVER", {
-                    "message": failover_msg,
-                    "from_provider": "Cloud Gemini",
-                    "to_provider": next_provider,
-                    "reason": "429 RESOURCE_EXHAUSTED (cached state)"
-                })
-
-        # If force-cloud (Gemini) mode was requested and Cloud failed, engage Tier 4 AST synthesizer
-        if self.engine_mode == "cloud":
-            raise RuntimeError("HybridLLMClient: Tier 4 Fallback Engaged - Cloud Gemini failed in force-cloud mode.")
-
-        # ======================================================================
-        # TIER 2: SECONDARY CLOUD API (OpenRouter - OpenAI compatible endpoint)
-        # ======================================================================
-        should_try_openrouter = (
-            not is_privacy
-            and self.engine_mode in ("auto", "openrouter")
-            and bool(self.openrouter_api_key)
-            and not self.openrouter_quota_exhausted
-        )
-
-        if should_try_openrouter:
-            free_tier_models = [
-                "qwen/qwen-2.5-coder-32b-instruct:free",
-                "meta-llama/llama-3.3-70b-instruct:free",
-                "google/gemini-2.0-flash-exp:free",
-                "openrouter/free",
-            ]
-            candidate_openrouter_models: List[str] = []
-            for m in [self.openrouter_model, "meta-llama/llama-3.3-70b-instruct", "qwen/qwen-2.5-coder-32b-instruct"] + free_tier_models:
-                if m and m not in candidate_openrouter_models:
-                    candidate_openrouter_models.append(m)
-
-            for model_cand in candidate_openrouter_models:
+            for cand_model in candidate_models:
                 try:
-                    print(f"[*] Engaging Secondary Provider: OpenRouter Cloud ({model_cand})...")
-                    raw_text, tokens, latency = call_openrouter_api(
+                    print(f"[*] Engaging TokenHarbor Cloud Provider ({cand_model})...")
+                    raw_text, tokens, latency = call_tokenharbor_api(
                         prompt=prompt,
                         system_instruction=system_instruction,
-                        api_key=self.openrouter_api_key,
-                        model=model_cand,
+                        api_key=self.tokenharbor_api_key,
+                        model=cand_model,
+                        base_url=self.tokenharbor_base_url,
                         temperature=temperature
                     )
                     if not raw_text.strip():
                         continue
 
-                    self.active_provider = f"OpenRouter Cloud ({model_cand})"
-                    print(f"[*] Successfully generated via OpenRouter: {model_cand}")
+                    self.active_provider = f"TokenHarbor Cloud ({cand_model})"
+                    print(f"[*] Successfully generated via TokenHarbor: {cand_model} in {latency:.2f}s")
 
                     if self.logger:
                         self.logger.log_llm_event(
                             agent_name=agent_name,
-                            model_name=f"OpenRouter:{model_cand}",
+                            model_name=f"TokenHarbor:{cand_model}",
                             prompt=prompt,
                             response_text=raw_text,
                             prompt_tokens=tokens["prompt_tokens"],
@@ -611,7 +355,7 @@ class HybridLLMClient:
                             total_tokens=tokens["total_tokens"],
                             latency_sec=latency,
                             iteration=iteration,
-                            provider_type="OpenRouter Cloud",
+                            provider_type="TokenHarbor Cloud",
                             is_actual_llm=True,
                             token_accounting_source="provider_reported"
                         )
@@ -619,94 +363,58 @@ class HybridLLMClient:
 
                 except urllib.error.HTTPError as http_err:
                     err_msg = str(http_err)
-                    is_402 = http_err.code == 402
                     is_429 = http_err.code == 429
-                    if is_402:
-                        curr_idx = candidate_openrouter_models.index(model_cand) if model_cand in candidate_openrouter_models else -1
-                        free_models_left = [
-                            m for m in candidate_openrouter_models[curr_idx + 1:]
-                            if (":free" in m or m == "openrouter/free")
-                        ]
-                        if free_models_left:
-                            next_free = free_models_left[0]
-                            print(f"[!] OpenRouter 402 (insufficient credits) on {model_cand}. Auto-falling over to $0 free coding models: {next_free}...")
-                            self._emit_alert({
-                                "event_type": "API_RATE_LIMIT_ROTATED",
-                                "title": "🔄 OpenRouter Paid Credits Exhausted (402) — Switched to $0 Free Model",
-                                "provider": "OpenRouter Free Tier",
-                                "status": "warning",
-                                "detail": f"Paid model {model_cand} returned 402 Payment Required. Seamlessly rotated to free tier: {next_free}.",
-                                "fallback_tier": f"OpenRouter Free ({next_free})",
-                                "error": err_msg,
-                                "timestamp": time.time(),
-                            })
-                            continue
-                        else:
-                            self.openrouter_quota_exhausted = True
-                            failover_msg = f"[!] OpenRouter quota/credits exhausted across all paid and free models (HTTP 402). Failing over..."
-                            print(f"\n{failover_msg}")
-                            self._emit_alert({
-                                "event_type": "API_LIMIT_EXHAUSTED",
-                                "title": "⚠️ OpenRouter Credits Exhausted (402)",
-                                "provider": "OpenRouter Cloud",
-                                "status": "error",
-                                "detail": "All configured OpenRouter models (including $0 free tiers) returned 402 / insufficient credits.",
-                                "fallback_tier": "Neuro-Symbolic AST Synthesizer (Local)",
-                                "error": err_msg,
-                                "timestamp": time.time(),
-                            })
-                            break
-                    elif is_429:
-                        self.openrouter_quota_exhausted = True
-                        failover_msg = f"[!] OpenRouter rate limit reached on {model_cand} (HTTP 429). Failing over..."
+                    is_402 = http_err.code == 402
+                    if is_429 or is_402:
+                        self.tokenharbor_quota_exhausted = True
+                        failover_msg = f"[!] TokenHarbor rate limit/quota reached ({http_err.code}). Falling back to Local Ollama..."
                         print(f"\n{failover_msg}")
                         self._emit_alert({
                             "event_type": "API_LIMIT_EXHAUSTED",
-                            "title": "⚠️ OpenRouter Rate Limit Reached (429)",
-                            "provider": "OpenRouter Cloud",
-                            "status": "error",
-                            "detail": f"OpenRouter rate limit reached on {model_cand} (HTTP 429).",
-                            "fallback_tier": "Neuro-Symbolic AST Synthesizer (Local)",
+                            "title": "⚠️ TokenHarbor Quota / Rate Limit Reached",
+                            "provider": "TokenHarbor Cloud",
+                            "status": "warning",
+                            "detail": f"TokenHarbor returned HTTP {http_err.code}. Seamlessly routing to Local Ollama ({self.local_model}).",
+                            "fallback_tier": f"Local Ollama ({self.local_model})",
                             "error": err_msg,
                             "timestamp": time.time(),
                         })
+                        if self.logger:
+                            self.logger.log_event("PROVIDER_FAILOVER", {
+                                "message": failover_msg,
+                                "from_provider": "TokenHarbor Cloud",
+                                "to_provider": f"Local Ollama ({self.local_model})",
+                                "reason": f"HTTP_{http_err.code}",
+                                "error": err_msg
+                            })
                         break
                     else:
-                        print(f"[!] OpenRouter model {model_cand} error (HTTP {http_err.code}). Trying next candidate...")
-                        self._emit_alert({
-                            "event_type": "API_ERROR_ALERT",
-                            "title": f"⚠️ OpenRouter Error ({model_cand})",
-                            "provider": "OpenRouter Cloud",
-                            "status": "warning",
-                            "detail": f"Model {model_cand} returned HTTP {http_err.code}: {err_msg}",
-                            "error": err_msg,
-                            "timestamp": time.time(),
-                        })
+                        print(f"[!] TokenHarbor model {cand_model} returned HTTP {http_err.code}: {http_err}. Trying next candidate...")
                         continue
-                        continue
-                except Exception as or_exc:
-                    print(f"[!] OpenRouter request failed for {model_cand}: {or_exc}. Trying next candidate...")
+                except Exception as th_exc:
+                    print(f"[!] TokenHarbor request error for {cand_model}: {th_exc}. Trying next candidate...")
                     continue
 
-        if self.engine_mode == "openrouter":
-            raise RuntimeError("HybridLLMClient: Tier 4 Fallback Engaged - OpenRouter failed in force-openrouter mode.")
+        # If force-cloud was requested and failed, fall through to deterministic synthesizer
+        if self.engine_mode == "tokenharbor" and not self.tokenharbor_api_key:
+            pass
 
         # ======================================================================
-        # TIER 3: LOCAL OLLAMA INFERENCE (Offline Mode on Apple Silicon / Local)
+        # TIER 2: LOCAL OLLAMA INFERENCE (Offline Mode on Localhost / Apple Silicon)
         # ======================================================================
-        should_try_local = self.engine_mode in ("auto", "local", "ollama_only")
+        should_try_local = self.engine_mode in ("auto", "local", "ollama_only", "tokenharbor", "cloud")
         if should_try_local:
-            tags_url = self.local_url.replace("/api/generate", "/api/tags") if "/api/generate" in self.local_url else "http://localhost:11434/api/tags"
+            tags_url = self.local_url.replace("/api/generate", "/api/tags") if "/api/generate" in self.local_url else "http://127.0.0.1:11434/api/tags"
             ollama_reachable = False
             try:
-                r_ping = requests.get(tags_url, timeout=(1.0, 1.5))
+                r_ping = requests.get(tags_url, timeout=(0.8, 1.2))
                 ollama_reachable = (r_ping.status_code == 200)
             except Exception:
                 ollama_reachable = False
 
             if ollama_reachable:
                 candidate_models = [self.local_model]
-                for extra_model in ["qwen2.5-coder:7b", "codellama:7b"]:
+                for extra_model in ["codellama:7b", "qwen2.5-coder:7b"]:
                     if extra_model not in candidate_models:
                         candidate_models.append(extra_model)
 
@@ -720,7 +428,6 @@ class HybridLLMClient:
                     }
                     start_t = time.perf_counter()
                     try:
-                        # Enforce explicit socket timeout: 3.0s connect, 25.0s read
                         resp = requests.post(
                             self.local_url,
                             json=payload,
@@ -758,52 +465,28 @@ class HybridLLMClient:
                                     )
                                 return raw_text
                     except (requests.exceptions.ConnectTimeout, requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError) as sock_err:
-                        # Aggressive circuit breaker: log and fall back immediately without hanging
                         print("\n[LLM Fallback Warning] Local LLM unresponsive. Falling back to Deterministic AST Boundary Synthesizer.")
                         if self.logger:
                             self.logger.log_event("LLM_FALLBACK_CIRCUIT_BREAKER", {
-                                "warning": "[LLM Fallback Warning] Local LLM unresponsive. Falling back to Deterministic AST Boundary Synthesizer.",
+                                "warning": "Local LLM unresponsive -> Routing to Deterministic AST Boundary Synthesizer",
                                 "error": str(sock_err),
                                 "model": model_candidate
                             })
-                        try:
-                            from testforge.websocket_hub import global_websocket_hub
-                            global_websocket_hub.broadcast_event({
-                                "event_type": "PIPELINE_TELEMETRY",
-                                "phase": "EXECUTING",
-                                "stage": "FALLBACK_TRIGGERED",
-                                "detail": "Local LLM unresponsive -> Routing to Deterministic AST Boundary Synthesizer..."
-                            })
-                        except Exception:
-                            pass
                         return self._route_to_ast_synthesizer(prompt, agent_name, iteration)
                     except Exception as ollama_exc:
                         print(f"[!] Local Ollama model {model_candidate} error: {ollama_exc}. Trying next candidate...")
                         continue
 
-            # If Ollama is unreachable / offline:
-            print("\n[LLM Fallback Warning] Local LLM unresponsive. Falling back to Deterministic AST Boundary Synthesizer.")
+            print("\n[LLM Fallback Warning] Local LLM unresponsive or offline. Falling back to Deterministic AST Boundary Synthesizer.")
             if self.logger:
                 self.logger.log_event("LLM_FALLBACK_CIRCUIT_BREAKER", {
-                    "warning": "[LLM Fallback Warning] Local LLM unresponsive. Falling back to Deterministic AST Boundary Synthesizer.",
-                    "reason": "Local Ollama daemon unreachable or offline"
+                    "warning": "Local Ollama daemon unreachable or offline -> Routing to Deterministic AST Boundary Synthesizer"
                 })
-            try:
-                from testforge.websocket_hub import global_websocket_hub
-                global_websocket_hub.broadcast_event({
-                    "event_type": "PIPELINE_TELEMETRY",
-                    "phase": "EXECUTING",
-                    "stage": "FALLBACK_TRIGGERED",
-                    "detail": "Local LLM unresponsive -> Routing to Deterministic AST Boundary Synthesizer..."
-                })
-            except Exception:
-                pass
             return self._route_to_ast_synthesizer(prompt, agent_name, iteration)
 
         # ======================================================================
-        # TIER 4: QUATERNARY AST DETERMINISTIC RULE SYNTHESIZER
+        # TIER 3: DETERMINISTIC AST RULE SYNTHESIZER
         # ======================================================================
-        print("\n[LLM Fallback Warning] Local LLM unresponsive. Falling back to Deterministic AST Boundary Synthesizer.")
         return self._route_to_ast_synthesizer(prompt, agent_name, iteration)
 
     def _route_to_ast_synthesizer(
@@ -818,16 +501,6 @@ class HybridLLMClient:
         """
         from testforge.intelligent_generator import DeterministicBaselineGenerator
         self.active_provider = "AST Deterministic Synthesizer"
-        if self.gemini_quota_exhausted or self.openrouter_quota_exhausted:
-            self._emit_alert({
-                "event_type": "API_LIMIT_EXHAUSTED",
-                "title": "⚠️ Cloud API Limit Exhausted — Fallback Active",
-                "provider": "Neuro-Symbolic AST Synthesizer",
-                "status": "error",
-                "detail": "Cloud LLM quotas exhausted. Seamlessly engaged zero-egress Neuro-Symbolic AST synthesis (DEF-022 guaranteed).",
-                "fallback_tier": "Neuro-Symbolic AST Synthesizer (Local)",
-                "timestamp": time.time(),
-            })
         synthesizer = DeterministicBaselineGenerator()
 
         # Extract target Python source code from prompt
@@ -843,12 +516,10 @@ class HybridLLMClient:
         elif "Target Code:" in prompt:
             source_code = prompt.split("Target Code:")[1].split("\n\n")[0].strip()
 
-        # Clean untrusted wrapper tags if present
         if "<untrusted_content" in source_code:
             import re
             source_code = re.sub(r"</?untrusted_content[^>]*>", "", source_code).strip()
 
-        # Check caller expectations (ADK / Reflection JSON schemas)
         expects_json = (
             "GeneratedTestPayload" in prompt or
             "RepairDirectivePayload" in prompt or
@@ -867,8 +538,8 @@ class HybridLLMClient:
             except Exception:
                 pass
 
-        if not test_code:
-            test_code = "import pytest\n\ndef test_deterministic_boundary():\n    assert True\n"
+        if not test_code or "def test_" not in test_code:
+            test_code = (test_code + "\n\ndef test_deterministic_boundary():\n    assert True\n").strip()
 
         if expects_json:
             target_fn = callables[0] if callables else "target_function"
@@ -896,4 +567,3 @@ class HybridLLMClient:
             return json.dumps(payload)
 
         return test_code
-
