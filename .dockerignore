@@ -27,7 +27,8 @@ htmlcov/
 *.sqlite3
 
 # TestForge artifacts & scratch directories
-qa_artifacts/
+qa_artifacts/*/
+qa_artifacts/*.db*
 scratch/
 brain/
 *.jsonl

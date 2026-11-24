@@ -543,6 +543,11 @@ def _evaluate_single_mutant_in_memory(
         stem = os.path.splitext(base_name)[0]
         if stem and stem != "target":
             mod_aliases.append(stem)
+        norm_p = os.path.normpath(target_file_path)
+        if not os.path.isabs(norm_p):
+            dot_p = os.path.splitext(norm_p)[0].replace(os.sep, ".")
+            if dot_p and dot_p not in mod_aliases:
+                mod_aliases.append(dot_p)
 
     all_keys = list(mod_aliases)
     if companion_files:
@@ -552,6 +557,7 @@ def _evaluate_single_mutant_in_memory(
                 all_keys.append(c_stem)
 
     saved_modules = {k: sys.modules.get(k) for k in all_keys}
+    saved_attrs = {}
     start_time = time.perf_counter()
 
     try:
@@ -560,6 +566,16 @@ def _evaluate_single_mutant_in_memory(
         target_mod.__file__ = target_file_path or "target.py"
         for alias in mod_aliases:
             sys.modules[alias] = target_mod
+            if "." in alias:
+                pkg_name, mod_name = alias.rsplit(".", 1)
+                pkg = sys.modules.get(pkg_name)
+                if pkg is None:
+                    pkg = types.ModuleType(pkg_name)
+                    pkg.__path__ = []
+                    sys.modules[pkg_name] = pkg
+                    saved_modules[pkg_name] = None
+                saved_attrs[(pkg, mod_name)] = getattr(pkg, mod_name, None)
+                setattr(pkg, mod_name, target_mod)
 
         # Mount companion modules if provided
         if companion_files:
@@ -638,6 +654,7 @@ def _evaluate_single_mutant_in_memory(
         tests_failed = 0
         failure_type = "NONE"
         err_msg = ""
+        status_lines = []
 
         # Step count infinite loop guard
         step_count = 0
@@ -654,22 +671,31 @@ def _evaluate_single_mutant_in_memory(
         sys.settrace(_step_trace)
         try:
             for t_name, t_func in test_callables:
+                if "." in t_name:
+                    cls_part, meth_part = t_name.split(".", 1)
+                    test_id = f"test_target.py::{cls_part}::{meth_part}"
+                else:
+                    test_id = f"test_target.py::{t_name}"
+
                 try:
                     sig = inspect.signature(t_func)
                     if len(sig.parameters) > 0:
                         return None  # Parameterized or fixture test requires pytest runner
                     t_func()
                     tests_passed += 1
+                    status_lines.append(f"{test_id} PASSED")
                 except AssertionError as ae:
                     tests_failed += 1
                     failure_type = "ASSERTION_FAIL"
                     err_msg = f"AssertionError in {t_name}: {ae}"
+                    status_lines.append(f"{test_id} FAILED")
                     break
                 except TimeoutError as te:
                     dur_ms = (time.perf_counter() - start_time) * 1000.0
+                    status_lines.append(f"{test_id} FAILED")
                     return {
                         "exit_code": -1,
-                        "stdout": "",
+                        "stdout": "\n".join(status_lines),
                         "stderr": str(te),
                         "status": "TIMEOUT",
                         "failure_type": "TIMEOUT",
@@ -685,15 +711,17 @@ def _evaluate_single_mutant_in_memory(
                     tests_failed += 1
                     failure_type = "EXCEPTION_FAIL"
                     err_msg = f"{type(exc).__name__} in {t_name}: {exc}"
+                    status_lines.append(f"{test_id} FAILED")
                     break
         finally:
             sys.settrace(orig_trace)
 
         dur_ms = (time.perf_counter() - start_time) * 1000.0
+        stdout_content = "\n".join(status_lines)
         if tests_failed > 0:
             return {
                 "exit_code": 1,
-                "stdout": "",
+                "stdout": stdout_content,
                 "stderr": err_msg,
                 "status": "FAIL",
                 "failure_type": failure_type,
@@ -708,7 +736,7 @@ def _evaluate_single_mutant_in_memory(
         else:
             return {
                 "exit_code": 0,
-                "stdout": f"{tests_passed} passed",
+                "stdout": f"{stdout_content}\n{tests_passed} passed" if stdout_content else f"{tests_passed} passed",
                 "stderr": "",
                 "status": "PASS",
                 "failure_type": "NONE",
@@ -723,6 +751,12 @@ def _evaluate_single_mutant_in_memory(
     except Exception:
         return None
     finally:
+        for (pkg, mod_name), orig_v in saved_attrs.items():
+            if orig_v is None:
+                if hasattr(pkg, mod_name):
+                    delattr(pkg, mod_name)
+            else:
+                setattr(pkg, mod_name, orig_v)
         for k, v in saved_modules.items():
             if v is None:
                 sys.modules.pop(k, None)
