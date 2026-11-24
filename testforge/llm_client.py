@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import json
 import os
+import random
 import time
 import urllib.error
 import urllib.request
@@ -29,6 +30,28 @@ from typing import Dict, List, Optional, Tuple
 import requests
 
 from testforge.logger import TraceLogger
+
+
+def get_dual_gemini_keys() -> Tuple[str, str]:
+    """Returns the two configured Gemini API keys (key1, key2) from environment."""
+    k1 = os.environ.get("GEMINI_API_KEY", "").strip() or os.environ.get("GOOGLE_API_KEY", "").strip()
+    k2 = os.environ.get("GEMINI_API_KEY_2", "").strip() or os.environ.get("GEMINI_FALLBACK_API_KEY", "").strip()
+    return k1, k2
+
+
+def select_random_gemini_key(api_key: Optional[str] = None, api_key_2: Optional[str] = None) -> str:
+    """
+    Selects between configured Gemini keys randomly when both are present,
+    or returns the single active key.
+    """
+    k1 = (api_key or "").strip() or os.environ.get("GEMINI_API_KEY", "").strip() or os.environ.get("GOOGLE_API_KEY", "").strip()
+    k2 = (api_key_2 or "").strip() or os.environ.get("GEMINI_API_KEY_2", "").strip() or os.environ.get("GEMINI_FALLBACK_API_KEY", "").strip()
+    keys = list(dict.fromkeys([k for k in (k1, k2) if k]))
+    if len(keys) >= 2:
+        return random.choice(keys)
+    elif len(keys) == 1:
+        return keys[0]
+    return ""
 
 
 def probe_ollama_status(url: str = "http://localhost:11434/api/tags", timeout: float = 0.8) -> Tuple[bool, List[str]]:
@@ -131,6 +154,7 @@ class HybridLLMClient:
         local_url: str = "http://localhost:11434/api/generate",
         engine_mode: str = "auto",
         api_key: Optional[str] = None,
+        api_key_2: Optional[str] = None,
         openrouter_api_key: Optional[str] = None,
         logger: Optional[TraceLogger] = None,
         alert_callback: Optional[Any] = None,
@@ -169,7 +193,8 @@ class HybridLLMClient:
             or os.environ.get("GOOGLE_API_KEY", "").strip()
         )
         self.api_key_2 = (
-            os.environ.get("GEMINI_API_KEY_2", "").strip()
+            api_key_2
+            or os.environ.get("GEMINI_API_KEY_2", "").strip()
             or os.environ.get("GEMINI_FALLBACK_API_KEY", "").strip()
         )
         if not self.api_key and self.api_key_2:
@@ -184,16 +209,66 @@ class HybridLLMClient:
         self.gemini_quota_exhausted: bool = False
         self.openrouter_quota_exhausted: bool = False
 
-        # Single unified GenAI client instance
+        # Dual-client cache supporting randomized key distribution and 429 failover
+        self._genai_clients: Dict[str, Any] = {}
         self.genai_client = None
-        if self.api_key and self.engine_mode in ("auto", "cloud"):
+        self._init_genai_client()
+
+    def get_configured_gemini_keys(self) -> List[str]:
+        """Returns non-empty unique configured Gemini keys from instance or environment."""
+        k1 = (
+            self.api_key
+            or os.environ.get("GEMINI_API_KEY", "").strip()
+            or os.environ.get("GOOGLE_API_KEY", "").strip()
+        )
+        k2 = (
+            self.api_key_2
+            or os.environ.get("GEMINI_API_KEY_2", "").strip()
+            or os.environ.get("GEMINI_FALLBACK_API_KEY", "").strip()
+        )
+        keys: List[str] = []
+        if k1:
+            keys.append(k1)
+        if k2 and k2 not in keys:
+            keys.append(k2)
+        return keys
+
+    def get_random_key_pair(self) -> Tuple[Optional[str], Optional[str]]:
+        """
+        When both GEMINI_API_KEY and GEMINI_API_KEY_2 are configured,
+        selects randomly between them for the active request/cycle,
+        returning (selected_primary_key, alternate_key).
+        """
+        keys = self.get_configured_gemini_keys()
+        if len(keys) >= 2:
+            primary = random.choice(keys)
+            secondary = keys[1] if primary == keys[0] else keys[0]
+            return primary, secondary
+        elif len(keys) == 1:
+            return keys[0], None
+        return None, None
+
+    def _get_genai_client(self, key: Optional[str]) -> Optional[Any]:
+        if not key:
+            return None
+        if key not in self._genai_clients:
             try:
                 from google import genai
-                self.genai_client = genai.Client(api_key=self.api_key)
+                self._genai_clients[key] = genai.Client(api_key=key)
             except Exception as exc:
                 if self.logger:
                     self.logger.log_event("LLM_INIT_ERROR", {"error": str(exc)})
-                self.genai_client = None
+                return None
+        return self._genai_clients[key]
+
+    def _init_genai_client(self) -> None:
+        """Initializes or resets the active GenAI client."""
+        keys = self.get_configured_gemini_keys()
+        if keys and self.engine_mode in ("auto", "cloud"):
+            chosen = random.choice(keys) if len(keys) >= 2 else keys[0]
+            self.genai_client = self._get_genai_client(chosen)
+        else:
+            self.genai_client = None
 
     def reload_keys(self) -> None:
         """Dynamically reloads API keys from environment variables and reinitializes client."""
@@ -212,12 +287,8 @@ class HybridLLMClient:
         self.openrouter_api_key = os.environ.get("OPENROUTER_API_KEY", "").strip()
         self.gemini_quota_exhausted = False
         self.openrouter_quota_exhausted = False
-        if self.api_key and self.engine_mode in ("auto", "cloud"):
-            try:
-                from google import genai
-                self.genai_client = genai.Client(api_key=self.api_key)
-            except Exception:
-                self.genai_client = None
+        self._genai_clients.clear()
+        self._init_genai_client()
 
     def _emit_alert(self, alert_data: Dict[str, Any]) -> None:
         """Emits structured real-time alert event to WebSocket hub, logger, and callback."""
@@ -263,6 +334,12 @@ class HybridLLMClient:
         # ======================================================================
         # TIER 1: CLOUD API (Google GenAI - gemini-3.6-flash)
         # ======================================================================
+        # Randomized dual-key selection on each request/cycle when both keys exist
+        primary_key, backup_key = self.get_random_key_pair()
+        active_client = self._get_genai_client(primary_key) if primary_key else None
+        if active_client:
+            self.genai_client = active_client
+
         should_try_cloud = (
             not is_privacy
             and self.engine_mode in ("auto", "cloud")
@@ -328,39 +405,39 @@ class HybridLLMClient:
                     is_503 = any(token in err_msg for token in ("503", "UNAVAILABLE", "overloaded"))
 
                     if is_429:
-                        if self.api_key_2 and self.gemini_key_index == 1:
-                            print(f"\n[!] Primary Gemini key 429 quota reached. Rotating to secondary GEMINI_API_KEY_2...")
+                        if backup_key:
+                            print(f"\n[!] Active Gemini key 429 quota reached. Rotating to alternate configured key...")
                             try:
-                                from google import genai
-                                self.genai_client = genai.Client(api_key=self.api_key_2)
-                                self.api_key = self.api_key_2
-                                self.gemini_key_index = 2
-                                if self.logger:
-                                    self.logger.log_event("GEMINI_KEY_ROTATED", {
-                                        "reason": "429 RESOURCE_EXHAUSTED",
-                                        "switched_to": "GEMINI_API_KEY_2"
+                                alt_client = self._get_genai_client(backup_key)
+                                if alt_client:
+                                    self.genai_client = alt_client
+                                    backup_key = None  # Consume alternate key to prevent loops
+                                    if self.logger:
+                                        self.logger.log_event("GEMINI_KEY_ROTATED", {
+                                            "reason": "429 RESOURCE_EXHAUSTED",
+                                            "switched_to": "ALTERNATE_GEMINI_KEY"
+                                        })
+                                    self._emit_alert({
+                                        "event_type": "API_RATE_LIMIT_ROTATED",
+                                        "title": "🔄 Gemini Quota Reached — Rotated to Backup Key",
+                                        "provider": "Cloud Gemini (Backup Key)",
+                                        "status": "warning",
+                                        "detail": "Active GEMINI_API_KEY hit 429 quota limit. Automatically rotated to alternate configured key.",
+                                        "fallback_tier": "Gemini Backup Key",
+                                        "error": err_msg,
+                                        "timestamp": time.time(),
                                     })
-                                self._emit_alert({
-                                    "event_type": "API_RATE_LIMIT_ROTATED",
-                                    "title": "🔄 Primary Gemini Quota Reached — Rotated to Backup Key",
-                                    "provider": "Cloud Gemini (Backup Key)",
-                                    "status": "warning",
-                                    "detail": "Primary GEMINI_API_KEY hit 429 quota limit. Automatically rotated to GEMINI_API_KEY_2.",
-                                    "fallback_tier": "Gemini Backup Key",
-                                    "error": err_msg,
-                                    "timestamp": time.time(),
-                                })
-                                # Retry immediately with secondary key
-                                continue
+                                    # Retry immediately with backup key
+                                    continue
                             except Exception as rot_exc:
-                                print(f"[!] Secondary Gemini key rotation failed: {rot_exc}")
+                                print(f"[!] Alternate Gemini key rotation failed: {rot_exc}")
                         if attempt < 2:
                             delay = 6.0
                             print(f"[*] Transient GenAI 429 quota/rate limit (attempt {attempt}/2). Retrying in {delay:.1f}s...")
                             time.sleep(delay)
                             continue
                         self.gemini_quota_exhausted = True
-                        failover_msg = "[!] Gemini quota exhausted. Switching to secondary provider..."
+                        failover_msg = "[!] Gemini quota exhausted across all configured keys. Switching to secondary provider..."
                         print(f"\n{failover_msg}")
                         if self.openrouter_api_key:
                             self._emit_alert({

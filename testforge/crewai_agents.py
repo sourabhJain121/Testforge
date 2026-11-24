@@ -52,13 +52,8 @@ class CrewCodeIntelligenceCriticCrew:
         verbose: bool = False,
         llm_client: Optional[Any] = None,
     ):
-        self.api_key = (
-            api_key
-            or os.environ.get("GEMINI_API_KEY", "").strip()
-            or os.environ.get("GEMINI_API_KEY_2", "").strip()
-            or os.environ.get("GEMINI_FALLBACK_API_KEY", "").strip()
-            or os.environ.get("GOOGLE_API_KEY", "").strip()
-        )
+        from testforge.llm_client import select_random_gemini_key
+        self.api_key = select_random_gemini_key(api_key)
         self.model_name = model_name
         self.verbose = verbose
         self.has_crewai = HAS_CREWAI

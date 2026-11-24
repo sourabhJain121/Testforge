@@ -908,6 +908,7 @@ def _mask_api_key(k: Optional[str]) -> str:
     return f"{s[:6]}...{s[-4:]}"
 
 
+@app.get("/api/settings")
 @app.get("/api/status")
 async def get_system_status():
     """
@@ -968,6 +969,7 @@ async def get_system_status():
     }
 
 
+@app.post("/api/settings")
 @app.post("/api/config")
 @app.post("/api/keys")
 @app.post("/api/config/keys")
@@ -1030,6 +1032,8 @@ async def update_api_keys(payload: KeyConfigPayload):
         "status": "success",
         "has_gemini": has_gem,
         "has_gemini_fallback": has_gem2,
+        "dual_keys_active": has_gem and has_gem2,
+        "key_selection_strategy": "randomized" if (has_gem and has_gem2) else "single",
         "has_openrouter": has_or,
         "gemini_key_masked": _mask_api_key(gem_raw),
         "gemini_key_2_masked": _mask_api_key(gem2_raw),
@@ -1589,11 +1593,13 @@ def _run_orchestration_job(job_id: str, payload: HardeningRunPayload):
             target_file_path=payload.target_file_path or "",
             api_key=(
                 payload.gemini_api_key
-                or payload.gemini_api_key_2
                 or os.environ.get("GEMINI_API_KEY")
+                or os.environ.get("GOOGLE_API_KEY")
+            ),
+            api_key_2=(
+                payload.gemini_api_key_2
                 or os.environ.get("GEMINI_API_KEY_2")
                 or os.environ.get("GEMINI_FALLBACK_API_KEY")
-                or os.environ.get("GOOGLE_API_KEY")
             ),
             openrouter_api_key=payload.openrouter_api_key or os.environ.get("OPENROUTER_API_KEY"),
             engine_mode=payload.engine_mode,

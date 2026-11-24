@@ -4,6 +4,9 @@
 .venv*
 venv*
 env*
+.env
+.env.*
+!.env.example
 
 # Python bytecode & cache
 __pycache__/

@@ -135,13 +135,8 @@ class ADKModelBridge(BaseLlm):
         super().__init__(model=model, **kwargs)
         env_live = os.environ.get("TESTFORGE_LIVE_LLM", "0").lower() in ("1", "true", "yes")
         live_flag = use_live_llm if use_live_llm is not None else env_live
-        resolved_api_key = (
-            api_key
-            or os.environ.get("GEMINI_API_KEY", "").strip()
-            or os.environ.get("GEMINI_API_KEY_2", "").strip()
-            or os.environ.get("GEMINI_FALLBACK_API_KEY", "").strip()
-            or os.environ.get("GOOGLE_API_KEY", "").strip()
-        )
+        from testforge.llm_client import select_random_gemini_key
+        resolved_api_key = select_random_gemini_key(api_key)
         object.__setattr__(self, "_api_key", resolved_api_key)
         object.__setattr__(self, "_llm_client", llm_client)
         object.__setattr__(self, "_use_live_llm", live_flag)
