@@ -739,7 +739,11 @@ async def get_a2a_agent_card(request: Request):
 
         if host_header and host_header != "testserver":
             proto = fwd_proto or request.url.scheme or "http"
-            if host_header.endswith(".run.app") or host_header.endswith(".onrender.com"):
+            if (
+                host_header.endswith(".run.app")
+                or host_header.endswith(".onrender.com")
+                or host_header.endswith(".azurecontainerapps.io")
+            ):
                 proto = "https"
             clean_host = host_header
             if proto == "https" and clean_host.endswith(":443"):

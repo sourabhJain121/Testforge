@@ -1,7 +1,7 @@
 # ==============================================================================
 # TestForge: Autonomous Agentic Unit Test Hardening System
 # Production Multi-Stage Container Definition (Python 3.13)
-# Optimized for Google Cloud Run (Serverless Container) & Render
+# Optimized for Azure Container Apps, Google Cloud Run & Render
 # ==============================================================================
 
 FROM python:3.13-slim AS base
