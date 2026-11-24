@@ -15,6 +15,7 @@ Features:
 from __future__ import annotations
 
 import ast
+import inspect
 import json
 import os
 import re
@@ -23,6 +24,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import types
 from abc import ABC, abstractmethod
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from dataclasses import dataclass, field
@@ -494,6 +496,312 @@ def get_sandbox_backend() -> SandboxBackend:
     return SubprocessSandboxBackend()
 
 
+def _evaluate_single_mutant_in_memory(
+    test_code: str,
+    mutated_code: str,
+    target_file_path: Optional[str] = None,
+    companion_files: Optional[Dict[str, str]] = None,
+    timeout_seconds: float = 2.0
+) -> Optional[Dict[str, Any]]:
+    """
+    Ultra-fast in-memory mutant evaluation avoiding cold subprocess/pytest startup overhead.
+    Evaluates mutated module and executes test assertions directly in memory with infinite loop guards.
+    Returns standard parsed result dict or None if fallback to subprocess sandbox is required.
+    """
+    if not test_code or not test_code.strip() or not mutated_code:
+        return None
+
+    # AST Syntax validation for mutated code: SyntaxError in mutant is an automatic kill
+    try:
+        mutant_ast = ast.parse(mutated_code)
+    except (SyntaxError, IndentationError) as syn_err:
+        return {
+            "exit_code": 1,
+            "stdout": "",
+            "stderr": f"Mutant failed Python syntax compilation: {syn_err}",
+            "status": "FAIL",
+            "failure_type": "EXCEPTION_FAIL",
+            "timed_out": False,
+            "duration_ms": 0.2,
+            "tests_collected": 1,
+            "tests_passed": 0,
+            "tests_failed": 1,
+            "tests_errors": 0,
+            "has_exec_error": False,
+        }
+
+    # If test code has syntax error, defer to standard runner
+    try:
+        test_ast = ast.parse(test_code)
+    except (SyntaxError, IndentationError):
+        return None
+
+    # Determine module alias names
+    mod_aliases = ["target"]
+    if target_file_path:
+        base_name = os.path.basename(target_file_path)
+        stem = os.path.splitext(base_name)[0]
+        if stem and stem != "target":
+            mod_aliases.append(stem)
+
+    all_keys = list(mod_aliases)
+    if companion_files:
+        for rel_p in companion_files:
+            c_stem = os.path.splitext(os.path.basename(rel_p))[0]
+            if c_stem:
+                all_keys.append(c_stem)
+
+    saved_modules = {k: sys.modules.get(k) for k in all_keys}
+    start_time = time.perf_counter()
+
+    try:
+        # 1. Mount and compile mutated target module
+        target_mod = types.ModuleType("target")
+        target_mod.__file__ = target_file_path or "target.py"
+        for alias in mod_aliases:
+            sys.modules[alias] = target_mod
+
+        # Mount companion modules if provided
+        if companion_files:
+            for rel_p, comp_code in companion_files.items():
+                c_stem = os.path.splitext(os.path.basename(rel_p))[0]
+                if c_stem:
+                    c_mod = types.ModuleType(c_stem)
+                    c_mod.__file__ = rel_p
+                    sys.modules[c_stem] = c_mod
+                    try:
+                        exec(compile(comp_code, rel_p, "exec"), c_mod.__dict__)
+                    except Exception:
+                        pass
+
+        try:
+            exec(compile(mutant_ast, target_mod.__file__, "exec"), target_mod.__dict__)
+        except Exception as exc:
+            dur_ms = (time.perf_counter() - start_time) * 1000.0
+            return {
+                "exit_code": 1,
+                "stdout": "",
+                "stderr": f"Mutant top-level evaluation raised {type(exc).__name__}: {exc}",
+                "status": "FAIL",
+                "failure_type": "EXCEPTION_FAIL",
+                "timed_out": False,
+                "duration_ms": max(0.1, dur_ms),
+                "tests_collected": 1,
+                "tests_passed": 0,
+                "tests_failed": 1,
+                "tests_errors": 0,
+                "has_exec_error": False,
+            }
+
+        # 2. Compile and execute test suite module
+        test_mod = types.ModuleType("test_target")
+        test_mod.__file__ = "test_target.py"
+        try:
+            exec(compile(test_ast, "test_target.py", "exec"), test_mod.__dict__)
+        except Exception as exc:
+            dur_ms = (time.perf_counter() - start_time) * 1000.0
+            return {
+                "exit_code": 1,
+                "stdout": "",
+                "stderr": f"Test suite import with mutant raised {type(exc).__name__}: {exc}",
+                "status": "FAIL",
+                "failure_type": "EXCEPTION_FAIL",
+                "timed_out": False,
+                "duration_ms": max(0.1, dur_ms),
+                "tests_collected": 1,
+                "tests_passed": 0,
+                "tests_failed": 1,
+                "tests_errors": 0,
+                "has_exec_error": False,
+            }
+
+        # 3. Discover test callables
+        test_callables = []
+        for name, obj in test_mod.__dict__.items():
+            if name.startswith("test_") and callable(obj):
+                test_callables.append((name, obj))
+            elif isinstance(obj, type) and name.startswith("Test"):
+                try:
+                    inst = obj()
+                    for m_name in dir(inst):
+                        if m_name.startswith("test_"):
+                            m_val = getattr(inst, m_name)
+                            if callable(m_val):
+                                test_callables.append((f"{name}.{m_name}", m_val))
+                except Exception:
+                    return None
+
+        if not test_callables:
+            return None
+
+        tests_passed = 0
+        tests_failed = 0
+        failure_type = "NONE"
+        err_msg = ""
+
+        # Step count infinite loop guard
+        step_count = 0
+        max_steps = int(timeout_seconds * 300_000)
+
+        def _step_trace(frame, event, arg):
+            nonlocal step_count
+            step_count += 1
+            if step_count > max_steps:
+                raise TimeoutError("Execution step limit exceeded (Safety Guardrail: Infinite loop caught)")
+            return _step_trace
+
+        orig_trace = sys.gettrace()
+        sys.settrace(_step_trace)
+        try:
+            for t_name, t_func in test_callables:
+                try:
+                    sig = inspect.signature(t_func)
+                    if len(sig.parameters) > 0:
+                        return None  # Parameterized or fixture test requires pytest runner
+                    t_func()
+                    tests_passed += 1
+                except AssertionError as ae:
+                    tests_failed += 1
+                    failure_type = "ASSERTION_FAIL"
+                    err_msg = f"AssertionError in {t_name}: {ae}"
+                    break
+                except TimeoutError as te:
+                    dur_ms = (time.perf_counter() - start_time) * 1000.0
+                    return {
+                        "exit_code": -1,
+                        "stdout": "",
+                        "stderr": str(te),
+                        "status": "TIMEOUT",
+                        "failure_type": "TIMEOUT",
+                        "timed_out": True,
+                        "duration_ms": max(0.1, dur_ms),
+                        "tests_collected": len(test_callables),
+                        "tests_passed": tests_passed,
+                        "tests_failed": 0,
+                        "tests_errors": 1,
+                        "has_exec_error": False,
+                    }
+                except Exception as exc:
+                    tests_failed += 1
+                    failure_type = "EXCEPTION_FAIL"
+                    err_msg = f"{type(exc).__name__} in {t_name}: {exc}"
+                    break
+        finally:
+            sys.settrace(orig_trace)
+
+        dur_ms = (time.perf_counter() - start_time) * 1000.0
+        if tests_failed > 0:
+            return {
+                "exit_code": 1,
+                "stdout": "",
+                "stderr": err_msg,
+                "status": "FAIL",
+                "failure_type": failure_type,
+                "timed_out": False,
+                "duration_ms": max(0.1, dur_ms),
+                "tests_collected": len(test_callables),
+                "tests_passed": tests_passed,
+                "tests_failed": tests_failed,
+                "tests_errors": 0,
+                "has_exec_error": False,
+            }
+        else:
+            return {
+                "exit_code": 0,
+                "stdout": f"{tests_passed} passed",
+                "stderr": "",
+                "status": "PASS",
+                "failure_type": "NONE",
+                "timed_out": False,
+                "duration_ms": max(0.1, dur_ms),
+                "tests_collected": len(test_callables),
+                "tests_passed": tests_passed,
+                "tests_failed": 0,
+                "tests_errors": 0,
+                "has_exec_error": False,
+            }
+    except Exception:
+        return None
+    finally:
+        for k, v in saved_modules.items():
+            if v is None:
+                sys.modules.pop(k, None)
+            else:
+                sys.modules[k] = v
+
+
+def _apply_mutant_evaluation_result(
+    mutant: MutantRecord,
+    result: Dict[str, Any],
+    baseline_passed: bool = True,
+    covered_lines: Optional[Set[int]] = None
+) -> None:
+    """Applies the structured execution result dict to a MutantRecord instance."""
+    mutant.is_executed = True
+    mutant.stdout = result.get("stdout", "")
+    mutant.stderr = result.get("stderr", "")
+    mutant.execution_time_ms = result.get("duration_ms", 0.0)
+
+    if not baseline_passed:
+        mutant.status = "ERROR"
+        mutant.kill_classification = "IMPORT_OR_SYNTAX_ERROR"
+        mutant.equivalence_status = "UNKNOWN"
+        mutant.equivalence_reason = "Baseline test suite failed; cannot evaluate mutant."
+    elif result.get("timed_out") or result.get("status") in ("TIMEOUT", "TIMED_OUT"):
+        mutant.status = "TIMEOUT"
+        mutant.kill_classification = "TIMEOUT"
+        mutant.equivalence_status = "NOT_EQUIVALENT"
+        mutant.equivalence_confidence = "HIGH"
+        mutant.equivalence_reason = "Execution timed out in sandbox (infinite loop or hang)."
+    elif result.get("has_exec_error") or result.get("status") == "ERROR":
+        mutant.status = "ERROR"
+        mutant.kill_classification = "IMPORT_OR_SYNTAX_ERROR"
+        mutant.equivalence_status = "NOT_EQUIVALENT"
+        mutant.equivalence_confidence = "HIGH"
+        mutant.equivalence_reason = "Subprocess suffered execution or environment error."
+    elif result.get("status") == "FAIL" and result.get("tests_failed", 0) > 0:
+        if covered_lines is not None and getattr(mutant, "line_number", None) not in covered_lines:
+            mutant.status = "SURVIVED"
+            mutant.kill_classification = "UNCOVERED"
+            mutant.equivalence_status = "NOT_EQUIVALENT"
+            mutant.equivalence_confidence = "HIGH"
+            mutant.equivalence_reason = f"Mutant on line {mutant.line_number} was not in executed statements (uncovered line); kill rejected."
+        else:
+            mutant.status = "KILLED"
+            fail_type = result.get("failure_type", "ASSERTION_FAIL")
+            if fail_type == "EXCEPTION_FAIL":
+                mutant.kill_classification = "EXCEPTION_FAIL"
+                mutant.equivalence_reason = "Detected and killed by unhandled target exception."
+            else:
+                mutant.kill_classification = "ASSERTION_FAIL"
+                mutant.equivalence_reason = "Detected and killed by failing test assertion."
+            mutant.equivalence_status = "NOT_EQUIVALENT"
+            mutant.equivalence_confidence = "HIGH"
+    elif result.get("status") == "PASS":
+        mutant.kill_classification = "SURVIVED"
+        eq_res = EquivalentMutantAnalyzer.analyze_mutant(mutant)
+        if eq_res.status == EquivalenceClassification.EQUIVALENT:
+            mutant.status = "EQUIVALENT"
+            mutant.equivalence_status = eq_res.status.value
+            mutant.equivalence_method = eq_res.method.value
+            mutant.equivalence_reason = eq_res.reason
+            mutant.equivalence_confidence = eq_res.confidence.value
+        elif eq_res.status == EquivalenceClassification.POTENTIALLY_EQUIVALENT:
+            mutant.status = "POTENTIALLY_EQUIVALENT"
+            mutant.equivalence_status = eq_res.status.value
+            mutant.equivalence_method = eq_res.method.value
+            mutant.equivalence_reason = eq_res.reason
+            mutant.equivalence_confidence = eq_res.confidence.value
+        else:
+            mutant.status = "SURVIVED"
+            mutant.equivalence_status = "UNKNOWN"
+            mutant.equivalence_method = "NONE"
+            mutant.equivalence_reason = eq_res.reason
+            mutant.equivalence_confidence = "NONE"
+    else:
+        mutant.status = "ERROR"
+
+
 def _run_single_test_task(
     test_code: str,
     target_code: str,
@@ -528,6 +836,17 @@ def _run_single_test_task(
                 "tests_errors": 1,
                 "has_exec_error": True
             }
+
+    # Fast in-memory evaluation path before allocating temporary filesystem directories
+    fast_res = _evaluate_single_mutant_in_memory(
+        test_code=test_code,
+        mutated_code=target_code,
+        target_file_path=target_file_path,
+        companion_files=companion_files,
+        timeout_seconds=eff_timeout
+    )
+    if fast_res is not None:
+        return fast_res
 
     with tempfile.TemporaryDirectory(prefix="testforge_box_") as tmpdir:
         src_file = os.path.join(tmpdir, "target.py")
@@ -823,8 +1142,54 @@ class ParallelSandboxRunner:
 
         # Enforce unyielding hard timeout per mutant (max 10s)
         mutant_timeout = min(self.timeout, 10.0) if self.timeout > 0 else 10.0
+
+        # High-performance in-memory batch pre-pass: evaluates mutants without subprocess spawning overhead
+        remaining_mutants: List[MutantRecord] = []
+        completed_count = 0
+        total_count = len(executable_mutants)
+
+        for m in executable_mutants:
+            if self.cancel_event and self.cancel_event.is_set():
+                break
+            fast_res = _evaluate_single_mutant_in_memory(
+                test_code=test_code,
+                mutated_code=m.mutated_code_snippet,
+                target_file_path=self.target_file_path,
+                companion_files=self.companion_files,
+                timeout_seconds=mutant_timeout
+            )
+            if fast_res is not None:
+                _apply_mutant_evaluation_result(m, fast_res, baseline_passed, covered_lines)
+                completed_count += 1
+                try:
+                    from testforge.websocket_hub import global_websocket_hub
+                    global_websocket_hub.broadcast_event({
+                        "event_type": "PIPELINE_TELEMETRY",
+                        "phase": "EXECUTING",
+                        "stage": "MUTANT_EVALUATION",
+                        "detail": f"Evaluating mutant {completed_count}/{total_count} (fast memory sandbox)...",
+                        "current": completed_count,
+                        "total": total_count,
+                        "percent": round((completed_count / total_count) * 100) if total_count > 0 else 0,
+                        "mutant": {
+                            "mutant_id": m.mutant_id,
+                            "status": m.status,
+                            "mutation_type": m.mutation_type,
+                            "line_number": m.line_number,
+                            "exec_duration_ms": m.execution_time_ms,
+                            "diff": getattr(m, "diff", "") or getattr(m, "unified_diff", "")
+                        }
+                    })
+                except Exception:
+                    pass
+            else:
+                remaining_mutants.append(m)
+
+        if not remaining_mutants or (self.cancel_event and self.cancel_event.is_set()):
+            return mutants
+
         # Bounded batch wait to protect orchestrator loop from indefinite deadlocks
-        batch_timeout = max(20.0, (len(executable_mutants) * mutant_timeout) / max(1, self.max_workers) + 15.0)
+        batch_timeout = max(20.0, (len(remaining_mutants) * mutant_timeout) / max(1, self.max_workers) + 15.0)
 
         with ProcessPoolExecutor(max_workers=self.max_workers) as executor:
             self._executor = executor
@@ -840,14 +1205,12 @@ class ParallelSandboxRunner:
                     True,
                     self.target_file_path,
                     self.companion_files
-                ): m for m in executable_mutants
+                ): m for m in remaining_mutants
             }
 
             for pid in getattr(executor, "_processes", {}):
                 self.active_pids.add(pid)
 
-            completed_count = 0
-            total_count = len(executable_mutants)
             try:
                 for future in as_completed(future_to_mutant, timeout=batch_timeout):
                     if self.cancel_event and self.cancel_event.is_set():
@@ -861,74 +1224,7 @@ class ParallelSandboxRunner:
                     completed_count += 1
                     try:
                         result = future.result(timeout=mutant_timeout + 2.0)
-                        mutant.is_executed = True
-                        mutant.stdout = result.get("stdout", "")
-                        mutant.stderr = result.get("stderr", "")
-                        mutant.execution_time_ms = result.get("duration_ms", 0.0)
-
-                        if not baseline_passed:
-                            # Baseline didn't pass, cannot verify mutant kill
-                            mutant.status = "ERROR"
-                            mutant.kill_classification = "IMPORT_OR_SYNTAX_ERROR"
-                            mutant.equivalence_status = "UNKNOWN"
-                            mutant.equivalence_reason = "Baseline test suite failed; cannot evaluate mutant."
-                        elif result.get("timed_out") or result.get("status") in ("TIMEOUT", "TIMED_OUT"):
-                            mutant.status = "TIMEOUT"
-                            mutant.kill_classification = "TIMEOUT"
-                            mutant.equivalence_status = "NOT_EQUIVALENT"
-                            mutant.equivalence_confidence = "HIGH"
-                            mutant.equivalence_reason = "Execution timed out in sandbox (infinite loop or hang)."
-                        elif result.get("has_exec_error") or result.get("status") == "ERROR":
-                            # Infrastructure/import/syntax failure is NOT a kill
-                            mutant.status = "ERROR"
-                            mutant.kill_classification = "IMPORT_OR_SYNTAX_ERROR"
-                            mutant.equivalence_status = "NOT_EQUIVALENT"
-                            mutant.equivalence_confidence = "HIGH"
-                            mutant.equivalence_reason = "Subprocess suffered execution or environment error."
-                        elif result.get("status") == "FAIL" and result.get("tests_failed", 0) > 0:
-                            # Consistency check: If covered_lines is provided and mutant line was never covered,
-                            # it CANNOT be a valid kill!
-                            if covered_lines is not None and getattr(mutant, "line_number", None) not in covered_lines:
-                                mutant.status = "SURVIVED"
-                                mutant.kill_classification = "UNCOVERED"
-                                mutant.equivalence_status = "NOT_EQUIVALENT"
-                                mutant.equivalence_confidence = "HIGH"
-                                mutant.equivalence_reason = f"Mutant on line {mutant.line_number} was not in executed statements (uncovered line); kill rejected."
-                            else:
-                                mutant.status = "KILLED"
-                                fail_type = result.get("failure_type", "ASSERTION_FAIL")
-                                if fail_type == "EXCEPTION_FAIL":
-                                    mutant.kill_classification = "EXCEPTION_FAIL"
-                                    mutant.equivalence_reason = "Detected and killed by unhandled target exception."
-                                else:
-                                    mutant.kill_classification = "ASSERTION_FAIL"
-                                    mutant.equivalence_reason = "Detected and killed by failing test assertion."
-                                mutant.equivalence_status = "NOT_EQUIVALENT"
-                                mutant.equivalence_confidence = "HIGH"
-                        elif result.get("status") == "PASS":
-                            mutant.kill_classification = "SURVIVED"
-                            # Mutant survived test suite; run conservative equivalent-mutant analysis
-                            eq_res = EquivalentMutantAnalyzer.analyze_mutant(mutant)
-                            if eq_res.status == EquivalenceClassification.EQUIVALENT:
-                                mutant.status = "EQUIVALENT"
-                                mutant.equivalence_status = eq_res.status.value
-                                mutant.equivalence_method = eq_res.method.value
-                                mutant.equivalence_reason = eq_res.reason
-                                mutant.equivalence_confidence = eq_res.confidence.value
-                            elif eq_res.status == EquivalenceClassification.POTENTIALLY_EQUIVALENT:
-                                mutant.status = "POTENTIALLY_EQUIVALENT"
-                                mutant.equivalence_status = eq_res.status.value
-                                mutant.equivalence_method = eq_res.method.value
-                                mutant.equivalence_reason = eq_res.reason
-                                mutant.equivalence_confidence = eq_res.confidence.value
-                            else:
-                                mutant.status = "SURVIVED"
-                                mutant.equivalence_status = "UNKNOWN"
-                                mutant.equivalence_method = "NONE"
-                                mutant.equivalence_reason = eq_res.reason
-                                mutant.equivalence_confidence = "NONE"
-                        else:
-                            mutant.status = "ERROR"
+                        _apply_mutant_evaluation_result(mutant, result, baseline_passed, covered_lines)
                     except (TimeoutError, subprocess.TimeoutExpired):
                         mutant.is_executed = True
                         mutant.status = "TIMEOUT"

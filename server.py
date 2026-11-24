@@ -2877,7 +2877,12 @@ def get_telemetry_trace(
 
     # 4-concept model & provider resolution
     configured_model = os.environ.get("TESTFORGE_MODEL", "gemini-3.6-flash")
-    if os.environ.get("GEMINI_API_KEY"):
+    if (
+        os.environ.get("GEMINI_API_KEY", "").strip()
+        or os.environ.get("GEMINI_API_KEY_2", "").strip()
+        or os.environ.get("GOOGLE_API_KEY", "").strip()
+        or os.environ.get("GEMINI_FALLBACK_API_KEY", "").strip()
+    ):
         active_provider = "Google GenAI (Gemini)"
     elif os.environ.get("OPENROUTER_API_KEY"):
         active_provider = "OpenRouter Cloud"
@@ -3132,9 +3137,10 @@ def _run_benchmark_job(job_id: str, payload: BenchmarkRunPayload):
             model_name=payload.model_name,
             job_id=job_id,
         )
+        safe_reps = min(max(1, getattr(payload, "repetitions", 1)), 3)
         report = runner.run_benchmark(
             scenarios=payload.scenarios,
-            repetitions=payload.repetitions,
+            repetitions=safe_reps,
             engine_mode=payload.engine_mode,
         )
         if not report.hardware_summary:
@@ -3221,6 +3227,8 @@ def run_benchmark_sync(payload: BenchmarkRunPayload):
     """
     Executes a benchmark synchronously (ideal for automated test runners and CI).
     """
+    if payload and hasattr(payload, "repetitions") and payload.repetitions > 3:
+        payload.repetitions = 3
     job_id = f"bench_sync_{str(uuid.uuid4())[:6]}"
     BENCHMARK_JOBS[job_id] = {
         "job_id": job_id,

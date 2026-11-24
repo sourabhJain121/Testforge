@@ -54,6 +54,36 @@ def select_random_gemini_key(api_key: Optional[str] = None, api_key_2: Optional[
     return ""
 
 
+def resolve_cloud_model_candidates(model_name: str) -> List[str]:
+    """
+    Resolves cloud model candidates to try against Google GenAI API.
+    Provides automatic fallback across valid Gemini models (e.g. gemini-2.5-flash, gemini-2.0-flash, gemini-1.5-flash).
+    """
+    raw = (model_name or "").strip()
+    candidates: List[str] = []
+    if "3.6" in raw or "3.8" in raw:
+        # Fictitious or unreleased version requested: try official models first, then raw
+        candidates = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", raw]
+    elif "2.5" in raw:
+        candidates = [raw, "gemini-2.0-flash", "gemini-1.5-flash"]
+    elif "2.0" in raw:
+        candidates = [raw, "gemini-2.5-flash", "gemini-1.5-flash"]
+    elif "1.5" in raw:
+        candidates = [raw, "gemini-2.5-flash", "gemini-2.0-flash"]
+    elif raw:
+        candidates = [raw, "gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
+    else:
+        candidates = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
+
+    ordered: List[str] = []
+    seen = set()
+    for m in candidates:
+        if m and m not in seen:
+            seen.add(m)
+            ordered.append(m)
+    return ordered
+
+
 def probe_ollama_status(url: str = "http://localhost:11434/api/tags", timeout: float = 0.8) -> Tuple[bool, List[str]]:
     """
     Pings the local Ollama daemon tags endpoint (0.8s timeout) to check if it is active
@@ -159,7 +189,7 @@ class HybridLLMClient:
         logger: Optional[TraceLogger] = None,
         alert_callback: Optional[Any] = None,
     ):
-        self.cloud_model = "gemini-3.6-flash" if "2.5" in cloud_model or "1.5" in cloud_model else cloud_model
+        self.cloud_model = cloud_model
         self.openrouter_model = openrouter_model
 
         # Provider routing mode resolution (TESTFORGE_PROVIDER_MODE environment support)
@@ -351,142 +381,169 @@ class HybridLLMClient:
             from google.genai import errors, types
 
             retry_delays = [2.0, 4.0]
+            model_candidates = resolve_cloud_model_candidates(self.cloud_model)
+
             for attempt in range(1, 3):
-                try:
-                    config = types.GenerateContentConfig(
-                        system_instruction=system_instruction,
-                        temperature=temperature,
-                        automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True)
-                    )
-                    start_t = time.perf_counter()
-                    response = self.genai_client.models.generate_content(
-                        model=self.cloud_model,
-                        contents=prompt,
-                        config=config
-                    )
-                    latency = time.perf_counter() - start_t
-                    raw_text = response.text or ""
+                config = types.GenerateContentConfig(
+                    system_instruction=system_instruction,
+                    temperature=temperature,
+                    automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True)
+                )
 
-                    tokens = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
-                    if hasattr(response, "usage_metadata") and response.usage_metadata:
-                        meta = response.usage_metadata
-                        tokens["prompt_tokens"] = getattr(meta, "prompt_token_count", 0) or 0
-                        tokens["completion_tokens"] = getattr(meta, "candidates_token_count", 0) or 0
-                        tokens["total_tokens"] = getattr(meta, "total_token_count", 0) or 0
+                candidate_success = False
+                last_candidate_exc = None
 
-                    self.active_provider = f"Cloud Gemini ({self.cloud_model})"
-
-                    # Log telemetry to testforge_trace.jsonl
-                    if self.logger:
-                        self.logger.log_llm_event(
-                            agent_name=agent_name,
-                            model_name=f"Cloud Gemini:{self.cloud_model}",
-                            prompt=prompt,
-                            response_text=raw_text,
-                            prompt_tokens=tokens["prompt_tokens"],
-                            completion_tokens=tokens["completion_tokens"],
-                            total_tokens=tokens["total_tokens"],
-                            latency_sec=latency,
-                            iteration=iteration,
-                            provider_type="Cloud Gemini",
-                            is_actual_llm=True,
-                            token_accounting_source="provider_reported"
+                for candidate_model in model_candidates:
+                    try:
+                        start_t = time.perf_counter()
+                        response = self.genai_client.models.generate_content(
+                            model=candidate_model,
+                            contents=prompt,
+                            config=config
                         )
+                        latency = time.perf_counter() - start_t
+                        raw_text = response.text or ""
 
-                    return raw_text
+                        tokens = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
+                        if hasattr(response, "usage_metadata") and response.usage_metadata:
+                            meta = response.usage_metadata
+                            tokens["prompt_tokens"] = getattr(meta, "prompt_token_count", 0) or 0
+                            tokens["completion_tokens"] = getattr(meta, "candidates_token_count", 0) or 0
+                            tokens["total_tokens"] = getattr(meta, "total_token_count", 0) or 0
 
-                except (errors.APIError, errors.ServerError, errors.ClientError, Exception) as exc:
-                    err_msg = str(exc)
-                    is_429 = (
-                        any(token in err_msg for token in ("429", "RESOURCE_EXHAUSTED", "quota")) or
-                        getattr(exc, "code", None) == 429 or
-                        getattr(exc, "status_code", None) == 429
-                    )
-                    is_503 = any(token in err_msg for token in ("503", "UNAVAILABLE", "overloaded"))
+                        # Ensure telemetry token counts are non-zero when live LLM is invoked
+                        if tokens["total_tokens"] == 0:
+                            tokens["prompt_tokens"] = max(1, len(prompt) // 4)
+                            tokens["completion_tokens"] = max(1, len(raw_text) // 4)
+                            tokens["total_tokens"] = tokens["prompt_tokens"] + tokens["completion_tokens"]
 
-                    if is_429:
-                        if backup_key:
-                            print(f"\n[!] Active Gemini key 429 quota reached. Rotating to alternate configured key...")
-                            try:
-                                alt_client = self._get_genai_client(backup_key)
-                                if alt_client:
-                                    self.genai_client = alt_client
-                                    backup_key = None  # Consume alternate key to prevent loops
-                                    if self.logger:
-                                        self.logger.log_event("GEMINI_KEY_ROTATED", {
-                                            "reason": "429 RESOURCE_EXHAUSTED",
-                                            "switched_to": "ALTERNATE_GEMINI_KEY"
-                                        })
-                                    self._emit_alert({
-                                        "event_type": "API_RATE_LIMIT_ROTATED",
-                                        "title": "🔄 Gemini Quota Reached — Rotated to Backup Key",
-                                        "provider": "Cloud Gemini (Backup Key)",
-                                        "status": "warning",
-                                        "detail": "Active GEMINI_API_KEY hit 429 quota limit. Automatically rotated to alternate configured key.",
-                                        "fallback_tier": "Gemini Backup Key",
-                                        "error": err_msg,
-                                        "timestamp": time.time(),
-                                    })
-                                    # Retry immediately with backup key
-                                    continue
-                            except Exception as rot_exc:
-                                print(f"[!] Alternate Gemini key rotation failed: {rot_exc}")
-                        if attempt < 2:
-                            delay = 6.0
-                            print(f"[*] Transient GenAI 429 quota/rate limit (attempt {attempt}/2). Retrying in {delay:.1f}s...")
-                            time.sleep(delay)
-                            continue
-                        self.gemini_quota_exhausted = True
-                        failover_msg = "[!] Gemini quota exhausted across all configured keys. Switching to secondary provider..."
-                        print(f"\n{failover_msg}")
-                        if self.openrouter_api_key:
-                            self._emit_alert({
-                                "event_type": "API_RATE_LIMIT_ROTATED",
-                                "title": "🔄 Gemini Quota Exhausted — Rotated to OpenRouter Cloud",
-                                "provider": "OpenRouter Cloud",
-                                "status": "warning",
-                                "detail": "All configured Gemini keys hit 429 quota limits. Automatically rotated to OpenRouter Cloud.",
-                                "fallback_tier": "OpenRouter Cloud",
-                                "error": err_msg,
-                                "timestamp": time.time(),
-                            })
-                        else:
-                            self._emit_alert({
-                                "event_type": "API_LIMIT_EXHAUSTED",
-                                "title": "⚠️ Gemini Quota Exhausted (429)",
-                                "provider": "Deterministic AST Synthesizer",
-                                "status": "error",
-                                "detail": "All configured Gemini keys hit 429 rate limits or quota bounds. Engaged deterministic Neuro-Symbolic AST synthesis.",
-                                "fallback_tier": "Neuro-Symbolic AST Synthesizer (Local)",
-                                "error": err_msg,
-                                "timestamp": time.time(),
-                            })
+                        self.active_provider = f"Cloud Gemini ({candidate_model})"
+
+                        # Log telemetry to testforge_trace.jsonl
                         if self.logger:
-                            self.logger.log_event("PROVIDER_FAILOVER", {
-                                "message": failover_msg,
-                                "from_provider": "Cloud Gemini",
-                                "to_provider": "OpenRouter Cloud" if self.openrouter_api_key else "Local Apple Silicon Engine (Ollama)",
-                                "reason": "429 RESOURCE_EXHAUSTED",
-                                "error": err_msg
-                            })
-                        break  # Fallthrough to Tier 2 immediately
-                    elif is_503 and attempt < 2:
-                        delay = retry_delays[attempt - 1]
-                        print(f"[*] Transient GenAI 503 error (attempt {attempt}/2). Retrying in {delay:.1f}s...")
+                            self.logger.log_llm_event(
+                                agent_name=agent_name,
+                                model_name=f"Cloud Gemini:{candidate_model}",
+                                prompt=prompt,
+                                response_text=raw_text,
+                                prompt_tokens=tokens["prompt_tokens"],
+                                completion_tokens=tokens["completion_tokens"],
+                                total_tokens=tokens["total_tokens"],
+                                latency_sec=latency,
+                                iteration=iteration,
+                                provider_type="Cloud Gemini",
+                                is_actual_llm=True,
+                                token_accounting_source="provider_reported" if (hasattr(response, "usage_metadata") and response.usage_metadata and getattr(response.usage_metadata, "total_token_count", 0)) else "estimated_real_call"
+                            )
+
+                        return raw_text
+
+                    except Exception as exc:
+                        last_candidate_exc = exc
+                        err_msg = str(exc)
+                        is_429 = (
+                            any(token in err_msg for token in ("429", "RESOURCE_EXHAUSTED", "quota")) or
+                            getattr(exc, "code", None) == 429 or
+                            getattr(exc, "status_code", None) == 429
+                        )
+                        if is_429:
+                            break
+                        if any(token in err_msg.lower() for token in ("not found", "404", "does not exist", "unsupported")):
+                            continue
+                        continue
+
+                exc = last_candidate_exc or RuntimeError("All Gemini model candidates failed.")
+                err_msg = str(exc)
+                is_429 = (
+                    any(token in err_msg for token in ("429", "RESOURCE_EXHAUSTED", "quota")) or
+                    getattr(exc, "code", None) == 429 or
+                    getattr(exc, "status_code", None) == 429
+                )
+                is_503 = any(token in err_msg for token in ("503", "UNAVAILABLE", "overloaded"))
+
+                if is_429:
+                    if backup_key:
+                        print(f"\n[!] Active Gemini key 429 quota reached. Rotating to alternate configured key...")
+                        try:
+                            alt_client = self._get_genai_client(backup_key)
+                            if alt_client:
+                                self.genai_client = alt_client
+                                backup_key = None  # Consume alternate key to prevent loops
+                                if self.logger:
+                                    self.logger.log_event("GEMINI_KEY_ROTATED", {
+                                        "reason": "429 RESOURCE_EXHAUSTED",
+                                        "switched_to": "ALTERNATE_GEMINI_KEY"
+                                    })
+                                self._emit_alert({
+                                    "event_type": "API_RATE_LIMIT_ROTATED",
+                                    "title": "🔄 Gemini Quota Reached — Rotated to Backup Key",
+                                    "provider": "Cloud Gemini (Backup Key)",
+                                    "status": "warning",
+                                    "detail": "Active GEMINI_API_KEY hit 429 quota limit. Automatically rotated to alternate configured key.",
+                                    "fallback_tier": "Gemini Backup Key",
+                                    "error": err_msg,
+                                    "timestamp": time.time(),
+                                })
+                                # Retry immediately with backup key
+                                continue
+                        except Exception as rot_exc:
+                            print(f"[!] Alternate Gemini key rotation failed: {rot_exc}")
+                    if attempt < 2:
+                        delay = 6.0
+                        print(f"[*] Transient GenAI 429 quota/rate limit (attempt {attempt}/2). Retrying in {delay:.1f}s...")
                         time.sleep(delay)
                         continue
-                    else:
-                        print(f"[!] Cloud Gemini failed ({exc}). Proceeding to next tier...")
+                    self.gemini_quota_exhausted = True
+                    failover_msg = "[!] Gemini quota exhausted across all configured keys. Switching to secondary provider..."
+                    print(f"\n{failover_msg}")
+                    if self.openrouter_api_key:
                         self._emit_alert({
-                            "event_type": "API_ERROR_ALERT",
-                            "title": "⚠️ Gemini Cloud Provider Error",
-                            "provider": "Cloud Gemini",
-                            "status": "error",
-                            "detail": f"Gemini API request failed: {err_msg}",
+                            "event_type": "API_RATE_LIMIT_ROTATED",
+                            "title": "🔄 Gemini Quota Exhausted — Rotated to OpenRouter Cloud",
+                            "provider": "OpenRouter Cloud",
+                            "status": "warning",
+                            "detail": "All configured Gemini keys hit 429 quota limits. Automatically rotated to OpenRouter Cloud.",
+                            "fallback_tier": "OpenRouter Cloud",
                             "error": err_msg,
                             "timestamp": time.time(),
                         })
-                        break
+                    else:
+                        self._emit_alert({
+                            "event_type": "API_LIMIT_EXHAUSTED",
+                            "title": "⚠️ Gemini Quota Exhausted (429)",
+                            "provider": "Deterministic AST Synthesizer",
+                            "status": "error",
+                            "detail": "All configured Gemini keys hit 429 rate limits or quota bounds. Engaged deterministic Neuro-Symbolic AST synthesis.",
+                            "fallback_tier": "Neuro-Symbolic AST Synthesizer (Local)",
+                            "error": err_msg,
+                            "timestamp": time.time(),
+                        })
+                    if self.logger:
+                        self.logger.log_event("PROVIDER_FAILOVER", {
+                            "message": failover_msg,
+                            "from_provider": "Cloud Gemini",
+                            "to_provider": "OpenRouter Cloud" if self.openrouter_api_key else "Local Apple Silicon Engine (Ollama)",
+                            "reason": "429 RESOURCE_EXHAUSTED",
+                            "error": err_msg
+                        })
+                    break  # Fallthrough to Tier 2 immediately
+                elif is_503 and attempt < 2:
+                    delay = retry_delays[attempt - 1]
+                    print(f"[*] Transient GenAI 503 error (attempt {attempt}/2). Retrying in {delay:.1f}s...")
+                    time.sleep(delay)
+                    continue
+                else:
+                    print(f"[!] Cloud Gemini failed ({exc}). Proceeding to next tier...")
+                    self._emit_alert({
+                        "event_type": "API_ERROR_ALERT",
+                        "title": "⚠️ Gemini Cloud Provider Error",
+                        "provider": "Cloud Gemini",
+                        "status": "error",
+                        "detail": f"Gemini API request failed: {err_msg}",
+                        "error": err_msg,
+                        "timestamp": time.time(),
+                    })
+                    break
 
         # If Cloud was already marked exhausted in a previous iteration:
         elif self.engine_mode == "auto" and self.gemini_quota_exhausted and self.genai_client:
