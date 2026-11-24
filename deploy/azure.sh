@@ -3,7 +3,7 @@
 # TestForge: Microsoft Azure Container Apps Turnkey Deployment Script
 # Multi-Agent Test Hardening System (Google ADK + CrewAI)
 # Target Platform: Azure Container Apps (Serverless, 1.0 vCPU, 2.0 GiB RAM)
-# Builds directly in Azure via Azure Container Registry (ACR) without local Docker
+# Builds locally for linux/amd64 and pushes directly to ACR (bypasses ACR Tasks)
 # ==============================================================================
 set -euo pipefail
 
@@ -62,13 +62,48 @@ else
   echo "  ✅ ACR '${ACR_NAME}' is ready."
 fi
 
-echo "🚀 Building container image directly in Azure via ACR Cloud Build (no local Docker required)..."
-az acr build \
-  --registry "${ACR_NAME}" \
-  --resource-group "${RESOURCE_GROUP}" \
-  --image testforge:latest \
-  .
+ACR_LOGIN_SERVER=$(az acr show --name "${ACR_NAME}" --resource-group "${RESOURCE_GROUP}" --query loginServer -o tsv)
+ACR_USERNAME=$(az acr credential show --name "${ACR_NAME}" --query username -o tsv)
+ACR_PASSWORD=$(az acr credential show --name "${ACR_NAME}" --query "passwords[0].value" -o tsv)
+IMAGE_REF="${ACR_LOGIN_SERVER}/testforge:latest"
 
+# 1. Ensure Docker daemon is running
+echo "🐳 Checking local Docker daemon status..."
+if ! docker info >/dev/null 2>&1; then
+  echo "  ⚠️ Docker daemon not running. Attempting to launch Docker Desktop..."
+  if command -v open >/dev/null 2>&1; then
+    open -a Docker || true
+  fi
+  retries=30
+  until docker info >/dev/null 2>&1 || [ $retries -le 0 ]; do
+    echo "  ⏳ Waiting for Docker daemon to become responsive ($retries s remaining)..."
+    sleep 2
+    retries=$((retries - 2))
+  done
+  if ! docker info >/dev/null 2>&1; then
+    echo "❌ Error: Docker daemon is not running. Please start Docker Desktop and re-run."
+    exit 1
+  fi
+fi
+echo "  ✅ Docker daemon is operational."
+
+# 2. Authenticate Docker with Azure Container Registry
+echo "🔑 Logging into Azure Container Registry '${ACR_LOGIN_SERVER}'..."
+if ! az acr login --name "${ACR_NAME}" 2>/dev/null; then
+  echo "  ℹ️ 'az acr login' returned non-zero; authenticating via 'docker login' with admin credentials..."
+  echo "${ACR_PASSWORD}" | docker login "${ACR_LOGIN_SERVER}" -u "${ACR_USERNAME}" --password-stdin
+fi
+echo "  ✅ Authenticated with ACR."
+
+# 3. Build container locally targeting linux/amd64 (bypasses remote ACR Tasks quota/permissions)
+echo "🏗️ Building container image locally targeting linux/amd64 for Azure Container Apps..."
+docker build --platform linux/amd64 -t "${IMAGE_REF}" .
+
+# 4. Push directly to Azure Container Registry
+echo "📤 Pushing image directly to Azure Container Registry: ${IMAGE_REF}..."
+docker push "${IMAGE_REF}"
+
+# 5. Create or verify Container Apps Environment
 echo "🌐 Ensuring Container Apps Environment '${ENV_NAME}' exists..."
 if ! az containerapp env show --name "${ENV_NAME}" --resource-group "${RESOURCE_GROUP}" &>/dev/null; then
   az containerapp env create \
@@ -79,11 +114,6 @@ if ! az containerapp env show --name "${ENV_NAME}" --resource-group "${RESOURCE_
 else
   echo "  ✅ Container Apps Environment '${ENV_NAME}' is ready."
 fi
-
-ACR_LOGIN_SERVER=$(az acr show --name "${ACR_NAME}" --resource-group "${RESOURCE_GROUP}" --query loginServer -o tsv)
-ACR_USERNAME=$(az acr credential show --name "${ACR_NAME}" --resource-group "${RESOURCE_GROUP}" --query username -o tsv)
-ACR_PASSWORD=$(az acr credential show --name "${ACR_NAME}" --resource-group "${RESOURCE_GROUP}" --query "passwords[0].value" -o tsv)
-IMAGE_REF="${ACR_LOGIN_SERVER}/testforge:latest"
 
 ENV_VARS_ARGS=(
   "PORT=8080"
@@ -103,6 +133,7 @@ if [ -n "${OPENROUTER_API_KEY:-}" ]; then
   ENV_VARS_ARGS+=("OPENROUTER_API_KEY=${OPENROUTER_API_KEY}")
 fi
 
+# 6. Deploy or update Container App
 echo "⚡ Deploying Azure Container App '${APP_NAME}' (1.0 vCPU, 2.0 GiB, scale-to-zero)..."
 if az containerapp show --name "${APP_NAME}" --resource-group "${RESOURCE_GROUP}" &>/dev/null; then
   echo "  🔄 Updating existing Container App '${APP_NAME}'..."
@@ -156,17 +187,19 @@ echo ""
 echo "✅ TestForge successfully deployed to Microsoft Azure Container Apps!"
 echo "🌐 Live Service URL: ${APP_URL}"
 echo ""
-echo "🔍 Running deployment verification health probes..."
+echo "🔍 Running deployment verification health probes (waiting 10s for cold start)..."
+sleep 10
+
 echo "--- 1. Liveness Probe (/healthz) ---"
-curl -fsS -m 20 "${APP_URL}/healthz" || echo "⚠️ Warning: /healthz probe did not respond immediately"
+curl -fsS -m 30 "${APP_URL}/healthz" || echo "⚠️ Warning: /healthz probe did not respond immediately"
 echo ""
 
 echo "--- 2. Readiness Probe (/readyz) ---"
-curl -fsS -m 20 "${APP_URL}/readyz" || echo "⚠️ Warning: /readyz probe did not respond immediately"
+curl -fsS -m 30 "${APP_URL}/readyz" || echo "⚠️ Warning: /readyz probe did not respond immediately"
 echo ""
 
 echo "--- 3. A2A Agent Card Discovery (/.well-known/agent-card.json) ---"
-curl -fsS -m 20 "${APP_URL}/.well-known/agent-card.json" || echo "⚠️ Warning: /.well-known/agent-card.json did not respond immediately"
+curl -fsS -m 30 "${APP_URL}/.well-known/agent-card.json" || echo "⚠️ Warning: /.well-known/agent-card.json did not respond immediately"
 echo ""
 
 echo "🎉 Verification complete. TestForge is live on Microsoft Azure at ${APP_URL}"
