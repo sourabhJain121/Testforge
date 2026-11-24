@@ -383,7 +383,7 @@ async def healthz():
     Standard liveness probe endpoint for Cloud Run, Render, Docker and Kubernetes.
     """
     return {
-        "status": "ok",
+        "status": "healthy",
         "service": "testforge-backend",
         "version": "2.0.0",
         "frameworks": ["google-adk", "crewai"],
@@ -725,16 +725,34 @@ async def execute_mcp_protocol_tool(req: ExecuteToolRequest):
 async def get_a2a_agent_card(request: Request):
     """
     Exposes the official A2A AgentCard for cross-framework agent discovery
-    using the dynamic request origin or cloud public URL.
+    using the dynamic request origin (Host / X-Forwarded-Proto) or cloud public URL.
     """
-    req_base = str(request.base_url).rstrip("/") + "/"
-    if req_base == "http://testserver/":
-        req_base = "http://127.0.0.1:8000/"
-    base_url = (
-        os.environ.get("TESTFORGE_PUBLIC_URL")
-        or os.environ.get("RENDER_EXTERNAL_URL")
-        or req_base
-    )
+    # 1. Environment override takes highest precedence if configured
+    env_public_url = os.environ.get("TESTFORGE_PUBLIC_URL") or os.environ.get("RENDER_EXTERNAL_URL")
+    if env_public_url:
+        base_url = env_public_url.rstrip("/") + "/"
+    else:
+        # 2. Derive dynamically from reverse proxy headers (Cloud Run *.run.app, Render, custom domains)
+        fwd_proto = request.headers.get("x-forwarded-proto")
+        fwd_host = request.headers.get("x-forwarded-host")
+        host_header = fwd_host or request.headers.get("host")
+
+        if host_header and host_header != "testserver":
+            proto = fwd_proto or request.url.scheme or "http"
+            if host_header.endswith(".run.app") or host_header.endswith(".onrender.com"):
+                proto = "https"
+            clean_host = host_header
+            if proto == "https" and clean_host.endswith(":443"):
+                clean_host = clean_host[:-4]
+            elif proto == "http" and clean_host.endswith(":80"):
+                clean_host = clean_host[:-3]
+            base_url = f"{proto}://{clean_host.rstrip('/')}/"
+        else:
+            req_base = str(request.base_url).rstrip("/") + "/"
+            if req_base == "http://testserver/":
+                req_base = "http://127.0.0.1:8000/"
+            base_url = req_base
+
     if not base_url.endswith("/"):
         base_url += "/"
     try:
@@ -744,8 +762,9 @@ async def get_a2a_agent_card(request: Request):
     except Exception as exc:
         logger.warning(f"Failed to generate dynamic A2A AgentCard: {exc}")
         return {
-            "name": "TestForge Agentic Unit Test Hardening System",
-            "protocol_version": "0.3.0",
+            "name": "testforge-agent-system",
+            "protocolVersion": "0.3.0",
+            "version": "1.0.0",
             "description": "Autonomous unit-test generation and mutation hardening agent.",
             "url": base_url,
         }

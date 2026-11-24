@@ -1,15 +1,43 @@
-.venv*
-venv*
+# Version control & environments
 .git
 .gitignore
-.pytest_cache
-__pycache__
-*.pyc
-*.pyo
-*.pyd
-.DS_Store
+.venv*
+venv*
+env*
+
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.ruff_cache/
+.coverage*
+htmlcov/
+
+# Local databases & WAL files
+*.db
+*.db*
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+
+# TestForge artifacts & scratch directories
+qa_artifacts/
+scratch/
+brain/
 *.jsonl
 *.log
-scratch
-brain
-qa_artifacts/scratch_runs
+*.tmp
+*.bak
+
+# Documentation images & build assets
+docs/screenshots/
+.DS_Store
+Thumbs.db
+
+# Distribution & egg-info
+build/
+dist/
+*.egg-info/
