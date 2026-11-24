@@ -99,9 +99,18 @@ echo "  ✅ Authenticated with ACR."
 echo "🏗️ Building container image locally targeting linux/amd64 for Azure Container Apps..."
 docker build --platform linux/amd64 -t "${IMAGE_REF}" .
 
-# 4. Push directly to Azure Container Registry
+# 4. Push directly to Azure Container Registry with automatic retry on transient connection drops
 echo "📤 Pushing image directly to Azure Container Registry: ${IMAGE_REF}..."
-docker push "${IMAGE_REF}"
+push_attempts=5
+until docker push "${IMAGE_REF}"; do
+  push_attempts=$((push_attempts - 1))
+  if [ "$push_attempts" -le 0 ]; then
+    echo "❌ Error: docker push failed after multiple attempts."
+    exit 1
+  fi
+  echo "⚠️ Push interrupted or timed out. Retrying in 3 seconds ($push_attempts attempts remaining)..."
+  sleep 3
+done
 
 # 5. Create or verify Container Apps Environment
 echo "🌐 Ensuring Container Apps Environment '${ENV_NAME}' exists..."
