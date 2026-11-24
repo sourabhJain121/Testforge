@@ -9,21 +9,16 @@
   <!-- Modern Typography from Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
   
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body class="dark-theme">
-  <!-- Dynamic Ambient Glow Orbs -->
-  <div class="ambient-glow orb-1"></div>
-  <div class="ambient-glow orb-2"></div>
-  <div class="ambient-glow orb-3"></div>
-
   <!-- Toast Container -->
   <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
   <!-- Live API Rate-Limit & Provider Alert Banner -->
-  <div id="api-limit-live-banner" class="hidden" style="background: linear-gradient(90deg, rgba(245, 158, 11, 0.95), rgba(217, 119, 6, 0.95)); color: #ffffff; padding: 8px 16px; font-size: 0.82rem; font-weight: 500; display: flex; justify-content: space-between; align-items: center; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,255,255,0.2);">
+  <div id="api-limit-live-banner" class="hidden" style="background: #78350f; color: #fef3c7; padding: 10px 18px; font-size: 0.85rem; font-weight: 500; display: flex; justify-content: space-between; align-items: center; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.3); border-bottom: 1px solid rgba(245, 158, 11, 0.4);">
     <div style="display: flex; align-items: center; gap: 8px;">
       <span id="api-banner-icon" style="font-size: 1rem;">⚠️</span>
       <span id="api-banner-text">TokenHarbor Rate Limit Reached — Rotated to Local Ollama Provider</span>
@@ -40,32 +35,32 @@
       <div class="brand" style="display: flex; align-items: center; gap: 8px;">
         <span class="brand-icon" style="font-size: 1.4rem;">⚡</span>
         <div class="brand-text">
-          <h1 class="brand-title" style="margin: 0; font-size: 1.25rem; color: #f8fafc; -webkit-text-fill-color: #f8fafc; font-weight: 800; text-shadow: 0 1px 3px rgba(0,0,0,0.5); line-height: 1.1;">TestForge</h1>
-          <span class="brand-subtitle" style="font-size: 0.65rem; font-weight: 600; color: var(--cyan-light, #38bdf8); letter-spacing: 0.6px; text-transform: uppercase;">Autonomous Agentic Test Hardening</span>
+          <h1 class="brand-title" style="margin: 0; font-size: 1.85rem; color: #f8fafc; font-weight: 800; line-height: 1.15;">TestForge</h1>
+          <span class="brand-subtitle" style="font-size: 0.78rem; font-weight: 600; color: #94a3b8; letter-spacing: 0.6px; text-transform: uppercase;">Autonomous Agentic Test Hardening</span>
         </div>
       </div>
     </div>
 
     <!-- Right Action Toolbar -->
     <div class="nav-right cockpit-header-actions" style="display: flex; align-items: center; flex-wrap: wrap; justify-content: flex-end; gap: 6px; margin-left: auto;">
-      <button type="button" class="btn btn-outline btn-icon" id="btn-toggle-privacy" title="Zero-Egress Privacy Mode Toggle" style="padding: 4px 8px; font-size: 11px; white-space: nowrap;">
+      <button type="button" class="btn btn-outline btn-icon" id="btn-toggle-privacy" title="Zero-Egress Privacy Mode Toggle" style="padding: 5px 10px; font-size: 12px; white-space: nowrap;">
         <span class="icon" id="icon-privacy">🔓</span> <span id="label-privacy">Privacy Mode: OFF</span>
       </button>
-      <button type="button" class="btn btn-outline btn-icon" id="btn-a2a-card" title="A2A AgentCard Discovery" style="padding: 4px 8px; font-size: 11px; white-space: nowrap;">
+      <button type="button" class="btn btn-outline btn-icon" id="btn-a2a-card" title="A2A AgentCard Discovery" style="padding: 5px 10px; font-size: 12px; white-space: nowrap;">
         <span class="icon">🤖</span> A2A Card
       </button>
-      <button type="button" class="btn btn-secondary" id="btn-mcp-status" title="Model Context Protocol (FastMCP) Tools Status" style="padding: 4px 8px; font-size: 11px; white-space: nowrap;"><span class="btn-icon">📦</span> MCP Tools (<span id="mcp-tool-count">4</span>)</button>
-      <button id="btn-open-mcp-studio" class="btn btn-secondary" title="Open Interactive FastMCP Protocol Studio" style="padding: 4px 8px; font-size: 11px; white-space: nowrap;">🛠️ MCP Studio</button>
-      <button class="btn btn-secondary btn-icon" id="btn-toggle-settings" title="System Settings" style="padding: 4px 8px; font-size: 11px; white-space: nowrap;">
+      <button type="button" class="btn btn-secondary" id="btn-mcp-status" title="Model Context Protocol (FastMCP) Tools Status" style="padding: 5px 10px; font-size: 12px; white-space: nowrap;"><span class="btn-icon">📦</span> MCP Tools (<span id="mcp-tool-count">4</span>)</button>
+      <button id="btn-open-mcp-studio" class="btn btn-secondary" title="Open Interactive FastMCP Protocol Studio" style="padding: 5px 10px; font-size: 12px; white-space: nowrap;">🛠️ MCP Studio</button>
+      <button class="btn btn-secondary btn-icon" id="btn-toggle-settings" title="System Settings" style="padding: 5px 10px; font-size: 12px; white-space: nowrap;">
         <span class="icon">⚙️</span> Settings
       </button>
-      <a href="https://github.com/sourabhJain121/Testforge" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-icon" id="btn-github-repo" style="padding: 4px 8px; font-size: 11px; white-space: nowrap;">
+      <a href="https://github.com/sourabhJain121/Testforge" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-icon" id="btn-github-repo" style="padding: 5px 10px; font-size: 12px; white-space: nowrap;">
         <span class="icon">🐙</span> Repo
       </a>
-      <button id="btn-theme-toggle" class="theme-toggle-btn" title="Toggle Light/Dark Theme" style="padding: 4px 8px; font-size: 11px; white-space: nowrap;">
+      <button id="btn-theme-toggle" class="theme-toggle-btn" title="Toggle Light/Dark Theme" style="padding: 5px 10px; font-size: 12px; white-space: nowrap;">
         <span id="theme-toggle-icon">☀️</span> <span id="theme-toggle-label" class="theme-label">Dark</span>
       </button>
-      <button type="button" class="btn btn-primary btn-icon" id="btn-global-run-hardening" data-action="start-hardening" data-alias="btn-run-hardening" title="Quick-Trigger TestForge Hardening" style="padding: 4px 8px; font-size: 11px; font-weight: 600; white-space: nowrap;">
+      <button type="button" class="btn btn-primary btn-icon" id="btn-global-run-hardening" data-action="start-hardening" data-alias="btn-run-hardening" title="Quick-Trigger TestForge Hardening" style="padding: 5px 10px; font-size: 12px; font-weight: 600; white-space: nowrap;">
         <span id="btn-run-hardening"><span class="icon">⚡</span> Run</span>
       </button>
     </div>
@@ -131,10 +126,10 @@
         </div>
 
         <div class="card" style="background: rgba(15, 23, 42, 0.45); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 14px; margin-top: 1rem;">
-          <h4 style="margin: 0 0 10px 0; font-size: 0.85rem; color: #38bdf8; display: flex; align-items: center; justify-content: space-between;">
+          <h3 style="margin: 0 0 10px 0; font-size: 0.95rem; font-weight: 600; color: #38bdf8; display: flex; align-items: center; justify-content: space-between;">
             <span>🔑 TokenHarbor Provider Key</span>
-            <span id="keys-configured-badge" class="badge" style="font-size: 0.7rem; font-weight: 500; background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 2px 6px; border-radius: 4px;">Runtime Active</span>
-          </h4>
+            <span id="keys-configured-badge" class="badge" style="font-size: 0.75rem; font-weight: 500; background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 2px 6px; border-radius: 4px;">Runtime Active</span>
+          </h3>
           
           <div class="form-group" style="margin-bottom: 10px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
@@ -192,9 +187,9 @@
 
         <!-- Diagnostic A2A Protocol Test (Improvement D) -->
         <div class="glass-panel" id="a2a-test-runner-card" style="margin-top: 1.25rem; padding: 1rem; border-radius: 8px; border: 1px solid rgba(168, 85, 247, 0.25); background: rgba(15, 23, 42, 0.7);">
-          <h4 style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color: #c084fc; display: flex; align-items: center; gap: 0.5rem;">
+          <h3 style="margin: 0 0 0.5rem 0; font-size: 0.95rem; font-weight: 600; color: #cbd5e1; display: flex; align-items: center; gap: 0.5rem;">
             <span>⚡</span> Real In-Browser A2A Protocol & Schema Verification
-          </h4>
+          </h3>
           <p style="font-size: 0.78rem; color: #94a3b8; margin: 0 0 0.75rem 0;">
             Executes genuine Agent2Agent (A2A v0.3.0) protocol discovery and schema validation against the local agent instance.
           </p>
@@ -245,7 +240,7 @@
         <!-- Rendered MCP Content -->
         <div id="mcp-card-content" class="hidden">
           <div style="display: flex; flex-direction: column; gap: 1rem;">
-            <div class="glass-card" style="padding: 0.75rem 1rem; background: rgba(15, 23, 42, 0.6); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.08);">
+            <div class="suite-overview-box" style="padding: 0.75rem 1rem; background: rgba(15, 23, 42, 0.6); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.08);">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
                 <strong style="font-size: 0.95rem;">FastMCP Protocol Suite</strong>
                 <span class="badge badge-green">FastMCP Protocol Suite (4 Tools Active)</span>
@@ -254,39 +249,39 @@
                 SDK: <span>FastMCP v1.28.1</span> | Transport: <span>stdio JSON-RPC 2.0</span> | Total Registered Tools: <span id="mcp-total-tools" style="font-weight:600; color:#38bdf8;">4</span>
               </p>
             </div>
-            <div class="glass-card" style="padding: 0.75rem 1rem; background: rgba(30, 41, 59, 0.5); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.06);">
+            <div class="suite-items-box" style="padding: 0.75rem 1rem; background: rgba(30, 41, 59, 0.5); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.06);">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
                 <strong style="font-size: 0.88rem;">📦 Protocol Suite: testforge-fastmcp</strong>
                 <span class="badge badge-cyan">4 Tool(s)</span>
               </div>
               <div style="display: flex; flex-direction: column; gap: 0.4rem;">
-                <div style="background: rgba(15, 23, 42, 0.4); padding: 0.4rem 0.6rem; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; border-left: 3px solid #38bdf8;">
+                <div style="background: rgba(15, 23, 42, 0.4); padding: 0.5rem 0.75rem; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(56, 189, 248, 0.25);">
                   <div>
-                    <code style="color: #38bdf8; font-size: 0.8rem; font-weight: 600;">mcp_ast_symbol_analyzer</code>
-                    <div style="font-size: 0.72rem; color: #94a3b8;">AST Symbols, Cyclomatic Complexity &amp; Call Graph</div>
+                    <code style="color: #38bdf8; font-size: 0.82rem; font-weight: 600;">mcp_ast_symbol_analyzer</code>
+                    <div style="font-size: 0.78rem; color: #94a3b8;">AST Symbols, Cyclomatic Complexity &amp; Call Graph</div>
                   </div>
-                  <span class="badge badge-outline" style="font-size: 0.7rem;">READY (STDIO)</span>
+                  <span class="badge badge-outline" style="font-size: 0.75rem;">READY (STDIO)</span>
                 </div>
-                <div style="background: rgba(15, 23, 42, 0.4); padding: 0.4rem 0.6rem; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; border-left: 3px solid #a855f7;">
+                <div style="background: rgba(15, 23, 42, 0.4); padding: 0.5rem 0.75rem; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(99, 102, 241, 0.25);">
                   <div>
-                    <code style="color: #a855f7; font-size: 0.8rem; font-weight: 600;">mcp_mutant_generator</code>
-                    <div style="font-size: 0.72rem; color: #94a3b8;">Boundary Swaps, AST Operator Inversions &amp; Unified Diffs</div>
+                    <code style="color: #818cf8; font-size: 0.82rem; font-weight: 600;">mcp_mutant_generator</code>
+                    <div style="font-size: 0.78rem; color: #94a3b8;">Boundary Swaps, AST Operator Inversions &amp; Unified Diffs</div>
                   </div>
-                  <span class="badge badge-outline" style="font-size: 0.7rem;">READY (STDIO)</span>
+                  <span class="badge badge-outline" style="font-size: 0.75rem;">READY (STDIO)</span>
                 </div>
-                <div style="background: rgba(15, 23, 42, 0.4); padding: 0.4rem 0.6rem; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; border-left: 3px solid #34d399;">
+                <div style="background: rgba(15, 23, 42, 0.4); padding: 0.5rem 0.75rem; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(52, 211, 153, 0.25);">
                   <div>
-                    <code style="color: #34d399; font-size: 0.8rem; font-weight: 600;">mcp_sandbox_runner</code>
-                    <div style="font-size: 0.72rem; color: #94a3b8;">Subprocess Sandbox Execution &amp; DEF-022 Clean Preflight</div>
+                    <code style="color: #34d399; font-size: 0.82rem; font-weight: 600;">mcp_sandbox_runner</code>
+                    <div style="font-size: 0.78rem; color: #94a3b8;">Subprocess Sandbox Execution &amp; DEF-022 Clean Preflight</div>
                   </div>
-                  <span class="badge badge-outline" style="font-size: 0.7rem;">READY (STDIO)</span>
+                  <span class="badge badge-outline" style="font-size: 0.75rem;">READY (STDIO)</span>
                 </div>
-                <div style="background: rgba(15, 23, 42, 0.4); padding: 0.4rem 0.6rem; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; border-left: 3px solid #fbbf24;">
+                <div style="background: rgba(15, 23, 42, 0.4); padding: 0.5rem 0.75rem; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(251, 191, 36, 0.25);">
                   <div>
-                    <code style="color: #fbbf24; font-size: 0.8rem; font-weight: 600;">mcp_equivalence_classifier</code>
-                    <div style="font-size: 0.72rem; color: #94a3b8;">Bytecode Invariant Semantic Equivalence Detection</div>
+                    <code style="color: #fbbf24; font-size: 0.82rem; font-weight: 600;">mcp_equivalence_classifier</code>
+                    <div style="font-size: 0.78rem; color: #94a3b8;">Bytecode Invariant Semantic Equivalence Detection</div>
                   </div>
-                  <span class="badge badge-outline" style="font-size: 0.7rem;">READY (STDIO)</span>
+                  <span class="badge badge-outline" style="font-size: 0.75rem;">READY (STDIO)</span>
                 </div>
               </div>
             </div>
@@ -295,9 +290,9 @@
 
         <!-- Diagnostic FastMCP Tool Execution (Improvement C) -->
         <div class="glass-panel" id="mcp-test-runner-card" style="margin-top: 1.25rem; padding: 1rem; border-radius: 8px; border: 1px solid rgba(56, 189, 248, 0.25); background: rgba(15, 23, 42, 0.7);">
-          <h4 style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color: #38bdf8; display: flex; align-items: center; gap: 0.5rem;">
+          <h3 style="margin: 0 0 0.5rem 0; font-size: 0.95rem; font-weight: 600; color: #cbd5e1; display: flex; align-items: center; gap: 0.5rem;">
             <span>⚡</span> Real In-Browser FastMCP Diagnostic Tool Invocation
-          </h4>
+          </h3>
           <p style="font-size: 0.78rem; color: #94a3b8; margin: 0 0 0.75rem 0;">
             Invokes genuine Model Context Protocol (FastMCP) stdio JSON-RPC transport to inspect permitted workspace fixtures.
           </p>
@@ -457,7 +452,7 @@
 
         <!-- Hot-Swap Live API Key Box -->
         <div class="form-group" style="background: rgba(168, 85, 247, 0.08); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 8px; padding: 14px; margin-bottom: 1rem;">
-          <label style="font-weight: 600; font-size: 0.85rem; color: #c084fc; display: flex; align-items: center; gap: 0.4rem; margin-bottom: 4px;">
+          <label style="font-weight: 600; font-size: 0.85rem; color: #e2e8f0; display: flex; align-items: center; gap: 0.4rem; margin-bottom: 4px;">
             <span>🔑 Paste TokenHarbor API Key & Retry (No Redeploy Required)</span>
           </label>
           <p style="font-size: 0.75rem; color: #94a3b8; margin: 0 0 10px 0;">Paste a fresh TokenHarbor key to instantly update the running cloud container and resume synthesis.</p>
@@ -484,7 +479,7 @@
     <!-- Active Target Hero Card (Compact Single-Row Horizontal Status Bar) -->
     <section class="active-target-banner glass-card" id="active-target-card" style="display: flex; justify-content: space-between; align-items: center; padding: 8px 18px; margin: 8px auto 14px auto; min-height: 42px; gap: 12px; flex-wrap: wrap; box-sizing: border-box;">
       <div class="banner-left" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-        <span class="banner-badge" id="target-mode-badge" style="margin: 0; padding: 2px 9px; font-size: 0.72rem;">Active Target: Mode A</span>
+        <span class="banner-badge" id="target-mode-badge" style="margin: 0; padding: 2px 9px; font-size: 0.75rem;">Active Target: Mode A</span>
         <h2 class="target-title" id="target-module-title" style="margin: 0; font-size: 1.05rem; font-weight: 700; color: #fff; line-height: 1.2;">samples.discount</h2>
         <span class="tag" id="tag-file-path" style="padding: 2px 7px; font-size: 0.75rem;">📁 samples/discount.py</span>
       </div>
@@ -493,7 +488,7 @@
         <span class="tag" id="tag-funcs" style="padding: 2px 7px; font-size: 0.75rem;">⚡ 1 Function</span>
         <span class="tag" id="tag-classes" style="padding: 2px 7px; font-size: 0.75rem;">🏛️ 0 Classes</span>
         <span class="tag" id="tag-lines" style="padding: 2px 7px; font-size: 0.75rem;">📄 24 Lines</span>
-        <span class="tag badge-purple" id="tag-dual-framework" style="background: rgba(168, 85, 247, 0.2); border: 1px solid rgba(168, 85, 247, 0.4); color: #c084fc; font-weight: 600; padding: 2px 7px; font-size: 0.75rem;">⚡ Google ADK + CrewAI Hybrid MAS</span>
+        <span class="tag" id="tag-dual-framework" style="background: rgba(37, 99, 235, 0.12); border: 1px solid rgba(37, 99, 235, 0.35); color: #93c5fd; font-weight: 600; padding: 2px 8px; font-size: 0.75rem;">⚡ Google ADK + CrewAI Hybrid MAS</span>
       </div>
     </section>
 
@@ -1019,45 +1014,45 @@
             <div class="bb-partitions-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.5rem;">
               <!-- TargetSpace -->
               <div class="bb-pill-card" id="bb-pill-target" style="background: rgba(15, 23, 42, 0.7); padding: 0.5rem 0.65rem; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.06); transition: all 0.3s ease;">
-                <div style="font-size: 0.72rem; font-weight: 600; color: #cbd5e1; display: flex; align-items: center; gap: 4px;">
+                <div style="font-size: 0.78rem; font-weight: 600; color: #cbd5e1; display: flex; align-items: center; gap: 4px;">
                   <span>📁</span> TargetSpace
                 </div>
-                <div id="bb-target-summary" style="font-size: 0.68rem; color: #94a3b8; margin-top: 2px;">Waiting...</div>
+                <div id="bb-target-summary" style="font-size: 0.75rem; color: #94a3b8; margin-top: 2px;">Waiting...</div>
               </div>
               <!-- SuiteSpace -->
               <div class="bb-pill-card" id="bb-pill-suite" style="background: rgba(15, 23, 42, 0.7); padding: 0.5rem 0.65rem; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.06); transition: all 0.3s ease;">
-                <div style="font-size: 0.72rem; font-weight: 600; color: #cbd5e1; display: flex; align-items: center; gap: 4px;">
+                <div style="font-size: 0.78rem; font-weight: 600; color: #cbd5e1; display: flex; align-items: center; gap: 4px;">
                   <span>🧪</span> SuiteSpace
                 </div>
-                <div id="bb-suite-summary" style="font-size: 0.68rem; color: #94a3b8; margin-top: 2px;"><span id="bb-suite-status">Waiting...</span></div>
+                <div id="bb-suite-summary" style="font-size: 0.75rem; color: #94a3b8; margin-top: 2px;"><span id="bb-suite-status">Waiting...</span></div>
               </div>
               <!-- MutantSpace -->
               <div class="bb-pill-card" id="bb-pill-mutant" style="background: rgba(15, 23, 42, 0.7); padding: 0.5rem 0.65rem; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.06); transition: all 0.3s ease;">
-                <div style="font-size: 0.72rem; font-weight: 600; color: #cbd5e1; display: flex; align-items: center; gap: 4px;">
+                <div style="font-size: 0.78rem; font-weight: 600; color: #cbd5e1; display: flex; align-items: center; gap: 4px;">
                   <span>🧬</span> MutantSpace
                 </div>
-                <div id="bb-mutant-summary" style="font-size: 0.68rem; color: #94a3b8; margin-top: 2px;">Waiting...</div>
+                <div id="bb-mutant-summary" style="font-size: 0.75rem; color: #94a3b8; margin-top: 2px;">Waiting...</div>
               </div>
               <!-- CriticSpace -->
               <div class="bb-pill-card" id="bb-pill-critic" style="background: rgba(15, 23, 42, 0.7); padding: 0.5rem 0.65rem; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.06); transition: all 0.3s ease;">
-                <div style="font-size: 0.72rem; font-weight: 600; color: #cbd5e1; display: flex; align-items: center; gap: 4px;">
+                <div style="font-size: 0.78rem; font-weight: 600; color: #cbd5e1; display: flex; align-items: center; gap: 4px;">
                   <span>🧐</span> CriticSpace
                 </div>
-                <div id="bb-critic-summary" style="font-size: 0.68rem; color: #94a3b8; margin-top: 2px;">Waiting...</div>
+                <div id="bb-critic-summary" style="font-size: 0.75rem; color: #94a3b8; margin-top: 2px;">Waiting...</div>
               </div>
               <!-- MetricsSpace -->
               <div class="bb-pill-card" id="bb-pill-metrics" style="background: rgba(15, 23, 42, 0.7); padding: 0.5rem 0.65rem; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.06); transition: all 0.3s ease;">
-                <div style="font-size: 0.72rem; font-weight: 600; color: #cbd5e1; display: flex; align-items: center; gap: 4px;">
+                <div style="font-size: 0.78rem; font-weight: 600; color: #cbd5e1; display: flex; align-items: center; gap: 4px;">
                   <span>📊</span> MetricsSpace
                 </div>
-                <div id="bb-metrics-summary" style="font-size: 0.68rem; color: #94a3b8; margin-top: 2px;">Waiting...</div>
+                <div id="bb-metrics-summary" style="font-size: 0.75rem; color: #94a3b8; margin-top: 2px;">Waiting...</div>
               </div>
             </div>
           </div>
 
           <!-- Hardening Verdict Banner -->
           <div class="verdict-banner hidden" id="hardening-verdict-banner">
-            <button class="btn btn-primary hidden" id="btn-resume-interrupted-job" style="box-shadow: 0 0 14px rgba(234, 88, 12, 0.45); background: #ea580c; border-color: #f97316;">
+            <button class="btn btn-primary hidden" id="btn-resume-interrupted-job" style="box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35); background: #ea580c; border: 1px solid #f97316;">
               ▶ Resume Job Execution
             </button>
           </div>
@@ -1702,9 +1697,9 @@
             <div class="card-header-flex">
               <h4 class="metric-row-title" style="margin: 0;"><span class="icon">📝</span> Benchmark Report Preview</h4>
               <div class="benchmark-report-toolbar" style="display: flex; gap: 0.5rem; align-items: center;">
-                <div class="pill-group" style="display: flex; gap: 4px; background: rgba(15,23,42,0.8); padding: 2px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.08);">
-                  <button type="button" class="btn btn-xs active" id="btn-bench-md-rendered" style="padding: 2px 8px; font-size: 0.72rem; border-radius: 4px;">📑 Formatted</button>
-                  <button type="button" class="btn btn-xs btn-outline" id="btn-bench-md-raw" style="padding: 2px 8px; font-size: 0.72rem; border-radius: 4px;">💻 Raw Markdown</button>
+                <div class="pill-group" style="display: flex; gap: 4px; background: rgba(15,23,42,0.8); padding: 4px 6px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.08);">
+                  <button type="button" class="btn btn-xs active" id="btn-bench-md-rendered" style="padding: 4px 10px; font-size: 0.78rem; border-radius: 4px;">📑 Formatted</button>
+                  <button type="button" class="btn btn-xs btn-outline" id="btn-bench-md-raw" style="padding: 4px 10px; font-size: 0.78rem; border-radius: 4px;">💻 Raw Markdown</button>
                 </div>
                 <a href="/api/benchmark/markdown" target="_blank" class="btn btn-sm btn-ghost" style="padding: 3px 10px; font-size: 0.72rem; border-radius: 4px; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">🔗 Open Raw Endpoint</a>
               </div>

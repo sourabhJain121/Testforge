@@ -1799,23 +1799,6 @@ document.addEventListener('DOMContentLoaded', () => {
       showToast(`Failed to save settings: ${err.message}`, 'error');
     }
   });
-          engine_mode: state.settings.engineMode,
-          provider_mode: state.settings.engineMode,
-          model_name: state.settings.modelName,
-          ollama_model: ollamaModel || null,
-          max_iterations: state.settings.maxIterations,
-          target_mutation_score: state.settings.targetMutationScore,
-        }),
-      });
-      await configRes.json();
-      showToast('✅ API Keys & Configuration updated for active pipeline', 'success');
-    } catch (err) {
-      showToast(`Configuration update failed: ${err.message}`, 'error');
-    }
-
-    closeSettings();
-    fetchSystemStatus();
-  });
 
   // =========================================================================
   // System Health & Hardware Polling
@@ -3846,7 +3829,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   Job [<strong>${escapeHtml(jobId)}</strong>] was interrupted during execution. SQLite checkpoint preserves transaction state.
                 </p>
               </div>
-              <button class="btn btn-primary" id="btn-resume-interrupted-job" style="box-shadow: 0 0 14px rgba(234, 88, 12, 0.45); background: #ea580c; border-color: #f97316;">
+              <button class="btn btn-primary" id="btn-resume-interrupted-job" style="box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35); background: #ea580c; border: 1px solid #f97316;">
                 ▶ Resume Job Execution
               </button>
             </div>
@@ -6989,7 +6972,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       } else if (line.startsWith('>')) {
         if (!line.includes('[!NOTE]')) {
-          html += `<div class="info-callout" style="margin-top: 0.5rem; font-size: 0.78rem; padding: 0.5rem 0.75rem; background: rgba(6,182,212,0.08); border-left: 3px solid var(--accent-cyan); border-radius: 4px;">${escapeHtml(line.replace(/^>\s*/, ''))}</div>`;
+          html += `<div class="info-callout" style="margin-top: 0.5rem; font-size: 0.78rem; padding: 0.5rem 0.75rem; background: rgba(6,182,212,0.08); border: 1px solid rgba(6,182,212,0.25); border-radius: 6px;">${escapeHtml(line.replace(/^>\s*/, ''))}</div>`;
         }
       }
     }
