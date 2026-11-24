@@ -65,7 +65,10 @@ fi
 ACR_LOGIN_SERVER=$(az acr show --name "${ACR_NAME}" --resource-group "${RESOURCE_GROUP}" --query loginServer -o tsv)
 ACR_USERNAME=$(az acr credential show --name "${ACR_NAME}" --query username -o tsv)
 ACR_PASSWORD=$(az acr credential show --name "${ACR_NAME}" --query "passwords[0].value" -o tsv)
-IMAGE_REF="${ACR_LOGIN_SERVER}/testforge:latest"
+GIT_TAG=$(git rev-parse --short HEAD 2>/dev/null || date +%s)
+IMAGE_TAG="${IMAGE_TAG:-${GIT_TAG}}"
+IMAGE_REF="${ACR_LOGIN_SERVER}/testforge:${IMAGE_TAG}"
+IMAGE_LATEST="${ACR_LOGIN_SERVER}/testforge:latest"
 
 # 1. Ensure Docker daemon is running
 echo "🐳 Checking local Docker daemon status..."
@@ -101,8 +104,9 @@ docker build --platform linux/amd64 -t "${IMAGE_REF}" .
 
 # 4. Push directly to Azure Container Registry with automatic retry on transient connection drops
 echo "📤 Pushing image directly to Azure Container Registry: ${IMAGE_REF}..."
+docker tag "${IMAGE_REF}" "${IMAGE_LATEST}" || true
 push_attempts=5
-until docker push "${IMAGE_REF}"; do
+until docker push "${IMAGE_REF}" && docker push "${IMAGE_LATEST}"; do
   push_attempts=$((push_attempts - 1))
   if [ "$push_attempts" -le 0 ]; then
     echo "❌ Error: docker push failed after multiple attempts."
