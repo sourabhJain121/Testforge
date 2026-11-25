@@ -73,7 +73,7 @@ def run_interactive_verification():
         assert th_key_input.is_visible(), "TokenHarbor key input not visible"
         # Verify placeholder or value does not leak full live secret
         val = th_key_input.input_value()
-        assert "thk_live_YHryGHB2" not in val, "Raw secret leaked in input field!"
+        assert not val.startswith("thk_live_"), "Raw secret leaked in input field!"
 
         # Close settings
         page.locator("#btn-close-settings").click()

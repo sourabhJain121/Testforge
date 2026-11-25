@@ -1,51 +1,51 @@
 ---
 name: TestForge
-description: Precision autonomous agentic test hardening & AST mutation laboratory
+description: Precision autonomous agentic test hardening & AST mutation laboratory (21st.dev / shadcn design system)
 colors:
-  bg-base: "#080c14"
-  bg-surface: "#0e1422"
-  bg-surface-elevated: "#141c2e"
-  bg-card: "#101726"
-  border-subtle: "rgba(255, 255, 255, 0.08)"
-  border-medium: "rgba(255, 255, 255, 0.16)"
-  text-primary: "#f1f5f9"
-  text-secondary: "#cbd5e1"
-  text-muted: "#94a3b8"
+  bg-base: "#09090b"
+  bg-surface: "#121215"
+  bg-surface-elevated: "#18181b"
+  bg-card: "#121215"
+  border-subtle: "#27272a"
+  border-medium: "#3f3f46"
+  text-primary: "#fafafa"
+  text-secondary: "#d4d4d8"
+  text-muted: "#a1a1aa"
   primary: "#2563eb"
   primary-hover: "#1d4ed8"
-  accent: "#0ea5e9"
+  accent: "#2563eb"
   success: "#10b981"
   warning: "#f59e0b"
-  danger: "#ef4444"
+  danger: "#dc2626"
 typography:
   display:
-    fontFamily: "Outfit, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+    fontFamily: "Outfit, Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
     fontSize: "1.75rem"
     fontWeight: 700
     lineHeight: 1.2
     letterSpacing: "-0.02em"
   heading:
-    fontFamily: "Outfit, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+    fontFamily: "Outfit, Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
     fontSize: "1.25rem"
     fontWeight: 600
     lineHeight: 1.3
     letterSpacing: "-0.01em"
   body:
-    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+    fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
     fontSize: "13.5px"
     fontWeight: 400
     lineHeight: 1.55
     letterSpacing: "0em"
   mono:
-    fontFamily: "'JetBrains Mono', 'Fira Code', Menlo, monospace"
+    fontFamily: "ui-monospace, SFMono-Regular, 'JetBrains Mono', Menlo, Monaco, Consolas, monospace"
     fontSize: "12.5px"
     fontWeight: 500
     lineHeight: 1.5
 rounded:
   xs: "4px"
   sm: "6px"
-  md: "10px"
-  lg: "14px"
+  md: "8px"
+  lg: "10px"
   full: "9999px"
 spacing:
   xs: "4px"
@@ -58,7 +58,7 @@ components:
     backgroundColor: "{colors.primary}"
     textColor: "#ffffff"
     rounded: "{rounded.sm}"
-    padding: "8px 18px"
+    padding: "6px 14px"
   button-primary-hover:
     backgroundColor: "{colors.primary-hover}"
 ---

@@ -470,9 +470,11 @@ document.addEventListener('DOMContentLoaded', () => {
     cpStageFilter: document.getElementById('cp-stage-filter'),
     cpStatusFilter: document.getElementById('cp-status-filter'),
     cpJobFilter: document.getElementById('cp-job-filter'),
+    cpViewGrouping: document.getElementById('cp-view-grouping'),
     cpSortOrder: document.getElementById('cp-sort-order'),
     labelDiffBase: document.getElementById('label-diff-base'),
     labelDiffTarget: document.getElementById('label-diff-target'),
+    diffSelectionHelper: document.getElementById('diff-selection-helper'),
     btnSwapDiffSelection: document.getElementById('btn-swap-diff-selection'),
     btnClearDiffSelection: document.getElementById('btn-clear-diff-selection'),
     checkpointsErrorAlert: document.getElementById('checkpoints-error-alert'),
@@ -529,10 +531,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
 
-    let icon = '⚡';
-    if (type === 'success') icon = '✅';
-    if (type === 'error') icon = '❌';
-    if (type === 'warning') icon = '⚠️';
+    let icon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
+    if (type === 'success') {
+      icon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+    } else if (type === 'error') {
+      icon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+    } else if (type === 'warning') {
+      icon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+    }
 
     toast.innerHTML = `
       <span class="toast-icon">${icon}</span>
@@ -556,7 +562,7 @@ document.addEventListener('DOMContentLoaded', () => {
       showToast('Copied to clipboard!', 'success');
       if (btnElement) {
         const originalHtml = btnElement.innerHTML;
-        btnElement.innerHTML = '✅ Copied!';
+        btnElement.innerHTML = 'Copied!';
         btnElement.style.borderColor = 'var(--emerald)';
         btnElement.style.color = '#fff';
         setTimeout(() => {
@@ -624,7 +630,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!savedJobId || savedJobId === 'current') return;
     try {
       const res = await fetch(`/api/harden/status/${encodeURIComponent(savedJobId)}`);
-      if (!res.ok) return;
+      if (!res.ok) {
+        try {
+          sessionStorage.removeItem('testforge_active_job_id');
+        } catch (_) {}
+        return;
+      }
       const job = await res.json();
       state.hardening.jobId = job.job_id || savedJobId;
       state.hardening.currentJobId = job.job_id || savedJobId;
@@ -632,8 +643,8 @@ document.addEventListener('DOMContentLoaded', () => {
         state.hardening.status = 'RUNNING';
         setHardeningButtonsState(true);
         pollHardeningJob(savedJobId);
-      } else if (job.final_state || job.status === 'COMPLETED' || job.status === 'TIMED_OUT' || job.status === 'CANCELLED') {
-        renderHardeningResults(job, job.status);
+      } else if (job.final_state || job.status === 'COMPLETED' || job.status === 'TIMED_OUT' || job.status === 'CANCELLED' || (job.test_hardened_code && job.test_hardened_code.trim().length > 0)) {
+        renderHardeningResults(job, (job.status === 'INTERRUPTED' && job.test_hardened_code) ? 'COMPLETED' : job.status);
       }
     } catch (_) {}
   }
@@ -1119,7 +1130,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (dom.btnCopyA2aJson) {
       const originalHtml = dom.btnCopyA2aJson.innerHTML;
-      dom.btnCopyA2aJson.innerHTML = '✅ Copied!';
+      dom.btnCopyA2aJson.innerHTML = 'Copied!';
       setTimeout(() => {
         dom.btnCopyA2aJson.innerHTML = originalHtml;
       }, 1800);
@@ -1354,7 +1365,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (dom.btnCopyMcpJson) {
       const originalHtml = dom.btnCopyMcpJson.innerHTML;
-      dom.btnCopyMcpJson.innerHTML = '✅ Copied!';
+      dom.btnCopyMcpJson.innerHTML = 'Copied!';
       setTimeout(() => {
         dom.btnCopyMcpJson.innerHTML = originalHtml;
       }, 1800);
@@ -1649,7 +1660,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (dom.btnMcpStudioCopy) {
       const origHtml = dom.btnMcpStudioCopy.innerHTML;
-      dom.btnMcpStudioCopy.innerHTML = '✅ Copied!';
+      dom.btnMcpStudioCopy.innerHTML = 'Copied!';
       setTimeout(() => {
         dom.btnMcpStudioCopy.innerHTML = origHtml;
       }, 1800);
@@ -1787,7 +1798,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const configData = await configRes.json();
       updateSettingsKeyBadges(configData);
 
-      closeModal(dom.settingsBackdrop);
+      closeSettings();
       showToast('Settings successfully updated and active.', 'success');
       fetchSettings();
     } catch (err) {
@@ -1807,7 +1818,10 @@ document.addEventListener('DOMContentLoaded', () => {
       // Hardware
       if (data.hardware && dom.labelHardware) {
         const { machine, os_system, cpu_count, total_memory_gb } = data.hardware;
-        dom.labelHardware.textContent = `${os_system} ${machine} (${cpu_count} cores, ${total_memory_gb}GB)`;
+        dom.labelHardware.textContent = `${os_system} ${machine}`;
+        if (dom.pillHardware) {
+          dom.pillHardware.title = `${os_system} ${machine} (${cpu_count} cores, ${total_memory_gb}GB RAM)`;
+        }
       }
 
       // Providers
@@ -1817,12 +1831,13 @@ document.addEventListener('DOMContentLoaded', () => {
         // Ollama
         if (ollama_mode === 'cloud_disabled') {
           if (dom.dotOllama) dom.dotOllama.className = 'indicator-dot blue';
-          if (dom.labelOllama) dom.labelOllama.textContent = '☁️ Cloud Mode (TokenHarbor API)';
+          if (dom.labelOllama) dom.labelOllama.textContent = 'TokenHarbor (Cloud)';
           if (dom.pillOllama) dom.pillOllama.title = 'Production Cloud Deployment: TokenHarbor DeepSeek Cloud / Local AST Synthesizer';
         } else {
           if (dom.dotOllama) dom.dotOllama.className = `indicator-dot ${ollama_online ? 'green' : 'red'}`;
-          const currentOllamaModel = ollama_model || 'codellama:7b';
-          if (dom.labelOllama) dom.labelOllama.textContent = ollama_online ? `🟢 Ollama (${currentOllamaModel})` : 'Ollama (Offline)';
+          const currentOllamaModel = (ollama_model || 'codellama:7b').split(':')[0];
+          if (dom.labelOllama) dom.labelOllama.textContent = ollama_online ? `Ollama (${currentOllamaModel})` : 'Ollama (Offline)';
+          if (dom.pillOllama) dom.pillOllama.title = `Local Ollama Model: ${ollama_model}`;
           if (dom.pillOllama) {
             dom.pillOllama.title = ollama_online
               ? `Local Apple Silicon Engine Active: model ${currentOllamaModel} ready`
@@ -1844,10 +1859,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (dom.dotGemini && dom.labelGemini) {
           if (has_tokenharbor) {
             dom.dotGemini.className = 'indicator-dot green';
-            dom.labelGemini.textContent = `TokenHarbor (${tokenharbor_model || 'DeepSeek'})`;
+            const shortModel = (tokenharbor_model || 'DeepSeek').split(':')[0].replace('deepseek-', '');
+            dom.labelGemini.textContent = `TokenHarbor (${shortModel})`;
+            if (dom.pillGemini) dom.pillGemini.title = `TokenHarbor Cloud: ${tokenharbor_model}`;
           } else {
             dom.dotGemini.className = 'indicator-dot amber';
-            dom.labelGemini.textContent = 'TokenHarbor (Unset - Localhost $0)';
+            dom.labelGemini.textContent = 'TokenHarbor (Unset)';
           }
         }
 
@@ -1905,13 +1922,13 @@ document.addEventListener('DOMContentLoaded', () => {
     renderCompanionList();
 
     // UI Banner
-    dom.targetModeBadge.textContent = `Active Target: ${state.activeTarget.mode}`;
+    dom.targetModeBadge.textContent = state.activeTarget.mode;
     dom.targetModuleTitle.textContent = state.activeTarget.moduleName;
-    dom.tagFilePath.textContent = `📁 ${state.activeTarget.filePath}`;
-    dom.tagSha.textContent = `🔑 SHA: ${state.activeTarget.sourceSha ? state.activeTarget.sourceSha.substring(0, 8) : 'unknown'}`;
-    dom.tagFuncs.textContent = `⚡ ${state.activeTarget.functions.length} Function${state.activeTarget.functions.length === 1 ? '' : 's'}`;
-    dom.tagClasses.textContent = `🏛️ ${state.activeTarget.classes.length} Class${state.activeTarget.classes.length === 1 ? '' : 'es'}`;
-    dom.tagLines.textContent = `📄 ${state.activeTarget.lineCount} Lines`;
+    dom.tagFilePath.textContent = state.activeTarget.filePath;
+    dom.tagSha.textContent = `SHA ${state.activeTarget.sourceSha ? state.activeTarget.sourceSha.substring(0, 8) : 'unknown'}`;
+    dom.tagFuncs.textContent = `${state.activeTarget.functions.length} fn`;
+    dom.tagClasses.textContent = `${state.activeTarget.classes.length} class${state.activeTarget.classes.length === 1 ? '' : 'es'}`;
+    dom.tagLines.textContent = `${state.activeTarget.lineCount} lines`;
 
     // Hardening panel summary
     dom.hardenTargetLbl.textContent = state.activeTarget.moduleName;
@@ -3406,7 +3423,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const cleanTarget = typeof rawTarget === 'string' ? rawTarget.split('/').pop().toUpperCase() : 'TARGET';
       const sep = document.createElement('div');
       sep.className = 'wiretap-run-separator';
-      sep.innerHTML = `<span>⚡ NEW HARDENING RUN: ${escapeHtml(cleanTarget)}</span>`;
+      sep.innerHTML = `<span><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="vertical-align: -1px; margin-right: 4px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>NEW HARDENING RUN: ${escapeHtml(cleanTarget)}</span>`;
       wiretapTimeline.appendChild(sep);
     }
     state.capturedHandoffs = 0;
@@ -3503,7 +3520,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const cleanTarget = typeof rawTarget === 'string' ? rawTarget.split('/').pop().toUpperCase() : 'TARGET';
         const sep = document.createElement('div');
         sep.className = 'wiretap-run-separator';
-        sep.innerHTML = `<span>⚡ NEW HARDENING RUN: ${escapeHtml(cleanTarget)}</span>`;
+        sep.innerHTML = `<span><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="vertical-align: -1px; margin-right: 4px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>NEW HARDENING RUN: ${escapeHtml(cleanTarget)}</span>`;
         wiretapTimeline.appendChild(sep);
       }
 
@@ -3753,6 +3770,13 @@ document.addEventListener('DOMContentLoaded', () => {
           dom.hardeningPercentText.textContent = `Cycle ${cycle}/${maxCycles} • ${lState}`;
           dom.hardeningStatusText.innerHTML = `<span class="badge badge-cyan" style="font-size: 0.72rem; margin-right: 6px;">${escapeHtml(lState)}</span> <span id="hardening-progress-status-text">${escapeHtml(label)}</span>`;
 
+          if (lState === 'FINALIZED' || lState === 'COMPLETED' || job.status === 'COMPLETED' || (job.progress && job.progress.percent >= 100)) {
+            clearInterval(state.hardening.pollTimer);
+            finalizeHardeningRun({ status: 'COMPLETED', job, job_id: jobId });
+            renderHardeningResults(job);
+            return;
+          }
+
           if (job.latest_telemetry && job.latest_telemetry.detail) {
             const statusDetailEl = document.getElementById('hardening-progress-status-text');
             if (statusDetailEl) statusDetailEl.textContent = job.latest_telemetry.detail;
@@ -3792,6 +3816,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (job.status === 'COMPLETED') {
           clearInterval(state.hardening.pollTimer);
           finalizeHardeningRun({ status: 'COMPLETED', job, job_id: jobId });
+          renderHardeningResults(job);
         } else if (job.status === 'FAILED') {
           clearInterval(state.hardening.pollTimer);
           if (dom.btnCancelHardening) {
@@ -3808,6 +3833,21 @@ document.addEventListener('DOMContentLoaded', () => {
           `;
           showToast(`Pipeline execution failed: ${job.error}`, 'error');
         } else if (job.status === 'INTERRUPTED') {
+          // Never overwrite a completed/finalized run with "Process Interrupted"
+          const isCompleted = (
+            job.lifecycle_state === 'FINALIZED' ||
+            job.lifecycle_state === 'COMPLETED' ||
+            job.final_hardening_status === 'SUCCESS' ||
+            (job.final_state && (job.final_state.terminated || job.final_state.final_hardening_status === 'SUCCESS')) ||
+            (job.test_hardened_code && job.test_hardened_code.trim().length > 0)
+          );
+          if (isCompleted) {
+            clearInterval(state.hardening.pollTimer);
+            finalizeHardeningRun({ status: 'COMPLETED', job, job_id: jobId });
+            renderHardeningResults(job);
+            return;
+          }
+
           clearInterval(state.hardening.pollTimer);
           state.hardening.status = 'INTERRUPTED';
           if (dom.btnCancelHardening) {
@@ -3837,6 +3877,23 @@ document.addEventListener('DOMContentLoaded', () => {
               resumeBtn.disabled = true;
               resumeBtn.innerHTML = '<span class="icon">⏳</span> Resuming...';
               try {
+                // If the job or checkpoint is already finalized/completed, hydrate directly without restarting
+                const statusRes = await fetch(`/api/harden/status/${encodeURIComponent(jobId)}`);
+                if (statusRes.ok) {
+                  const currentJob = await statusRes.json();
+                  if (
+                    currentJob.status === 'COMPLETED' ||
+                    currentJob.lifecycle_state === 'FINALIZED' ||
+                    currentJob.lifecycle_state === 'COMPLETED' ||
+                    (currentJob.test_hardened_code && currentJob.test_hardened_code.trim().length > 0)
+                  ) {
+                    showToast(`Job [${jobId}] is already completed. Hydrating finalized results...`, 'success');
+                    dom.hardeningVerdictBanner.classList.add('hidden');
+                    finalizeHardeningRun({ status: 'COMPLETED', job: currentJob, job_id: jobId });
+                    renderHardeningResults(currentJob);
+                    return;
+                  }
+                }
                 const res = await fetch(`/api/harden/resume/${encodeURIComponent(jobId)}`, { method: 'POST' });
                 const data = await res.json();
                 if (res.ok && data.status === 'RESUMED') {
@@ -3845,6 +3902,12 @@ document.addEventListener('DOMContentLoaded', () => {
                   dom.hardeningProgressBox.classList.remove('hidden');
                   setHardeningButtonsState(true);
                   pollHardeningJob(jobId);
+                } else if (res.ok && data.status === 'COMPLETED') {
+                  showToast(`Job [${jobId}] is already completed. Hydrating finalized results...`, 'success');
+                  dom.hardeningVerdictBanner.classList.add('hidden');
+                  const hydratedJob = data.job || data;
+                  finalizeHardeningRun({ status: 'COMPLETED', job: hydratedJob, job_id: jobId });
+                  renderHardeningResults(hydratedJob);
                 } else {
                   showToast(data.detail || data.error || 'Failed to resume job', 'error');
                   resumeBtn.disabled = false;
@@ -5428,7 +5491,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } finally {
       if (btnLoadMinimizerSummary) {
         btnLoadMinimizerSummary.disabled = false;
-        btnLoadMinimizerSummary.innerHTML = '📊 Load Benchmark Summary';
+        btnLoadMinimizerSummary.innerHTML = 'Load Benchmark Summary';
       }
     }
   }
@@ -5437,7 +5500,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       if (btnRunMinimizer) {
         btnRunMinimizer.disabled = true;
-        btnRunMinimizer.innerHTML = '⚡ Minimizing...';
+        btnRunMinimizer.innerHTML = 'Minimizing...';
       }
       if (minimizerAlert) {
         minimizerAlert.classList.remove('hidden');
@@ -5473,7 +5536,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } finally {
       if (btnRunMinimizer) {
         btnRunMinimizer.disabled = false;
-        btnRunMinimizer.innerHTML = '⚡ Minimize Suite';
+        btnRunMinimizer.innerHTML = 'Minimize Suite';
       }
     }
   }
@@ -5500,14 +5563,14 @@ document.addEventListener('DOMContentLoaded', () => {
       if (enabled) {
         dom.btnTogglePrivacy.classList.add('btn-success');
         dom.btnTogglePrivacy.classList.remove('btn-outline');
-        if (dom.iconPrivacy) dom.iconPrivacy.textContent = '🔒';
+        if (dom.iconPrivacy) dom.iconPrivacy.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
         if (dom.labelPrivacy) dom.labelPrivacy.textContent = 'Privacy: ON';
         dom.btnTogglePrivacy.style.borderColor = '#10b981';
         dom.btnTogglePrivacy.style.color = '#10b981';
       } else {
         dom.btnTogglePrivacy.classList.remove('btn-success');
         dom.btnTogglePrivacy.classList.add('btn-outline');
-        if (dom.iconPrivacy) dom.iconPrivacy.textContent = '🔓';
+        if (dom.iconPrivacy) dom.iconPrivacy.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>';
         if (dom.labelPrivacy) dom.labelPrivacy.textContent = 'Privacy: OFF';
         dom.btnTogglePrivacy.style.borderColor = '';
         dom.btnTogglePrivacy.style.color = '';
@@ -5531,8 +5594,8 @@ document.addEventListener('DOMContentLoaded', () => {
         updatePrivacyUI(data.privacy_mode_enabled);
         showToast(
           data.privacy_mode_enabled
-            ? '🔒 Zero-Egress Privacy Mode ENABLED. Air-gap active, cloud LLMs prohibited.'
-            : '🔓 Privacy Mode DISABLED. Standard network access restored.',
+            ? 'Zero-Egress Privacy Mode ENABLED. Air-gap active, cloud LLMs prohibited.'
+            : 'Privacy Mode DISABLED. Standard network access restored.',
           data.privacy_mode_enabled ? 'success' : 'info'
         );
       }
@@ -5626,7 +5689,7 @@ document.addEventListener('DOMContentLoaded', () => {
       state.ws.socket = socket;
 
       if (dom.wiretapWsStatusBadge) {
-        dom.wiretapWsStatusBadge.textContent = '⚡ Connecting...';
+        dom.wiretapWsStatusBadge.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="vertical-align: -1px; margin-right: 4px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Connecting...';
         dom.wiretapWsStatusBadge.className = 'badge badge-amber';
       }
 
@@ -5642,7 +5705,7 @@ document.addEventListener('DOMContentLoaded', () => {
           state.ws.pollingInterval = null;
         }
         if (dom.wiretapWsStatusBadge) {
-          dom.wiretapWsStatusBadge.textContent = '⚡ Live Streaming';
+          dom.wiretapWsStatusBadge.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="vertical-align: -1px; margin-right: 4px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>Live Streaming';
           dom.wiretapWsStatusBadge.className = 'badge badge-green';
         }
       };
@@ -5917,6 +5980,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  function getActorClass(name) {
+    if (!name) return '';
+    const n = String(name).toLowerCase();
+    if (n.includes('supervisor')) return 'agent-supervisor';
+    if (n.includes('security')) return 'agent-security';
+    if (n.includes('critic')) return 'agent-critic';
+    if (n.includes('generator')) return 'agent-generator';
+    if (n.includes('repair')) return 'agent-repair';
+    if (n.includes('intel') || n.includes('code')) return 'agent-intel';
+    if (n.includes('plan')) return 'agent-planner';
+    if (n.includes('execution')) return 'agent-execution';
+    return '';
+  }
+
   function buildWiretapCardElement(ev) {
     const card = document.createElement('div');
     const etype = ev.event_type || ev._kind || 'EVENT';
@@ -5933,9 +6010,9 @@ document.addEventListener('DOMContentLoaded', () => {
       card.innerHTML = `
         <div class="step-header">
           <div class="step-agents">
-            <span class="agent-badge agent-from">${escapeHtml(fromAg)}</span>
+            <span class="agent-badge agent-from ${getActorClass(fromAg)}" data-agent="${escapeHtml(fromAg)}">${escapeHtml(fromAg)}</span>
             <span class="handoff-arrow">➔</span>
-            <span class="agent-badge agent-to">${escapeHtml(toAg)}</span>
+            <span class="agent-badge agent-to ${getActorClass(toAg)}" data-agent="${escapeHtml(toAg)}">${escapeHtml(toAg)}</span>
           </div>
           <div class="step-meta">
             <span class="badge badge-cyan">${iter}</span>
@@ -5961,7 +6038,7 @@ document.addEventListener('DOMContentLoaded', () => {
       card.innerHTML = `
         <div class="step-header">
           <div class="step-agents">
-            <span class="agent-badge agent-tool">🛠️ ${escapeHtml(agent)} &bull; ${escapeHtml(tool)}</span>
+            <span class="agent-badge agent-tool">${escapeHtml(agent)} &bull; ${escapeHtml(tool)}</span>
           </div>
           <div class="step-meta">
             <span class="badge badge-amber">${etype}</span>
@@ -5988,7 +6065,7 @@ document.addEventListener('DOMContentLoaded', () => {
       card.innerHTML = `
         <div class="step-header">
           <div class="step-agents">
-            <span class="agent-badge agent-tool">🔄 ${escapeHtml(comp)}</span>
+            <span class="agent-badge agent-tool">${escapeHtml(comp)}</span>
             <span class="handoff-arrow">➔</span>
             <span class="agent-badge agent-to">${escapeHtml(toSt)}</span>
           </div>
@@ -6011,9 +6088,9 @@ document.addEventListener('DOMContentLoaded', () => {
       card.innerHTML = `
         <div class="step-header">
           <div class="step-agents">
-            <span class="agent-badge agent-supervisor" style="background: rgba(168, 85, 247, 0.2); border: 1px solid #a855f7; color: #d8b4fe;">👑 SupervisorAgent</span>
+            <span class="agent-badge agent-supervisor" data-agent="SupervisorAgent">SupervisorAgent</span>
             <span class="handoff-arrow">➔</span>
-            <span class="agent-badge agent-to">${escapeHtml(cleanTarget)}</span>
+            <span class="agent-badge agent-to ${getActorClass(cleanTarget)}" data-agent="${escapeHtml(cleanTarget)}">${escapeHtml(cleanTarget)}</span>
           </div>
           <div class="step-meta">
             <span class="badge badge-purple">SUPERVISOR</span>
@@ -6036,7 +6113,7 @@ document.addEventListener('DOMContentLoaded', () => {
       card.innerHTML = `
         <div class="step-header">
           <div class="step-agents">
-            <span class="agent-badge agent-tool">⚡ ${escapeHtml(emitter)}</span>
+            <span class="agent-badge agent-tool">${escapeHtml(emitter)}</span>
           </div>
           <div class="step-meta">
             <span class="badge badge-cyan">${escapeHtml(etype)}</span>
@@ -6059,14 +6136,14 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   const CANONICAL_EIGHT_META = {
-    SupervisorAgent: { uri: 'agent:google-adk:supervisor', title: 'Supervisor Agent', framework: 'GOOGLE ADK', icon: '👑', role: 'Workflow Orchestration & Decision Making' },
-    CodeIntelligenceAgent: { uri: 'agent:google-adk:code-intel', title: 'Code Intelligence Agent', framework: 'GOOGLE ADK + AST', icon: '🧠', role: 'Symbol Extraction & AST Metrics' },
-    TestPlanningAgent: { uri: 'agent:google-adk:planner', title: 'Test Planning Agent', framework: 'GOOGLE ADK', icon: '📋', role: 'Scenario Decomposition & Boundaries' },
-    TestGeneratorAgent: { uri: 'agent:google-adk:generator', title: 'Test Generator Agent', framework: 'GOOGLE ADK + LLM', icon: '⚙️', role: 'Hybrid AST & LLM Synthesis' },
-    TestExecutionAgent: { uri: 'agent:google-adk:execution', title: 'Test Execution Agent', framework: 'GOOGLE ADK + SANDBOX', icon: '⚡', role: 'Isolated Subprocess Runner & Pytest' },
-    MutationQualityCriticAgent: { uri: 'agent:crewai:critic', title: 'Mutation & Quality Critic', framework: 'CrewAI Specialist', icon: '🔬', role: 'Mutant Survival & TQS Analysis' },
-    SecurityAgent: { uri: 'agent:google-adk:security', title: 'Security Agent', framework: 'GOOGLE ADK + AST', icon: '🛡️', role: 'AST Guardrails & Sandbox Isolation' },
-    ReflectionRepairAgent: { uri: 'agent:google-adk:repair', title: 'Reflection & Repair Agent', framework: 'GOOGLE ADK', icon: '🔁', role: 'Failure Reflection & AST Patching' },
+    SupervisorAgent: { uri: 'agent:google-adk:supervisor', title: 'Supervisor Agent', framework: 'GOOGLE ADK', role: 'Workflow Orchestration & Decision Making' },
+    CodeIntelligenceAgent: { uri: 'agent:google-adk:code-intel', title: 'Code Intelligence Agent', framework: 'GOOGLE ADK + AST', role: 'Symbol Extraction & AST Metrics' },
+    TestPlanningAgent: { uri: 'agent:google-adk:planner', title: 'Test Planning Agent', framework: 'GOOGLE ADK', role: 'Scenario Decomposition & Boundaries' },
+    TestGeneratorAgent: { uri: 'agent:google-adk:generator', title: 'Test Generator Agent', framework: 'GOOGLE ADK + LLM', role: 'Hybrid AST & LLM Synthesis' },
+    TestExecutionAgent: { uri: 'agent:google-adk:execution', title: 'Test Execution Agent', framework: 'GOOGLE ADK + SANDBOX', role: 'Isolated Subprocess Runner & Pytest' },
+    MutationQualityCriticAgent: { uri: 'agent:crewai:critic', title: 'Mutation & Quality Critic', framework: 'CrewAI Specialist', role: 'Mutant Survival & TQS Analysis' },
+    SecurityAgent: { uri: 'agent:google-adk:security', title: 'Security Agent', framework: 'GOOGLE ADK + AST', role: 'AST Guardrails & Sandbox Isolation' },
+    ReflectionRepairAgent: { uri: 'agent:google-adk:repair', title: 'Reflection & Repair Agent', framework: 'GOOGLE ADK', role: 'Failure Reflection & AST Patching' },
   };
 
   function renderEightAgentsGrid(eightAgentsStatus) {
@@ -6081,24 +6158,21 @@ document.addEventListener('DOMContentLoaded', () => {
       const fwBadgeClass = isCrew ? 'badge-amber' : 'badge-cyan';
       const cleanFramework = (meta.framework || '').replace(/GOOOLE/gi, 'GOOGLE');
       const statusBadge = isPart
-        ? '<span class="badge badge-green" style="font-size: 0.68rem; padding: 2px 7px; font-weight: 600;">● ACTIVE</span>'
-        : '<span class="badge badge-gray" style="font-size: 0.68rem; padding: 2px 7px;">STANDBY</span>';
-      const cardBorder = isPart ? 'border-color: rgba(34, 197, 94, 0.4); box-shadow: 0 0 12px rgba(34, 197, 94, 0.15);' : 'border-color: rgba(255, 255, 255, 0.08);';
+        ? '<span class="status-indicator active"><span class="status-dot"></span> Active</span>'
+        : '<span class="status-indicator standby"><span class="status-dot"></span> Standby</span>';
+      const activeClass = isPart ? 'active' : '';
 
       html += `
-        <div class="agent-topo-card" id="agent-node-${escapeHtml(agentKey)}" data-agent="${escapeHtml(meta.title)}" data-agent-uri="${escapeHtml(meta.uri)}" style="background: rgba(15, 23, 42, 0.6); border: 1px solid; ${cardBorder} border-radius: 8px; padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.45rem; transition: all 0.2s ease; overflow: visible;">
-          <div class="agent-card-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%; overflow: visible; gap: 0.5rem; min-width: 0; padding-left: 2px;">
-            <div class="agent-title-group" style="display: flex; align-items: center; gap: 0.5rem; overflow: visible; min-width: 0; padding-left: 2px;">
-              <span class="agent-icon" style="font-size: 1.1rem; line-height: 1; flex-shrink: 0;">${meta.icon}</span>
-              <strong class="agent-title-text agent-card-title" style="font-size: 0.85rem; color: #f1f5f9; padding-left: 4px; overflow: visible; white-space: normal; text-overflow: clip;">${escapeHtml(meta.title)}</strong>
-            </div>
+        <div class="agent-topo-card ${activeClass}" id="agent-node-${escapeHtml(agentKey)}" data-agent="${escapeHtml(meta.title)}" data-agent-uri="${escapeHtml(meta.uri)}">
+          <div class="agent-card-header">
+            <strong class="agent-card-title">${escapeHtml(meta.title)}</strong>
             ${statusBadge}
           </div>
-          <div style="display: flex; align-items: center; gap: 0.4rem; justify-content: space-between;">
-            <span class="badge ${fwBadgeClass}" style="font-size: 0.65rem; padding: 1px 5px;">${escapeHtml(cleanFramework)}</span>
-            <code style="font-size: 0.62rem; color: #64748b; font-family: var(--font-mono);">${escapeHtml(meta.uri)}</code>
+          <p class="agent-role-desc">${escapeHtml(meta.role)}</p>
+          <div class="agent-card-footer">
+            <span class="badge ${fwBadgeClass}">${escapeHtml(cleanFramework)}</span>
+            <code class="agent-uri-code">${escapeHtml(meta.uri)}</code>
           </div>
-          <p style="font-size: 0.74rem; color: #94a3b8; margin: 0; line-height: 1.3;">${escapeHtml(meta.role)}</p>
         </div>
       `;
     }
@@ -6245,7 +6319,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const cleanName = typeof targetName === 'string' ? targetName.split('/').pop() : 'Active Target';
       const sep = document.createElement('div');
       sep.className = 'wiretap-run-separator';
-      sep.innerHTML = `<span>⚡ New Hardening Run: ${escapeHtml(cleanName)}</span>`;
+      sep.innerHTML = `<span><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="vertical-align: -1px; margin-right: 4px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>New Hardening Run: ${escapeHtml(cleanName)}</span>`;
       wiretapStream.appendChild(sep);
 
       const eventsToRender = allEvents.slice(-25);
@@ -6549,9 +6623,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const titleEl = dom.benchmarkSummaryTableTitle || document.getElementById('benchmark-summary-table-title');
     if (titleEl) {
       if (scenarioCount < 2) {
-        titleEl.innerHTML = '<span class="icon">📊</span> Ablation Results';
+        titleEl.innerHTML = 'Ablation Results';
       } else {
-        titleEl.innerHTML = '<span class="icon">📊</span> Comparative Ablation Results';
+        titleEl.innerHTML = 'Comparative Ablation Results';
       }
     }
 
@@ -7455,6 +7529,154 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  function renderCheckpointCard(cp) {
+    const card = document.createElement('div');
+    card.className = 'checkpoint-card';
+    card.setAttribute('data-id', cp.checkpoint_id);
+    card.setAttribute('data-stage', cp.stage || '');
+
+    if (state.checkpoints.selectedId === cp.checkpoint_id) {
+      card.classList.add('active-inspected');
+    }
+    if (state.checkpoints.diffBaseId === cp.checkpoint_id) {
+      card.classList.add('diff-base-selected');
+    }
+    if (state.checkpoints.diffTargetId === cp.checkpoint_id) {
+      card.classList.add('diff-target-selected');
+    }
+
+    // Header row
+    const headerRow = document.createElement('div');
+    headerRow.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;';
+
+    const leftHead = document.createElement('div');
+    leftHead.style.cssText = 'display: flex; gap: 0.5rem; align-items: center;';
+
+    const stageBadge = document.createElement('span');
+    stageBadge.className = `stage-badge ${getStageClass(cp.stage)}`;
+    stageBadge.textContent = cp.stage || 'UNKNOWN';
+
+    const idSpan = document.createElement('code');
+    idSpan.style.cssText = 'font-size: 0.78rem; color: #38bdf8; font-weight: 600;';
+    idSpan.textContent = cp.checkpoint_id;
+
+    leftHead.appendChild(stageBadge);
+    leftHead.appendChild(idSpan);
+
+    const timeSpan = document.createElement('span');
+    timeSpan.style.cssText = 'font-size: 0.72rem; color: #94a3b8; font-family: var(--font-mono);';
+    timeSpan.textContent = formatTimestamp(cp.created_at);
+
+    headerRow.appendChild(leftHead);
+    headerRow.appendChild(timeSpan);
+    card.appendChild(headerRow);
+
+    // Meta pills row
+    const metaRow = document.createElement('div');
+    metaRow.style.cssText = 'display: flex; gap: 0.6rem; flex-wrap: wrap; font-size: 0.75rem; color: #cbd5e1; margin-bottom: 0.6rem;';
+
+    const revPill = document.createElement('span');
+    revPill.textContent = `Rev: ${cp.revision ?? 0}`;
+    metaRow.appendChild(revPill);
+
+    if (cp.job_id) {
+      const jobPill = document.createElement('span');
+      jobPill.textContent = `Job: ${cp.job_id}`;
+      metaRow.appendChild(jobPill);
+    }
+
+    const sizePill = document.createElement('span');
+    sizePill.textContent = `Size: ${formatBytes(cp.snapshot_bytes)}`;
+    metaRow.appendChild(sizePill);
+
+    const statusPill = document.createElement('span');
+    statusPill.style.color = cp.status === 'SUCCESS' ? '#34d399' : (cp.status === 'CANCELLED' ? '#fbbf24' : '#94a3b8');
+    statusPill.textContent = `Status: ${cp.status || 'N/A'}`;
+    metaRow.appendChild(statusPill);
+
+    card.appendChild(metaRow);
+
+    // Metrics preview if available
+    const metrics = cp.metrics_summary || {};
+    if (Object.keys(metrics).length > 0) {
+      const metricBox = document.createElement('div');
+      metricBox.style.cssText = 'background: rgba(0,0,0,0.3); padding: 0.35rem 0.6rem; border-radius: 4px; font-size: 0.72rem; color: #94a3b8; margin-bottom: 0.6rem; display: flex; gap: 0.8rem;';
+
+      if (metrics.final_mutation_score !== undefined) {
+        const mScore = document.createElement('span');
+        mScore.textContent = `Mutation Score: ${metrics.final_mutation_score}%`;
+        metricBox.appendChild(mScore);
+      }
+      if (metrics.lines_covered !== undefined) {
+        const lCov = document.createElement('span');
+        lCov.textContent = `Covered: ${metrics.lines_covered}`;
+        metricBox.appendChild(lCov);
+      }
+      if (metrics.current_iteration !== undefined) {
+        const iter = document.createElement('span');
+        iter.textContent = `Iteration: ${metrics.current_iteration}`;
+        metricBox.appendChild(iter);
+      }
+      card.appendChild(metricBox);
+    }
+
+    // Actions row
+    const actionsRow = document.createElement('div');
+    actionsRow.style.cssText = 'display: flex; gap: 0.4rem; align-items: center; justify-content: flex-end; padding-top: 0.4rem; border-top: 1px solid rgba(255,255,255,0.05);';
+
+    const btnInspect = document.createElement('button');
+    btnInspect.type = 'button';
+    btnInspect.className = 'btn btn-xs btn-outline btn-cp-inspect';
+    btnInspect.textContent = '🔍 Inspect';
+    btnInspect.addEventListener('click', (e) => {
+      e.stopPropagation();
+      inspectCheckpoint(cp.checkpoint_id);
+    });
+
+    const btnBase = document.createElement('button');
+    btnBase.type = 'button';
+    btnBase.className = 'btn btn-xs btn-outline btn-cp-set-base';
+    btnBase.textContent = state.checkpoints.diffBaseId === cp.checkpoint_id ? '✓ Base (A)' : 'Set Base (A)';
+    btnBase.style.color = '#93c5fd';
+    btnBase.addEventListener('click', (e) => {
+      e.stopPropagation();
+      setDiffBase(cp.checkpoint_id);
+    });
+
+    const btnTarget = document.createElement('button');
+    btnTarget.type = 'button';
+    btnTarget.className = 'btn btn-xs btn-outline btn-cp-set-target';
+    btnTarget.textContent = state.checkpoints.diffTargetId === cp.checkpoint_id ? '✓ Target (B)' : 'Set Target (B)';
+    btnTarget.style.color = '#86efac';
+    btnTarget.addEventListener('click', (e) => {
+      e.stopPropagation();
+      setDiffTarget(cp.checkpoint_id);
+    });
+
+    const btnRestore = document.createElement('button');
+    btnRestore.type = 'button';
+    btnRestore.className = 'btn btn-xs btn-outline btn-cp-restore';
+    btnRestore.textContent = '↩ Restore...';
+    btnRestore.style.color = '#fde047';
+    btnRestore.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openRestoreModal(cp.checkpoint_id, cp.stage, cp.revision, cp.created_at);
+    });
+
+    actionsRow.appendChild(btnInspect);
+    actionsRow.appendChild(btnBase);
+    actionsRow.appendChild(btnTarget);
+    actionsRow.appendChild(btnRestore);
+    card.appendChild(actionsRow);
+
+    // Click card to inspect
+    card.addEventListener('click', () => {
+      inspectCheckpoint(cp.checkpoint_id);
+    });
+
+    return card;
+  }
+
   function renderCheckpointTimeline() {
     const container = dom.checkpointCardsStream;
     if (!container) return;
@@ -7467,153 +7689,61 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (dom.checkpointsEmptyState) dom.checkpointsEmptyState.classList.add('hidden');
 
-    items.forEach(cp => {
-      const card = document.createElement('div');
-      card.className = 'checkpoint-card';
-      card.setAttribute('data-id', cp.checkpoint_id);
-      card.setAttribute('data-stage', cp.stage || '');
+    const viewMode = (dom.cpViewGrouping && dom.cpViewGrouping.value) ? dom.cpViewGrouping.value : 'latest_job';
 
-      if (state.checkpoints.selectedId === cp.checkpoint_id) {
-        card.classList.add('active-inspected');
-      }
-      if (state.checkpoints.diffBaseId === cp.checkpoint_id) {
-        card.classList.add('diff-base-selected');
-      }
-      if (state.checkpoints.diffTargetId === cp.checkpoint_id) {
-        card.classList.add('diff-target-selected');
-      }
-
-      // Header row
-      const headerRow = document.createElement('div');
-      headerRow.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;';
-
-      const leftHead = document.createElement('div');
-      leftHead.style.cssText = 'display: flex; gap: 0.5rem; align-items: center;';
-
-      const stageBadge = document.createElement('span');
-      stageBadge.className = `stage-badge ${getStageClass(cp.stage)}`;
-      stageBadge.textContent = cp.stage || 'UNKNOWN';
-
-      const idSpan = document.createElement('code');
-      idSpan.style.cssText = 'font-size: 0.78rem; color: #38bdf8; font-weight: 600;';
-      idSpan.textContent = cp.checkpoint_id;
-
-      leftHead.appendChild(stageBadge);
-      leftHead.appendChild(idSpan);
-
-      const timeSpan = document.createElement('span');
-      timeSpan.style.cssText = 'font-size: 0.72rem; color: #94a3b8; font-family: var(--font-mono);';
-      timeSpan.textContent = formatTimestamp(cp.created_at);
-
-      headerRow.appendChild(leftHead);
-      headerRow.appendChild(timeSpan);
-      card.appendChild(headerRow);
-
-      // Meta pills row
-      const metaRow = document.createElement('div');
-      metaRow.style.cssText = 'display: flex; gap: 0.6rem; flex-wrap: wrap; font-size: 0.75rem; color: #cbd5e1; margin-bottom: 0.6rem;';
-
-      const revPill = document.createElement('span');
-      revPill.textContent = `Rev: ${cp.revision ?? 0}`;
-      metaRow.appendChild(revPill);
-
-      if (cp.job_id) {
-        const jobPill = document.createElement('span');
-        jobPill.textContent = `Job: ${cp.job_id}`;
-        metaRow.appendChild(jobPill);
-      }
-
-      const sizePill = document.createElement('span');
-      sizePill.textContent = `Size: ${formatBytes(cp.snapshot_bytes)}`;
-      metaRow.appendChild(sizePill);
-
-      const statusPill = document.createElement('span');
-      statusPill.style.color = cp.status === 'SUCCESS' ? '#34d399' : (cp.status === 'CANCELLED' ? '#fbbf24' : '#94a3b8');
-      statusPill.textContent = `Status: ${cp.status || 'N/A'}`;
-      metaRow.appendChild(statusPill);
-
-      card.appendChild(metaRow);
-
-      // Metrics preview if available
-      const metrics = cp.metrics_summary || {};
-      if (Object.keys(metrics).length > 0) {
-        const metricBox = document.createElement('div');
-        metricBox.style.cssText = 'background: rgba(0,0,0,0.3); padding: 0.35rem 0.6rem; border-radius: 4px; font-size: 0.72rem; color: #94a3b8; margin-bottom: 0.6rem; display: flex; gap: 0.8rem;';
-
-        if (metrics.final_mutation_score !== undefined) {
-          const mScore = document.createElement('span');
-          mScore.textContent = `Mutation Score: ${metrics.final_mutation_score}%`;
-          metricBox.appendChild(mScore);
+    if (viewMode === 'latest_job') {
+      // Find the latest job_id among items
+      let latestJobId = null;
+      for (const cp of items) {
+        if (cp.job_id) {
+          latestJobId = cp.job_id;
+          break;
         }
-        if (metrics.lines_covered !== undefined) {
-          const lCov = document.createElement('span');
-          lCov.textContent = `Covered: ${metrics.lines_covered}`;
-          metricBox.appendChild(lCov);
+      }
+      const filtered = latestJobId ? items.filter(cp => cp.job_id === latestJobId) : items;
+
+      if (latestJobId) {
+        const header = document.createElement('div');
+        header.style.cssText = 'padding: 0.5rem 0.75rem; margin-bottom: 0.75rem; background: var(--bg-card-subtle); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); font-size: 0.8rem; display: flex; justify-content: space-between; align-items: center;';
+        header.innerHTML = `<span><strong>Latest Job:</strong> <code>${escapeHtml(latestJobId)}</code> (${filtered.length} snapshots)</span><button type="button" class="btn btn-xs btn-outline btn-show-all-jobs">Show All History</button>`;
+        container.appendChild(header);
+        const showAllBtn = header.querySelector('.btn-show-all-jobs');
+        if (showAllBtn) {
+          showAllBtn.addEventListener('click', () => {
+            if (dom.cpViewGrouping) dom.cpViewGrouping.value = 'all_history';
+            renderCheckpointTimeline();
+          });
         }
-        if (metrics.current_iteration !== undefined) {
-          const iter = document.createElement('span');
-          iter.textContent = `Iteration: ${metrics.current_iteration}`;
-          metricBox.appendChild(iter);
-        }
-        card.appendChild(metricBox);
       }
 
-      // Actions row
-      const actionsRow = document.createElement('div');
-      actionsRow.style.cssText = 'display: flex; gap: 0.4rem; align-items: center; justify-content: flex-end; padding-top: 0.4rem; border-top: 1px solid rgba(255,255,255,0.05);';
-
-      const btnInspect = document.createElement('button');
-      btnInspect.type = 'button';
-      btnInspect.className = 'btn btn-xs btn-outline btn-cp-inspect';
-      btnInspect.textContent = '🔍 Inspect';
-      btnInspect.addEventListener('click', (e) => {
-        e.stopPropagation();
-        inspectCheckpoint(cp.checkpoint_id);
+      filtered.forEach(cp => {
+        container.appendChild(renderCheckpointCard(cp));
+      });
+    } else if (viewMode === 'grouped_by_job') {
+      // Group items by job_id
+      const groups = new Map();
+      items.forEach(cp => {
+        const jId = cp.job_id || 'Standalone / Unknown Job';
+        if (!groups.has(jId)) groups.set(jId, []);
+        groups.get(jId).push(cp);
       });
 
-      const btnBase = document.createElement('button');
-      btnBase.type = 'button';
-      btnBase.className = 'btn btn-xs btn-outline btn-cp-set-base';
-      btnBase.textContent = state.checkpoints.diffBaseId === cp.checkpoint_id ? '✓ Base (A)' : 'Set Base (A)';
-      btnBase.style.color = '#93c5fd';
-      btnBase.addEventListener('click', (e) => {
-        e.stopPropagation();
-        setDiffBase(cp.checkpoint_id);
+      groups.forEach((groupItems, jId) => {
+        const groupHeader = document.createElement('div');
+        groupHeader.style.cssText = 'padding: 0.4rem 0.65rem; margin: 0.75rem 0 0.5rem 0; background: var(--bg-card); border-left: 3px solid var(--primary-light); border-radius: var(--radius-xs); font-size: 0.8rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center;';
+        groupHeader.innerHTML = `<span>📁 Job: <code>${escapeHtml(jId)}</code></span> <span class="badge badge-cyan" style="font-size: 0.7rem;">${groupItems.length} snapshots</span>`;
+        container.appendChild(groupHeader);
+
+        groupItems.forEach(cp => {
+          container.appendChild(renderCheckpointCard(cp));
+        });
       });
-
-      const btnTarget = document.createElement('button');
-      btnTarget.type = 'button';
-      btnTarget.className = 'btn btn-xs btn-outline btn-cp-set-target';
-      btnTarget.textContent = state.checkpoints.diffTargetId === cp.checkpoint_id ? '✓ Target (B)' : 'Set Target (B)';
-      btnTarget.style.color = '#86efac';
-      btnTarget.addEventListener('click', (e) => {
-        e.stopPropagation();
-        setDiffTarget(cp.checkpoint_id);
+    } else {
+      // all_history
+      items.forEach(cp => {
+        container.appendChild(renderCheckpointCard(cp));
       });
-
-      const btnRestore = document.createElement('button');
-      btnRestore.type = 'button';
-      btnRestore.className = 'btn btn-xs btn-outline btn-cp-restore';
-      btnRestore.textContent = '↩ Restore...';
-      btnRestore.style.color = '#fde047';
-      btnRestore.addEventListener('click', (e) => {
-        e.stopPropagation();
-        openRestoreModal(cp.checkpoint_id, cp.stage, cp.revision, cp.created_at);
-      });
-
-      actionsRow.appendChild(btnInspect);
-      actionsRow.appendChild(btnBase);
-      actionsRow.appendChild(btnTarget);
-      actionsRow.appendChild(btnRestore);
-      card.appendChild(actionsRow);
-
-      // Click card to inspect
-      card.addEventListener('click', () => {
-        inspectCheckpoint(cp.checkpoint_id);
-      });
-
-      container.appendChild(card);
-    });
+    }
   }
 
   async function inspectCheckpoint(checkpointId) {
@@ -7863,7 +7993,31 @@ document.addEventListener('DOMContentLoaded', () => {
     container.appendChild(criticCard);
   }
 
+  function updateDiffHelper(msg = null) {
+    const helper = dom.diffSelectionHelper || document.getElementById('diff-selection-helper');
+    if (!helper) return;
+    if (msg) {
+      helper.textContent = msg;
+      helper.style.display = 'inline-block';
+    } else {
+      helper.style.display = 'none';
+      helper.textContent = '';
+    }
+  }
+
   function setDiffBase(checkpointId) {
+    if (state.checkpoints.diffTargetId === checkpointId) {
+      state.checkpoints.diffTargetId = null;
+      if (dom.labelDiffTarget) {
+        dom.labelDiffTarget.textContent = 'None selected';
+        dom.labelDiffTarget.classList.add('text-muted');
+        dom.labelDiffTarget.style.color = '';
+      }
+      updateDiffHelper('Base and Target checkpoints must be different');
+      showToast('Base and Target checkpoints must be different', 'warning');
+    } else {
+      updateDiffHelper(null);
+    }
     state.checkpoints.diffBaseId = checkpointId;
     if (dom.labelDiffBase) {
       dom.labelDiffBase.textContent = checkpointId;
@@ -7877,6 +8031,18 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function setDiffTarget(checkpointId) {
+    if (state.checkpoints.diffBaseId === checkpointId) {
+      state.checkpoints.diffBaseId = null;
+      if (dom.labelDiffBase) {
+        dom.labelDiffBase.textContent = 'None selected';
+        dom.labelDiffBase.classList.add('text-muted');
+        dom.labelDiffBase.style.color = '';
+      }
+      updateDiffHelper('Base and Target checkpoints must be different');
+      showToast('Base and Target checkpoints must be different', 'warning');
+    } else {
+      updateDiffHelper(null);
+    }
     state.checkpoints.diffTargetId = checkpointId;
     if (dom.labelDiffTarget) {
       dom.labelDiffTarget.textContent = checkpointId;
@@ -7893,6 +8059,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const temp = state.checkpoints.diffBaseId;
     state.checkpoints.diffBaseId = state.checkpoints.diffTargetId;
     state.checkpoints.diffTargetId = temp;
+    updateDiffHelper(null);
 
     if (dom.labelDiffBase) dom.labelDiffBase.textContent = state.checkpoints.diffBaseId || 'None selected';
     if (dom.labelDiffTarget) dom.labelDiffTarget.textContent = state.checkpoints.diffTargetId || 'None selected';
@@ -7908,6 +8075,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function clearDiffSelection() {
     state.checkpoints.diffBaseId = null;
     state.checkpoints.diffTargetId = null;
+    updateDiffHelper(null);
     if (dom.labelDiffBase) {
       dom.labelDiffBase.textContent = 'None selected';
       dom.labelDiffBase.classList.add('text-muted');
@@ -8222,6 +8390,10 @@ document.addEventListener('DOMContentLoaded', () => {
     dom.cpJobFilter.addEventListener('input', () => fetchCheckpoints());
   }
 
+  if (dom.cpViewGrouping) {
+    dom.cpViewGrouping.addEventListener('change', () => renderCheckpointTimeline());
+  }
+
   if (dom.cpSortOrder) {
     dom.cpSortOrder.addEventListener('change', () => renderCheckpointTimeline());
   }
@@ -8297,7 +8469,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function setTheme(t) {
       document.documentElement.setAttribute('data-theme', t);
       localStorage.setItem('testforge-theme', t);
-      if (iconEl) iconEl.textContent = t === 'light' ? '🌙' : '☀️';
+      if (iconEl) {
+        if (t === 'light') {
+          iconEl.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px; margin-right:3px;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+        } else {
+          iconEl.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px; margin-right:3px;"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
+        }
+      }
       if (labelEl) labelEl.textContent = t === 'light' ? 'Light' : 'Dark';
     }
 
@@ -8410,6 +8588,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     window.loadObservabilityTraceData = fetchTelemetry;
     window.loadCheckpointsList = loadCheckpointsList;
+    window.testForgeApp = window.__testforge;
   }
 
   init();
