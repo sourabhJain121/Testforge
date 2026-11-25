@@ -1,9 +1,0 @@
-{
-  "feature": "SQLite WAL Checkpointing & Crash Resumption",
-  "timestamp": 1794111088.108671,
-  "journal_mode": "wal",
-  "restored_stage": "REFLECTION_LOOP",
-  "restored_revision": 3,
-  "suite_code_matches": true,
-  "verdict": "PASS"
-}

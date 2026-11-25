@@ -1,44 +1,0 @@
-bringing up nodes...bringing up nodes...bringing up nodes...bringing up nodes...bringing up nodes...bringing up nodes...bringing up nodes...bringing up nodes...bringing up nodes...bringing up nodes...bringing up nodes...bringing up nodes...bringing up nodes...
-........................................................................ [  7%]
-........................................................................ [ 14%]
-........................................................................ [ 21%]
-........................................................................ [ 28%]
-........................................................................ [ 36%]
-........................................................................ [ 43%]
-........................................................................ [ 50%]
-........................................................................ [ 57%]
-........................................................................ [ 64%]
-........................................................................ [ 72%]
-........................................................................ [ 79%]
-........................................................................ [ 86%]
-........................................................................ [ 93%]
-...............................................................          [100%]
-=============================== warnings summary ===============================
-.venv-release/lib/python3.13/site-packages/starlette/testclient.py:45
-.venv-release/lib/python3.13/site-packages/starlette/testclient.py:45
-.venv-release/lib/python3.13/site-packages/starlette/testclient.py:45
-.venv-release/lib/python3.13/site-packages/starlette/testclient.py:45
-  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/starlette/testclient.py:45: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
-    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
-
-tests/test_adk_web_compatibility.py::TestADKWebCompatibility::test_get_fast_api_app_initialization
-  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/google/adk/cli/fast_api.py:175: UserWarning: [EXPERIMENTAL] InMemoryCredentialService: This feature is experimental and may change or be removed in future versions without notice. It may introduce breaking changes at any time.
-    credential_service = InMemoryCredentialService()
-
-tests/test_adk_web_compatibility.py::TestADKWebCompatibility::test_get_fast_api_app_initialization
-  /Users/sourabh/TestForge/.venv-release/lib/python3.13/site-packages/google/adk/auth/credential_service/in_memory_credential_service.py:33: UserWarning: [EXPERIMENTAL] BaseCredentialService: This feature is experimental and may change or be removed in future versions without notice. It may introduce breaking changes at any time.
-    super().__init__()
-
--- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-============================= slowest 10 durations =============================
-102.13s call     tests/test_mode_c_ingestion.py::test_hardening_pipeline_on_models
-76.27s call     tests/test_evaluation_corpus.py::TestBenchmarkStrategyRunner::test_missing_credentials_do_not_fabricate_tokens_or_cost
-60.30s call     tests/test_blast_and_adk.py::test_agent_handoff_contracts
-40.82s call     tests/test_orchestration_mcp.py::TestCrossTaskIsolation::test_no_cross_task_leakage_between_orchestrators
-34.95s call     tests/test_agentic_rag.py::TestAgentIntegrations::test_generator_agent_with_rag_and_memory
-22.35s call     tests/test_agentic_pipeline.py::TestAgenticPipelineIntegration::test_end_to_end_orchestrator_agentic_reflection_loop
-19.09s call     tests/test_phase3_workflow_integration.py::TestPhase3WorkflowIntegration::test_workflow_invokes_both_agents_and_persists_outputs
-19.00s call     tests/test_performance_evaluation.py::test_evaluator_matrix_execution
-15.91s call     tests/test_parallel_mutant_execution.py::test_parallel_vs_serial_score_parity_and_speedup
-14.23s call     tests/test_frontend_playground_verification.py::TestFrontendHeadlessBrowserPlayground::test_b4_diff_inspector_and_artifact_downloads
-999 passed, 6 warnings in 250.34s (0:04:10)
